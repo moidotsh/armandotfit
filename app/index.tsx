@@ -1,156 +1,204 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { router } from 'expo-router';
 import { 
-  View, 
+  YStack, 
+  XStack,
   Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ScrollView,
-  useColorScheme
-} from 'react-native';
-import { 
-  ChestPressIcon, 
-  LegPressIcon, 
-  RowIcon, 
-  LateralRaiseIcon, 
-  BicepCurlIcon, 
-  CalfRaiseIcon 
-} from '../components/ExerciseIcons';
+  Card, 
+  H1,
+  Button,
+  useTheme,
+  Separator
+} from 'tamagui';
+import { format } from 'date-fns';
+import { BarChart2, TrendingUp, Clock } from '@tamagui/lucide-icons';
 
-// Today's workout data - in a real app this would come from a data source
-const todaysWorkout = {
-  title: "Full Body Day 1",
-  exercises: [
-    { 
-      name: "Incline Barbell Press", 
-      icon: (color: string) => <ChestPressIcon color={color} size={26} />,
-      type: "chest"
-    },
-    { 
-      name: "Leg Press", 
-      icon: (color: string) => <LegPressIcon color={color} size={26} />,
-      type: "legs"
-    },
-    { 
-      name: "Barbell Row", 
-      icon: (color: string) => <RowIcon color={color} size={26} />,
-      type: "back" 
-    },
-    { 
-      name: "Lateral Raises", 
-      icon: (color: string) => <LateralRaiseIcon color={color} size={26} />,
-      type: "shoulders"
-    },
-    { 
-      name: "EZ-Bar Curl", 
-      icon: (color: string) => <BicepCurlIcon color={color} size={26} />,
-      type: "arms"
-    },
-    { 
-      name: "Seated Calf Raise", 
-      icon: (color: string) => <CalfRaiseIcon color={color} size={26} />,
-      type: "legs"
-    }
-  ]
-};
+// Define workout split types
+export type SplitType = 'oneADay' | 'twoADay';
 
-export default function TodaysWorkoutScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme !== 'light';
+export default function HomeScreen() {
+  const theme = useTheme();
+  const today = new Date();
+  const formattedDate = format(today, 'MMMM d, yyyy');
+  const isDark = theme.name?.get() === 'dark';
   
-  // Background colors
-  const backgroundColor = isDark ? '#121212' : '#F5F5F5';
-  const cardColor = isDark ? '#222222' : '#FFFFFF';
-  const textColor = isDark ? '#FFFFFF' : '#000000';
-  const subtitleColor = isDark ? '#FF9500' : '#FF9500';
-  const arrowColor = isDark ? '#555555' : '#CCCCCC';
+  // State for selected split type
+  const [splitType, setSplitType] = useState<SplitType>('oneADay');
+  
+  const navigateToWorkout = () => {
+    router.push(`/workout-detail?type=${splitType}&day=1`);
+  };
+
+  const navigateToSection = (section: string) => {
+    console.log(`Navigate to ${section}`);
+    // Future implementation
+  };
 
   return (
-    <View style={[styles.container, { backgroundColor }]}>
+    <YStack flex={1} backgroundColor="$background" paddingTop={60} paddingHorizontal={20}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={[styles.todaysText, { color: subtitleColor }]}>TODAY'S</Text>
-          <Text style={[styles.titleText, { color: textColor }]}>{todaysWorkout.title}</Text>
-        </View>
+      <YStack space="$2" paddingBottom={10}>
+        <H1 color="$color" fontSize={50}>Hi Arman!</H1>
+        <Text color="$gray10" fontSize={20}>{formattedDate}</Text>
+      </YStack>
       
-        <View style={styles.exerciseList}>
-          {todaysWorkout.exercises.map((exercise, index) => (
-            <TouchableOpacity 
-              key={index}
-              style={[styles.exerciseCard, { backgroundColor: cardColor }]}
-              activeOpacity={0.7}
+      <Button
+        size="$6"
+        backgroundColor="#FF9500"
+        color="white"
+        fontWeight="bold"
+        fontSize={24}
+        height={70}
+        marginVertical={30}
+        borderRadius={20}
+        onPress={navigateToWorkout}
+      >
+        Start Workout
+      </Button>
+      
+      <XStack marginBottom={30} alignItems="center">
+        <Text color="$color" fontSize={28} fontWeight="600" marginRight={20}>
+          Full Body:
+        </Text>
+        
+        {/* Custom toggle implementation */}
+        <XStack width={300} height={50} position="relative">
+          {/* Dark background container */}
+          <XStack
+            position="absolute"
+            left={0}
+            right={0}
+            top={0}
+            bottom={0}
+            backgroundColor="#333333"
+            borderRadius={25}
+          />
+          
+          {/* White pill for selected option - positioned based on selection */}
+          <XStack
+            position="absolute"
+            width={150}
+            height={50}
+            borderRadius={25}
+            backgroundColor="#FFFFFF"
+            left={splitType === 'oneADay' ? 0 : 150}
+            top={0}
+            {...(splitType === 'oneADay' 
+              ? {enterStyle: {x: 0}} 
+              : {enterStyle: {x: 150}}
+            )}
+          />
+          
+          {/* Buttons (transparent, just for interaction) */}
+          <Button
+            position="absolute"
+            left={0}
+            top={0}
+            width={150}
+            height={50}
+            backgroundColor="transparent"
+            color={splitType === 'oneADay' ? '#000000' : '#FFFFFF'}
+            onPress={() => setSplitType('oneADay')}
+            zIndex={1}
+          >
+            Single
+          </Button>
+          
+          <Button
+            position="absolute"
+            left={150}
+            top={0}
+            width={150}
+            height={50}
+            backgroundColor="transparent"
+            color={splitType === 'twoADay' ? '#000000' : '#FFFFFF'}
+            onPress={() => setSplitType('twoADay')}
+            zIndex={1}
+          >
+            Dual Session
+          </Button>
+        </XStack>
+      </XStack>
+      
+      {/* Feature cards */}
+      <YStack space="$4" flex={1}>
+        <Card
+          backgroundColor="#252525"
+          borderRadius={15}
+          padding={20}
+          height={110}
+          pressStyle={{ scale: 0.98, opacity: 0.9 }}
+          onPress={() => navigateToSection('analytics')}
+        >
+          <XStack alignItems="center" space="$4">
+            <YStack
+              width={60}
+              height={60}
+              borderRadius={30}
+              backgroundColor="#333333"
+              alignItems="center"
+              justifyContent="center"
             >
-              <View style={styles.exerciseContent}>
-                {exercise.icon(textColor)}
-                <Text style={[styles.exerciseName, { color: textColor }]}>
-                  {exercise.name}
-                </Text>
-              </View>
-              <Text style={[styles.chevron, { color: arrowColor }]}>›</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-    </View>
+              <BarChart2 size={30} color="white" />
+            </YStack>
+            <Text fontSize={30} fontWeight="500" color="#FFFFFF">
+              Analytics
+            </Text>
+          </XStack>
+        </Card>
+        
+        <Card
+          backgroundColor="#252525"
+          borderRadius={15}
+          padding={20}
+          height={110}
+          pressStyle={{ scale: 0.98, opacity: 0.9 }}
+          onPress={() => navigateToSection('progress')}
+        >
+          <XStack alignItems="center" space="$4">
+            <YStack
+              width={60}
+              height={60}
+              borderRadius={30}
+              backgroundColor="#333333"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <TrendingUp size={30} color="white" />
+            </YStack>
+            <Text fontSize={30} fontWeight="500" color="#FFFFFF">
+              Progress Tracker
+            </Text>
+          </XStack>
+        </Card>
+        
+        <Card
+          backgroundColor="#252525"
+          borderRadius={15}
+          padding={20}
+          height={110}
+          pressStyle={{ scale: 0.98, opacity: 0.9 }}
+          onPress={() => navigateToSection('history')}
+        >
+          <XStack alignItems="center" space="$4">
+            <YStack
+              width={60}
+              height={60}
+              borderRadius={30}
+              backgroundColor="#333333"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Clock size={30} color="white" />
+            </YStack>
+            <Text fontSize={30} fontWeight="500" color="#FFFFFF">
+              History
+            </Text>
+          </XStack>
+        </Card>
+      </YStack>
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 60,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  todaysText: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  titleText: {
-    fontSize: 40,
-    fontWeight: '700',
-  },
-  exerciseList: {
-    paddingHorizontal: 16,
-    paddingBottom: 30,
-  },
-  exerciseCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 22,
-    paddingHorizontal: 20,
-    borderRadius: 15,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  exerciseContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-
-  exerciseName: {
-    fontSize: 22,
-    fontWeight: '500',
-  },
-  chevron: {
-    fontSize: 28,
-    fontWeight: '300',
-  }
-});

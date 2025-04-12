@@ -1,25 +1,24 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { TamaguiProvider, YStack, Text } from 'tamagui';
+import config from './tamagui.config';
+import { useColorScheme } from 'react-native';
 
 export default function App() {
+  const colorScheme = useColorScheme();
+  
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Arman.fit</Text>
-      <StatusBar style="auto" />
-    </View>
+    <TamaguiProvider config={config} defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}>
+      <YStack 
+        flex={1} 
+        backgroundColor="$background" 
+        alignItems="center" 
+        justifyContent="center"
+      >
+        <Text fontSize={30} fontWeight="bold" color="$color">
+          Arman.fit
+        </Text>
+        <StatusBar style="auto" />
+      </YStack>
+    </TamaguiProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#121212',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-});

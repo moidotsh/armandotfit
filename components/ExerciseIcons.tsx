@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path, Circle, Line, Rect } from 'react-native-svg';
 
 interface IconProps {
   size?: number;
@@ -9,7 +9,7 @@ interface IconProps {
 
 export const ChestPressIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
   return (
-    <View style={styles.iconContainer}>
+    <View style={[styles.iconContainer, { width: size * 2, height: size * 2 }]}>
       <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
         <Circle cx="8" cy="7" r="2.5" stroke={color} strokeWidth="1.5" />
         <Path d="M8 11C5.5 11 4 13 4 15" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
@@ -23,7 +23,7 @@ export const ChestPressIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
 
 export const LegPressIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
   return (
-    <View style={styles.iconContainer}>
+    <View style={[styles.iconContainer, { width: size * 2, height: size * 2 }]}>
       <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
         <Circle cx="8" cy="6" r="2.5" stroke={color} strokeWidth="1.5" />
         <Path d="M8 8.5V12L14 18" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
@@ -35,7 +35,7 @@ export const LegPressIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
 
 export const RowIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
   return (
-    <View style={styles.iconContainer}>
+    <View style={[styles.iconContainer, { width: size * 2, height: size * 2 }]}>
       <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
         <Circle cx="8" cy="7" r="2.5" stroke={color} strokeWidth="1.5" />
         <Path d="M8 10L8 15" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
@@ -49,7 +49,7 @@ export const RowIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
 
 export const LateralRaiseIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
   return (
-    <View style={styles.iconContainer}>
+    <View style={[styles.iconContainer, { width: size * 2, height: size * 2 }]}>
       <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
         <Circle cx="12" cy="7" r="2.5" stroke={color} strokeWidth="1.5" />
         <Path d="M12 10V15" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
@@ -62,7 +62,7 @@ export const LateralRaiseIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) =>
 
 export const BicepCurlIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
   return (
-    <View style={styles.iconContainer}>
+    <View style={[styles.iconContainer, { width: size * 2, height: size * 2 }]}>
       <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
         <Circle cx="12" cy="6" r="2.5" stroke={color} strokeWidth="1.5" />
         <Path d="M12 9V14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
@@ -75,7 +75,7 @@ export const BicepCurlIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
 
 export const CalfRaiseIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
   return (
-    <View style={styles.iconContainer}>
+    <View style={[styles.iconContainer, { width: size * 2, height: size * 2 }]}>
       <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
         <Circle cx="12" cy="6" r="2.5" stroke={color} strokeWidth="1.5" />
         <Path d="M12 9V13" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
@@ -87,11 +87,25 @@ export const CalfRaiseIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
   );
 };
 
+export const AbsIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
+  return (
+    <View style={[styles.iconContainer, { width: size * 2, height: size * 2 }]}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Circle cx="12" cy="6" r="2.5" stroke={color} strokeWidth="1.5" />
+        <Path d="M12 9V12" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+        <Path d="M10 14H14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+        <Path d="M9 17H15" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+        <Path d="M10 20H14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      </Svg>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   iconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 12,
     backgroundColor: '#333333',
     justifyContent: 'center',
     alignItems: 'center',
