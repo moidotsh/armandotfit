@@ -1,12 +1,14 @@
+// File location: ./tsconfig.json
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
-    }
+      "@/*": ["./*"]
+    },
+    "jsx": "react-jsx",
+    "types": ["bun-types"]
   },
   "include": [
     "**/*.ts",

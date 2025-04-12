@@ -1,0 +1,16 @@
+[install]
+# Use exact versions
+exact = true
+
+[install.cache]
+# Enable the global cache
+enabled = true
+
+# JavaScript runtime options
+[runtime]
+env = { NODE_ENV = "development" }
+
+# Bun install options
+[install]
+production = false
+optional = true
