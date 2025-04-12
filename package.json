@@ -1,5 +1,5 @@
 {
-  "name": "arman-fit",
+  "name": "armandotfit",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -38,10 +38,11 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.9",
-    "react-native-gesture-handler": "2.25.0",
-    "react-native-reanimated": "3.17.3",
-    "react-native-safe-area-context": "5.3.0",
-    "react-native-screens": "4.10.0",
+    "react-native-gesture-handler": "~2.20.2",
+    "react-native-reanimated": "~3.16.1",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0",
+    "react-native-svg": "15.8.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
     "tamagui": "1.125.34"
@@ -50,6 +51,7 @@
     "@babel/core": "^7.25.2",
     "@types/jest": "^29.5.12",
     "@types/react": "~18.3.12",
+    "@types/react-native": "^0.72.8",
     "@types/react-test-renderer": "^18.3.0",
     "babel-plugin-transform-inline-environment-variables": "0.4.4",
     "bun-types": "1.2.9",
