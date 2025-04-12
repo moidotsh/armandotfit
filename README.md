@@ -1,50 +1,67 @@
-# Welcome to your Expo app 👋
+# Arman.fit
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native application for managing workout splits, built with Expo, Tamagui, and Bun.
 
-## Get started
+## Setup Instructions
 
-1. Install dependencies
+### Prerequisites
+- [Bun](https://bun.sh/) installed (`curl -fsSL https://bun.sh/install | bash`)
+- [Expo Go](https://expo.dev/client) app on your mobile device (or iOS/Android simulator)
 
-   ```bash
-   npm install
-   ```
+### Installation
 
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+1. Clone this repository
 ```bash
-npm run reset-project
+git clone https://github.com/yourusername/fitness-splits-app.git
+cd fitness-splits-app
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Install dependencies
+```bash
+bun install
+```
 
-## Learn more
+3. Start the development server
+```bash
+bun start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+4. Use the Expo Go app on your mobile device to scan the QR code or run the app in a simulator/emulator.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Project Structure
 
-## Join the community
+- `App.tsx` - The main TypeScript application component using Tamagui
+- `tamagui.config.ts` - TypeScript configuration for Tamagui
+- `babel.config.js` - Babel configuration for the project
+- `package.json` - Project dependencies and scripts
+- `tsconfig.json` - TypeScript configuration
+- `bunfig.toml` - Bun configuration
+- `expo-env.d.ts` - Type declarations for Bun and Expo
 
-Join our community of developers creating universal apps.
+## Features
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Workout split management
+- Support for 1-a-day and 2-a-day splits
+- Exercise categorization by muscle groups
+- Progress tracking
+- Clean, responsive UI with Tamagui
+
+## Technology Stack
+
+- **Expo**: Framework for React Native development
+- **React Native**: Mobile app development framework
+- **Tamagui**: UI component library and styling solution
+- **TypeScript**: Static typing for improved developer experience
+- **Bun**: Fast JavaScript runtime and package manager
+
+## Development
+
+When making changes:
+
+- Run the app with `bun start`
+- Test on both iOS and Android to ensure cross-platform compatibility
+- Make sure to follow the TypeScript types for type safety
+
+## License
+
+MIT
