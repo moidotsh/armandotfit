@@ -1,4 +1,4 @@
-// Fixed app/index.tsx with better responsive layout
+// Updated app/index.tsx with Day Selector and fixed toggle contrast
 
 import React, { useState, useRef, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
@@ -11,11 +11,13 @@ import {
   Card, 
   H1,
   Button,
+  Separator
 } from 'tamagui';
 import { format } from 'date-fns';
 import { BarChart2, TrendingUp, Clock, AlertCircle } from '@tamagui/lucide-icons';
 import { useAppTheme } from '../components/ThemeProvider';
 import { SplitType } from '../constants/theme';
+import { DaySelector } from '../components/DaySelector';
 
 export default function HomeScreen() {
   const { colors, fontSize, spacing, borderRadius, shadows, isDark } = useAppTheme();
@@ -27,9 +29,25 @@ export default function HomeScreen() {
   // State for selected split type - null by default (no selection)
   const [splitType, setSplitType] = useState<SplitType | null>(null);
   
+  // State for selected day - null by default (no selection)
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  
   // State for showing the alert message
   const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  // FIXED: Calculate proper pill colors based on theme
+  const getToggleStyles = () => {
+    return {
+      backgroundColor: isDark ? "#333333" : "#DDDDDD", // Darker in dark mode, lighter in light mode
+      pillColor: isDark ? "#FFFFFF" : "#FFFFFF", // Always white pill
+      selectedTextColor: "#000000", // Always black text on white pill
+      unselectedTextColor: isDark ? "#FFFFFF" : "#333333" // White on dark, dark on light
+    };
+  };
+
+  const toggleStyles = getToggleStyles();
   
   // Handle alert animation
   useEffect(() => {
@@ -51,24 +69,39 @@ export default function HomeScreen() {
   }, [showAlert, fadeAnim]);
   
   const navigateToWorkout = () => {
-    if (splitType) {
-      router.push(`/workout-detail?type=${splitType}&day=1`);
+    if (splitType && selectedDay) {
+      router.push(`/workout-detail?type=${splitType}&day=${selectedDay}`);
     }
   };
   
   const handleStartWorkoutPress = () => {
-    if (!splitType) {
-      // Show inline alert
+    if (!splitType && !selectedDay) {
+      setAlertMessage('Please select a workout type and day');
+      setShowAlert(true);
+    } else if (!splitType) {
+      setAlertMessage('Please select a workout type');
+      setShowAlert(true);
+    } else if (!selectedDay) {
+      setAlertMessage('Please select a workout day');
       setShowAlert(true);
     } else {
       navigateToWorkout();
     }
   };
 
+  const handleSplitTypeChange = (type: SplitType) => {
+    setSplitType(type);
+    // Keep the selected day if it's valid (1-4)
+    setSelectedDay(prevDay => (prevDay && prevDay >= 1 && prevDay <= 4) ? prevDay : null);
+  };
+
   const navigateToSection = (section: string) => {
     console.log(`Navigate to ${section}`);
     // Future implementation
   };
+
+  // Check if we're ready to start the workout
+  const isStartEnabled = splitType !== null && selectedDay !== null;
 
   return (
     <YStack 
@@ -99,7 +132,7 @@ export default function HomeScreen() {
         >
           <AlertCircle color="white" style={{ marginRight: 10 }} />
           <Text color="white" fontWeight="bold">
-            Please select a workout type
+            {alertMessage}
           </Text>
         </Animated.View>
       )}
@@ -114,86 +147,99 @@ export default function HomeScreen() {
         <Text color={colors.textMuted} fontSize={fontSize.medium}>{formattedDate}</Text>
       </YStack>
       
-      {/* FIXED: Align "Full Body:" with toggle on narrow screens */}
-      <YStack 
+      {/* Workout Configuration Card */}
+      <Card
         marginTop={spacing.xlarge}
         marginBottom={spacing.large}
-        width="100%"
+        backgroundColor={colors.cardAlt}
+        padding={spacing.medium}
+        borderRadius={borderRadius.medium}
       >
-        <Text 
-          color={colors.text} 
-          fontSize={fontSize.large}
-          fontWeight="600" 
-          marginBottom={spacing.small}
-        >
-          Full Body:
-        </Text>
-        
-        {/* FIXED: Toggle pill alignment and width for narrow screens */}
-        <XStack 
-          height={50} 
-          position="relative"
-          maxWidth="100%"
-          overflow="hidden"
-        >
-          {/* Dark background container */}
-          <XStack
-            position="absolute"
-            left={0}
-            right={0}
-            top={0}
-            bottom={0}
-            backgroundColor={colors.toggleBackground}
-            borderRadius={borderRadius.pill}
-          />
+        {/* Split Type Selection */}
+        <YStack width="100%" space={spacing.medium}>
+          <Text 
+            color={colors.text} 
+            fontSize={fontSize.large}
+            fontWeight="600"
+          >
+            Full Body:
+          </Text>
           
-          {/* White pill for selected option - positioned based on selection */}
-          {splitType && (
+          {/* Split Type Toggle */}
+          <XStack 
+            height={50} 
+            position="relative"
+            maxWidth="100%"
+            overflow="hidden"
+          >
+            {/* Dark background container */}
             <XStack
               position="absolute"
+              left={0}
+              right={0}
+              top={0}
+              bottom={0}
+              backgroundColor={toggleStyles.backgroundColor}
+              borderRadius={borderRadius.pill}
+            />
+            
+            {/* White pill for selected option */}
+            {splitType && (
+              <XStack
+                position="absolute"
+                width="50%"
+                height={50}
+                borderRadius={borderRadius.pill}
+                backgroundColor={toggleStyles.pillColor}
+                left={splitType === 'oneADay' ? 0 : "50%"}
+                top={0}
+              />
+            )}
+            
+            {/* Toggle Buttons */}
+            <Button
+              position="absolute"
+              left={0}
+              top={0}
               width="50%"
               height={50}
-              borderRadius={borderRadius.pill}
-              backgroundColor={colors.pill}
-              left={splitType === 'oneADay' ? 0 : "50%"}
+              backgroundColor="transparent"
+              color={splitType === 'oneADay' ? toggleStyles.selectedTextColor : toggleStyles.unselectedTextColor}
+              onPress={() => handleSplitTypeChange('oneADay')}
+              zIndex={1}
+            >
+              Single
+            </Button>
+            
+            <Button
+              position="absolute"
+              left="50%"
               top={0}
-            />
-          )}
+              width="50%"
+              height={50}
+              backgroundColor="transparent"
+              color={splitType === 'twoADay' ? toggleStyles.selectedTextColor : toggleStyles.unselectedTextColor}
+              onPress={() => handleSplitTypeChange('twoADay')}
+              zIndex={1}
+            >
+              Dual
+            </Button>
+          </XStack>
           
-          {/* FIXED: Text contrast - always black text on white background, white text on dark */}
-          <Button
-            position="absolute"
-            left={0}
-            top={0}
-            width="50%"
-            height={50}
-            backgroundColor="transparent"
-            color={splitType === 'oneADay' ? '#000000' : '#FFFFFF'}
-            onPress={() => setSplitType('oneADay')}
-            zIndex={1}
-          >
-            Single
-          </Button>
+          <Separator marginVertical={spacing.medium} />
           
-          <Button
-            position="absolute"
-            left="50%"
-            top={0}
-            width="50%"
-            height={50}
-            backgroundColor="transparent"
-            color={splitType === 'twoADay' ? '#000000' : '#FFFFFF'}
-            onPress={() => setSplitType('twoADay')}
-            zIndex={1}
-          >
-            Dual
-          </Button>
-        </XStack>
-      </YStack>
+          {/* Day Selection */}
+          <DaySelector
+            selectedDay={selectedDay}
+            onDaySelect={setSelectedDay}
+          />
+        </YStack>
+      </Card>
       
+      {/* Start Workout Button */}
       <Button
         size={isNarrow ? "$5" : "$6"}
-        backgroundColor={splitType ? colors.buttonBackground : colors.buttonBackgroundDisabled}
+        backgroundColor={isStartEnabled ? colors.buttonBackground : colors.buttonBackgroundDisabled}
         color="white"
         fontWeight="bold"
         fontSize={isNarrow ? fontSize.large : fontSize.xlarge}
@@ -201,12 +247,13 @@ export default function HomeScreen() {
         marginBottom={spacing.xlarge}
         borderRadius={borderRadius.large}
         onPress={handleStartWorkoutPress}
-        opacity={splitType ? 1 : 0.7}
+        opacity={isStartEnabled ? 1 : 0.7}
+        disabled={!isStartEnabled}
       >
         Start Workout
       </Button>
       
-      {/* Feature cards - more compact on narrow screens */}
+      {/* Feature cards */}
       <YStack space={isNarrow ? "$3" : "$4"} flex={1}>
         <Card
           backgroundColor={colors.cardAlt}
