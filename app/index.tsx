@@ -1,9 +1,9 @@
-// Final app/index.tsx with fixed button height and version display
+// Updated app/index.tsx with Feature Components
 
 import React, { useState, useRef, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
-import { Animated, useWindowDimensions, Platform } from 'react-native';
+import { Animated, useWindowDimensions } from 'react-native';
 import { 
   YStack, 
   XStack,
@@ -14,13 +14,14 @@ import {
   Separator
 } from 'tamagui';
 import { format } from 'date-fns';
-import { BarChart2, TrendingUp, Clock, AlertCircle } from '@tamagui/lucide-icons';
+import { BarChart2, TrendingUp, Clock, AlertCircle, History } from '@tamagui/lucide-icons';
 import { useAppTheme } from '../components/ThemeProvider';
 import { SplitType } from '../constants/theme';
 import { DaySelector } from '../components/DaySelector';
+import { FeatureSection } from '../components/FeatureCard';
 
 // App version displayed in the UI
-const APP_VERSION = "v1.0.2";
+const APP_VERSION = "v1.0.3";
 
 export default function HomeScreen() {
   const { colors, fontSize, spacing, borderRadius, shadows, isDark } = useAppTheme();
@@ -107,9 +108,26 @@ export default function HomeScreen() {
   const isStartEnabled = splitType !== null && selectedDay !== null;
 
   // Button height stays consistent
-  // const buttonHeight = isNarrow ? 60 : 70;
   const buttonHeight = 70;
 
+  // Feature data for cards
+  const features = [
+    {
+      icon: <BarChart2 size={isNarrow ? 25 : 30} color={colors.text} />,
+      title: "Analytics",
+      onPress: () => navigateToSection('analytics')
+    },
+    {
+      icon: <TrendingUp size={isNarrow ? 25 : 30} color={colors.text} />,
+      title: "Progress",
+      onPress: () => navigateToSection('progress')
+    },
+    {
+      icon: <Clock size={isNarrow ? 25 : 30} color={colors.text} />,
+      title: "History",
+      onPress: () => navigateToSection('history')
+    }
+  ];
 
   return (
     <YStack 
@@ -305,107 +323,8 @@ export default function HomeScreen() {
         Start Workout
       </Button>
       
-      {/* Feature cards */}
-      <YStack space={isNarrow ? "$3" : "$4"} flex={1}>
-        <Card
-          backgroundColor={colors.cardAlt}
-          borderRadius={borderRadius.medium}
-          padding={isNarrow ? spacing.medium : spacing.large}
-          height={isNarrow ? 90 : 110}
-          pressStyle={{ scale: 0.98, opacity: 0.9 }}
-          onPress={() => navigateToSection('analytics')}
-          // Prevent focus styling on mobile web
-          focusStyle={{}}
-          style={{
-            WebkitTapHighlightColor: 'transparent',
-            WebkitTouchCallout: 'none',
-            userSelect: 'none',
-            outline: 'none'
-          }}
-        >
-          <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
-            <YStack
-              width={isNarrow ? 50 : 60}
-              height={isNarrow ? 50 : 60}
-              borderRadius={isNarrow ? 25 : 30}
-              backgroundColor="transparent" // Remove background
-              alignItems="center"
-              justifyContent="center"
-            >
-              <BarChart2 size={isNarrow ? 25 : 30} color={colors.text} />
-            </YStack>
-            <Text fontSize={isNarrow ? fontSize.large : fontSize.xlarge} fontWeight="500" color={colors.text}>
-              Analytics
-            </Text>
-          </XStack>
-        </Card>
-        
-        <Card
-          backgroundColor={colors.cardAlt}
-          borderRadius={borderRadius.medium}
-          padding={isNarrow ? spacing.medium : spacing.large}
-          height={isNarrow ? 90 : 110}
-          pressStyle={{ scale: 0.98, opacity: 0.9 }}
-          onPress={() => navigateToSection('progress')}
-          // Prevent focus styling on mobile web
-          focusStyle={{}}
-          style={{
-            WebkitTapHighlightColor: 'transparent',
-            WebkitTouchCallout: 'none',
-            userSelect: 'none',
-            outline: 'none'
-          }}
-        >
-          <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
-            <YStack
-              width={isNarrow ? 50 : 60}
-              height={isNarrow ? 50 : 60}
-              borderRadius={isNarrow ? 25 : 30}
-              backgroundColor="transparent" // Remove background
-              alignItems="center"
-              justifyContent="center"
-            >
-              <TrendingUp size={isNarrow ? 25 : 30} color={colors.text} />
-            </YStack>
-            <Text fontSize={isNarrow ? fontSize.large : fontSize.xlarge} fontWeight="500" color={colors.text}>
-              Progress
-            </Text>
-          </XStack>
-        </Card>
-        
-        <Card
-          backgroundColor={colors.cardAlt}
-          borderRadius={borderRadius.medium}
-          padding={isNarrow ? spacing.medium : spacing.large}
-          height={isNarrow ? 90 : 110}
-          pressStyle={{ scale: 0.98, opacity: 0.9 }}
-          onPress={() => navigateToSection('history')}
-          // Prevent focus styling on mobile web
-          focusStyle={{}}
-          style={{
-            WebkitTapHighlightColor: 'transparent',
-            WebkitTouchCallout: 'none',
-            userSelect: 'none',
-            outline: 'none'
-          }}
-        >
-          <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
-            <YStack
-              width={isNarrow ? 50 : 60}
-              height={isNarrow ? 50 : 60}
-              borderRadius={isNarrow ? 25 : 30}
-              backgroundColor="transparent" // Remove background
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Clock size={isNarrow ? 25 : 30} color={colors.text} />
-            </YStack>
-            <Text fontSize={isNarrow ? fontSize.large : fontSize.xlarge} fontWeight="500" color={colors.text}>
-              History
-            </Text>
-          </XStack>
-        </Card>
-      </YStack>
+      {/* Feature cards using the new component */}
+      <FeatureSection features={features} />
     </YStack>
   );
 }
