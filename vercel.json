@@ -1,13 +1,13 @@
 {
     "version": 2,
-    "buildCommand": "bun run build",
+    "buildCommand": "bun run vercel-build",
     "installCommand": "bun install",
     "builds": [
       {
         "src": "package.json",
         "use": "@vercel/static-build",
         "config": {
-          "distDir": "web-build"
+          "distDir": "dist"
         }
       }
     ],
