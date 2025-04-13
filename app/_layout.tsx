@@ -5,6 +5,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { TamaguiProvider } from 'tamagui';
 import { useColorScheme } from 'react-native';
 import config from '../tamagui.config';
+import { ThemeProvider } from '../components/ThemeProvider';
+import { theme } from '../constants/theme';
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -25,31 +27,38 @@ export default function RootLayout() {
     return null;
   }
 
+  // Get the background color based on the color scheme
+  const backgroundColor = colorScheme === 'dark' 
+    ? theme.colors.dark.background 
+    : theme.colors.light.background;
+
   return (
     <TamaguiProvider config={config} defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animation: 'fade',
-          contentStyle: {
-            backgroundColor: colorScheme === 'dark' ? '#121212' : '#F5F5F5',
-          },
-        }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen 
-          name="workout-detail" 
-          options={{
-            animation: 'slide_from_right',
+      <ThemeProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            animation: 'fade',
+            contentStyle: {
+              backgroundColor,
+            },
           }}
-        />
-        <Stack.Screen 
-          name="split-selection" 
-          options={{
-            animation: 'slide_from_right',
-          }}
-        />
-      </Stack>
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen 
+            name="workout-detail" 
+            options={{
+              animation: 'slide_from_right',
+            }}
+          />
+          <Stack.Screen 
+            name="split-selection" 
+            options={{
+              animation: 'slide_from_right',
+            }}
+          />
+        </Stack>
+      </ThemeProvider>
     </TamaguiProvider>
   );
 }

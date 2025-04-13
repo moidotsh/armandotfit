@@ -1,4 +1,4 @@
-// Updated app_workout-detail.tsx
+// Updated app/workout-detail.tsx using centralized theming
 
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
@@ -6,36 +6,19 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useWindowDimensions } from 'react-native';
 import { 
   YStack, 
-  XStack,
-  Text, 
-  ScrollView,
   Button,
-  useTheme
+  Text,
+  XStack,
+  ScrollView
 } from 'tamagui';
 import { ChevronLeft } from '@tamagui/lucide-icons';
-import { workoutData, Exercise, OneADayWorkout, TwoADayWorkout } from '../data/workoutData';
-import { 
-  ChestPressIcon, 
-  LegPressIcon, 
-  RowIcon, 
-  LateralRaiseIcon, 
-  BicepCurlIcon, 
-  CalfRaiseIcon,
-  AbsIcon
-} from '../components/ExerciseIcons';
-import { ExerciseCard, getResponsiveExerciseIcon, getResponsiveExerciseComponent } from '../components/ExerciseCard';
-
-// Add type guard functions
-const isOneADayWorkout = (workout: OneADayWorkout | TwoADayWorkout): workout is OneADayWorkout => {
-  return 'exercises' in workout;
-};
-
-const isTwoADayWorkout = (workout: OneADayWorkout | TwoADayWorkout): workout is TwoADayWorkout => {
-  return 'amExercises' in workout && 'pmExercises' in workout;
-};
+import { workoutData } from '../data/workoutData';
+import { getResponsiveExerciseComponent } from '../components/ExerciseCard';
+import { useAppTheme } from '../components/ThemeProvider';
 
 export default function WorkoutDetailScreen() {
-  const theme = useTheme();
+  // Use our centralized theming system
+  const { colors, fontSize, spacing, isDark } = useAppTheme();
   const { width } = useWindowDimensions();
   const isNarrow = width < 350;
   
@@ -49,42 +32,38 @@ export default function WorkoutDetailScreen() {
   // Get the workout data based on type and day
   const workoutType = type === 'oneADay' ? workoutData.oneADay : workoutData.twoADay;
   const workout = workoutType.find(w => w.day === dayNumber) || workoutType[0];
-  
-  const isDark = theme.name?.get() == 'dark';
-  const textColor = '#FFFFFF'; // White text for dark cards
-  const subtitleColor = '#FF9500';
-  const cardColor = '#222222'; // Dark cards 
-  const arrowColor = '#555555'; // Dark arrow
-  
-  // Function to get the appropriate icon based on exercise name
-  const getExerciseIcon = (name: string, color: string, size: number = 30) => {
-    return getResponsiveExerciseIcon(name, color, size);
-  };
 
   return (
-    <YStack flex={1} backgroundColor="$background" paddingTop={isNarrow ? 50 : 60}>
+    <YStack 
+      flex={1} 
+      backgroundColor={colors.background} 
+      paddingTop={isNarrow ? spacing.xlarge : spacing.xxlarge}
+    >
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
-      <YStack paddingHorizontal={isNarrow ? 12 : 20} paddingBottom={isNarrow ? 12 : 20}>
+      <YStack 
+        paddingHorizontal={isNarrow ? spacing.medium : spacing.large} 
+        paddingBottom={isNarrow ? spacing.medium : spacing.large}
+      >
         <Button 
           size="$3" 
           circular 
           icon={<ChevronLeft size="$1" />} 
           alignSelf="flex-start" 
-          marginBottom={isNarrow ? 12 : 16}
+          marginBottom={isNarrow ? spacing.medium : spacing.large}
           onPress={() => router.back()}
         />
         <Text
-          color={subtitleColor}
-          fontSize={isNarrow ? 20 : 24}
+          color={colors.textSecondary}
+          fontSize={isNarrow ? fontSize.large : fontSize.xlarge}
           fontWeight="700"
-          marginBottom={isNarrow ? 4 : 8}
+          marginBottom={isNarrow ? spacing.xs : spacing.small}
         >
           TODAY'S
         </Text>
         <Text
-          color={textColor}
-          fontSize={isNarrow ? 30 : 40}
+          color={colors.text}
+          fontSize={isNarrow ? fontSize.xlarge : fontSize.xxlarge}
           fontWeight="700"
           numberOfLines={2} // Allow wrapping for long titles
         >
@@ -95,19 +74,12 @@ export default function WorkoutDetailScreen() {
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ 
-          paddingHorizontal: isNarrow ? 12 : 16, 
-          paddingBottom: 30 
+          paddingHorizontal: isNarrow ? spacing.medium : spacing.large, 
+          paddingBottom: spacing.xlarge
         }}
       >
         <YStack>
-          {getResponsiveExerciseComponent(
-            workout, 
-            getExerciseIcon, 
-            textColor, 
-            arrowColor, 
-            cardColor, 
-            isNarrow
-          )}
+          {getResponsiveExerciseComponent(workout, isNarrow)}
         </YStack>
       </ScrollView>
     </YStack>
