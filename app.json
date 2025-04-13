@@ -20,7 +20,10 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "buildMode": "production",
+      "javascriptEnabled": true,
+      "experimentalDeepLinking": true
     },
     "plugins": [
       "expo-router",
@@ -35,7 +38,8 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "tsconfigPaths": true
     }
   }
 }

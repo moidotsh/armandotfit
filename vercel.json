@@ -2,19 +2,35 @@
     "version": 2,
     "buildCommand": "bun run vercel-build",
     "installCommand": "bun install",
+    "framework": "expo",
     "builds": [
       {
         "src": "package.json",
         "use": "@vercel/static-build",
         "config": {
-          "distDir": "dist"
+          "distDir": "dist",
+          "includeFiles": ["dist/**"]
         }
       }
     ],
     "routes": [
       {
+        "src": "/(.*\\.(js|json|css|ico|png|jpg|jpeg|svg|webp|webm|mp4|wav|mp3|pdf|xml|txt|ttf|woff|woff2))",
+        "dest": "/$1"
+      },
+      {
         "src": "/(.*)",
         "dest": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/(.*)",
+        "headers": [
+          { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+          { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" },
+          { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" }
+        ]
       }
     ]
   }
