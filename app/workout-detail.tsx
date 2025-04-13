@@ -1,4 +1,4 @@
-// Updated app/workout-detail.tsx using centralized theming
+// Updated app/workout-detail.tsx with scrollable header and date format
 
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
@@ -15,6 +15,7 @@ import { ChevronLeft } from '@tamagui/lucide-icons';
 import { workoutData } from '../data/workoutData';
 import { getResponsiveExerciseComponent } from '../components/ExerciseCard';
 import { useAppTheme } from '../components/ThemeProvider';
+import { format } from 'date-fns';
 
 export default function WorkoutDetailScreen() {
   // Use our centralized theming system
@@ -32,12 +33,19 @@ export default function WorkoutDetailScreen() {
   // Get the workout data based on type and day
   const workoutType = type === 'oneADay' ? workoutData.oneADay : workoutData.twoADay;
   const workout = workoutType.find(w => w.day === dayNumber) || workoutType[0];
+  
+  // Format today's date
+  const today = new Date();
+  const formattedDate = format(today, 'MMMM d, yyyy');
 
   return (
-    <YStack 
-      flex={1} 
-      backgroundColor={colors.background} 
-      paddingTop={isNarrow ? spacing.xlarge : spacing.xxlarge}
+    <ScrollView 
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={{ 
+        paddingTop: isNarrow ? spacing.xlarge : spacing.xxlarge,
+        paddingBottom: spacing.xlarge
+      }}
+      showsVerticalScrollIndicator={false}
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
@@ -45,43 +53,45 @@ export default function WorkoutDetailScreen() {
         paddingHorizontal={isNarrow ? spacing.medium : spacing.large} 
         paddingBottom={isNarrow ? spacing.medium : spacing.large}
       >
-        <Button 
-          size="$3" 
-          circular 
-          icon={<ChevronLeft size="$1" />} 
-          alignSelf="flex-start" 
-          marginBottom={isNarrow ? spacing.medium : spacing.large}
-          onPress={() => router.back()}
-        />
-        <Text
-          color={colors.textSecondary}
-          fontSize={isNarrow ? fontSize.large : fontSize.xlarge}
-          fontWeight="700"
-          marginBottom={isNarrow ? spacing.xs : spacing.small}
-        >
-          TODAY'S
-        </Text>
+        <XStack alignItems="center" space={spacing.small} marginBottom={spacing.medium}>
+          <Button 
+            size="$3" 
+            circular 
+            icon={<ChevronLeft size="$1" />} 
+            onPress={() => router.back()}
+            focusStyle={{}}
+            style={{
+              WebkitTapHighlightColor: 'transparent',
+              WebkitTouchCallout: 'none',
+              userSelect: 'none',
+              outline: 'none'
+            }}
+          />
+          <Text
+            color={colors.textSecondary}
+            fontSize={isNarrow ? fontSize.medium : fontSize.large}
+            fontWeight="500"
+          >
+            {formattedDate}
+          </Text>
+        </XStack>
+        
         <Text
           color={colors.text}
           fontSize={isNarrow ? fontSize.xlarge : fontSize.xxlarge}
           fontWeight="700"
           numberOfLines={2} // Allow wrapping for long titles
+          marginBottom={spacing.large}
         >
           {workout.title}
         </Text>
       </YStack>
       
-      <ScrollView 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ 
-          paddingHorizontal: isNarrow ? spacing.medium : spacing.large, 
-          paddingBottom: spacing.xlarge
-        }}
+      <YStack 
+        paddingHorizontal={isNarrow ? spacing.medium : spacing.large}
       >
-        <YStack>
-          {getResponsiveExerciseComponent(workout, isNarrow)}
-        </YStack>
-      </ScrollView>
-    </YStack>
+        {getResponsiveExerciseComponent(workout, isNarrow)}
+      </YStack>
+    </ScrollView>
   );
 }
