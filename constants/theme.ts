@@ -16,7 +16,7 @@ interface WorkoutSplits {
   amPm: WorkoutSplitInfo;
 }
 
-// Workout split type definitions
+// Workout split type definitions.
 export const WORKOUT_SPLITS: WorkoutSplits = {
   fullBody: {
     id: 'oneADay',
