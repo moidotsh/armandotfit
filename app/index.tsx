@@ -1,7 +1,9 @@
+// app_index.tsx - Updated for better responsiveness
+
 import React, { useState, useRef, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
-import { Animated } from 'react-native';
+import { Animated, useWindowDimensions } from 'react-native';
 import { 
   YStack, 
   XStack,
@@ -19,9 +21,11 @@ export type SplitType = 'oneADay' | 'twoADay';
 
 export default function HomeScreen() {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
   const today = new Date();
   const formattedDate = format(today, 'MMMM d, yyyy');
   const isDark = theme.name?.get() === 'dark';
+  const isNarrow = width < 350; // Threshold for narrow screens
   
   // State for selected split type - null by default (no selection)
   const [splitType, setSplitType] = useState<SplitType | null>(null);
@@ -70,7 +74,12 @@ export default function HomeScreen() {
   };
 
   return (
-    <YStack flex={1} backgroundColor="$background" paddingTop={60} paddingHorizontal={20}>
+    <YStack 
+      flex={1} 
+      backgroundColor="$background" 
+      paddingTop={60} 
+      paddingHorizontal={isNarrow ? 12 : 20}
+    >
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
       {/* Inline alert message */}
@@ -79,8 +88,8 @@ export default function HomeScreen() {
           style={{
             position: 'absolute',
             top: 100,
-            left: 20,
-            right: 20,
+            left: isNarrow ? 12 : 20,
+            right: isNarrow ? 12 : 20,
             backgroundColor: '#FF5733',
             padding: 15,
             borderRadius: 10,
@@ -97,24 +106,44 @@ export default function HomeScreen() {
         >
           <AlertCircle color="white" style={{ marginRight: 10 }} />
           <Text color="white" fontWeight="bold">
-            Please select a workout type first
+            Please select a workout type
           </Text>
         </Animated.View>
       )}
       
       <YStack space="$2" paddingBottom={10}>
-        <H1 color="$color" fontSize={50}>Hi Arman!</H1>
-        <Text color="$gray10" fontSize={20}>{formattedDate}</Text>
+        <H1 
+          color="$color" 
+          fontSize={isNarrow ? 40 : 50}
+        >
+          Hi Arman!
+        </H1>
+        <Text color="$gray10" fontSize={18}>{formattedDate}</Text>
       </YStack>
       
-      {/* Toggle switch for workout type */}
-      <XStack marginTop={30} marginBottom={20} alignItems="center">
-        <Text color="$color" fontSize={28} fontWeight="600" marginRight={20}>
+      {/* Responsive toggle switch for workout type */}
+      <XStack 
+        marginTop={30} 
+        marginBottom={20} 
+        alignItems="center"
+        flexWrap={isNarrow ? "wrap" : "nowrap"}
+      >
+        <Text 
+          color="$color" 
+          fontSize={isNarrow ? 22 : 28} 
+          fontWeight="600" 
+          marginRight={isNarrow ? 10 : 20}
+          marginBottom={isNarrow ? 10 : 0}
+        >
           Full Body:
         </Text>
         
-        {/* Custom toggle implementation */}
-        <XStack width={300} height={50} position="relative">
+        {/* Custom toggle implementation - more compact for narrow screens */}
+        <XStack 
+          width={isNarrow ? "100%" : 300} 
+          height={50} 
+          position="relative"
+        >
           {/* Dark background container */}
           <XStack
             position="absolute"
@@ -130,11 +159,11 @@ export default function HomeScreen() {
           {splitType && (
             <XStack
               position="absolute"
-              width={150}
+              width={isNarrow ? "50%" : 150}
               height={50}
               borderRadius={25}
               backgroundColor="#FFFFFF"
-              left={splitType === 'oneADay' ? 0 : 150}
+              left={splitType === 'oneADay' ? 0 : isNarrow ? "50%" : 150}
               top={0}
             />
           )}
@@ -144,39 +173,39 @@ export default function HomeScreen() {
             position="absolute"
             left={0}
             top={0}
-            width={150}
+            width={isNarrow ? "50%" : 150}
             height={50}
             backgroundColor="transparent"
             color={splitType === 'oneADay' ? '#000000' : '#FFFFFF'}
             onPress={() => setSplitType('oneADay')}
             zIndex={1}
           >
-            {splitType === 'oneADay' ? 'Single Session' : 'Single'}
+            {isNarrow ? 'Single' : splitType === 'oneADay' ? 'Single Session' : 'Single'}
           </Button>
           
           <Button
             position="absolute"
-            left={150}
+            left={isNarrow ? "50%" : 150}
             top={0}
-            width={150}
+            width={isNarrow ? "50%" : 150}
             height={50}
             backgroundColor="transparent"
             color={splitType === 'twoADay' ? '#000000' : '#FFFFFF'}
             onPress={() => setSplitType('twoADay')}
             zIndex={1}
           >
-            {splitType === 'twoADay' ? 'Dual Sessions' : 'Dual'}
+            {isNarrow ? 'Dual' : splitType === 'twoADay' ? 'Dual Sessions' : 'Dual'}
           </Button>
         </XStack>
       </XStack>
       
       <Button
-        size="$6"
+        size={isNarrow ? "$5" : "$6"}
         backgroundColor={splitType ? "#FF9500" : "rgba(255, 149, 0, 0.5)"}
         color="white"
         fontWeight="bold"
-        fontSize={24}
-        height={70}
+        fontSize={isNarrow ? 20 : 24}
+        height={isNarrow ? 60 : 70}
         marginBottom={30}
         borderRadius={20}
         onPress={handleStartWorkoutPress}
@@ -185,28 +214,28 @@ export default function HomeScreen() {
         Start Workout
       </Button>
       
-      {/* Feature cards */}
-      <YStack space="$4" flex={1}>
+      {/* Feature cards - more compact on narrow screens */}
+      <YStack space={isNarrow ? "$3" : "$4"} flex={1}>
         <Card
           backgroundColor="#252525"
           borderRadius={15}
-          padding={20}
-          height={110}
+          padding={isNarrow ? 16 : 20}
+          height={isNarrow ? 90 : 110}
           pressStyle={{ scale: 0.98, opacity: 0.9 }}
           onPress={() => navigateToSection('analytics')}
         >
-          <XStack alignItems="center" space="$4">
+          <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
             <YStack
-              width={60}
-              height={60}
-              borderRadius={30}
+              width={isNarrow ? 50 : 60}
+              height={isNarrow ? 50 : 60}
+              borderRadius={isNarrow ? 25 : 30}
               backgroundColor="#333333"
               alignItems="center"
               justifyContent="center"
             >
-              <BarChart2 size={30} color="white" />
+              <BarChart2 size={isNarrow ? 25 : 30} color="white" />
             </YStack>
-            <Text fontSize={30} fontWeight="500" color="#FFFFFF">
+            <Text fontSize={isNarrow ? 24 : 30} fontWeight="500" color="#FFFFFF">
               Analytics
             </Text>
           </XStack>
@@ -215,23 +244,23 @@ export default function HomeScreen() {
         <Card
           backgroundColor="#252525"
           borderRadius={15}
-          padding={20}
-          height={110}
+          padding={isNarrow ? 16 : 20}
+          height={isNarrow ? 90 : 110}
           pressStyle={{ scale: 0.98, opacity: 0.9 }}
           onPress={() => navigateToSection('progress')}
         >
-          <XStack alignItems="center" space="$4">
+          <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
             <YStack
-              width={60}
-              height={60}
-              borderRadius={30}
+              width={isNarrow ? 50 : 60}
+              height={isNarrow ? 50 : 60}
+              borderRadius={isNarrow ? 25 : 30}
               backgroundColor="#333333"
               alignItems="center"
               justifyContent="center"
             >
-              <TrendingUp size={30} color="white" />
+              <TrendingUp size={isNarrow ? 25 : 30} color="white" />
             </YStack>
-            <Text fontSize={30} fontWeight="500" color="#FFFFFF">
+            <Text fontSize={isNarrow ? 24 : 30} fontWeight="500" color="#FFFFFF">
               Progress
             </Text>
           </XStack>
@@ -240,23 +269,23 @@ export default function HomeScreen() {
         <Card
           backgroundColor="#252525"
           borderRadius={15}
-          padding={20}
-          height={110}
+          padding={isNarrow ? 16 : 20}
+          height={isNarrow ? 90 : 110}
           pressStyle={{ scale: 0.98, opacity: 0.9 }}
           onPress={() => navigateToSection('history')}
         >
-          <XStack alignItems="center" space="$4">
+          <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
             <YStack
-              width={60}
-              height={60}
-              borderRadius={30}
+              width={isNarrow ? 50 : 60}
+              height={isNarrow ? 50 : 60}
+              borderRadius={isNarrow ? 25 : 30}
               backgroundColor="#333333"
               alignItems="center"
               justifyContent="center"
             >
-              <Clock size={30} color="white" />
+              <Clock size={isNarrow ? 25 : 30} color="white" />
             </YStack>
-            <Text fontSize={30} fontWeight="500" color="#FFFFFF">
+            <Text fontSize={isNarrow ? 24 : 30} fontWeight="500" color="#FFFFFF">
               History
             </Text>
           </XStack>

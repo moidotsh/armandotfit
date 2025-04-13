@@ -1,5 +1,7 @@
+// Updated components_ExerciseIcons.tsx
+
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import Svg, { Path, Circle, Line, Rect } from 'react-native-svg';
 
 interface IconProps {
@@ -7,9 +9,28 @@ interface IconProps {
   color?: string;
 }
 
+// Base component with responsive container sizing
+const IconContainer = ({ size = 24, children }: { size: number, children: React.ReactNode }) => {
+  const containerSize = size * 1.6;
+  return (
+    <View 
+      style={[
+        styles.iconContainer, 
+        { 
+          width: containerSize, 
+          height: containerSize,
+          borderRadius: containerSize / 4
+        }
+      ]}
+    >
+      {children}
+    </View>
+  );
+};
+
 export const ChestPressIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
   return (
-    <View style={[styles.iconContainer, { width: size * 2, height: size * 2 }]}>
+    <IconContainer size={size}>
       <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
         <Circle cx="8" cy="7" r="2.5" stroke={color} strokeWidth="1.5" />
         <Path d="M8 11C5.5 11 4 13 4 15" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
@@ -17,7 +38,7 @@ export const ChestPressIcon = ({ size = 24, color = '#FFFFFF' }: IconProps) => {
         <Path d="M12 19L16 15" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
         <Path d="M8 11C9 11 9.5 11.5 10 12L18 12" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
       </Svg>
-    </View>
+    </IconContainer>
   );
 };
 
