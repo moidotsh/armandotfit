@@ -26,7 +26,7 @@ export const WORKOUT_SPLITS: WorkoutSplits = {
   amPm: {
     id: 'twoADay',
     name: 'AM/PM Split',
-    description: 'Two targeted sessions per day'
+    description: 'Two targeted sessions each day'
   }
 };
 
