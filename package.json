@@ -24,6 +24,8 @@
     "@tamagui/lucide-icons": "1.125.34",
     "@tamagui/shorthands": "1.125.34",
     "@tamagui/themes": "1.125.34",
+    "@tamagui/toast": "1.125.34",
+    "burnt": "0.13.0",
     "date-fns": "4.1.0",
     "expo": "~52.0.43",
     "expo-blur": "~14.0.3",
