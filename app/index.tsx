@@ -1,4 +1,4 @@
-// Updated app/index.tsx with Day Selector and fixed toggle contrast
+// Updated app/index.tsx with improved button and day selection styling
 
 import React, { useState, useRef, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
@@ -37,6 +37,9 @@ export default function HomeScreen() {
   const [alertMessage, setAlertMessage] = useState('');
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  // Animation for button
+  const buttonScaleAnim = useRef(new Animated.Value(1)).current;
+
   // FIXED: Calculate proper pill colors based on theme
   const getToggleStyles = () => {
     return {
@@ -67,6 +70,19 @@ export default function HomeScreen() {
       ]).start(() => setShowAlert(false));
     }
   }, [showAlert, fadeAnim]);
+  
+  // Animate button when selection state changes
+  useEffect(() => {
+    const isStartEnabled = splitType !== null && selectedDay !== null;
+    
+    // Animate the button scale based on enabled status
+    Animated.spring(buttonScaleAnim, {
+      toValue: isStartEnabled ? 1 : 0.95,
+      friction: 8,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  }, [splitType, selectedDay]);
   
   const navigateToWorkout = () => {
     if (splitType && selectedDay) {
@@ -109,7 +125,7 @@ export default function HomeScreen() {
       backgroundColor={colors.background} 
       paddingTop={60} 
       paddingHorizontal={isNarrow ? spacing.medium : spacing.large}
-      overflow="scroll"
+      overflow="scroll" // Enable scrolling
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
@@ -229,7 +245,7 @@ export default function HomeScreen() {
           
           <Separator marginVertical={spacing.medium} />
           
-          {/* Day Selection */}
+          {/* Day Selection - Using improved version */}
           <DaySelector
             selectedDay={selectedDay}
             onDaySelect={setSelectedDay}
@@ -237,22 +253,33 @@ export default function HomeScreen() {
         </YStack>
       </Card>
       
-      {/* Start Workout Button */}
-      <Button
-        size={isNarrow ? "$5" : "$6"}
-        backgroundColor={isStartEnabled ? colors.buttonBackground : colors.buttonBackgroundDisabled}
-        color="white"
-        fontWeight="bold"
-        fontSize={isNarrow ? fontSize.large : fontSize.xlarge}
-        height={isNarrow ? 60 : 70}
-        marginBottom={spacing.xlarge}
-        borderRadius={borderRadius.large}
-        onPress={handleStartWorkoutPress}
-        opacity={isStartEnabled ? 1 : 0.7}
-        disabled={!isStartEnabled}
+      {/* Start Workout Button - Now with animation */}
+      <Animated.View
+        style={{
+          width: '100%',
+          transform: [
+            { scale: buttonScaleAnim }
+          ],
+          marginBottom: spacing.xlarge
+        }}
       >
-        Start Workout
-      </Button>
+        <Button
+          size={isNarrow ? "$5" : "$6"}
+          backgroundColor={isStartEnabled ? colors.buttonBackground : colors.buttonBackgroundDisabled}
+          color="white"
+          fontWeight="bold"
+          fontSize={isNarrow ? fontSize.large : fontSize.xlarge}
+          height={isNarrow ? 60 : 70}
+          borderRadius={borderRadius.large}
+          onPress={handleStartWorkoutPress}
+          opacity={isStartEnabled ? 1 : 0.7}
+          disabled={!isStartEnabled}
+          scale={isStartEnabled ? 1 : 0.95} // Also scale the button itself
+          pressStyle={{ scale: 0.98, opacity: 0.9 }} // Add press animation
+        >
+          Start Workout
+        </Button>
+      </Animated.View>
       
       {/* Feature cards */}
       <YStack space={isNarrow ? "$3" : "$4"} flex={1}>
@@ -269,7 +296,7 @@ export default function HomeScreen() {
               width={isNarrow ? 50 : 60}
               height={isNarrow ? 50 : 60}
               borderRadius={isNarrow ? 25 : 30}
-              backgroundColor="transparent"
+              backgroundColor="transparent" // Remove background
               alignItems="center"
               justifyContent="center"
             >
@@ -294,7 +321,7 @@ export default function HomeScreen() {
               width={isNarrow ? 50 : 60}
               height={isNarrow ? 50 : 60}
               borderRadius={isNarrow ? 25 : 30}
-              backgroundColor="transparent"
+              backgroundColor="transparent" // Remove background
               alignItems="center"
               justifyContent="center"
             >
@@ -319,7 +346,7 @@ export default function HomeScreen() {
               width={isNarrow ? 50 : 60}
               height={isNarrow ? 50 : 60}
               borderRadius={isNarrow ? 25 : 30}
-              backgroundColor="transparent"
+              backgroundColor="transparent" // Remove background
               alignItems="center"
               justifyContent="center"
             >
