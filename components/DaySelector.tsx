@@ -1,5 +1,5 @@
 import React from 'react';
-import { useWindowDimensions } from 'react-native';
+import { useWindowDimensions, Platform } from 'react-native';
 import { XStack, Button, Text, YStack } from 'tamagui';
 import { useAppTheme } from './ThemeProvider';
 
@@ -41,6 +41,7 @@ export function DaySelector({
               <Button
                 width={buttonSize}
                 height={buttonSize}
+                // Always use orange (buttonBackground) for selection
                 backgroundColor={isSelected ? colors.buttonBackground : 'transparent'}
                 borderColor={isSelected ? colors.buttonBackground : colors.border}
                 borderWidth={1.5}
@@ -53,11 +54,18 @@ export function DaySelector({
                   scale: 0.92,
                   opacity: 0.9
                 }}
+                // Prevent focus styling on mobile web
+                focusStyle={{}}
+                // Prevent mobile highlight
+                userSelect="none"
                 // Add shadow for selected button
                 shadowColor={isSelected ? colors.buttonBackground : 'transparent'}
                 shadowOffset={{ width: 0, height: isSelected ? 3 : 0 }}
                 shadowOpacity={isSelected ? 0.3 : 0}
                 shadowRadius={isSelected ? 4 : 0}
+                // Make sure the outline doesn't show on focus
+                outlineWidth={0}
+                outlineColor="transparent"
               >
                 {day}
               </Button>

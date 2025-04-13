@@ -1,9 +1,9 @@
-// Updated app/index.tsx with consistent button size and improved day selection
+// Final app/index.tsx with fixed button height and version display
 
 import React, { useState, useRef, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
-import { Animated, useWindowDimensions } from 'react-native';
+import { Animated, useWindowDimensions, Platform } from 'react-native';
 import { 
   YStack, 
   XStack,
@@ -18,6 +18,9 @@ import { BarChart2, TrendingUp, Clock, AlertCircle } from '@tamagui/lucide-icons
 import { useAppTheme } from '../components/ThemeProvider';
 import { SplitType } from '../constants/theme';
 import { DaySelector } from '../components/DaySelector';
+
+// App version displayed in the UI
+const APP_VERSION = "v1.0.2";
 
 export default function HomeScreen() {
   const { colors, fontSize, spacing, borderRadius, shadows, isDark } = useAppTheme();
@@ -103,6 +106,9 @@ export default function HomeScreen() {
   // Check if we're ready to start the workout
   const isStartEnabled = splitType !== null && selectedDay !== null;
 
+  // Button height stays consistent
+  const buttonHeight = isNarrow ? 60 : 70;
+
   return (
     <YStack 
       flex={1} 
@@ -139,12 +145,20 @@ export default function HomeScreen() {
       )}
       
       <YStack space="$2" paddingBottom={spacing.small}>
-        <H1 
-          color={colors.text} 
-          fontSize={isNarrow ? 40 : 50}
-        >
-          Hi Arman!
-        </H1>
+        <XStack alignItems="center" justifyContent="space-between">
+          <H1 
+            color={colors.text} 
+            fontSize={isNarrow ? 40 : 50}
+          >
+            Hi Arman!
+          </H1>
+          <Text 
+            color={colors.textMuted} 
+            fontSize={fontSize.small}
+          >
+            {APP_VERSION}
+          </Text>
+        </XStack>
         <Text color={colors.textMuted} fontSize={fontSize.medium}>{formattedDate}</Text>
       </YStack>
       
@@ -172,6 +186,10 @@ export default function HomeScreen() {
             position="relative"
             maxWidth="100%"
             overflow="hidden"
+            // Prevent focus styling on mobile web
+            focusable={false}
+            userSelect="none"
+            // Add these webkit properties to disable focus appearance
           >
             {/* Dark background container */}
             <XStack
@@ -208,6 +226,8 @@ export default function HomeScreen() {
               color={splitType === 'oneADay' ? toggleStyles.selectedTextColor : toggleStyles.unselectedTextColor}
               onPress={() => handleSplitTypeChange('oneADay')}
               zIndex={1}
+              // Prevent focus styling on mobile web
+              focusStyle={{}}
             >
               Single
             </Button>
@@ -222,6 +242,8 @@ export default function HomeScreen() {
               color={splitType === 'twoADay' ? toggleStyles.selectedTextColor : toggleStyles.unselectedTextColor}
               onPress={() => handleSplitTypeChange('twoADay')}
               zIndex={1}
+              // Prevent focus styling on mobile web
+              focusStyle={{}}
             >
               Dual
             </Button>
@@ -237,20 +259,22 @@ export default function HomeScreen() {
         </YStack>
       </Card>
       
-      {/* Start Workout Button - No size animation */}
+      {/* Start Workout Button - Fixed height regardless of state */}
       <Button
-        size={isNarrow ? "$5" : "$6"}
+        size="$8"  // Use a consistent larger size 
         backgroundColor={isStartEnabled ? colors.buttonBackground : colors.buttonBackgroundDisabled}
         color="white"
         fontWeight="bold"
         fontSize={isNarrow ? fontSize.large : fontSize.xlarge}
-        height={isNarrow ? 60 : 70}
-        marginBottom={spacing.xlarge}
+        height={buttonHeight} // Explicitly set height to be consistent
+        marginVertical={spacing.large} // Fixed margin
         borderRadius={borderRadius.large}
         onPress={handleStartWorkoutPress}
         opacity={isStartEnabled ? 1 : 0.7}
         disabled={!isStartEnabled}
         pressStyle={{ scale: 0.98, opacity: 0.9 }} // Add press animation
+        // Prevent focus styling on mobile web
+        focusStyle={{}}
       >
         Start Workout
       </Button>
@@ -264,6 +288,8 @@ export default function HomeScreen() {
           height={isNarrow ? 90 : 110}
           pressStyle={{ scale: 0.98, opacity: 0.9 }}
           onPress={() => navigateToSection('analytics')}
+          // Prevent focus styling on mobile web
+          focusStyle={{}}
         >
           <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
             <YStack
@@ -289,6 +315,8 @@ export default function HomeScreen() {
           height={isNarrow ? 90 : 110}
           pressStyle={{ scale: 0.98, opacity: 0.9 }}
           onPress={() => navigateToSection('progress')}
+          // Prevent focus styling on mobile web
+          focusStyle={{}}
         >
           <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
             <YStack
@@ -314,6 +342,8 @@ export default function HomeScreen() {
           height={isNarrow ? 90 : 110}
           pressStyle={{ scale: 0.98, opacity: 0.9 }}
           onPress={() => navigateToSection('history')}
+          // Prevent focus styling on mobile web
+          focusStyle={{}}
         >
           <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
             <YStack
