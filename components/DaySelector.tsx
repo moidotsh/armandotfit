@@ -1,5 +1,5 @@
 import React from 'react';
-import { useWindowDimensions, Animated } from 'react-native';
+import { useWindowDimensions } from 'react-native';
 import { XStack, Button, Text, YStack } from 'tamagui';
 import { useAppTheme } from './ThemeProvider';
 
@@ -20,7 +20,6 @@ export function DaySelector({
   
   // Calculate button sizes based on available width
   const buttonSize = isNarrow ? 45 : 55;
-  const buttonMargin = isNarrow ? 4 : 8;
   
   return (
     <XStack width="100%" justifyContent="space-between" alignItems="center">
@@ -46,7 +45,7 @@ export function DaySelector({
                 borderColor={isSelected ? colors.buttonBackground : colors.border}
                 borderWidth={1.5}
                 color={isSelected ? 'white' : colors.text}
-                borderRadius={borderRadius.xlarge}
+                borderRadius={buttonSize / 2} // Make it fully circular
                 fontWeight="bold"
                 fontSize={fontSize.medium}
                 onPress={() => onDaySelect(day)}
@@ -59,10 +58,6 @@ export function DaySelector({
                 shadowOffset={{ width: 0, height: isSelected ? 3 : 0 }}
                 shadowOpacity={isSelected ? 0.3 : 0}
                 shadowRadius={isSelected ? 4 : 0}
-                // Add animation
-                animation="bouncy"
-                animateOnly={['transform', 'opacity']}
-                scale={isSelected ? 1.05 : 1}
               >
                 {day}
               </Button>

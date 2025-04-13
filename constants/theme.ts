@@ -1,6 +1,5 @@
-// constants/theme.ts - Centralized theming system
+// Update constants/theme.ts to make buttonBackground consistent across UI
 
-// Define the base type for split information
 export type SplitType = 'oneADay' | 'twoADay';
 
 // Workout split information
@@ -75,7 +74,7 @@ export const categoryColors: Record<string, string> = {
 export const theme = {
   // Color system
   colors: {
-    // Brand colors
+    // Brand colors - Using orange for all button colors
     accent: palette.orange.primary,
     accentLight: palette.orange.light,
     accentDark: palette.orange.dark,
@@ -103,7 +102,7 @@ export const theme = {
       textMuted: palette.gray[400],
       textSecondary: palette.gray[500],
       
-      // Interactive element colors
+      // Interactive element colors - Use orange primary consistently
       buttonBackground: palette.orange.primary,
       buttonBackgroundDisabled: `${palette.orange.primary}80`, // 50% opacity
       
@@ -129,7 +128,7 @@ export const theme = {
       textMuted: palette.gray[600],
       textSecondary: palette.gray[700],
       
-      // Interactive element colors
+      // Interactive element colors - Use orange primary consistently
       buttonBackground: palette.orange.primary,
       buttonBackgroundDisabled: `${palette.orange.primary}80`, // 50% opacity
       
