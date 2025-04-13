@@ -2,7 +2,6 @@
     "version": 2,
     "buildCommand": "bun run vercel-build",
     "installCommand": "bun install",
-    "framework": "expo",
     "builds": [
       {
         "src": "package.json",
