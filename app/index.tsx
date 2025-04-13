@@ -107,7 +107,9 @@ export default function HomeScreen() {
   const isStartEnabled = splitType !== null && selectedDay !== null;
 
   // Button height stays consistent
-  const buttonHeight = isNarrow ? 60 : 70;
+  // const buttonHeight = isNarrow ? 60 : 70;
+  const buttonHeight = 70;
+
 
   return (
     <YStack 
