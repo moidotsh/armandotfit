@@ -8,6 +8,34 @@ import { StrictMode, useEffect } from 'react';
 import App from './App';
 import './global.css';
 
+
+if (typeof document !== 'undefined') {
+    const style = document.createElement('style');
+    style.textContent = `
+      * {
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+        -webkit-touch-callout: none !important;
+        user-select: none !important;
+      }
+      
+      button, [role="button"], a {
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+      }
+      
+      .tamagui-Button, .tamagui-Card {
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+      }
+      
+      *:focus {
+        outline: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
 // We don't need to render anything here since Expo Router handles that
 // But we need to import our styles and setup our providers
 
@@ -59,6 +87,18 @@ const injectTamaguiStyles = () => {
     }
   }
 };
+
+if (typeof document !== 'undefined') {
+    document.addEventListener('click', function(e) {
+      if (e.target instanceof HTMLElement) {
+        setTimeout(() => {
+          if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+          }
+        }, 10);
+      }
+    }, true);
+  }
 
 // Call the style injection
 injectTamaguiStyles();

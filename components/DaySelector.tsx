@@ -37,7 +37,12 @@ export function DaySelector({
           const isSelected = selectedDay === day;
           
           return (
-            <YStack key={day} alignItems="center">
+            <YStack key={day} alignItems="center"  style={{
+                WebkitTapHighlightColor: 'transparent',
+                WebkitTouchCallout: 'none',
+                userSelect: 'none',
+                outline: 'none'
+              }}>
               <Button
                 width={buttonSize}
                 height={buttonSize}
@@ -66,6 +71,12 @@ export function DaySelector({
                 // Make sure the outline doesn't show on focus
                 outlineWidth={0}
                 outlineColor="transparent"
+                style={{
+                    WebkitTapHighlightColor: 'transparent',
+                    WebkitTouchCallout: 'none',
+                    userSelect: 'none',
+                    outline: 'none'
+                  }}
               >
                 {day}
               </Button>

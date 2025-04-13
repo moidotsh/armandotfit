@@ -190,6 +190,12 @@ export default function HomeScreen() {
             focusable={false}
             userSelect="none"
             // Add these webkit properties to disable focus appearance
+            style={{
+              WebkitTapHighlightColor: 'transparent',
+              WebkitTouchCallout: 'none',
+              userSelect: 'none',
+              outline: 'none'
+            }}
           >
             {/* Dark background container */}
             <XStack
@@ -228,6 +234,12 @@ export default function HomeScreen() {
               zIndex={1}
               // Prevent focus styling on mobile web
               focusStyle={{}}
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                WebkitTouchCallout: 'none',
+                userSelect: 'none',
+                outline: 'none'
+              }}
             >
               Single
             </Button>
@@ -244,6 +256,12 @@ export default function HomeScreen() {
               zIndex={1}
               // Prevent focus styling on mobile web
               focusStyle={{}}
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                WebkitTouchCallout: 'none',
+                userSelect: 'none',
+                outline: 'none'
+              }}
             >
               Dual
             </Button>
@@ -275,6 +293,12 @@ export default function HomeScreen() {
         pressStyle={{ scale: 0.98, opacity: 0.9 }} // Add press animation
         // Prevent focus styling on mobile web
         focusStyle={{}}
+        style={{
+          WebkitTapHighlightColor: 'transparent',
+          WebkitTouchCallout: 'none',
+          userSelect: 'none',
+          outline: 'none'
+        }}
       >
         Start Workout
       </Button>
@@ -290,6 +314,12 @@ export default function HomeScreen() {
           onPress={() => navigateToSection('analytics')}
           // Prevent focus styling on mobile web
           focusStyle={{}}
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            WebkitTouchCallout: 'none',
+            userSelect: 'none',
+            outline: 'none'
+          }}
         >
           <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
             <YStack
@@ -317,6 +347,12 @@ export default function HomeScreen() {
           onPress={() => navigateToSection('progress')}
           // Prevent focus styling on mobile web
           focusStyle={{}}
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            WebkitTouchCallout: 'none',
+            userSelect: 'none',
+            outline: 'none'
+          }}
         >
           <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
             <YStack
@@ -344,6 +380,12 @@ export default function HomeScreen() {
           onPress={() => navigateToSection('history')}
           // Prevent focus styling on mobile web
           focusStyle={{}}
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            WebkitTouchCallout: 'none',
+            userSelect: 'none',
+            outline: 'none'
+          }}
         >
           <XStack alignItems="center" space={isNarrow ? "$3" : "$4"}>
             <YStack
