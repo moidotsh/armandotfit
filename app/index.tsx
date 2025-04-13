@@ -109,6 +109,7 @@ export default function HomeScreen() {
       backgroundColor={colors.background} 
       paddingTop={60} 
       paddingHorizontal={isNarrow ? spacing.medium : spacing.large}
+      overflow="scroll"
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
@@ -268,7 +269,7 @@ export default function HomeScreen() {
               width={isNarrow ? 50 : 60}
               height={isNarrow ? 50 : 60}
               borderRadius={isNarrow ? 25 : 30}
-              backgroundColor={colors.iconBackground}
+              backgroundColor="transparent"
               alignItems="center"
               justifyContent="center"
             >
@@ -293,7 +294,7 @@ export default function HomeScreen() {
               width={isNarrow ? 50 : 60}
               height={isNarrow ? 50 : 60}
               borderRadius={isNarrow ? 25 : 30}
-              backgroundColor={colors.iconBackground}
+              backgroundColor="transparent"
               alignItems="center"
               justifyContent="center"
             >
@@ -318,7 +319,7 @@ export default function HomeScreen() {
               width={isNarrow ? 50 : 60}
               height={isNarrow ? 50 : 60}
               borderRadius={isNarrow ? 25 : 30}
-              backgroundColor={colors.iconBackground}
+              backgroundColor="transparent"
               alignItems="center"
               justifyContent="center"
             >
