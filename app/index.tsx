@@ -18,7 +18,7 @@ import { useAppTheme } from '../components/ThemeProvider';
 import { SplitType } from '../constants/theme';
 import { DaySelector } from '../components/DaySelector';
 import { FeatureSection } from '../components/FeatureCard';
-import { navigateToWorkout } from '../navigation';
+import { navigateToWorkout, NavigationPath } from '../navigation';
 
 // App version displayed in the UI
 const APP_VERSION = "v1.0.3";
@@ -83,7 +83,7 @@ export default function HomeScreen() {
       setAlertMessage('Please select a workout day');
       setShowAlert(true);
     } else {
-      navigateToWorkout(splitType, selectedDay);
+      navigateToWorkout(splitType, selectedDay, NavigationPath.HOME);
     }
   };
 

@@ -5,9 +5,13 @@ export {
   navigateToWorkout,
   navigateToSplitSelection,
   navigateToHome,
-  goBack
+  goBack,
+  navigateToPath,
+  NavigationPath,
+  navigationHierarchy
 } from './NavigationHelper';
 export type { 
   WorkoutDetailRouteParams,
-  SplitSelectionRouteParams
+  SplitSelectionRouteParams,
+  ExerciseDetailRouteParams
 } from './NavigationHelper';

@@ -12,7 +12,7 @@ import {
   useTheme
 } from 'tamagui';
 import { exercises, oneADaySplits, twoADaySplits } from '../data/workoutDataRefactored';
-import { AppHeader, SplitSelectionRouteParams } from '../navigation';
+import { AppHeader, SplitSelectionRouteParams, NavigationPath } from '../navigation';
 
 // Updated split type names with shorter descriptions
 const SPLIT_TYPES: Record<string, {
@@ -70,6 +70,7 @@ export default function SplitSelectionScreen() {
       <AppHeader 
         title={splitType.name}
         subtitle={splitType.description}
+        currentPath={NavigationPath.SPLIT_SELECTION}
       />
       
       <Text 

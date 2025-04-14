@@ -12,7 +12,7 @@ import { exercises, oneADaySplits, twoADaySplits } from '../data/workoutDataRefa
 import { WorkoutSessionTabs } from '../components/ExerciseCard';
 import { useAppTheme } from '../components/ThemeProvider';
 import { format } from 'date-fns';
-import { AppHeader, WorkoutDetailRouteParams } from '../navigation';
+import { AppHeader, WorkoutDetailRouteParams, NavigationPath } from '../navigation';
 
 export default function WorkoutDetailScreen() {
   const { colors, spacing, isDark } = useAppTheme();
@@ -48,6 +48,7 @@ export default function WorkoutDetailScreen() {
         <AppHeader
           date={formattedDate}
           title={workoutTitle}
+          currentPath={NavigationPath.WORKOUT_DETAIL}
         />
       </YStack>
 
