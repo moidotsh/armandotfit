@@ -13,7 +13,7 @@ import {
 } from 'tamagui';
 import { ChevronLeft } from '@tamagui/lucide-icons';
 import { workoutData } from '../data/workoutData';
-import { getResponsiveExerciseComponent } from '../components/ExerciseCard';
+import { WorkoutSessionTabs } from '../components/ExerciseCard';
 import { useAppTheme } from '../components/ThemeProvider';
 import { format } from 'date-fns';
 
@@ -97,8 +97,7 @@ export default function WorkoutDetailScreen() {
         paddingHorizontal={0}
         width="100%"
       >
-        {getResponsiveExerciseComponent(workout, isNarrow)}
-      </YStack>
+<WorkoutSessionTabs workout={workout} /></YStack>
     </ScrollView>
   );
 }

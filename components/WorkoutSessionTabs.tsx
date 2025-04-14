@@ -1,122 +1,110 @@
 // components/WorkoutSessionTabs.tsx
+
 import React, { useState } from 'react';
-import { useWindowDimensions } from 'react-native';
-import { XStack, YStack, View, Text, Separator, Button } from 'tamagui';
+import { XStack, Text, Button } from 'tamagui';
 import { Sun, Moon } from '@tamagui/lucide-icons';
+import { OneADayWorkout, TwoADayWorkout, Exercise } from '../data/workoutData';
+import { ExerciseCard } from './ExerciseCard';
 import { useAppTheme } from './ThemeProvider';
 
 interface WorkoutSessionTabsProps {
-  activeTab: 'am' | 'pm';
-  onTabChange: (tab: 'am' | 'pm') => void;
+  workout: OneADayWorkout | TwoADayWorkout;
 }
 
-export function WorkoutSessionTabs({ activeTab, onTabChange }: WorkoutSessionTabsProps) {
-  const { colors, spacing, fontSize, borderRadius } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isNarrow = width < 350;
-  
-  // Tab styling without the onPress handler
-  const getTabStyle = (tab: 'am' | 'pm') => {
-    const isActive = activeTab === tab;
-    
-    return {
-      backgroundColor: isActive ? colors.background : colors.backgroundAlt,
-      borderTopLeftRadius: borderRadius.medium,
-      borderTopRightRadius: borderRadius.medium,
-      borderWidth: 1,
-      borderBottomWidth: isActive ? 0 : 1,
-      borderColor: colors.border,
-      paddingVertical: spacing.small,
-      paddingHorizontal: spacing.medium,
-      marginBottom: isActive ? -1 : 0, // Pull active tab down slightly to overlap border
-      zIndex: isActive ? 2 : 1,
-      flex: 1,
-      // Shadow for active tab
-      shadowColor: isActive ? colors.text : 'transparent',
-      shadowOffset: { width: 0, height: isActive ? -2 : 0 },
-      shadowOpacity: isActive ? 0.1 : 0,
-      shadowRadius: isActive ? 3 : 0,
-      elevation: isActive ? 3 : 0
-    };
-  };
-  
-  return (
-    <XStack width="100%" alignItems="flex-end" marginBottom={0}>
-      <Button
-        chromeless
-        style={getTabStyle('am')}
-        onPress={() => onTabChange('am')}
-        focusStyle={{}}
-      >
-        <XStack alignItems="center" space={spacing.small} justifyContent="center">
-          <Sun 
-            size={isNarrow ? 18 : 22} 
-            color={activeTab === 'am' ? colors.textSecondary : colors.textMuted} 
-          />
-          <Text 
-            color={activeTab === 'am' ? colors.text : colors.textMuted}
-            fontWeight={activeTab === 'am' ? '600' : '500'}
-            fontSize={isNarrow ? fontSize.small : fontSize.medium}
-          >
-            AM
-          </Text>
-        </XStack>
-      </Button>
-      
-      <Button
-        chromeless
-        style={getTabStyle('pm')}
-        onPress={() => onTabChange('pm')}
-        focusStyle={{}}
-      >
-        <XStack alignItems="center" space={spacing.small} justifyContent="center">
-          <Moon 
-            size={isNarrow ? 18 : 22} 
-            color={activeTab === 'pm' ? colors.textSecondary : colors.textMuted} 
-          />
-          <Text 
-            color={activeTab === 'pm' ? colors.text : colors.textMuted}
-            fontWeight={activeTab === 'pm' ? '600' : '500'}
-            fontSize={isNarrow ? fontSize.small : fontSize.medium}
-          >
-            PM
-          </Text>
-        </XStack>
-      </Button>
-    </XStack>
-  );
-}
+export const WorkoutSessionTabs = ({ workout }: WorkoutSessionTabsProps) => {
+  const { colors, fontSize, spacing, borderRadius } = useAppTheme();
+  const [activeTab, setActiveTab] = useState<'am' | 'pm'>('am');
 
-export function WorkoutSessionContent({ 
-  activeTab, 
-  amExercises, 
-  pmExercises, 
-  renderExercise 
-}: { 
-  activeTab: 'am' | 'pm';
-  amExercises: any[];
-  pmExercises: any[];
-  renderExercise: (exercise: any, index: number) => React.ReactNode;
-}) {
-  const { colors, spacing, borderRadius } = useAppTheme();
-  
+  if ('exercises' in workout) {
+    return (
+      <>
+        {workout.exercises.map((exercise: Exercise, index: number) => (
+          <ExerciseCard
+            key={index}
+            exercise={exercise}
+          />
+        ))}
+      </>
+    );
+  }
+
   return (
-    <YStack 
-      backgroundColor={colors.background}
-      borderWidth={1}
-      borderColor={colors.border}
-      borderTopWidth={0}
-      borderBottomLeftRadius={borderRadius.medium}
-      borderBottomRightRadius={borderRadius.medium}
-      padding={0} // Remove padding here to allow full-width cards
-      minHeight={300} // Ensure consistent height between tabs
-      width="100%"
-    >
+    <>
+      <XStack width="100%" marginBottom={spacing.medium} alignSelf='center' scale={0.97}>
+        <Button
+          chromeless
+          style={{
+            backgroundColor: activeTab === 'am' ? colors.buttonBackground : colors.backgroundAlt,
+            borderTopLeftRadius: borderRadius.medium,
+            borderBottomLeftRadius: borderRadius.medium,
+            borderTopRightRadius: 0,
+            borderBottomRightRadius: 0,
+            paddingVertical: spacing.small,
+            flex: 1,
+          }}
+          onPress={() => setActiveTab('am')}
+          focusStyle={{}}
+        >
+          <XStack alignItems="center" space={spacing.small} justifyContent="center">
+            <Sun 
+              size={22} 
+              color={activeTab === 'am' ? 'white' : colors.textMuted} 
+            />
+            <Text 
+              color={activeTab === 'am' ? 'white' : colors.textMuted}
+              fontWeight="600"
+              fontSize={fontSize.medium}
+            >
+              AM
+            </Text>
+          </XStack>
+        </Button>
+
+        <Button
+          chromeless
+          style={{
+            backgroundColor: activeTab === 'pm' ? colors.buttonBackground : colors.backgroundAlt,
+            borderTopRightRadius: borderRadius.medium,
+            borderBottomRightRadius: borderRadius.medium,
+            borderTopLeftRadius: 0,
+            borderBottomLeftRadius: 0,
+            paddingVertical: spacing.small,
+            flex: 1,
+          }}
+          onPress={() => setActiveTab('pm')}
+          focusStyle={{}}
+        >
+          <XStack alignItems="center" space={spacing.small} justifyContent="center">
+            <Moon 
+              size={22} 
+              color={activeTab === 'pm' ? 'white' : colors.textMuted} 
+            />
+            <Text 
+              color={activeTab === 'pm' ? 'white' : colors.textMuted}
+              fontWeight="600"
+              fontSize={fontSize.medium}
+            >
+              PM
+            </Text>
+          </XStack>
+        </Button>
+      </XStack>
+
       {activeTab === 'am' ? (
-        amExercises.map((exercise, index) => renderExercise(exercise, index))
+        workout.amExercises.map((exercise: Exercise, index: number) => (
+          <ExerciseCard
+            key={`am-${index}`}
+            exercise={exercise}
+          />
+        ))
       ) : (
-        pmExercises.map((exercise, index) => renderExercise(exercise, index))
+        workout.pmExercises.map((exercise: Exercise, index: number) => (
+          <ExerciseCard
+            key={`pm-${index}`}
+            exercise={exercise}
+          />
+        ))
       )}
-    </YStack>
+    </>
   );
-}
+};
