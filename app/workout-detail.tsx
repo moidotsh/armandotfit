@@ -92,8 +92,10 @@ export default function WorkoutDetailScreen() {
         </Text>
       </YStack>
       
+      {/* Remove horizontal padding for full width content */}
       <YStack 
-        paddingHorizontal={isNarrow ? spacing.medium : spacing.large}
+        paddingHorizontal={0}
+        width="100%"
       >
         {getResponsiveExerciseComponent(workout, isNarrow)}
       </YStack>

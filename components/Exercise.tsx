@@ -9,7 +9,7 @@ type ExerciseProps = {
 
 export function Exercise({ name, icon, type }: ExerciseProps) {
   const theme = useTheme();
-  const textColor = theme.color.get();
+  const textColor = theme.color?.get();
   
   return (
     <Card
