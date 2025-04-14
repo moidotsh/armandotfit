@@ -61,7 +61,6 @@ html, body, #root {
   /* Fix tap highlight on all interactive elements */
   button, [role="button"], a, input, textarea, select {
     -webkit-tap-highlight-color: transparent;
-    tap-highlight-color: transparent;
     outline: none;
   }
   
