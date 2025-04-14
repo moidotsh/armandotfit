@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -9,35 +9,36 @@ import { theme } from '../constants/theme';
 import { Platform } from 'react-native';
 import { LoadingScreen } from '@/components/LoadingScreen';
 
-// Prevent the splash screen from auto-hiding
+// Prevent splash screen from hiding prematurely
 SplashScreen.preventAutoHideAsync();
 
-
-
 export default function RootLayout() {
-  // Always use light theme
-  const [loaded] = useFonts({
-    // You can add custom fonts here if needed
-  });
+  const [fontsLoaded] = useFonts({});
+  const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    if (fontsLoaded) {
+      const timeout = setTimeout(() => {
+        SplashScreen.hideAsync();
+        setAppReady(true);
+      }, 200); // Delay to avoid FOUC (flash of unstyled content)
+      return () => clearTimeout(timeout);
     }
-    
-    // Force light mode on web
+  }, [fontsLoaded]);
+
+  // Force light mode for web
+  useEffect(() => {
     if (Platform.OS === 'web' && typeof document !== 'undefined') {
       document.documentElement.classList.remove('dark-theme');
       document.documentElement.classList.add('light-theme');
       document.documentElement.setAttribute('data-theme', 'light');
     }
-  }, [loaded]);
+  }, []);
 
-  if (!loaded) {
-    return <LoadingScreen />; 
+  if (!appReady) {
+    return <LoadingScreen />;
   }
 
-  // Get the light background color
   const backgroundColor = theme.colors.light.background;
 
   return (
@@ -47,23 +48,17 @@ export default function RootLayout() {
           screenOptions={{
             headerShown: false,
             animation: 'fade',
-            contentStyle: {
-              backgroundColor,
-            },
+            contentStyle: { backgroundColor },
           }}
         >
           <Stack.Screen name="index" />
-          <Stack.Screen 
-            name="workout-detail" 
-            options={{
-              animation: 'slide_from_right',
-            }}
+          <Stack.Screen
+            name="workout-detail"
+            options={{ animation: 'slide_from_right' }}
           />
-          <Stack.Screen 
-            name="split-selection" 
-            options={{
-              animation: 'slide_from_right',
-            }}
+          <Stack.Screen
+            name="split-selection"
+            options={{ animation: 'slide_from_right' }}
           />
         </Stack>
       </ThemeProvider>
