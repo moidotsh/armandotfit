@@ -1,4 +1,4 @@
-// Extended components/ExerciseIcons.tsx with abstract Unown/MissingNo-style icons
+// Extended components/ExerciseIcons.tsx with abstract Unown/MissingNo-style icons (muscle-inspired)
 
 import React from 'react';
 import { View } from 'react-native';
@@ -50,55 +50,55 @@ const GlitchIcon = ({ paths, circles = [], size = 24, color }: { paths: string[]
 export const ArmsIcon = (props: IconProps) => (
   <GlitchIcon
     {...props}
-    paths={["M10 38 L20 10 L34 28", "M28 34 L22 20"]}
-    circles={[{ cx: 14, cy: 18, r: 3 }]}
+    paths={["M16 36 Q24 24 32 36", "M20 20 L24 12"]}
+    circles={[{ cx: 24, cy: 28, r: 3 }]}
   />
 );
 
 export const BackIcon = (props: IconProps) => (
   <GlitchIcon
     {...props}
-    paths={["M18 10 L24 24 L10 30", "M24 24 L36 38"]}
-    circles={[{ cx: 30, cy: 16, r: 2 }]} 
+    paths={["M20 10 L28 24 L20 38", "M28 10 L20 24 L28 38"]}
+    circles={[{ cx: 24, cy: 24, r: 2 }]}
   />
 );
 
 export const ChestIcon = (props: IconProps) => (
   <GlitchIcon
     {...props}
-    paths={["M12 16 L28 22 L20 34", "M16 30 L34 26"]}
-    circles={[{ cx: 18, cy: 22, r: 3 }]}
+    paths={["M18 16 Q24 24 30 16", "M18 32 Q24 24 30 32"]}
+    circles={[{ cx: 24, cy: 24, r: 3 }]}
   />
 );
 
 export const UpperLegIcon = (props: IconProps) => (
   <GlitchIcon
     {...props}
-    paths={["M24 10 L18 36 L34 28", "M20 20 L28 34"]}
-    circles={[{ cx: 26, cy: 18, r: 3 }]}
+    paths={["M20 10 L24 28 L30 38", "M28 20 L18 38"]}
+    circles={[{ cx: 26, cy: 32, r: 3 }]}
   />
 );
 
 export const LowerLegIcon = (props: IconProps) => (
   <GlitchIcon
     {...props}
-    paths={["M16 18 L24 30 L32 22", "M20 34 L30 38"]}
-    circles={[{ cx: 20, cy: 24, r: 2 }]}
+    paths={["M22 10 L20 24 L28 38", "M26 20 L22 32"]}
+    circles={[{ cx: 24, cy: 36, r: 2 }]}
   />
 );
 
 export const ShouldersIcon = (props: IconProps) => (
   <GlitchIcon
     {...props}
-    paths={["M12 24 L30 12 L26 30", "M18 18 L36 36"]}
-    circles={[{ cx: 28, cy: 18, r: 3 }]}
+    paths={["M14 18 Q24 8 34 18", "M14 30 Q24 40 34 30"]}
+    circles={[{ cx: 24, cy: 24, r: 3 }]}
   />
 );
 
 export const AbsIconAlt = (props: IconProps) => (
   <GlitchIcon
     {...props}
-    paths={["M18 14 L28 18", "M20 22 L32 26", "M22 30 L30 34"]}
-    circles={[{ cx: 24, cy: 10, r: 2 }]}
+    paths={["M20 12 H28", "M20 18 H28", "M20 24 H28", "M20 30 H28", "M20 36 H28"]}
+    circles={[]}
   />
 );
