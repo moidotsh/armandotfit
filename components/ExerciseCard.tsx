@@ -92,6 +92,8 @@ export function getResponsiveExerciseComponent(
                 backgroundColor: activeTab === 'am' ? colors.buttonBackground : colors.backgroundAlt,
                 borderTopLeftRadius: borderRadius.medium,
                 borderBottomLeftRadius: borderRadius.medium,
+                borderTopRightRadius: 0,      // <- remove inner radius
+                borderBottomRightRadius: 0,   // <- remove inner radius
                 paddingVertical: spacing.small,
                 flex: 1,
               }}
@@ -119,6 +121,8 @@ export function getResponsiveExerciseComponent(
                 backgroundColor: activeTab === 'pm' ? colors.buttonBackground : colors.backgroundAlt,
                 borderTopRightRadius: borderRadius.medium,
                 borderBottomRightRadius: borderRadius.medium,
+                borderTopLeftRadius: 0,       // <- remove inner radius
+                borderBottomLeftRadius: 0,    // <- remove inner radius
                 paddingVertical: spacing.small,
                 flex: 1,
               }}

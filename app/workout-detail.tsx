@@ -40,7 +40,7 @@ export default function WorkoutDetailScreen() {
   
   // Get the title - for dual sessions, use a shorter form
   const workoutTitle = type === 'twoADay' 
-    ? `Dual Session Day ${dayNumber}` 
+    ? `Dual Day ${dayNumber}` 
     : workout.title;
 
   return (
