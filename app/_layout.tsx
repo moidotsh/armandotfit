@@ -7,9 +7,12 @@ import config from '../tamagui.config';
 import { ThemeProvider } from '../components/ThemeProvider';
 import { theme } from '../constants/theme';
 import { Platform } from 'react-native';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
+
+
 
 export default function RootLayout() {
   // Always use light theme
@@ -31,7 +34,7 @@ export default function RootLayout() {
   }, [loaded]);
 
   if (!loaded) {
-    return null;
+    return <LoadingScreen />; 
   }
 
   // Get the light background color
