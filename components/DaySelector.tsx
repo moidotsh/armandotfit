@@ -9,21 +9,21 @@ interface DaySelectorProps {
   days?: number[];
 }
 
-export function DaySelector({ 
-  selectedDay, 
-  onDaySelect, 
-  days = [1, 2, 3, 4] 
+export function DaySelector({
+  selectedDay,
+  onDaySelect,
+  days = [1, 2, 3, 4]
 }: DaySelectorProps) {
   const { colors, borderRadius, fontSize, spacing } = useAppTheme();
   const { width } = useWindowDimensions();
   const isNarrow = width < 350;
-  
+
   // Calculate button sizes based on available width
   const buttonSize = isNarrow ? 45 : 55;
-  
+
   return (
     <XStack width="100%" justifyContent="space-between" alignItems="center">
-      <Text 
+      <Text
         color={colors.text}
         fontSize={fontSize.medium}
         fontWeight="600"
@@ -31,18 +31,18 @@ export function DaySelector({
       >
         Day:
       </Text>
-      
+
       <XStack flex={1} justifyContent="space-around" marginLeft={spacing.small}>
         {days.map(day => {
           const isSelected = selectedDay === day;
-          
+
           return (
-            <YStack key={day} alignItems="center"  style={{
-                WebkitTapHighlightColor: 'transparent',
-                WebkitTouchCallout: 'none',
-                userSelect: 'none',
-                outline: 'none'
-              }}>
+            <YStack key={day} alignItems="center" style={{
+              WebkitTapHighlightColor: 'transparent',
+              WebkitTouchCallout: 'none',
+              userSelect: 'none',
+              outline: 'none'
+            }}>
               <Button
                 width={buttonSize}
                 height={buttonSize}
@@ -55,7 +55,7 @@ export function DaySelector({
                 fontWeight="bold"
                 fontSize={fontSize.medium}
                 onPress={() => onDaySelect(day)}
-                pressStyle={{ 
+                pressStyle={{
                   scale: 0.92,
                   opacity: 0.9
                 }}
@@ -72,15 +72,16 @@ export function DaySelector({
                 outlineWidth={0}
                 outlineColor="transparent"
                 style={{
-                    WebkitTapHighlightColor: 'transparent',
-                    WebkitTouchCallout: 'none',
-                    userSelect: 'none',
-                    outline: 'none'
-                  }}
+                  WebkitTapHighlightColor: 'transparent',
+                  WebkitTouchCallout: 'none',
+                  userSelect: 'none',
+                  outline: 'none'
+                }}
               >
-                {day}
+                <Text color={isSelected ? 'white' : colors.text}
+                >{day}</Text>
               </Button>
-              
+
               {/* Small indicator dot under selected button */}
               {isSelected && (
                 <YStack
