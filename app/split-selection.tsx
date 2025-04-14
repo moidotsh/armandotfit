@@ -1,4 +1,4 @@
-// Updated app_split-selection.tsx
+// Updated app_split-selection.tsx with shorter titles
 
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
@@ -17,7 +17,7 @@ import {
 import { ChevronLeft } from '@tamagui/lucide-icons';
 import { workoutData } from '../data/workoutData';
 
-// Updated split type names
+// Updated split type names with shorter descriptions
 const SPLIT_TYPES = {
   oneADay: {
     id: 'oneADay',
@@ -26,8 +26,8 @@ const SPLIT_TYPES = {
   },
   twoADay: {
     id: 'twoADay',
-    name: 'AM/PM Split',
-    description: 'Two targeted sessions per day'
+    name: 'Dual Session',
+    description: 'AM/PM split workouts'
   }
 };
 
@@ -41,6 +41,14 @@ export default function SplitSelectionScreen() {
   const isDark = theme.name?.get() === 'dark';
   const splits = type === 'oneADay' ? workoutData.oneADay : workoutData.twoADay;
   const splitType = SPLIT_TYPES[type] || SPLIT_TYPES.oneADay;
+  
+  // Helper function to format workout day titles
+  const formatDayTitle = (day: number, title: string, type: 'oneADay' | 'twoADay') => {
+    if (type === 'twoADay') {
+      return `Dual Session Day ${day}`;
+    }
+    return title;
+  };
   
   const navigateToWorkout = (day: number) => {
     router.push({
@@ -117,7 +125,7 @@ export default function SplitSelectionScreen() {
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {split.title}
+                  {formatDayTitle(split.day, split.title, type)}
                 </Text>
               </YStack>
               <XStack justifyContent="flex-end" marginTop={10}>

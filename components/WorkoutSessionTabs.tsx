@@ -58,7 +58,7 @@ export function WorkoutSessionTabs({ activeTab, onTabChange }: WorkoutSessionTab
             fontWeight={activeTab === 'am' ? '600' : '500'}
             fontSize={isNarrow ? fontSize.small : fontSize.medium}
           >
-            {isNarrow ? "AM WORKOUT" : "MORNING WORKOUT"}
+            AM
           </Text>
         </XStack>
       </Button>
@@ -79,7 +79,7 @@ export function WorkoutSessionTabs({ activeTab, onTabChange }: WorkoutSessionTab
             fontWeight={activeTab === 'pm' ? '600' : '500'}
             fontSize={isNarrow ? fontSize.small : fontSize.medium}
           >
-            {isNarrow ? "PM WORKOUT" : "EVENING WORKOUT"}
+            PM
           </Text>
         </XStack>
       </Button>
@@ -108,8 +108,9 @@ export function WorkoutSessionContent({
       borderTopWidth={0}
       borderBottomLeftRadius={borderRadius.medium}
       borderBottomRightRadius={borderRadius.medium}
-      padding={spacing.medium}
+      padding={0} // Remove padding here to allow full-width cards
       minHeight={300} // Ensure consistent height between tabs
+      width="100%"
     >
       {activeTab === 'am' ? (
         amExercises.map((exercise, index) => renderExercise(exercise, index))

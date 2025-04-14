@@ -12,9 +12,9 @@ import { Exercise, OneADayWorkout, TwoADayWorkout } from '../data/workoutData';
 import { AbsIcon, BicepCurlIcon, CalfRaiseIcon, ChestPressIcon, LateralRaiseIcon, LegPressIcon, RowIcon } from './ExerciseIcons';
 import { useAppTheme } from './ThemeProvider';
 
-export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
+export const ExerciseCard = ({ exercise, isLastItem = false }: { exercise: Exercise, isLastItem?: boolean }) => {
   // Use our centralized theme
-  const { colors, borderRadius, fontSize, spacing, isDark } = useAppTheme();
+  const { colors, borderRadius, fontSize, spacing } = useAppTheme();
   const { width } = useWindowDimensions();
   const isNarrow = width < 350;
   
@@ -26,15 +26,19 @@ export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
   
   return (
     <Card
-      marginBottom={spacing.medium}
+      marginBottom={0} // No bottom margin
       backgroundColor={colors.card}
       paddingVertical={isNarrow ? spacing.medium : spacing.large}
       paddingHorizontal={isNarrow ? spacing.medium : spacing.large}
-      borderRadius={borderRadius.medium}
-      elevate
-      bordered
-      scale={0.97}
-      pressStyle={{ scale: 0.95, opacity: 0.9 }}
+      borderRadius={0} // No border radius for tabbed view cards
+      borderBottomLeftRadius={isLastItem ? borderRadius.medium : 0} // Only round bottom corners of last item
+      borderBottomRightRadius={isLastItem ? borderRadius.medium : 0}
+      borderBottomWidth={!isLastItem ? 1 : 0} // Add separator between items
+      borderBottomColor={colors.border}
+      elevation={0} // No elevation for cleaner look
+      bordered={false}
+      scale={1} // No scale effect
+      pressStyle={{ opacity: 0.9 }} // Simpler press effect
       onPress={() => {
         // For future implementation: exercise details, tracking, etc.
         console.log(`Tapped on exercise: ${exercise.name}`);
@@ -76,28 +80,30 @@ const SessionTab = ({ label, icon, isActive, onPress }: SessionTabProps) => {
   const { width } = useWindowDimensions();
   const isNarrow = width < 350;
   
+  // Create a styles object we can pass to the YStack
+  const tabStyles = {
+    flex: 1,
+    backgroundColor: isActive ? colors.background : colors.backgroundAlt,
+    borderTopLeftRadius: borderRadius.medium,
+    borderTopRightRadius: borderRadius.medium,
+    borderWidth: 1,
+    borderBottomWidth: isActive ? 0 : 1,
+    borderColor: colors.border,
+    paddingVertical: spacing.small,
+    paddingHorizontal: spacing.medium,
+    marginBottom: isActive ? -1 : 0,
+    zIndex: isActive ? 2 : 1,
+    alignItems: "center" as const, // Type assertion for proper alignment type
+    justifyContent: "center" as const,
+    shadowColor: isActive ? colors.text : 'transparent',
+    shadowOffset: { width: 0, height: isActive ? -2 : 0 },
+    shadowOpacity: isActive ? 0.1 : 0,
+    shadowRadius: isActive ? 3 : 0,
+    elevation: isActive ? 3 : 0,
+  };
+  
   return (
-    <YStack
-      flex={1}
-      backgroundColor={isActive ? colors.background : colors.backgroundAlt}
-      borderTopLeftRadius={borderRadius.medium}
-      borderTopRightRadius={borderRadius.medium}
-      borderWidth={1}
-      borderBottomWidth={isActive ? 0 : 1}
-      borderColor={colors.border}
-      paddingVertical={spacing.small}
-      paddingHorizontal={spacing.medium}
-      marginBottom={isActive ? -1 : 0}
-      zIndex={isActive ? 2 : 1}
-      alignItems="center"
-      justifyContent="center"
-      shadowColor={isActive ? colors.text : 'transparent'}
-      shadowOffset={{ width: 0, height: isActive ? -2 : 0 }}
-      shadowOpacity={isActive ? 0.1 : 0}
-      shadowRadius={isActive ? 3 : 0}
-      elevation={isActive ? 3 : 0}
-      onPress={onPress}
-    >
+    <YStack {...tabStyles}  onPress={onPress}>
       <XStack alignItems="center" space={spacing.small}>
         {icon}
         <Text 
@@ -136,7 +142,7 @@ export function getResponsiveExerciseComponent(
           {/* Tabs for AM/PM workouts */}
           <XStack width="100%" alignItems="flex-end" marginBottom={0}>
             <SessionTab 
-              label="MORNING SESSION"
+              label={isNarrow ? "AM SESSION" : "MORNING SESSION"}
               icon={<Sun 
                 size={isNarrow ? 18 : 22} 
                 color={activeTab === 'am' ? colors.textSecondary : colors.textMuted} 
@@ -146,7 +152,7 @@ export function getResponsiveExerciseComponent(
             />
             
             <SessionTab 
-              label="EVENING SESSION"
+              label={isNarrow ? "PM SESSION" : "EVENING SESSION"}
               icon={<Moon 
                 size={isNarrow ? 18 : 22} 
                 color={activeTab === 'pm' ? colors.textSecondary : colors.textMuted} 

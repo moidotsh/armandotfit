@@ -1,4 +1,4 @@
-// Updated app/workout-detail.tsx with scrollable header and date format
+// Updated app/workout-detail.tsx with shorter titles for dual sessions
 
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
@@ -37,6 +37,11 @@ export default function WorkoutDetailScreen() {
   // Format today's date
   const today = new Date();
   const formattedDate = format(today, 'MMMM d, yyyy');
+  
+  // Get the title - for dual sessions, use a shorter form
+  const workoutTitle = type === 'twoADay' 
+    ? `Dual Session Day ${dayNumber}` 
+    : workout.title;
 
   return (
     <ScrollView 
@@ -83,7 +88,7 @@ export default function WorkoutDetailScreen() {
           numberOfLines={2} // Allow wrapping for long titles
           marginBottom={spacing.large}
         >
-          {workout.title}
+          {workoutTitle}
         </Text>
       </YStack>
       
