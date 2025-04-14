@@ -1,13 +1,13 @@
+// components/ThemeProvider.tsx - Light Theme Only Version
 import React, { createContext, useContext, ReactNode, useMemo } from 'react';
-import { useColorScheme } from 'react-native';
-import { Theme, useTheme as useTamaguiTheme } from 'tamagui';
+import { Theme } from 'tamagui';
 import { theme } from '../constants/theme';
 
 // Define the theme context type
 type ThemeContextType = {
-  colorScheme: 'light' | 'dark';
-  isDark: boolean;
-  colors: typeof theme.colors.light | typeof theme.colors.dark;
+  colorScheme: 'light'; // Always light
+  isDark: false; // Never dark
+  colors: typeof theme.colors.light; // Always light colors
   spacing: typeof theme.spacing;
   fontSize: typeof theme.fontSize;
   fontWeight: typeof theme.fontWeight;
@@ -33,18 +33,15 @@ type ThemeProviderProps = {
   children: ReactNode;
 };
 
-// ThemeProvider component
+// ThemeProvider component - always light mode
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const tamaguiTheme = useTamaguiTheme();
-  const colorScheme = useColorScheme() as 'light' | 'dark';
-  const isDark = colorScheme === 'dark';
-  
   // Memoize the theme value to prevent unnecessary re-renders
-  const themeValue = useMemo(() => {
+  // Always use light theme regardless of system preference
+  const themeValue = useMemo((): ThemeContextType => {
     return {
-      colorScheme,
-      isDark,
-      colors: isDark ? theme.colors.dark : theme.colors.light,
+      colorScheme: 'light',
+      isDark: false,
+      colors: theme.colors.light,
       spacing: theme.spacing,
       fontSize: theme.fontSize,
       fontWeight: theme.fontWeight,
@@ -52,11 +49,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       shadows: theme.shadows,
       animation: theme.animation
     };
-  }, [colorScheme, isDark]);
+  }, []);
 
   return (
     <ThemeContext.Provider value={themeValue}>
-      <Theme name={colorScheme}>
+      <Theme name="light">
         {children}
       </Theme>
     </ThemeContext.Provider>

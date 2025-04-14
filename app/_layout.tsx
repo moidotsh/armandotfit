@@ -3,16 +3,16 @@ import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { TamaguiProvider } from 'tamagui';
-import { useColorScheme } from 'react-native';
 import config from '../tamagui.config';
 import { ThemeProvider } from '../components/ThemeProvider';
 import { theme } from '../constants/theme';
+import { Platform } from 'react-native';
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  // Always use light theme
   const [loaded] = useFonts({
     // You can add custom fonts here if needed
   });
@@ -21,19 +21,24 @@ export default function RootLayout() {
     if (loaded) {
       SplashScreen.hideAsync();
     }
+    
+    // Force light mode on web
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      document.documentElement.classList.remove('dark-theme');
+      document.documentElement.classList.add('light-theme');
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
   }, [loaded]);
 
   if (!loaded) {
     return null;
   }
 
-  // Get the background color based on the color scheme
-  const backgroundColor = colorScheme === 'dark' 
-    ? theme.colors.dark.background 
-    : theme.colors.light.background;
+  // Get the light background color
+  const backgroundColor = theme.colors.light.background;
 
   return (
-    <TamaguiProvider config={config} defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}>
+    <TamaguiProvider config={config} defaultTheme="light">
       <ThemeProvider>
         <Stack
           screenOptions={{

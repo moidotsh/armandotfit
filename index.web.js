@@ -1,26 +1,22 @@
-// index.web.js - Fixed entry point for web
+// index.web.js - Enforce Light Mode
 import 'expo-router/entry';
 import './global.css';
 
-// Ensure proper theme application
+// Ensure light mode on web
 if (typeof document !== 'undefined') {
-  // Function to set theme class on root element
-  const applyTheme = () => {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.classList.remove('light-theme', 'dark-theme');
-    document.documentElement.classList.add(prefersDark ? 'dark-theme' : 'light-theme');
-    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-  };
-
-  // Initial theme application
-  applyTheme();
+  // Force light mode
+  document.documentElement.classList.remove('dark-theme');
+  document.documentElement.classList.add('light-theme');
+  document.documentElement.setAttribute('data-theme', 'light');
   
-  // Watch for theme changes
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
-  
-  // Inject important baseline styles
+  // Inject essential styles
   const styleElement = document.createElement('style');
   styleElement.textContent = `
+    body, html, #root {
+      background-color: #F5F5F5 !important;
+      color: #000000 !important;
+    }
+    
     * {
       -webkit-tap-highlight-color: transparent !important;
     }
@@ -29,24 +25,22 @@ if (typeof document !== 'undefined') {
       display: flex;
     }
     
-    body, #root {
-      height: 100vh;
-      width: 100vw;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
+    .tamagui-YStack {
+      flex-direction: column;
+    }
+    
+    .tamagui-XStack {
+      flex-direction: row;
     }
   `;
   document.head.appendChild(styleElement);
   
-  // Disable focus rings for non-keyboard focus
-  document.addEventListener('mousedown', () => {
-    document.body.classList.add('using-mouse');
-  });
-  
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab') {
-      document.body.classList.remove('using-mouse');
-    }
+  // Prevent theme auto-detection
+  const mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
+  mediaQueryList.addEventListener('change', () => {
+    // Always force light theme when system preference changes
+    document.documentElement.classList.remove('dark-theme');
+    document.documentElement.classList.add('light-theme');
+    document.documentElement.setAttribute('data-theme', 'light');
   });
 }
