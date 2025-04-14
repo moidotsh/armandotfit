@@ -1,4 +1,4 @@
-/* global.css - Import this in your app's entry point */
+/* Improved global.css for web builds */
 
 /* Base styles */
 html, body, #root {
@@ -12,106 +12,87 @@ html, body, #root {
       Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
   
-  /* Ensure proper height */
-  #root {
-    display: flex;
-    flex-direction: column;
+  /* Dark/Light mode base styling */
+  :root {
+    color-scheme: light;
   }
   
-  /* Tamagui elements need proper styling */
-  [data-tamagui-component] {
-    display: flex;
-  }
-  
-  /* Fix for YStack, XStack, and other Tamagui components */
-  .tamagui-Stack, .tamagui-YStack, .tamagui-XStack, .tamagui-ZStack {
-    display: flex;
-  }
-  
-  .tamagui-YStack {
-    flex-direction: column;
-  }
-  
-  .tamagui-XStack {
-    flex-direction: row;
-  }
-  
-  /* Ensure buttons have proper styles */
-  .tamagui-Button {
-    cursor: pointer;
-    overflow: hidden;
-    position: relative;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    user-select: none;
-  }
-  
-  /* Remove focus outlines and highlight colors from all interactive elements */
-  button, 
-  [role="button"], 
-  a, 
-  input, 
-  textarea, 
-  select, 
-  .tamagui-Button,
-  .tamagui-Card {
-    -webkit-tap-highlight-color: transparent !important;
-    outline: none !important;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  
-  /* Remove focus outlines on focus */
-  button:focus,
-  [role="button"]:focus,
-  a:focus,
-  input:focus,
-  textarea:focus,
-  select:focus,
-  .tamagui-Button:focus,
-  .tamagui-Card:focus {
-    outline: none !important;
-    -webkit-tap-highlight-color: transparent !important;
-  }
-  
-  /* Card styling */
-  .tamagui-Card {
-    position: relative;
-    overflow: hidden;
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  /* Make sure text is readable */
-  .tamagui-Text, .tamagui-Paragraph, .tamagui-Heading {
-    display: block;
-  }
-  
-  /* Dark mode helper */
   .dark-theme {
     color-scheme: dark;
   }
   
-  /* Light mode helper */
   .light-theme {
     color-scheme: light;
   }
   
-  /* Colors from the common palette that may not be picked up */
-  :root {
+  /* Force Tamagui components to display as flex */
+  [data-is-tamagui="true"],
+  [data-tamagui-component] {
+    display: flex;
+  }
+  
+  .tamagui-YStack {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .tamagui-XStack {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .tamagui-Text {
+    display: inline;
+  }
+  
+  .tamagui-Paragraph, .tamagui-H1, .tamagui-H2, .tamagui-H3, .tamagui-H4, .tamagui-H5, .tamagui-H6 {
+    display: block;
+  }
+  
+  /* Ensure buttons behave properly */
+  .tamagui-Button {
+    position: relative;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Fix tap highlight on all interactive elements */
+  button, [role="button"], a, input, textarea, select {
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+    outline: none;
+  }
+  
+  /* Ensure proper dimensions for the entire app */
+  #root > div[data-is-tamagui="true"] {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Light theme variables */
+  .light-theme, :root[data-theme="light"] {
     --background: #F5F5F5;
     --foreground: #000000;
     --card: #FFFFFF;
     --card-foreground: #000000;
     --primary: #FF9500;
     --primary-foreground: #FFFFFF;
+    --text: #000000;
+    --text-muted: #777777;
+    --border: #CCCCCC;
   }
   
-  .dark {
+  /* Dark theme variables */
+  .dark-theme, :root[data-theme="dark"] {
     --background: #121212;
     --foreground: #FFFFFF;
     --card: #222222;
     --card-foreground: #FFFFFF;
     --primary: #FF9500;
     --primary-foreground: #FFFFFF;
+    --text: #FFFFFF;
+    --text-muted: #AAAAAA;
+    --border: #444444;
   }
