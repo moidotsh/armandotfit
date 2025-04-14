@@ -1,11 +1,14 @@
 // components/ExerciseCard.tsx
+import { useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { 
   Card, 
   XStack, 
+  YStack,
   Text
 } from 'tamagui';
-import { Exercise } from '../data/workoutData';
+import { ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
+import { Exercise } from '@/data/workoutDataRefactored';
 import { 
   AbsIconAlt, 
   ArmsIcon, 
@@ -17,15 +20,22 @@ import {
 } from './ExerciseIcons';
 import { useAppTheme } from './ThemeProvider';
 
+
+
 export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
   const { colors, borderRadius, fontSize, spacing } = useAppTheme();
   const { width } = useWindowDimensions();
   const isNarrow = width < 350;
+  const [pressed, setPressed] = useState(false);
+
+  
 
   const icon = getExerciseIconFromCategory(
     exercise.category, 
     isNarrow ? 22 : 30
   );
+
+  const categoryLabel = exercise.category.toUpperCase();
 
   return (
     <Card
@@ -37,29 +47,58 @@ export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
       elevate
       bordered
       scale={0.97}
-      pressStyle={{  opacity: 0.9 }}
-      onPress={() => {
-        console.log(`Tapped on exercise: ${exercise.name}`);
-      }}
+      pressStyle={{ opacity: 0.9 }}
+      onPress={() => setPressed(!pressed)}
     >
-      <XStack alignItems="center" justifyContent="space-between">
+      <XStack alignItems="flex-start" justifyContent="space-between">
         <XStack alignItems="center" flex={1}>
           {icon}
-          <Text
-            marginLeft={isNarrow ? spacing.medium : spacing.large}
-            color={colors.text}
-            fontSize={isNarrow ? fontSize.medium : fontSize.large}
-            fontWeight="500"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            flex={1}
-          >
-            {exercise.name}
-          </Text>
+          <YStack marginLeft={isNarrow ? spacing.medium : spacing.large} flex={1}>
+            <Text
+              fontSize={fontSize.small}
+              color={colors.textMuted}
+              fontWeight="600"
+              marginBottom={2}
+            >
+              {categoryLabel}:
+            </Text>
+            <Text
+              color={colors.text}
+              fontSize={isNarrow ? fontSize.medium : fontSize.large}
+              fontWeight="500"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {exercise.name}
+            </Text>
+            {exercise.extra && (
+              <Text
+                color={colors.textMuted}
+                fontSize={fontSize.small}
+                fontStyle="italic"
+              >
+                {exercise.extra}
+              </Text>
+            )}
+          </YStack>
         </XStack>
-        <Text color={colors.arrow} fontSize={fontSize.xlarge} fontWeight="300">
-          ›
-        </Text>
+
+        <YStack alignItems="flex-end">
+          {(exercise.sets && exercise.reps) && (
+            <Text
+              color={colors.textMuted}
+              fontSize={fontSize.small}
+              marginBottom={2}
+            >
+              {exercise.sets} × {exercise.reps[0]}–{exercise.reps[1]}
+            </Text>
+          )}
+          {pressed ? (
+            <ChevronDown size={fontSize.xlarge} color={colors.arrow} />
+          ) : (
+            <ChevronRight size={fontSize.xlarge} color={colors.arrow} />
+          )}
+        </YStack>
       </XStack>
     </Card>
   );

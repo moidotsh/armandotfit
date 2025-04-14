@@ -3,29 +3,45 @@
 import React, { useState } from 'react';
 import { XStack, Text, Button } from 'tamagui';
 import { Sun, Moon } from '@tamagui/lucide-icons';
-import { OneADayWorkout, TwoADayWorkout, Exercise } from '../data/workoutData';
+import { Exercise } from '@/data/workoutDataRefactored';
 import { ExerciseCard } from './ExerciseCard';
 import { useAppTheme } from './ThemeProvider';
 
-interface WorkoutSessionTabsProps {
-  workout: OneADayWorkout | TwoADayWorkout;
+interface OneADaySplit {
+  day: number;
+  title: string;
+  exercises: string[];
 }
 
-export const WorkoutSessionTabs = ({ workout }: WorkoutSessionTabsProps) => {
+interface TwoADaySplit {
+  day: number;
+  title: string;
+  am: string[];
+  pm: string[];
+}
+
+interface WorkoutSessionTabsProps {
+  workout: OneADaySplit | TwoADaySplit;
+  exerciseMap: Record<string, Exercise>;
+}
+
+export const WorkoutSessionTabs = ({ workout, exerciseMap }: WorkoutSessionTabsProps) => {
   const { colors, fontSize, spacing, borderRadius } = useAppTheme();
   const [activeTab, setActiveTab] = useState<'am' | 'pm'>('am');
 
+  const renderExercises = (slugs: string[]) => {
+    return slugs.map((slug, index) => {
+      const exercise = exerciseMap[slug];
+      if (!exercise) {
+        console.warn(`Unknown exercise slug: ${slug}`);
+        return null;
+      }
+      return <ExerciseCard key={index} exercise={exercise} />;
+    });
+  };
+
   if ('exercises' in workout) {
-    return (
-      <>
-        {workout.exercises.map((exercise: Exercise, index: number) => (
-          <ExerciseCard
-            key={index}
-            exercise={exercise}
-          />
-        ))}
-      </>
-    );
+    return <>{renderExercises(workout.exercises)}</>;
   }
 
   return (
@@ -46,15 +62,8 @@ export const WorkoutSessionTabs = ({ workout }: WorkoutSessionTabsProps) => {
           focusStyle={{}}
         >
           <XStack alignItems="center" space={spacing.small} justifyContent="center">
-            <Sun 
-              size={22} 
-              color={activeTab === 'am' ? 'white' : colors.textMuted} 
-            />
-            <Text 
-              color={activeTab === 'am' ? 'white' : colors.textMuted}
-              fontWeight="600"
-              fontSize={fontSize.medium}
-            >
+            <Sun size={22} color={activeTab === 'am' ? 'white' : colors.textMuted} />
+            <Text color={activeTab === 'am' ? 'white' : colors.textMuted} fontWeight="600" fontSize={fontSize.medium}>
               AM
             </Text>
           </XStack>
@@ -75,36 +84,15 @@ export const WorkoutSessionTabs = ({ workout }: WorkoutSessionTabsProps) => {
           focusStyle={{}}
         >
           <XStack alignItems="center" space={spacing.small} justifyContent="center">
-            <Moon 
-              size={22} 
-              color={activeTab === 'pm' ? 'white' : colors.textMuted} 
-            />
-            <Text 
-              color={activeTab === 'pm' ? 'white' : colors.textMuted}
-              fontWeight="600"
-              fontSize={fontSize.medium}
-            >
+            <Moon size={22} color={activeTab === 'pm' ? 'white' : colors.textMuted} />
+            <Text color={activeTab === 'pm' ? 'white' : colors.textMuted} fontWeight="600" fontSize={fontSize.medium}>
               PM
             </Text>
           </XStack>
         </Button>
       </XStack>
 
-      {activeTab === 'am' ? (
-        workout.amExercises.map((exercise: Exercise, index: number) => (
-          <ExerciseCard
-            key={`am-${index}`}
-            exercise={exercise}
-          />
-        ))
-      ) : (
-        workout.pmExercises.map((exercise: Exercise, index: number) => (
-          <ExerciseCard
-            key={`pm-${index}`}
-            exercise={exercise}
-          />
-        ))
-      )}
+      {renderExercises(activeTab === 'am' ? workout.am : workout.pm)}
     </>
   );
 };

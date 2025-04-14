@@ -15,7 +15,7 @@ import {
   useTheme
 } from 'tamagui';
 import { ChevronLeft } from '@tamagui/lucide-icons';
-import { workoutData } from '../data/workoutData';
+import { exercises, oneADaySplits, twoADaySplits } from '../data/workoutDataRefactored';
 
 // Updated split type names with shorter descriptions
 const SPLIT_TYPES = {
@@ -39,8 +39,8 @@ export default function SplitSelectionScreen() {
   const { type = 'oneADay' } = useLocalSearchParams<{ type?: 'oneADay' | 'twoADay' }>();
   
   const isDark = theme.name?.get() === 'dark';
-  const splits = type === 'oneADay' ? workoutData.oneADay : workoutData.twoADay;
-  const splitType = SPLIT_TYPES[type] || SPLIT_TYPES.oneADay;
+  const splits = type === 'oneADay' ? oneADaySplits : twoADaySplits;
+    const splitType = SPLIT_TYPES[type] || SPLIT_TYPES.oneADay;
   
   // Helper function to format workout day titles
   const formatDayTitle = (day: number, title: string, type: 'oneADay' | 'twoADay') => {
