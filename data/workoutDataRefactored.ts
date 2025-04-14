@@ -33,8 +33,8 @@ export interface Exercise {
     "leg-extension-machine": {"category": "UpperLeg", "name": "Leg Extension", "extra": "Machine", "sets": 3, "reps": [10, 12]},
     "hip-adduction-machine": {"category": "UpperLeg", "name": "Hip Adduction", "extra": "Machine", "sets": 3, "reps": [12, 15]},
     "tibia-raise-machine-or-band": {"category": "LowerLeg", "name": "Tibia Raise", "extra": "Machine or Band", "sets": 3, "reps": [15, 20]},
-    "calf-raise-leg-press-machine": {"category": "LowerLeg", "name": "Calf Raise", "extra": "Leg Press Machine", "sets": 3, "reps": [8, 10]},
-    "machine-calf-raise-standing": {"category": "LowerLeg", "name": "Machine Calf Raise", "extra": "Standing", "sets": 3, "reps": [8, 10]},
+    "calf-raise-leg-press-machine": {"category": "LowerLeg", "name": "Calf Raise", "extra": "Leg Press Machine", "sets": 3, "reps": [15, 20]},
+    "machine-calf-raise-standing": {"category": "LowerLeg", "name": "Machine Calf Raise", "extra": "Standing", "sets": 3, "reps": [15, 20]},
     "leg-raise-captains-chair": {"category": "Abs", "name": "Leg Raise", "extra": "Captain's Chair", "sets": 3, "reps": [15, 20]},
     "machine-ab-crunch-eccentric-emphasized": {"category": "Abs", "name": "Machine Ab Crunch", "extra": "Eccentric-Emphasized", "sets": 3, "reps": [15, 20]},
   };
