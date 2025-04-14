@@ -1,13 +1,14 @@
 // components/ExerciseCard.tsx
 import { useState } from 'react';
 import { useWindowDimensions } from 'react-native';
+import { router } from 'expo-router';
 import { 
   Card, 
   XStack, 
   YStack,
   Text
 } from 'tamagui';
-import { ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
+import { ChevronRight } from '@tamagui/lucide-icons';
 import { Exercise } from '@/data/workoutDataRefactored';
 import { 
   AbsIconAlt, 
@@ -20,15 +21,32 @@ import {
 } from './ExerciseIcons';
 import { useAppTheme } from './ThemeProvider';
 
+// Find the exercise ID (slug) by its properties
+const findExerciseId = (exercise: Exercise, exerciseMap: Record<string, Exercise>): string => {
+  console.log('Looking for exercise:', exercise.name, exercise.category);
+  
+  for (const [id, ex] of Object.entries(exerciseMap)) {
+    if (ex.name === exercise.name && ex.category === exercise.category) {
+      console.log('Found matching exercise ID:', id);
+      return id;
+    }
+  }
+  
+  console.log('No matching exercise ID found');
+  return '';
+};
 
-
-export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
+export const ExerciseCard = ({ 
+  exercise,
+  exerciseMap
+}: { 
+  exercise: Exercise;
+  exerciseMap: Record<string, Exercise>;
+}) => {
   const { colors, borderRadius, fontSize, spacing } = useAppTheme();
   const { width } = useWindowDimensions();
   const isNarrow = width < 350;
   const [pressed, setPressed] = useState(false);
-
-  
 
   const icon = getExerciseIconFromCategory(
     exercise.category, 
@@ -36,6 +54,20 @@ export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
   );
 
   const categoryLabel = exercise.category.toUpperCase();
+  const exerciseId = findExerciseId(exercise, exerciseMap);
+
+  const handlePress = () => {
+    if (exerciseId) {
+      console.log('Found exercise ID:', exerciseId);
+      console.log('Navigating to:', `/exercise-detail?id=${exerciseId}&from=workout-detail`);
+      
+      // Most direct approach possible
+      router.push(`/exercise-detail?id=${exerciseId}&from=workout-detail`);
+    } else {
+      console.log('No exercise ID found');
+      setPressed(!pressed);
+    }
+  };
 
   return (
     <Card
@@ -48,7 +80,7 @@ export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
       bordered
       scale={0.97}
       pressStyle={{ opacity: 0.9 }}
-      onPress={() => setPressed(!pressed)}
+      onPress={handlePress}
     >
       <XStack alignItems="flex-start" justifyContent="space-between">
         <XStack alignItems="center" flex={1}>
@@ -93,11 +125,7 @@ export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
               {exercise.sets} × {exercise.reps[0]}–{exercise.reps[1]}
             </Text>
           )}
-          {pressed ? (
-            <ChevronDown size={fontSize.xlarge} color={colors.arrow} />
-          ) : (
-            <ChevronRight size={fontSize.xlarge} color={colors.arrow} />
-          )}
+          <ChevronRight size={fontSize.xlarge} color={colors.arrow} />
         </YStack>
       </XStack>
     </Card>

@@ -36,7 +36,7 @@ export const WorkoutSessionTabs = ({ workout, exerciseMap }: WorkoutSessionTabsP
         console.warn(`Unknown exercise slug: ${slug}`);
         return null;
       }
-      return <ExerciseCard key={index} exercise={exercise} />;
+      return <ExerciseCard key={index} exercise={exercise} exerciseMap={exerciseMap} />;
     });
   };
 

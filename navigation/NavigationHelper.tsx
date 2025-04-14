@@ -9,8 +9,7 @@ export enum NavigationPath {
     HOME = 'home',
     WORKOUT_DETAIL = 'workout-detail',
     SPLIT_SELECTION = 'split-selection',
-    // Rather than including non-existent routes, we'll handle them differently
-    // EXERCISE_DETAIL = 'exercise-detail' // Future page
+    EXERCISE_DETAIL = 'exercise-detail' 
   }
   
   /**
@@ -73,32 +72,53 @@ export function goBack(currentPath: NavigationPath | string, fromParam?: string)
 /**
  * Navigate to any path in the app
  */
+/**
+ * Navigate to any path in the app
+ */
 export function navigateToPath(path: NavigationPath, params: Record<string, string> = {}) {
+    // Add debugging logs
+    console.log('NavigateToPath called with:', { path, params });
+    
     // Handle home route specially
     if (path === NavigationPath.HOME) {
+      console.log('Navigating to home');
       router.push('/');
       return;
     }
     
-    // For existing routes, use the path directly
-    if (path === NavigationPath.WORKOUT_DETAIL || path === NavigationPath.SPLIT_SELECTION) {
-      const routePath = `/${path}`;
+    // Try the direct string approach for exercise-detail
+    if (path === NavigationPath.EXERCISE_DETAIL) {
+      // Build query string manually
+      const queryString = Object.entries(params)
+        .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
+        .join('&');
+        
+      const fullPath = `/exercise-detail${queryString ? `?${queryString}` : ''}`;
+      console.log('Using direct navigation to:', fullPath);
       
-      if (Object.keys(params).length > 0) {
-        // Use href format for paths with query parameters
-        router.push({
-          pathname: routePath as any, // Using 'as any' to bypass the type checking here
-          params: params
-        });
-      } else {
-        router.push(routePath as any); // Using 'as any' to bypass the type checking
+      try {
+        router.push(fullPath as any);
+        console.log('Direct navigation attempt completed');
+      } catch (error) {
+        console.error('Direct navigation error:', error);
       }
       return;
     }
     
-    // Fallback for any future routes - will only be used when those routes exist
-    console.log(`Navigating to future route: ${path}`);
-    router.push('/');
+    // For other routes, use the object approach
+    const navigationObject = {
+      pathname: `/${path}`,
+      params
+    };
+    
+    console.log('Navigation object:', navigationObject);
+    
+    try {
+      router.push(navigationObject as any);
+      console.log('Navigation successful');
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
   }
 
 /**
