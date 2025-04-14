@@ -1,4 +1,4 @@
-// Updated ExerciseCard component - NO CONSTRAINING BOX
+// Updated ExerciseCard component - NO CONSTRAINING BOX with glitch-style icons
 import React, { useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { 
@@ -10,21 +10,27 @@ import {
 } from 'tamagui';
 import { Sun, Moon } from '@tamagui/lucide-icons';
 import { Exercise, OneADayWorkout, TwoADayWorkout } from '../data/workoutData';
-import { AbsIcon, BicepCurlIcon, CalfRaiseIcon, ChestPressIcon, LateralRaiseIcon, LegPressIcon, RowIcon } from './ExerciseIcons';
+import { 
+  AbsIconAlt, 
+  ArmsIcon, 
+  BackIcon, 
+  ChestIcon, 
+  LowerLegIcon, 
+  ShouldersIcon, 
+  UpperLegIcon 
+} from './ExerciseIcons';
 import { useAppTheme } from './ThemeProvider';
 
 export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
-  // Use our centralized theme
   const { colors, borderRadius, fontSize, spacing } = useAppTheme();
   const { width } = useWindowDimensions();
   const isNarrow = width < 350;
-  
-  // Get the appropriate icon
-  const icon = getResponsiveExerciseIcon(
-    exercise.name, 
+
+  const icon = getExerciseIconFromCategory(
+    exercise.category, 
     isNarrow ? 22 : 30
   );
-  
+
   return (
     <Card
       marginBottom={spacing.small}
@@ -35,7 +41,7 @@ export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
       elevate
       bordered
       scale={0.97}
-      pressStyle={{ scale: 0.95, opacity: 0.9 }}
+      pressStyle={{  opacity: 0.9 }}
       onPress={() => {
         console.log(`Tapped on exercise: ${exercise.name}`);
       }}
@@ -63,18 +69,16 @@ export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
   );
 };
 
-// Helper function to render workout exercises - COMPLETELY REMOVED BOX
 export function getResponsiveExerciseComponent(
   workout: OneADayWorkout | TwoADayWorkout,
   isNarrow: boolean
 ) {
   const { colors, fontSize, spacing, borderRadius } = useAppTheme();
   const [activeTab, setActiveTab] = useState<'am' | 'pm'>('am');
-  
+
   return (
     <>
       {isOneADayWorkout(workout) ? (
-        // One-A-Day workout rendering
         workout.exercises.map((exercise: Exercise, index: number) => (
           <ExerciseCard
             key={index}
@@ -82,18 +86,16 @@ export function getResponsiveExerciseComponent(
           />
         ))
       ) : isTwoADayWorkout(workout) ? (
-        // Two-A-Day workout with tabs only - NO BOX
         <>
-          {/* Just tabs - no container connection */}
-          <XStack width="95%" marginBottom={spacing.medium}  alignSelf='center'>
+          <XStack width="95%" marginBottom={spacing.medium} alignSelf='center'>
             <Button
               chromeless
               style={{
                 backgroundColor: activeTab === 'am' ? colors.buttonBackground : colors.backgroundAlt,
                 borderTopLeftRadius: borderRadius.medium,
                 borderBottomLeftRadius: borderRadius.medium,
-                borderTopRightRadius: 0,      // <- remove inner radius
-                borderBottomRightRadius: 0,   // <- remove inner radius
+                borderTopRightRadius: 0,
+                borderBottomRightRadius: 0,
                 paddingVertical: spacing.small,
                 flex: 1,
               }}
@@ -114,15 +116,15 @@ export function getResponsiveExerciseComponent(
                 </Text>
               </XStack>
             </Button>
-            
+
             <Button
               chromeless
               style={{
                 backgroundColor: activeTab === 'pm' ? colors.buttonBackground : colors.backgroundAlt,
                 borderTopRightRadius: borderRadius.medium,
                 borderBottomRightRadius: borderRadius.medium,
-                borderTopLeftRadius: 0,       // <- remove inner radius
-                borderBottomLeftRadius: 0,    // <- remove inner radius
+                borderTopLeftRadius: 0,
+                borderBottomLeftRadius: 0,
                 paddingVertical: spacing.small,
                 flex: 1,
               }}
@@ -144,8 +146,7 @@ export function getResponsiveExerciseComponent(
               </XStack>
             </Button>
           </XStack>
-          
-          {/* Render selected exercises with NO CONTAINER */}
+
           {activeTab === 'am' ? (
             workout.amExercises.map((exercise: Exercise, index: number) => (
               <ExerciseCard
@@ -167,29 +168,20 @@ export function getResponsiveExerciseComponent(
   );
 }
 
-// Updated getExerciseIcon function to use themed colors
-export const getResponsiveExerciseIcon = (name: string, size: number = 30) => {
-  if (name.includes('Press') && (name.includes('Chest') || name.includes('Barbell Press'))) {
-    return <ChestPressIcon size={size} />;
-  } else if (name.includes('Leg Press')) {
-    return <LegPressIcon size={size} />;
-  } else if (name.includes('Row')) {
-    return <RowIcon size={size} />;
-  } else if (name.includes('Lateral') || name.includes('Raises')) {
-    return <LateralRaiseIcon size={size} />;
-  } else if (name.includes('Curl')) {
-    return <BicepCurlIcon size={size} />;
-  } else if (name.includes('Calf') || name.includes('Tibia')) {
-    return <CalfRaiseIcon size={size} />;
-  } else if (name.includes('Ab') || name.includes('Chair')) {
-    return <AbsIcon size={size} />;
-  } else {
-    // Default icon
-    return <ChestPressIcon size={size} />;
+export const getExerciseIconFromCategory = (category: string, size: number = 30) => {
+  switch (category.toLowerCase()) {
+    case 'chest': return <ChestIcon size={size} />;
+    case 'arms': return <ArmsIcon size={size} />;
+    case 'shoulders': return <ShouldersIcon size={size} />;
+    case 'back':
+    case 'back/shoulders': return <BackIcon size={size} />;
+    case 'upperleg': return <UpperLegIcon size={size} />;
+    case 'lowerleg': return <LowerLegIcon size={size} />;
+    case 'abs': return <AbsIconAlt size={size} />;
+    default: return <ChestIcon size={size} />;
   }
 };
 
-// Type guard functions 
 const isOneADayWorkout = (workout: OneADayWorkout | TwoADayWorkout): workout is OneADayWorkout => {
   return 'exercises' in workout;
 };
