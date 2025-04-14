@@ -12,8 +12,6 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
-
-
 export default function RootLayout() {
   // Always use light theme
   const [loaded] = useFonts({
@@ -33,9 +31,9 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-if (!loaded) {
-  return <LoadingScreen />; // ⬅️ Use our slick SVG loader here
-}
+  if (!loaded) {
+    return <LoadingScreen />; // ⬅️ Use our slick SVG loader here
+  }
 
   // Get the light background color
   const backgroundColor = theme.colors.light.background;

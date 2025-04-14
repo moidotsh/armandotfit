@@ -1,8 +1,7 @@
-// Updated app/index.tsx with Feature Components
+// Updated app/index.tsx with navigation components
 
 import React, { useState, useRef, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { router } from 'expo-router';
 import { Animated, useWindowDimensions } from 'react-native';
 import { 
   YStack, 
@@ -14,11 +13,12 @@ import {
   Separator
 } from 'tamagui';
 import { format } from 'date-fns';
-import { BarChart2, TrendingUp, Clock, AlertCircle, History } from '@tamagui/lucide-icons';
+import { BarChart2, TrendingUp, Clock, AlertCircle } from '@tamagui/lucide-icons';
 import { useAppTheme } from '../components/ThemeProvider';
 import { SplitType } from '../constants/theme';
 import { DaySelector } from '../components/DaySelector';
 import { FeatureSection } from '../components/FeatureCard';
+import { navigateToWorkout } from '../navigation';
 
 // App version displayed in the UI
 const APP_VERSION = "v1.0.3";
@@ -72,12 +72,6 @@ export default function HomeScreen() {
     }
   }, [showAlert, fadeAnim]);
   
-  const navigateToWorkout = () => {
-    if (splitType && selectedDay) {
-      router.push(`/workout-detail?type=${splitType}&day=${selectedDay}`);
-    }
-  };
-  
   const handleStartWorkoutPress = () => {
     if (!splitType && !selectedDay) {
       setAlertMessage('Please select a workout type and day');
@@ -89,7 +83,7 @@ export default function HomeScreen() {
       setAlertMessage('Please select a workout day');
       setShowAlert(true);
     } else {
-      navigateToWorkout();
+      navigateToWorkout(splitType, selectedDay);
     }
   };
 
@@ -323,7 +317,7 @@ export default function HomeScreen() {
         Start Workout
       </Button>
       
-      {/* Feature cards using the new component */}
+      {/* Feature cards using the component */}
       <FeatureSection features={features} />
     </YStack>
   );

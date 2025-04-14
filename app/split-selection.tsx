@@ -1,4 +1,4 @@
-// Updated app_split-selection.tsx with shorter titles
+// Updated app/split-selection.tsx with shorter titles and using the new AppHeader
 
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
@@ -6,19 +6,20 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useWindowDimensions } from 'react-native';
 import { 
   YStack, 
-  XStack,
   Text, 
   Card, 
   ScrollView,
-  Button,
-  H2,
   useTheme
 } from 'tamagui';
-import { ChevronLeft } from '@tamagui/lucide-icons';
 import { exercises, oneADaySplits, twoADaySplits } from '../data/workoutDataRefactored';
+import { AppHeader, SplitSelectionRouteParams } from '../navigation';
 
 // Updated split type names with shorter descriptions
-const SPLIT_TYPES = {
+const SPLIT_TYPES: Record<string, {
+  id: string;
+  name: string;
+  description: string;
+}> = {
   oneADay: {
     id: 'oneADay',
     name: 'Full Body Split',
@@ -36,14 +37,14 @@ export default function SplitSelectionScreen() {
   const { width } = useWindowDimensions();
   const isNarrow = width < 350;
   
-  const { type = 'oneADay' } = useLocalSearchParams<{ type?: 'oneADay' | 'twoADay' }>();
+  const { type = 'oneADay' } = useLocalSearchParams<SplitSelectionRouteParams>();
   
   const isDark = theme.name?.get() === 'dark';
   const splits = type === 'oneADay' ? oneADaySplits : twoADaySplits;
-    const splitType = SPLIT_TYPES[type] || SPLIT_TYPES.oneADay;
+  const splitType = SPLIT_TYPES[type] || SPLIT_TYPES.oneADay;
   
   // Helper function to format workout day titles
-  const formatDayTitle = (day: number, title: string, type: 'oneADay' | 'twoADay') => {
+  const formatDayTitle = (day: number, title: string, type: string) => {
     if (type === 'twoADay') {
       return `Dual Session Day ${day}`;
     }
@@ -66,28 +67,10 @@ export default function SplitSelectionScreen() {
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
-      <XStack alignItems="center" space={isNarrow ? "$3" : "$4"} paddingBottom={isNarrow ? 6 : 10}>
-        <Button
-          icon={<ChevronLeft size="$1" />}
-          size="$3"
-          circular
-          onPress={() => router.back()}
-        />
-        <YStack>
-          <H2 
-            color="$color" 
-            fontSize={isNarrow ? 22 : undefined}
-          >
-            {splitType.name}
-          </H2>
-          <Text 
-            color="$gray10" 
-            fontSize={isNarrow ? 14 : 16}
-          >
-            {splitType.description}
-          </Text>
-        </YStack>
-      </XStack>
+      <AppHeader 
+        title={splitType.name}
+        subtitle={splitType.description}
+      />
       
       <Text 
         paddingVertical={isNarrow ? 12 : 16} 
@@ -128,15 +111,17 @@ export default function SplitSelectionScreen() {
                   {formatDayTitle(split.day, split.title, type)}
                 </Text>
               </YStack>
-              <XStack justifyContent="flex-end" marginTop={10}>
-                <Text 
-                  color={isDark ? '#555555' : '#CCCCCC'} 
-                  fontSize={28} 
-                  fontWeight="300"
-                >
-                  ›
-                </Text>
-              </XStack>
+              <Text 
+                color={isDark ? '#555555' : '#CCCCCC'} 
+                fontSize={28} 
+                fontWeight="300"
+                position="absolute"
+                right={isNarrow ? 16 : 20}
+                top="50%"
+                style={{ transform: [{ translateY: -14 }] }}
+              >
+                ›
+              </Text>
             </Card>
           ))}
         </YStack>
