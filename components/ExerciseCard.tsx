@@ -1,5 +1,5 @@
 // Updated ExerciseCard component using centralized theming
-import React from 'react';
+import React, { useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { 
   Card, 
@@ -7,6 +7,7 @@ import {
   Text,
   YStack
 } from 'tamagui';
+import { Sun, Moon } from '@tamagui/lucide-icons';
 import { Exercise, OneADayWorkout, TwoADayWorkout } from '../data/workoutData';
 import { AbsIcon, BicepCurlIcon, CalfRaiseIcon, ChestPressIcon, LateralRaiseIcon, LegPressIcon, RowIcon } from './ExerciseIcons';
 import { useAppTheme } from './ThemeProvider';
@@ -62,16 +63,67 @@ export const ExerciseCard = ({ exercise }: { exercise: Exercise }) => {
   );
 };
 
+// Session Tab Component for AM/PM workouts
+interface SessionTabProps {
+  label: string;
+  icon: React.ReactNode;
+  isActive: boolean;
+  onPress: () => void;
+}
+
+const SessionTab = ({ label, icon, isActive, onPress }: SessionTabProps) => {
+  const { colors, spacing, fontSize, borderRadius } = useAppTheme();
+  const { width } = useWindowDimensions();
+  const isNarrow = width < 350;
+  
+  return (
+    <YStack
+      flex={1}
+      backgroundColor={isActive ? colors.background : colors.backgroundAlt}
+      borderTopLeftRadius={borderRadius.medium}
+      borderTopRightRadius={borderRadius.medium}
+      borderWidth={1}
+      borderBottomWidth={isActive ? 0 : 1}
+      borderColor={colors.border}
+      paddingVertical={spacing.small}
+      paddingHorizontal={spacing.medium}
+      marginBottom={isActive ? -1 : 0}
+      zIndex={isActive ? 2 : 1}
+      alignItems="center"
+      justifyContent="center"
+      shadowColor={isActive ? colors.text : 'transparent'}
+      shadowOffset={{ width: 0, height: isActive ? -2 : 0 }}
+      shadowOpacity={isActive ? 0.1 : 0}
+      shadowRadius={isActive ? 3 : 0}
+      elevation={isActive ? 3 : 0}
+      onPress={onPress}
+    >
+      <XStack alignItems="center" space={spacing.small}>
+        {icon}
+        <Text 
+          color={isActive ? colors.text : colors.textMuted}
+          fontWeight={isActive ? '600' : '500'}
+          fontSize={isNarrow ? fontSize.small : fontSize.medium}
+        >
+          {label}
+        </Text>
+      </XStack>
+    </YStack>
+  );
+};
+
 // Helper function to render workout exercises
 export function getResponsiveExerciseComponent(
   workout: OneADayWorkout | TwoADayWorkout,
   isNarrow: boolean
 ) {
-  const { colors, fontSize, spacing } = useAppTheme();
+  const { colors, fontSize, spacing, borderRadius } = useAppTheme();
+  const [activeTab, setActiveTab] = useState<'am' | 'pm'>('am');
   
   return (
     <>
       {isOneADayWorkout(workout) ? (
+        // One-A-Day workout rendering stays the same
         workout.exercises.map((exercise: Exercise, index: number) => (
           <ExerciseCard
             key={index}
@@ -79,52 +131,57 @@ export function getResponsiveExerciseComponent(
           />
         ))
       ) : isTwoADayWorkout(workout) ? (
+        // Two-A-Day workout with tabbed interface
         <>
-          {/* AM Exercises */}
-          <YStack
-            backgroundColor={colors.backgroundAlt}
-            padding={spacing.medium}
-            marginBottom={spacing.medium}
-            borderRadius={isNarrow ? 8 : 12}
-          >
-            <Text
-              color={colors.textSecondary}
-              fontSize={isNarrow ? fontSize.small : fontSize.medium}
-              fontWeight="700"
-              marginBottom={spacing.small}
-            >
-              🔵 MORNING WORKOUT
-            </Text>
+          {/* Tabs for AM/PM workouts */}
+          <XStack width="100%" alignItems="flex-end" marginBottom={0}>
+            <SessionTab 
+              label="MORNING SESSION"
+              icon={<Sun 
+                size={isNarrow ? 18 : 22} 
+                color={activeTab === 'am' ? colors.textSecondary : colors.textMuted} 
+              />}
+              isActive={activeTab === 'am'}
+              onPress={() => setActiveTab('am')}
+            />
             
-            {workout.amExercises.map((exercise: Exercise, index: number) => (
-              <ExerciseCard
-                key={`am-${index}`}
-                exercise={exercise}
-              />
-            ))}
-          </YStack>
+            <SessionTab 
+              label="EVENING SESSION"
+              icon={<Moon 
+                size={isNarrow ? 18 : 22} 
+                color={activeTab === 'pm' ? colors.textSecondary : colors.textMuted} 
+              />}
+              isActive={activeTab === 'pm'}
+              onPress={() => setActiveTab('pm')}
+            />
+          </XStack>
           
-          {/* PM Exercises */}
-          <YStack
-            backgroundColor={colors.backgroundAlt}
+          {/* Content container */}
+          <YStack 
+            backgroundColor={colors.background}
+            borderWidth={1}
+            borderColor={colors.border}
+            borderTopWidth={0}
+            borderBottomLeftRadius={borderRadius.medium}
+            borderBottomRightRadius={borderRadius.medium}
             padding={spacing.medium}
-            borderRadius={isNarrow ? 8 : 12}
+            minHeight={300} // Ensure consistent height between tabs
           >
-            <Text
-              color={colors.textSecondary}
-              fontSize={isNarrow ? fontSize.small : fontSize.medium}
-              fontWeight="700"
-              marginBottom={spacing.small}
-            >
-              🟡 EVENING WORKOUT
-            </Text>
-            
-            {workout.pmExercises.map((exercise: Exercise, index: number) => (
-              <ExerciseCard
-                key={`pm-${index}`}
-                exercise={exercise}
-              />
-            ))}
+            {activeTab === 'am' ? (
+              workout.amExercises.map((exercise: Exercise, index: number) => (
+                <ExerciseCard
+                  key={`am-${index}`}
+                  exercise={exercise}
+                />
+              ))
+            ) : (
+              workout.pmExercises.map((exercise: Exercise, index: number) => (
+                <ExerciseCard
+                  key={`pm-${index}`}
+                  exercise={exercise}
+                />
+              ))
+            )}
           </YStack>
         </>
       ) : null}
