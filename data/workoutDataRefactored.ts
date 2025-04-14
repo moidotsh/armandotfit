@@ -45,10 +45,10 @@ export interface Exercise {
       "title": "Full Body Day 1",
       "exercises": [
         "barbell-press-incline",
-        "overhead-tricep-extension-cable",
-        "lateral-raise-cable",
-        "lower-back-extension-calisthenic",
         "leg-press-machine",
+        "overhead-tricep-extension-cable",
+        "lower-back-extension-calisthenic",
+        "lateral-raise-cable",
         "tibia-raise-machine-or-band",
         "leg-raise-captains-chair"
       ]
@@ -57,12 +57,12 @@ export interface Exercise {
       "day": 2,
       "title": "Full Body Day 2",
       "exercises": [
-        "chest-fly-machine",
-        "dumbbell-curl-seated-incline",
-        "reverse-flyes-cable",
         "lat-pulldown-reverse-grip",
         "machine-leg-curl-seated",
+        "chest-fly-machine",
         "machine-calf-raise-standing",
+        "dumbbell-curl-seated-incline",
+        "reverse-flyes-cable",
         "machine-ab-crunch-eccentric-emphasized"
       ]
     },
@@ -71,11 +71,11 @@ export interface Exercise {
       "title": "Full Body Day 3",
       "exercises": [
         "dumbbell-press-incline",
+        "bulgarian-split-squat-dumbbell",
+        "dumbbell-pullover-bridge-position",
+        "tibia-raise-machine-or-band",
         "tricep-dip-machine",
         "dumbbell-lateral-raise-standing",
-        "dumbbell-pullover-bridge-position",
-        "bulgarian-split-squat-dumbbell",
-        "tibia-raise-machine-or-band",
         "leg-raise-captains-chair"
       ]
     },
@@ -83,12 +83,12 @@ export interface Exercise {
       "day": 4,
       "title": "Full Body Day 4",
       "exercises": [
-        "dumbbell-fly-incline",
-        "reverse-plus-hammer-curl-superset",
-        "face-pulls-cable-rope-grip",
         "lever-row-chest-supported",
         "leg-extension-machine",
+        "dumbbell-fly-incline",
         "calf-raise-leg-press-machine",
+        "reverse-plus-hammer-curl-superset",
+        "face-pulls-cable-rope-grip",
         "machine-ab-crunch-eccentric-emphasized"
       ]
     }
