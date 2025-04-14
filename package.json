@@ -10,8 +10,8 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "vercel-build": "TAMAGUI_TARGET=web expo export -p web && cp -r dist/client dist && cp dist/client/index.html dist/"  },
-  "jest": {
+    "vercel-build": "TAMAGUI_TARGET=web expo export -p web" },
+      "jest": {
     "preset": "jest-expo"
   },
   "dependencies": {
