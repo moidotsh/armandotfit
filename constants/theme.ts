@@ -1,5 +1,4 @@
-// Update constants/theme.ts to make buttonBackground consistent across UI
-
+// constants/theme.ts - Enhanced Light-Only Theme System
 export type SplitType = 'oneADay' | 'twoADay';
 
 // Workout split information
@@ -29,183 +28,258 @@ export const WORKOUT_SPLITS: WorkoutSplits = {
   }
 };
 
-// Palette - Base colors
+// Enhanced color palette - optimized for gym environment visibility
 const palette = {
+  // Primary brand colors - keeping the orange but making it more vibrant for gym lighting
   orange: {
     primary: '#FF9500',
     light: '#FFB74D',
-    dark: '#E67700'
+    dark: '#E67700',
+    subtle: '#FFF3E0'
   },
+  
+  // Neutral grays - lighter and more contrasted for better gym visibility
   gray: {
-    50: '#F5F5F5',
-    100: '#EEEEEE',
-    200: '#E0E0E0',
-    300: '#CCCCCC',
-    400: '#AAAAAA',
-    500: '#9E9E9E',
-    600: '#777777',
-    700: '#555555',
-    800: '#333333',
-    900: '#222222',
-    950: '#121212'
+    50: '#FAFAFA',    // Almost white background
+    100: '#F5F5F5',   // Very light background
+    200: '#EEEEEE',   // Light background
+    300: '#E0E0E0',   // Light border
+    400: '#BDBDBD',   // Medium border
+    500: '#9E9E9E',   // Medium text
+    600: '#757575',   // Dark text
+    700: '#616161',   // Darker text
+    800: '#424242',   // Very dark text
+    900: '#212121',   // Almost black
+    950: '#0F0F0F'    // Pure dark
   },
+  
+  // Base colors
   white: '#FFFFFF',
   black: '#000000',
-  success: '#4CAF50',
-  warning: '#FF5733',
-  info: '#2196F3',
-  error: '#F44336',
+  
+  // Semantic colors - optimized for gym environment
+  success: '#4CAF50',   // Keep green for success
+  warning: '#FF9800',   // Orange for warnings
+  error: '#F44336',     // Red for errors
+  info: '#2196F3',      // Blue for info
+  
+  // Exercise category colors - brighter and more distinct
+  exercise: {
+    chest: '#E53E3E',     // Red
+    arms: '#805AD5',      // Purple
+    shoulders: '#3182CE', // Blue
+    back: '#38A169',      // Green
+    upperLeg: '#D69E2E',  // Yellow/Gold
+    lowerLeg: '#DD6B20',  // Orange
+    abs: '#ECC94B',       // Light yellow
+    cardio: '#E53E3E',    // Red variant
+  }
 };
 
-// Category colors for exercise types
+// Category colors for exercise types (enhanced visibility)
 export const categoryColors: Record<string, string> = {
-  'Chest': '#FF5252',
-  'Arms': '#7C4DFF',
-  'Shoulders': '#448AFF',
-  'Back': '#009688',
-  'UpperLeg': '#FF9800',
-  'LowerLeg': '#FFB74D',
-  'Abs': '#FFD54F',
-  'Back/Shoulders': '#4DB6AC',
-  'UpperLeg (Accessory)': '#FFA726'
+  'Chest': palette.exercise.chest,
+  'Arms': palette.exercise.arms,
+  'Shoulders': palette.exercise.shoulders,
+  'Back': palette.exercise.back,
+  'UpperLeg': palette.exercise.upperLeg,
+  'LowerLeg': palette.exercise.lowerLeg,
+  'Abs': palette.exercise.abs,
+  'Back/Shoulders': '#22C55E', // Green variant
+  'UpperLeg (Accessory)': '#F59E0B' // Amber variant
 };
 
-// Theme structure
+// Enhanced theme structure with better organization
 export const theme = {
-  // Color system
+  // Color system - comprehensive light theme
   colors: {
-    // Brand colors - Using orange for all button colors
-    accent: palette.orange.primary,
-    accentLight: palette.orange.light,
-    accentDark: palette.orange.dark,
+    // Brand colors
+    primary: palette.orange.primary,
+    primaryLight: palette.orange.light,
+    primaryDark: palette.orange.dark,
+    primarySubtle: palette.orange.subtle,
     
-    // Semantic colors
-    success: palette.success,
-    warning: palette.warning,
-    info: palette.info,
-    error: palette.error,
-    
-    // Theme-specific colors
-    dark: {
-      // UI Element colors
-      background: palette.gray[950],
-      backgroundAlt: palette.gray[900],
-      card: palette.gray[900],
-      cardAlt: palette.gray[800],
-      iconBackground: palette.gray[800],
-      toggleBackground: palette.gray[800],
-      pill: palette.white,
-      border: palette.gray[700],
-      
-      // Text colors
-      text: palette.white,
-      textMuted: palette.gray[400],
-      textSecondary: palette.gray[500],
-      
-      // Interactive element colors - Use orange primary consistently
-      buttonBackground: palette.orange.primary,
-      buttonBackgroundDisabled: `${palette.orange.primary}80`, // 50% opacity
-      
-      // Specific UI elements
-      subtitle: palette.orange.primary,
-      arrow: palette.gray[700],
-      alert: palette.warning,
-    },
-    
+    // UI Element colors - optimized for gym lighting
     light: {
-      // UI Element colors
-      background: palette.gray[50],
-      backgroundAlt: palette.gray[100],
-      card: palette.white,
-      cardAlt: palette.gray[100],
-      iconBackground: palette.gray[200],
-      toggleBackground: palette.gray[800],
-      pill: palette.black,
-      border: palette.gray[300],
+      // Background colors
+      background: palette.gray[50],        // Very light for main background
+      backgroundAlt: palette.gray[100],    // Slightly darker for sections
+      backgroundSubtle: palette.gray[200], // For subtle distinctions
       
-      // Text colors
-      text: palette.black,
-      textMuted: palette.gray[600],
-      textSecondary: palette.gray[700],
+      // Card colors
+      card: palette.white,                 // Pure white for main cards
+      cardAlt: palette.gray[100],          // Light gray for secondary cards
+      cardSubtle: palette.gray[200],       // For tertiary elements
       
-      // Interactive element colors - Use orange primary consistently
+      // Border colors
+      border: palette.gray[300],           // Light borders
+      borderLight: palette.gray[200],      // Very light borders
+      borderDark: palette.gray[400],       // Darker borders for emphasis
+      
+      // Text colors - enhanced contrast for gym visibility
+      text: palette.gray[900],             // Almost black for main text
+      textSecondary: palette.gray[700],    // Dark gray for secondary text
+      textMuted: palette.gray[600],        // Medium gray for muted text
+      textSubtle: palette.gray[500],       // Light gray for subtle text
+      textOnPrimary: palette.white,        // White text on orange backgrounds
+      
+      // Interactive element colors
       buttonBackground: palette.orange.primary,
-      buttonBackgroundDisabled: `${palette.orange.primary}80`, // 50% opacity
+      buttonBackgroundHover: palette.orange.dark,
+      buttonBackgroundDisabled: palette.gray[300],
+      buttonText: palette.white,
+      buttonTextDisabled: palette.gray[500],
       
-      // Specific UI elements
-      subtitle: palette.orange.primary,
-      arrow: palette.gray[300],
-      alert: palette.warning,
+      // State colors
+      success: palette.success,
+      warning: palette.warning,
+      error: palette.error,
+      info: palette.info,
+      
+      // Special UI elements
+      overlay: 'rgba(0, 0, 0, 0.5)',
+      shadow: 'rgba(0, 0, 0, 0.1)',
+      highlight: palette.orange.subtle,
+      
+      // Exercise-specific colors
+      exerciseCard: palette.white,
+      exerciseCardHover: palette.gray[50],
+      
+      // Icon backgrounds
+      iconBackground: palette.gray[200],
+      iconBackgroundHover: palette.gray[300],
+      
+      // Alert colors
+      alert: palette.error,
+      alertBackground: '#FFEBEE',
+      
+      // Toggle and switch colors
+      toggleBackground: palette.gray[300],
+      toggleBackgroundActive: palette.orange.primary,
+      
+      // Arrow and chevron colors
+      arrow: palette.gray[400],
+      arrowHover: palette.gray[600],
     }
   },
   
-  // Spacing system
+  // Enhanced spacing system - more granular control
   spacing: {
-    xs: 4,
-    small: 8,
-    medium: 16,
-    large: 24,
-    xlarge: 32,
-    xxlarge: 48
+    xxs: 2,     // Very tiny spacing
+    xs: 4,      // Tiny spacing
+    small: 8,   // Small spacing
+    medium: 16, // Medium spacing
+    large: 24,  // Large spacing
+    xlarge: 32, // Extra large spacing
+    xxlarge: 48,// Very large spacing
+    xxxlarge: 64, // Huge spacing
   },
   
-  // Font sizes
+  // Enhanced font sizes - better hierarchy
   fontSize: {
-    xs: 12,
-    small: 16,
-    medium: 18,
-    large: 22,
-    xlarge: 28,
-    xxlarge: 40
+    xxs: 10,    // Very small text
+    xs: 12,     // Small text
+    small: 14,  // Small text
+    medium: 16, // Body text
+    large: 18,  // Large text
+    xlarge: 22, // Extra large text
+    xxlarge: 28,// Very large text
+    xxxlarge: 36, // Huge text
+    display: 48,  // Display text
   },
   
   // Font weights
   fontWeight: {
+    light: '300',
     regular: '400',
     medium: '500',
     semibold: '600',
-    bold: '700'
+    bold: '700',
+    extrabold: '800'
   },
 
-  // Border radius
+  // Enhanced border radius system
   borderRadius: {
-    xs: 4,
-    small: 8,
-    medium: 15,
-    large: 20,
-    xlarge: 25,
-    pill: 50
+    none: 0,
+    xs: 2,
+    small: 4,
+    medium: 8,
+    large: 12,
+    xlarge: 16,
+    xxlarge: 20,
+    pill: 9999,   // For pill-shaped elements
+    circle: '50%' // For circular elements
   },
 
-  // Shadows
+  // Enhanced shadow system - optimized for light theme
   shadows: {
+    none: {
+      shadowColor: 'transparent',
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0,
+      shadowRadius: 0,
+      elevation: 0
+    },
     small: {
-      shadowColor: "#000",
+      shadowColor: palette.black,
       shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.18,
-      shadowRadius: 1.0,
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
       elevation: 1
     },
     medium: {
-      shadowColor: "#000",
+      shadowColor: palette.black,
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3
     },
     large: {
-      shadowColor: "#000",
+      shadowColor: palette.black,
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.30,
-      shadowRadius: 4.65,
-      elevation: 8
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 6
+    },
+    xlarge: {
+      shadowColor: palette.black,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.2,
+      shadowRadius: 16,
+      elevation: 12
     }
   },
 
-  // Animation durations
+  // Animation durations and easings
   animation: {
-    fast: 200,
-    medium: 300,
-    slow: 500
+    fast: 150,
+    medium: 250,
+    slow: 350,
+    verySlow: 500,
+    // Easing curves
+    easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    easeOut: 'cubic-bezier(0, 0, 0.2, 1)',
+    easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
+  },
+
+  // Z-index scale for layering
+  zIndex: {
+    background: -1,
+    base: 0,
+    raised: 1,
+    overlay: 10,
+    modal: 100,
+    tooltip: 1000,
+    toast: 10000
+  },
+
+  // Breakpoints for responsive design
+  breakpoints: {
+    xs: 0,
+    sm: 576,
+    md: 768,
+    lg: 992,
+    xl: 1200,
+    xxl: 1400
   }
 };

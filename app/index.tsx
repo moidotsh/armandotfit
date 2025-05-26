@@ -1,4 +1,4 @@
-// Updated app/index.tsx with navigation components
+// Updated app/index.tsx with navigation components and settings button
 
 import React, { useState, useRef, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
@@ -13,12 +13,13 @@ import {
   Separator
 } from 'tamagui';
 import { format } from 'date-fns';
-import { BarChart2, TrendingUp, Clock, AlertCircle } from '@tamagui/lucide-icons';
+import { BarChart2, TrendingUp, Clock, AlertCircle, Settings } from '@tamagui/lucide-icons';
 import { useAppTheme } from '../components/ThemeProvider';
 import { SplitType } from '../constants/theme';
 import { DaySelector } from '../components/DaySelector';
 import { FeatureSection } from '../components/FeatureCard';
 import { navigateToWorkout, NavigationPath } from '../navigation';
+import { router } from 'expo-router';
 
 // App version displayed in the UI
 const APP_VERSION = "v1.0.3";
@@ -159,19 +160,31 @@ export default function HomeScreen() {
       )}
       
       <YStack space="$2" paddingBottom={spacing.small}>
-        <XStack alignItems="center" justifyContent="space-between">
+        <XStack alignItems="flex-start" justifyContent="space-between" width="100%">
           <H1 
             color={colors.text} 
             fontSize={isNarrow ? 40 : 50}
           >
             Hi Arman!
           </H1>
-          <Text 
-            color={colors.textMuted} 
-            fontSize={fontSize.small}
-          >
-            {APP_VERSION}
-          </Text>
+          <XStack alignItems="center" space={spacing.small}>
+            <Button
+              size="$3"
+              circular
+              backgroundColor="transparent"
+              onPress={() => router.push('/settings')}
+              pressStyle={{ opacity: 0.7 }}
+              padding={spacing.small}
+            >
+              <Settings size={22} color={colors.text} />
+            </Button>
+            <Text 
+              color={colors.textMuted} 
+              fontSize={fontSize.small}
+            >
+              {APP_VERSION}
+            </Text>
+          </XStack>
         </XStack>
         <Text color={colors.textMuted} fontSize={fontSize.medium}>{formattedDate}</Text>
       </YStack>

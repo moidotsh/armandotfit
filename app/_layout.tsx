@@ -44,35 +44,41 @@ export default function RootLayout() {
     <TamaguiProvider config={config} defaultTheme="light">
       <ThemeProvider>
         <ConstrainedLayout>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              animation: 'fade',
-              contentStyle: {
-                backgroundColor,
-              },
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            animation: 'fade',
+            contentStyle: {
+              backgroundColor,
+            },
+          }}
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen 
+            name="workout-detail" 
+            options={{
+              animation: 'slide_from_right',
             }}
-          >
-            <Stack.Screen name="index" />
-            <Stack.Screen 
-              name="workout-detail" 
-              options={{
-                animation: 'slide_from_right',
-              }}
-            />
-            <Stack.Screen 
-              name="split-selection" 
-              options={{
-                animation: 'slide_from_right',
-              }}
-            />
-            <Stack.Screen 
-              name="exercise-detail" 
-              options={{
-                animation: 'slide_from_right',
-              }}
-            />
-          </Stack>
+          />
+          <Stack.Screen 
+            name="split-selection" 
+            options={{
+              animation: 'slide_from_right',
+            }}
+          />
+          <Stack.Screen 
+            name="exercise-detail" 
+            options={{
+              animation: 'slide_from_right',
+            }}
+          />
+          <Stack.Screen 
+            name="settings" 
+            options={{
+              animation: 'slide_from_right',
+            }}
+          />
+        </Stack>
         </ConstrainedLayout>
       </ThemeProvider>
     </TamaguiProvider>

@@ -1,6 +1,6 @@
-// components/ThemeProvider.tsx - Updated with Constrained View Support
+// components/ThemeProvider.tsx - Enhanced Light-Only Theme Provider
 import React, { createContext, useContext, ReactNode, useState, useEffect, useMemo } from 'react';
-import { useColorScheme, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import { Theme } from 'tamagui';
 import { theme } from '../constants/theme';
 
@@ -37,10 +37,13 @@ const setStoredConstrainedView = async (value: boolean): Promise<void> => {
   }
 };
 
-// Define the theme context type - keeping light theme for now
+// Enhanced theme context type with comprehensive light theme support
 type ThemeContextType = {
+  // Theme identification
   colorScheme: 'light';
   isDark: false;
+  
+  // Complete theme structure
   colors: typeof theme.colors.light;
   spacing: typeof theme.spacing;
   fontSize: typeof theme.fontSize;
@@ -48,9 +51,23 @@ type ThemeContextType = {
   borderRadius: typeof theme.borderRadius;
   shadows: typeof theme.shadows;
   animation: typeof theme.animation;
-  // Add constrained view properties
+  zIndex: typeof theme.zIndex;
+  breakpoints: typeof theme.breakpoints;
+  
+  // Constrained view functionality
   constrainedView: boolean;
   toggleConstrainedView: () => void;
+  
+  // Enhanced helper functions
+  getColor: (colorPath: string) => string;
+  getSpacing: (size: keyof typeof theme.spacing) => number;
+  getFontSize: (size: keyof typeof theme.fontSize) => number;
+  getBorderRadius: (size: keyof typeof theme.borderRadius) => number | string;
+  getShadow: (size: keyof typeof theme.shadows) => object;
+  
+  // Responsive helpers
+  isNarrow: boolean;
+  screenWidth: number;
 };
 
 // Create the theme context
@@ -70,12 +87,13 @@ type ThemeProviderProps = {
   children: ReactNode;
 };
 
-// ThemeProvider component with constrained view support
+// Enhanced ThemeProvider component
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const colorScheme = useColorScheme();
-  
   // State for constrained view (default to true for web, false for native)
   const [constrainedView, setConstrainedView] = useState(isWeb);
+  
+  // Screen width state for responsive helpers
+  const [screenWidth, setScreenWidth] = useState(isWeb ? window.innerWidth : 375);
 
   // Load constrained view setting on mount
   useEffect(() => {
@@ -89,6 +107,18 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     };
 
     loadConstrainedViewSetting();
+  }, []);
+
+  // Listen for window resize on web
+  useEffect(() => {
+    if (isWeb) {
+      const handleResize = () => {
+        setScreenWidth(window.innerWidth);
+      };
+      
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
   }, []);
 
   // Toggle constrained view setting
@@ -111,12 +141,50 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
+  // Enhanced helper functions
+  const getColor = (colorPath: string): string => {
+    const pathArray = colorPath.split('.');
+    let current: any = theme.colors.light;
+    
+    for (const key of pathArray) {
+      if (current[key] !== undefined) {
+        current = current[key];
+      } else {
+        console.warn(`Color path '${colorPath}' not found, returning fallback`);
+        return theme.colors.light.text; // Fallback color
+      }
+    }
+    
+    return current;
+  };
+
+  const getSpacing = (size: keyof typeof theme.spacing): number => {
+    return theme.spacing[size];
+  };
+
+  const getFontSize = (size: keyof typeof theme.fontSize): number => {
+    return theme.fontSize[size];
+  };
+
+  const getBorderRadius = (size: keyof typeof theme.borderRadius): number | string => {
+    return theme.borderRadius[size];
+  };
+
+  const getShadow = (size: keyof typeof theme.shadows): object => {
+    return theme.shadows[size];
+  };
+
+  // Responsive helpers
+  const isNarrow = screenWidth < 350;
+
   // Memoize the theme value to prevent unnecessary re-renders
-  // Keep using light theme for now (you can change this later)
   const themeValue = useMemo((): ThemeContextType => {
     return {
+      // Theme identification
       colorScheme: 'light',
       isDark: false,
+      
+      // Theme structure
       colors: theme.colors.light,
       spacing: theme.spacing,
       fontSize: theme.fontSize,
@@ -124,10 +192,25 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       borderRadius: theme.borderRadius,
       shadows: theme.shadows,
       animation: theme.animation,
+      zIndex: theme.zIndex,
+      breakpoints: theme.breakpoints,
+      
+      // Constrained view
       constrainedView,
-      toggleConstrainedView
+      toggleConstrainedView,
+      
+      // Helper functions
+      getColor,
+      getSpacing,
+      getFontSize,
+      getBorderRadius,
+      getShadow,
+      
+      // Responsive helpers
+      isNarrow,
+      screenWidth,
     };
-  }, [constrainedView]);
+  }, [constrainedView, isNarrow, screenWidth]);
 
   return (
     <ThemeContext.Provider value={themeValue}>

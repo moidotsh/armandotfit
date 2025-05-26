@@ -1,3 +1,4 @@
+// components/DaySelector.tsx - Updated with Enhanced Theme System
 import React from 'react';
 import { useWindowDimensions, Platform } from 'react-native';
 import { XStack, Button, Text, YStack } from 'tamagui';
@@ -14,11 +15,16 @@ export function DaySelector({
   onDaySelect,
   days = [1, 2, 3, 4]
 }: DaySelectorProps) {
-  const { colors, borderRadius, fontSize, spacing } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isNarrow = width < 350;
+  const { 
+    colors, 
+    spacing, 
+    fontSize, 
+    borderRadius,
+    getShadow,
+    isNarrow 
+  } = useAppTheme();
 
-  // Calculate button sizes based on available width
+  // Calculate button sizes based on available width and screen size
   const buttonSize = isNarrow ? 45 : 55;
 
   return (
@@ -37,21 +43,24 @@ export function DaySelector({
           const isSelected = selectedDay === day;
 
           return (
-            <YStack key={day} alignItems="center" style={{
-              WebkitTapHighlightColor: 'transparent',
-              WebkitTouchCallout: 'none',
-              userSelect: 'none',
-              outline: 'none'
-            }}>
+            <YStack 
+              key={day} 
+              alignItems="center" 
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                WebkitTouchCallout: 'none',
+                userSelect: 'none',
+                outline: 'none'
+              }}
+            >
               <Button
                 width={buttonSize}
                 height={buttonSize}
-                // Always use orange (buttonBackground) for selection
                 backgroundColor={isSelected ? colors.buttonBackground : 'transparent'}
                 borderColor={isSelected ? colors.buttonBackground : colors.border}
                 borderWidth={1.5}
-                color={isSelected ? 'white' : colors.text}
-                borderRadius={buttonSize / 2} // Make it fully circular
+                color={isSelected ? colors.buttonText : colors.text}
+                borderRadius={borderRadius.circle}
                 fontWeight="bold"
                 fontSize={fontSize.medium}
                 onPress={() => onDaySelect(day)}
@@ -59,37 +68,34 @@ export function DaySelector({
                   scale: 0.92,
                   opacity: 0.9
                 }}
-                // Prevent focus styling on mobile web
                 focusStyle={{}}
-                // Prevent mobile highlight
                 userSelect="none"
-                // Add shadow for selected button
-                shadowColor={isSelected ? colors.buttonBackground : 'transparent'}
-                shadowOffset={{ width: 0, height: isSelected ? 3 : 0 }}
-                shadowOpacity={isSelected ? 0.3 : 0}
-                shadowRadius={isSelected ? 4 : 0}
-                // Make sure the outline doesn't show on focus
                 outlineWidth={0}
                 outlineColor="transparent"
-                style={{
-                  WebkitTapHighlightColor: 'transparent',
-                  WebkitTouchCallout: 'none',
-                  userSelect: 'none',
-                  outline: 'none'
-                }}
+                style={[
+                  {
+                    WebkitTapHighlightColor: 'transparent',
+                    WebkitTouchCallout: 'none',
+                    userSelect: 'none',
+                    outline: 'none'
+                  },
+                  isSelected ? getShadow('medium') : getShadow('small')
+                ]}
               >
-                <Text color={isSelected ? 'white' : colors.text}
-                >{day}</Text>
+                <Text color={isSelected ? colors.buttonText : colors.text}>
+                  {day}
+                </Text>
               </Button>
 
-              {/* Small indicator dot under selected button */}
+              {/* Enhanced indicator dot with better visibility */}
               {isSelected && (
                 <YStack
                   width={4}
                   height={4}
                   backgroundColor={colors.buttonBackground}
-                  borderRadius={2}
+                  borderRadius={borderRadius.circle}
                   marginTop={4}
+                  style={getShadow('small')}
                 />
               )}
             </YStack>
