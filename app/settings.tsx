@@ -1,292 +1,166 @@
-// app/settings.tsx - Settings Screen with Constrained View Setting
+// app/settings.tsx - Enhanced Settings Screen using new components
 import React, { useState } from 'react';
-import { useWindowDimensions, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import { 
   YStack, 
-  XStack, 
-  Text, 
-  Button, 
-  Card, 
-  ScrollView, 
-  Separator,
   Switch 
 } from 'tamagui';
 import { 
-  ChevronLeft, 
-  Smartphone, 
   Bell, 
   Moon, 
   User, 
   Info, 
-  Mail 
+  Mail,
+  Trash2
 } from '@tamagui/lucide-icons';
+import { PageContainer } from '../components/Layout/PageContainer';
+import ScreenHeader from '@/components/Layout/ScreenHeader';
+import SettingsGroup from '@/components/Settings/SettingsGroup';
+import { SettingItem } from '../components/Settings/SettingItem';
+import { ConstrainedViewSetting } from '../components/ConstrainedViewSetting';
 import { useAppTheme } from '../components/ThemeProvider';
-import { StatusBar } from 'expo-status-bar';
-import { router } from 'expo-router';
-
-// Settings Section Component
-function SettingsSection({ 
-  title, 
-  children 
-}: { 
-  title: string; 
-  children: React.ReactNode 
-}) {
-  const { colors, spacing, fontSize, borderRadius } = useAppTheme();
-  
-  return (
-    <YStack marginBottom={spacing.large}>
-      <Text
-        color={colors.textMuted}
-        fontSize={fontSize.small}
-        fontWeight="600"
-        textTransform="uppercase"
-        letterSpacing={1}
-        marginBottom={spacing.small}
-        marginLeft={spacing.small}
-      >
-        {title}
-      </Text>
-      
-      <Card
-        backgroundColor={colors.card}
-        borderRadius={borderRadius.medium}
-        overflow="hidden"
-        elevate
-      >
-        {children}
-      </Card>
-    </YStack>
-  );
-}
-
-// Settings Item Component
-function SettingsItem({
-  icon,
-  title,
-  description,
-  rightElement,
-  onPress,
-  showSeparator = true
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description?: string;
-  rightElement?: React.ReactNode;
-  onPress?: () => void;
-  showSeparator?: boolean;
-}) {
-  const { colors, spacing, fontSize } = useAppTheme();
-  
-  return (
-    <>
-      <XStack
-        alignItems="center"
-        padding={spacing.large}
-        pressStyle={onPress ? { opacity: 0.7 } : undefined}
-        onPress={onPress}
-        cursor={onPress ? 'pointer' : 'default'}
-      >
-        <XStack alignItems="center" space={spacing.medium} flex={1}>
-          {React.isValidElement(icon) &&
-            React.cloneElement(icon as React.ReactElement<{ size?: number; color?: string }>, {
-              size: 24,
-              color: colors.text
-            })
-          }
-          
-          <YStack flex={1}>
-            <Text
-              color={colors.text}
-              fontSize={fontSize.medium}
-              fontWeight="500"
-            >
-              {title}
-            </Text>
-            
-            {description && (
-              <Text
-                color={colors.textMuted}
-                fontSize={fontSize.small}
-                marginTop={2}
-              >
-                {description}
-              </Text>
-            )}
-          </YStack>
-        </XStack>
-        
-        {rightElement && (
-          <YStack paddingLeft={spacing.medium}>
-            {rightElement}
-          </YStack>
-        )}
-      </XStack>
-      
-      {showSeparator && (
-        <Separator backgroundColor={colors.border} />
-      )}
-    </>
-  );
-}
-
-// Constrained View Setting Component
-function ConstrainedViewSetting() {
-  const { colors, constrainedView, toggleConstrainedView } = useAppTheme();
-  const isWeb = Platform.OS === 'web';
-  
-  // Don't render on non-web platforms
-  if (!isWeb) {
-    return null;
-  }
-  
-  return (
-    <SettingsItem
-      icon={<Smartphone />}
-      title="Phone-Width Layout"
-      description="Constrain the app to phone dimensions on desktop"
-      rightElement={
-        <Switch
-          checked={constrainedView}
-          onCheckedChange={toggleConstrainedView}
-          backgroundColor={constrainedView ? colors.buttonBackground : colors.cardAlt}
-        />
-      }
-    />
-  );
-}
 
 export default function SettingsScreen() {
-  const { colors, spacing, fontSize, isNarrow } = useAppTheme();
-  const isWeb = Platform.OS === 'web';
+  const { colors } = useAppTheme();
   
-  // Demo state for other settings
+  // Demo state for settings
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false); // Always false for gym app
-  
+
+  const handleClearData = () => {
+    console.log('Clear data functionality would go here');
+    // In a real app, this would clear user data
+  };
+
+  const handleContactSupport = () => {
+    console.log('Contact support functionality would go here');
+    // In a real app, this would open email or support system
+  };
+
+  const handleAbout = () => {
+    console.log('About functionality would go here');
+    // In a real app, this would show app info
+  };
+
+  const handleProfile = () => {
+    console.log('Profile functionality would go here');
+    // In a real app, this would navigate to profile settings
+  };
+
   return (
-    <ScrollView 
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ 
-        paddingTop: isNarrow ? spacing.xlarge : spacing.xxlarge,
-        paddingBottom: spacing.xlarge
-      }}
-      showsVerticalScrollIndicator={false}
-    >
-      <StatusBar style="dark" />
+    <PageContainer>
+      <ScreenHeader
+        title="Settings"
+        showBackButton={true}
+      />
 
-      <YStack 
-        paddingHorizontal={isNarrow ? spacing.medium : spacing.large} 
-        paddingBottom={spacing.large}
-      >
-        {/* Header */}
-        <XStack alignItems="center" space={spacing.small} marginBottom={spacing.large}>
-          <Button 
-            size="$3" 
-            circular 
-            icon={<ChevronLeft size="$1" />} 
-            onPress={() => router.back()}
-            backgroundColor="transparent"
-            focusStyle={{}}
-            style={{
-              WebkitTapHighlightColor: 'transparent',
-              WebkitTouchCallout: 'none',
-              userSelect: 'none',
-              outline: 'none'
-            }}
+      {/* App Settings Section */}
+      <SettingsGroup title="App Settings">
+        <SettingItem
+          icon={<Bell />}
+          title="Notifications"
+          description="Workout reminders and progress alerts"
+          rightElement={
+            <Switch
+              checked={notificationsEnabled}
+              onCheckedChange={setNotificationsEnabled}
+              backgroundColor={notificationsEnabled ? colors.buttonBackground : colors.cardAlt}
+            />
+          }
+        />
+        
+        <SettingItem
+          icon={<Moon />}
+          title="Dark Mode"
+          description="Not available - optimized for gym lighting"
+          rightElement={
+            <Switch
+              checked={false}
+              disabled={true}
+              backgroundColor={colors.cardAlt}
+              opacity={0.5}
+            />
+          }
+        />
+        
+        {/* Constrained View Setting - Only shows on web */}
+        <ConstrainedViewSetting />
+      </SettingsGroup>
+
+      {/* Account Settings Section */}
+      <SettingsGroup title="Account">
+        <SettingItem
+          icon={<User />}
+          title="Profile"
+          description="Manage your workout preferences"
+          onPress={handleProfile}
+          rightElement={
+            <YStack paddingRight={8}>
+              <Bell size={16} color={colors.textMuted} style={{ transform: [{ rotate: '90deg' }] }} />
+            </YStack>
+          }
+        />
+        
+        <SettingItem
+          icon={<Info />}
+          title="About"
+          description="App version and information"
+          onPress={handleAbout}
+          rightElement={
+            <YStack paddingRight={8}>
+              <Bell size={16} color={colors.textMuted} style={{ transform: [{ rotate: '90deg' }] }} />
+            </YStack>
+          }
+        />
+      </SettingsGroup>
+
+      {/* Support Section */}
+      <SettingsGroup title="Support">
+        <SettingItem
+          icon={<Mail />}
+          title="Contact Support"
+          description="Get help with the app"
+          onPress={handleContactSupport}
+          rightElement={
+            <YStack paddingRight={8}>
+              <Bell size={16} color={colors.textMuted} style={{ transform: [{ rotate: '90deg' }] }} />
+            </YStack>
+          }
+        />
+      </SettingsGroup>
+
+      {/* Data Management Section */}
+      <SettingsGroup title="Data">
+        <SettingItem
+          icon={<Trash2 />}
+          title="Clear All Data"
+          description="Reset your workout history"
+          onPress={handleClearData}
+          destructive={true}
+        />
+      </SettingsGroup>
+
+      {/* Version Info */}
+      <YStack alignItems="center" marginTop={48}>
+        <YStack alignItems="center" space={4}>
+          <Bell 
+            size={16} 
+            color={colors.textMuted} 
+            style={{ transform: [{ rotate: '0deg' }] }} 
           />
-          <YStack>
-            <Text
-              color={colors.text}
-              fontSize={isNarrow ? fontSize.xlarge : fontSize.xxlarge}
-              fontWeight="700"
-            >
-              Settings
-            </Text>
+          <YStack alignItems="center">
+            <Bell 
+              size={13} 
+              color={colors.textMuted}
+            />
+            <Bell 
+              size={13} 
+              color={colors.textMuted} 
+              style={{ marginTop: 4 }}
+            />
           </YStack>
-        </XStack>
-
-        {/* App Settings Section */}
-        <SettingsSection title="App Settings">
-          <SettingsItem
-            icon={<Bell />}
-            title="Notifications"
-            description="Workout reminders and progress alerts"
-            rightElement={
-              <Switch
-                checked={notificationsEnabled}
-                onCheckedChange={setNotificationsEnabled}
-                backgroundColor={notificationsEnabled ? colors.buttonBackground : colors.cardAlt}
-              />
-            }
-          />
-          
-          <SettingsItem
-            icon={<Moon />}
-            title="Dark Mode"
-            description="Not available - optimized for gym lighting"
-            rightElement={
-              <Switch
-                checked={false}
-                disabled={true}
-                backgroundColor={colors.cardAlt}
-                opacity={0.5}
-              />
-            }
-          />
-          
-          {/* Constrained View Setting - Only shows on web */}
-          <ConstrainedViewSetting />
-        </SettingsSection>
-
-        {/* Account Settings Section */}
-        <SettingsSection title="Account">
-          <SettingsItem
-            icon={<User />}
-            title="Profile"
-            description="Manage your workout preferences"
-            onPress={() => console.log('Navigate to profile')}
-            rightElement={
-              <Text color={colors.textMuted} fontSize={fontSize.large}>›</Text>
-            }
-          />
-          
-          <SettingsItem
-            icon={<Info />}
-            title="About"
-            description="App version and information"
-            onPress={() => console.log('Navigate to about')}
-            rightElement={
-              <Text color={colors.textMuted} fontSize={fontSize.large}>›</Text>
-            }
-            showSeparator={false}
-          />
-        </SettingsSection>
-
-        {/* Support Section */}
-        <SettingsSection title="Support">
-          <SettingsItem
-            icon={<Mail />}
-            title="Contact Support"
-            description="Get help with the app"
-            onPress={() => console.log('Open email support')}
-            rightElement={
-              <Text color={colors.textMuted} fontSize={fontSize.large}>›</Text>
-            }
-            showSeparator={false}
-          />
-        </SettingsSection>
-
-        {/* Version Info */}
-        <YStack alignItems="center" marginTop={spacing.xlarge}>
-          <Text color={colors.textMuted} fontSize={fontSize.small}>
-            Arman.fit v1.0.3
-          </Text>
-          <Text color={colors.textMuted} fontSize={fontSize.small} marginTop={spacing.xs}>
-            Built for the gym
-          </Text>
         </YStack>
       </YStack>
-    </ScrollView>
+    </PageContainer>
   );
 }

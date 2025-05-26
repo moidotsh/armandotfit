@@ -1,13 +1,13 @@
-// components/ThemeProvider.tsx - Enhanced Light-Only Theme Provider
+// components/ThemeProvider.tsx - Enhanced version adapted from QEP
 import React, { createContext, useContext, ReactNode, useState, useEffect, useMemo } from 'react';
 import { Platform } from 'react-native';
 import { Theme } from 'tamagui';
 import { theme } from '../constants/theme';
 
-// For web, we need to use a different storage mechanism
+// For web, use localStorage; for native, we'll add AsyncStorage later if needed
 const isWeb = Platform.OS === 'web';
 
-// Storage functions for constrained view setting
+// Storage key for constrained view setting
 const CONSTRAINED_VIEW_KEY = 'armandotfit_constrained_view';
 
 const getStoredConstrainedView = async (): Promise<boolean> => {
@@ -19,9 +19,8 @@ const getStoredConstrainedView = async (): Promise<boolean> => {
       return true;
     }
   } else {
-    // For native, you'd use AsyncStorage here if available
-    // For now, just return default
-    return true;
+    // For native, default to false (no constraint needed)
+    return false;
   }
 };
 
@@ -32,12 +31,11 @@ const setStoredConstrainedView = async (value: boolean): Promise<void> => {
     } catch {
       // Ignore storage errors
     }
-  } else {
-    // For native, you'd use AsyncStorage here if available
   }
+  // For native, we could add AsyncStorage here later
 };
 
-// Enhanced theme context type with comprehensive light theme support
+// Enhanced theme context type
 type ThemeContextType = {
   // Theme identification
   colorScheme: 'light';
@@ -52,9 +50,8 @@ type ThemeContextType = {
   shadows: typeof theme.shadows;
   animation: typeof theme.animation;
   zIndex: typeof theme.zIndex;
-  breakpoints: typeof theme.breakpoints;
   
-  // Constrained view functionality
+  // Constrained view functionality (for web)
   constrainedView: boolean;
   toggleConstrainedView: () => void;
   
@@ -89,11 +86,11 @@ type ThemeProviderProps = {
 
 // Enhanced ThemeProvider component
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  // State for constrained view (default to true for web, false for native)
+  // State for constrained view (default based on platform)
   const [constrainedView, setConstrainedView] = useState(isWeb);
   
   // Screen width state for responsive helpers
-  const [screenWidth, setScreenWidth] = useState(isWeb ? window.innerWidth : 375);
+  const [screenWidth, setScreenWidth] = useState(isWeb ? (typeof window !== 'undefined' ? window.innerWidth : 1200) : 375);
 
   // Load constrained view setting on mount
   useEffect(() => {
@@ -111,7 +108,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   // Listen for window resize on web
   useEffect(() => {
-    if (isWeb) {
+    if (isWeb && typeof window !== 'undefined') {
       const handleResize = () => {
         setScreenWidth(window.innerWidth);
       };
@@ -193,7 +190,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       shadows: theme.shadows,
       animation: theme.animation,
       zIndex: theme.zIndex,
-      breakpoints: theme.breakpoints,
       
       // Constrained view
       constrainedView,
@@ -220,6 +216,3 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     </ThemeContext.Provider>
   );
 }
-
-// Export theme constants for direct usage
-export { theme };

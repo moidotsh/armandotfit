@@ -1,20 +1,18 @@
-// constants/theme.ts - Enhanced Light-Only Theme System
+// constants/theme.ts - REPLACE YOUR EXISTING FILE WITH THIS
 export type SplitType = 'oneADay' | 'twoADay';
 
-// Workout split information
+// Keep your existing workout split definitions
 interface WorkoutSplitInfo {
   id: SplitType;
   name: string;
   description: string;
 }
 
-// Define the interface for workout splits
 interface WorkoutSplits {
   fullBody: WorkoutSplitInfo;
   amPm: WorkoutSplitInfo;
 }
 
-// Workout split type definitions.
 export const WORKOUT_SPLITS: WorkoutSplits = {
   fullBody: {
     id: 'oneADay',
@@ -28,9 +26,9 @@ export const WORKOUT_SPLITS: WorkoutSplits = {
   }
 };
 
-// Enhanced color palette - optimized for gym environment visibility
+// Enhanced color palette - optimized for gym environment
 const palette = {
-  // Primary brand colors - keeping the orange but making it more vibrant for gym lighting
+  // Primary brand colors - keeping your orange but enhanced
   orange: {
     primary: '#FF9500',
     light: '#FFB74D',
@@ -38,7 +36,7 @@ const palette = {
     subtle: '#FFF3E0'
   },
   
-  // Neutral grays - lighter and more contrasted for better gym visibility
+  // Neutral grays - better contrast for gym lighting
   gray: {
     50: '#FAFAFA',    // Almost white background
     100: '#F5F5F5',   // Very light background
@@ -57,13 +55,13 @@ const palette = {
   white: '#FFFFFF',
   black: '#000000',
   
-  // Semantic colors - optimized for gym environment
-  success: '#4CAF50',   // Keep green for success
-  warning: '#FF9800',   // Orange for warnings
-  error: '#F44336',     // Red for errors
-  info: '#2196F3',      // Blue for info
+  // Semantic colors
+  success: '#4CAF50',   
+  warning: '#FF9800',   
+  error: '#F44336',     
+  info: '#2196F3',      
   
-  // Exercise category colors - brighter and more distinct
+  // Exercise category colors - brighter for gym visibility
   exercise: {
     chest: '#E53E3E',     // Red
     arms: '#805AD5',      // Purple
@@ -76,7 +74,7 @@ const palette = {
   }
 };
 
-// Category colors for exercise types (enhanced visibility)
+// Keep your existing category colors but enhance them
 export const categoryColors: Record<string, string> = {
   'Chest': palette.exercise.chest,
   'Arms': palette.exercise.arms,
@@ -85,11 +83,11 @@ export const categoryColors: Record<string, string> = {
   'UpperLeg': palette.exercise.upperLeg,
   'LowerLeg': palette.exercise.lowerLeg,
   'Abs': palette.exercise.abs,
-  'Back/Shoulders': '#22C55E', // Green variant
-  'UpperLeg (Accessory)': '#F59E0B' // Amber variant
+  'Back/Shoulders': '#22C55E',
+  'UpperLeg (Accessory)': '#F59E0B'
 };
 
-// Enhanced theme structure with better organization
+// Enhanced theme structure
 export const theme = {
   // Color system - comprehensive light theme
   colors: {
@@ -99,29 +97,29 @@ export const theme = {
     primaryDark: palette.orange.dark,
     primarySubtle: palette.orange.subtle,
     
-    // UI Element colors - optimized for gym lighting
+    // Light theme colors
     light: {
       // Background colors
-      background: palette.gray[50],        // Very light for main background
-      backgroundAlt: palette.gray[100],    // Slightly darker for sections
-      backgroundSubtle: palette.gray[200], // For subtle distinctions
+      background: palette.gray[50],        
+      backgroundAlt: palette.gray[100],    
+      backgroundSubtle: palette.gray[200], 
       
       // Card colors
-      card: palette.white,                 // Pure white for main cards
-      cardAlt: palette.gray[100],          // Light gray for secondary cards
-      cardSubtle: palette.gray[200],       // For tertiary elements
+      card: palette.white,                 
+      cardAlt: palette.gray[100],          
+      cardSubtle: palette.gray[200],       
       
       // Border colors
-      border: palette.gray[300],           // Light borders
-      borderLight: palette.gray[200],      // Very light borders
-      borderDark: palette.gray[400],       // Darker borders for emphasis
+      border: palette.gray[300],           
+      borderLight: palette.gray[200],      
+      borderDark: palette.gray[400],       
       
-      // Text colors - enhanced contrast for gym visibility
-      text: palette.gray[900],             // Almost black for main text
-      textSecondary: palette.gray[700],    // Dark gray for secondary text
-      textMuted: palette.gray[600],        // Medium gray for muted text
-      textSubtle: palette.gray[500],       // Light gray for subtle text
-      textOnPrimary: palette.white,        // White text on orange backgrounds
+      // Text colors
+      text: palette.gray[900],             
+      textSecondary: palette.gray[700],    
+      textMuted: palette.gray[600],        
+      textSubtle: palette.gray[500],       
+      textOnPrimary: palette.white,        
       
       // Interactive element colors
       buttonBackground: palette.orange.primary,
@@ -163,29 +161,29 @@ export const theme = {
     }
   },
   
-  // Enhanced spacing system - more granular control
+  // Enhanced spacing system
   spacing: {
-    xxs: 2,     // Very tiny spacing
-    xs: 4,      // Tiny spacing
-    small: 8,   // Small spacing
-    medium: 16, // Medium spacing
-    large: 24,  // Large spacing
-    xlarge: 32, // Extra large spacing
-    xxlarge: 48,// Very large spacing
-    xxxlarge: 64, // Huge spacing
+    xxs: 2,     
+    xs: 4,      
+    small: 8,   
+    medium: 16, 
+    large: 24,  
+    xlarge: 32, 
+    xxlarge: 48,
+    xxxlarge: 64,
   },
   
-  // Enhanced font sizes - better hierarchy
+  // Enhanced font sizes
   fontSize: {
-    xxs: 10,    // Very small text
-    xs: 12,     // Small text
-    small: 14,  // Small text
-    medium: 16, // Body text
-    large: 18,  // Large text
-    xlarge: 22, // Extra large text
-    xxlarge: 28,// Very large text
-    xxxlarge: 36, // Huge text
-    display: 48,  // Display text
+    xxs: 10,    
+    xs: 12,     
+    small: 14,  
+    medium: 16, 
+    large: 18,  
+    xlarge: 22, 
+    xxlarge: 28,
+    xxxlarge: 36,
+    display: 48,
   },
   
   // Font weights
@@ -207,11 +205,11 @@ export const theme = {
     large: 12,
     xlarge: 16,
     xxlarge: 20,
-    pill: 9999,   // For pill-shaped elements
-    circle: '50%' // For circular elements
+    pill: 9999,
+    circle: '50%'
   },
 
-  // Enhanced shadow system - optimized for light theme
+  // Shadow system for depth
   shadows: {
     none: {
       shadowColor: 'transparent',
@@ -250,19 +248,18 @@ export const theme = {
     }
   },
 
-  // Animation durations and easings
+  // Animation durations
   animation: {
     fast: 150,
     medium: 250,
     slow: 350,
     verySlow: 500,
-    // Easing curves
     easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
     easeOut: 'cubic-bezier(0, 0, 0.2, 1)',
     easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
   },
 
-  // Z-index scale for layering
+  // Z-index scale
   zIndex: {
     background: -1,
     base: 0,

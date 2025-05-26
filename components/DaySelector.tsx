@@ -1,4 +1,4 @@
-// components/DaySelector.tsx - Updated with Enhanced Theme System
+// components/DaySelector.tsx - Fixed style conflicts
 import React from 'react';
 import { useWindowDimensions, Platform } from 'react-native';
 import { XStack, Button, Text, YStack } from 'tamagui';
@@ -24,7 +24,6 @@ export function DaySelector({
     isNarrow 
   } = useAppTheme();
 
-  // Calculate button sizes based on available width and screen size
   const buttonSize = isNarrow ? 45 : 55;
 
   return (
@@ -50,7 +49,6 @@ export function DaySelector({
                 WebkitTapHighlightColor: 'transparent',
                 WebkitTouchCallout: 'none',
                 userSelect: 'none',
-                outline: 'none'
               }}
             >
               <Button
@@ -68,26 +66,21 @@ export function DaySelector({
                   scale: 0.92,
                   opacity: 0.9
                 }}
-                focusStyle={{}}
-                userSelect="none"
+                // FIXED: Use only individual outline properties, not shorthand
                 outlineWidth={0}
-                outlineColor="transparent"
-                style={[
-                  {
-                    WebkitTapHighlightColor: 'transparent',
-                    WebkitTouchCallout: 'none',
-                    userSelect: 'none',
-                    outline: 'none'
-                  },
-                  isSelected ? getShadow('medium') : getShadow('small')
-                ]}
+                outlineStyle="none"
+                style={{
+                  WebkitTapHighlightColor: 'transparent',
+                  WebkitTouchCallout: 'none',
+                  userSelect: 'none',
+                  ...(isSelected ? getShadow('medium') : getShadow('small'))
+                }}
               >
                 <Text color={isSelected ? colors.buttonText : colors.text}>
                   {day}
                 </Text>
               </Button>
 
-              {/* Enhanced indicator dot with better visibility */}
               {isSelected && (
                 <YStack
                   width={4}

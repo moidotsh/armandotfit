@@ -39,16 +39,15 @@ const config = createTamagui({
       // App-specific theme colors
       card: appTheme.colors.light.card,
       cardAlt: appTheme.colors.light.cardAlt,
-      accent: appTheme.colors.accent,
-      accentLight: appTheme.colors.accentLight,
-      accentDark: appTheme.colors.accentDark,
+      accent: appTheme.colors.primary,
+      accentLight: appTheme.colors.primaryLight,
+      accentDark: appTheme.colors.primaryDark,
       textMuted: appTheme.colors.light.textMuted,
       textSecondary: appTheme.colors.light.textSecondary,
       buttonBackground: appTheme.colors.light.buttonBackground,
       buttonBackgroundDisabled: appTheme.colors.light.buttonBackgroundDisabled,
       iconBackground: appTheme.colors.light.iconBackground,
       toggleBackground: appTheme.colors.light.toggleBackground,
-      pill: appTheme.colors.light.pill,
       
       // Standard gray palette for compatibility
       gray1: '#FFFFFF',

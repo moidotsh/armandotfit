@@ -9,7 +9,7 @@ import {
   ScrollView
 } from 'tamagui';
 import { exercises, oneADaySplits, twoADaySplits } from '../data/workoutDataRefactored';
-import { WorkoutSessionTabs } from '../components/ExerciseCard';
+import { WorkoutSessionTabs } from '../components/WorkoutSessionTabs';
 import { useAppTheme } from '../components/ThemeProvider';
 import { format } from 'date-fns';
 import { AppHeader, WorkoutDetailRouteParams, NavigationPath } from '../navigation';

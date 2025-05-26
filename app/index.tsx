@@ -3,11 +3,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Animated, useWindowDimensions } from 'react-native';
-import { 
-  YStack, 
+import {
+  YStack,
   XStack,
-  Text, 
-  Card, 
+  Text,
+  Card,
   H1,
   Button,
   Separator
@@ -25,18 +25,17 @@ import { router } from 'expo-router';
 const APP_VERSION = "v1.0.3";
 
 export default function HomeScreen() {
-  const { colors, fontSize, spacing, borderRadius, shadows, isDark } = useAppTheme();
+  const { colors, fontSize, spacing, borderRadius, shadows, isDark, getShadow, isNarrow, screenWidth, getSpacing, getFontSize, getBorderRadius } = useAppTheme();
   const { width } = useWindowDimensions();
   const today = new Date();
   const formattedDate = format(today, 'MMMM d, yyyy');
-  const isNarrow = width < 350; // Threshold for narrow screens
-  
+
   // State for selected split type - null by default (no selection)
   const [splitType, setSplitType] = useState<SplitType | null>(null);
-  
+
   // State for selected day - null by default (no selection)
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  
+
   // State for showing the alert message
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -53,7 +52,15 @@ export default function HomeScreen() {
   };
 
   const toggleStyles = getToggleStyles();
-  
+
+  // ADD THIS TEST SECTION to verify the enhanced theme is working:
+  console.log('🎨 Enhanced Theme Test:', {
+    'New Colors Available': Object.keys(colors).length > 5,
+    'New Spacing Scale': spacing.xxxlarge === 64,
+    'Helper Functions': typeof getShadow === 'function',
+    'Responsive Helpers': typeof isNarrow === 'boolean'
+  });
+
   // Handle alert animation
   useEffect(() => {
     if (showAlert) {
@@ -72,7 +79,7 @@ export default function HomeScreen() {
       ]).start(() => setShowAlert(false));
     }
   }, [showAlert, fadeAnim]);
-  
+
   const handleStartWorkoutPress = () => {
     if (!splitType && !selectedDay) {
       setAlertMessage('Please select a workout type and day');
@@ -125,18 +132,18 @@ export default function HomeScreen() {
   ];
 
   return (
-    <YStack 
-      flex={1} 
-      backgroundColor={colors.background} 
-      paddingTop={60} 
+    <YStack
+      flex={1}
+      backgroundColor={colors.background}
+      paddingTop={60}
       paddingHorizontal={isNarrow ? spacing.medium : spacing.large}
       overflow="scroll" // Enable scrolling
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      
+
       {/* Inline alert message */}
       {showAlert && (
-        <Animated.View 
+        <Animated.View
           style={{
             position: 'absolute',
             top: 100,
@@ -158,11 +165,11 @@ export default function HomeScreen() {
           </Text>
         </Animated.View>
       )}
-      
+
       <YStack space="$2" paddingBottom={spacing.small}>
         <XStack alignItems="flex-start" justifyContent="space-between" width="100%">
-          <H1 
-            color={colors.text} 
+          <H1
+            color={colors.text}
             fontSize={isNarrow ? 40 : 50}
           >
             Hi Arman!
@@ -178,8 +185,8 @@ export default function HomeScreen() {
             >
               <Settings size={22} color={colors.text} />
             </Button>
-            <Text 
-              color={colors.textMuted} 
+            <Text
+              color={colors.textMuted}
               fontSize={fontSize.small}
             >
               {APP_VERSION}
@@ -188,7 +195,7 @@ export default function HomeScreen() {
         </XStack>
         <Text color={colors.textMuted} fontSize={fontSize.medium}>{formattedDate}</Text>
       </YStack>
-      
+
       {/* Workout Configuration Card */}
       <Card
         marginTop={spacing.xlarge}
@@ -199,17 +206,17 @@ export default function HomeScreen() {
       >
         {/* Split Type Selection */}
         <YStack width="100%" space={spacing.medium}>
-          <Text 
-            color={colors.text} 
+          <Text
+            color={colors.text}
             fontSize={fontSize.large}
             fontWeight="600"
           >
             Full Body:
           </Text>
-          
+
           {/* Split Type Toggle */}
-          <XStack 
-            height={50} 
+          <XStack
+            height={50}
             position="relative"
             maxWidth="100%"
             overflow="hidden"
@@ -234,7 +241,7 @@ export default function HomeScreen() {
               backgroundColor={toggleStyles.backgroundColor}
               borderRadius={borderRadius.pill}
             />
-            
+
             {/* White pill for selected option */}
             {splitType && (
               <XStack
@@ -247,7 +254,7 @@ export default function HomeScreen() {
                 top={0}
               />
             )}
-            
+
             {/* Toggle Buttons */}
             <Button
               position="absolute"
@@ -259,18 +266,18 @@ export default function HomeScreen() {
               color={splitType === 'oneADay' ? toggleStyles.selectedTextColor : toggleStyles.unselectedTextColor}
               onPress={() => handleSplitTypeChange('oneADay')}
               zIndex={1}
-              // Prevent focus styling on mobile web
-              focusStyle={{}}
+              // FIXED: Remove conflicting focus/style properties
+              outlineWidth={0}
+              outlineStyle="none"
               style={{
                 WebkitTapHighlightColor: 'transparent',
                 WebkitTouchCallout: 'none',
                 userSelect: 'none',
-                outline: 'none'
               }}
             >
               Single
             </Button>
-            
+
             <Button
               position="absolute"
               left="50%"
@@ -281,21 +288,21 @@ export default function HomeScreen() {
               color={splitType === 'twoADay' ? toggleStyles.selectedTextColor : toggleStyles.unselectedTextColor}
               onPress={() => handleSplitTypeChange('twoADay')}
               zIndex={1}
-              // Prevent focus styling on mobile web
-              focusStyle={{}}
+              // FIXED: Remove conflicting focus/style properties
+              outlineWidth={0}
+              outlineStyle="none"
               style={{
                 WebkitTapHighlightColor: 'transparent',
                 WebkitTouchCallout: 'none',
                 userSelect: 'none',
-                outline: 'none'
               }}
             >
               Dual
             </Button>
           </XStack>
-          
+
           <Separator marginVertical={spacing.medium} />
-          
+
           {/* Day Selection - Now with consistent orange highlighting */}
           <DaySelector
             selectedDay={selectedDay}
@@ -303,7 +310,7 @@ export default function HomeScreen() {
           />
         </YStack>
       </Card>
-      
+
       {/* Start Workout Button - Fixed height regardless of state */}
       <Button
         size="$8"  // Use a consistent larger size 
@@ -329,7 +336,7 @@ export default function HomeScreen() {
       >
         Start Workout
       </Button>
-      
+
       {/* Feature cards using the component */}
       <FeatureSection features={features} />
     </YStack>

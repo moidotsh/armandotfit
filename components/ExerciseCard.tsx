@@ -132,7 +132,6 @@ export const ExerciseCard = ({
   );
 };
 
-export { WorkoutSessionTabs } from './WorkoutSessionTabs';
 
 export const getExerciseIconFromCategory = (category: string, size: number = 30) => {
   switch (category.toLowerCase()) {
