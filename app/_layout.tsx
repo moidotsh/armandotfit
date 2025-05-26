@@ -1,3 +1,4 @@
+// app/_layout.tsx - Updated with ConstrainedLayout
 import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
@@ -5,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { TamaguiProvider } from 'tamagui';
 import config from '../tamagui.config';
 import { ThemeProvider } from '../components/ThemeProvider';
+import { ConstrainedLayout } from '../components/ConstrainedLayout';
 import { theme } from '../constants/theme';
 import { Platform } from 'react-native';
 import { LoadingScreen } from '@/components/LoadingScreen';
@@ -41,35 +43,37 @@ export default function RootLayout() {
   return (
     <TamaguiProvider config={config} defaultTheme="light">
       <ThemeProvider>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: 'fade',
-            contentStyle: {
-              backgroundColor,
-            },
-          }}
-        >
-          <Stack.Screen name="index" />
-          <Stack.Screen 
-            name="workout-detail" 
-            options={{
-              animation: 'slide_from_right',
+        <ConstrainedLayout>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: 'fade',
+              contentStyle: {
+                backgroundColor,
+              },
             }}
-          />
-          <Stack.Screen 
-            name="split-selection" 
-            options={{
-              animation: 'slide_from_right',
-            }}
-          />
-          <Stack.Screen 
-            name="exercise-detail" 
-            options={{
-              animation: 'slide_from_right',
-            }}
-          />
-        </Stack>
+          >
+            <Stack.Screen name="index" />
+            <Stack.Screen 
+              name="workout-detail" 
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
+            <Stack.Screen 
+              name="split-selection" 
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
+            <Stack.Screen 
+              name="exercise-detail" 
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
+          </Stack>
+        </ConstrainedLayout>
       </ThemeProvider>
     </TamaguiProvider>
   );
