@@ -117,11 +117,17 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    // Shadow is applied via inline style for backgroundColor
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5
+    // Use boxShadow for web compatibility
+    ...(Platform.OS === 'web' && {
+      boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)'
+    }),
+    // Keep shadow props for native
+    ...(Platform.OS !== 'web' && {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 5
+    })
   }
 });

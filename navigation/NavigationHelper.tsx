@@ -9,7 +9,11 @@ export enum NavigationPath {
     HOME = 'home',
     WORKOUT_DETAIL = 'workout-detail',
     SPLIT_SELECTION = 'split-selection',
-    EXERCISE_DETAIL = 'exercise-detail' 
+    EXERCISE_DETAIL = 'exercise-detail',
+    LOGIN = 'auth/login',
+    REGISTER = 'auth/register',
+    FORGOT_PASSWORD = 'auth/forgot-password',
+    SETTINGS = 'settings'
   }
   
   /**
@@ -42,6 +46,34 @@ export function navigateToSplitSelection(type: SplitType | string = 'oneADay', f
  */
 export function navigateToHome() {
   router.push('/');
+}
+
+/**
+ * Navigate to login screen
+ */
+export function navigateToLogin() {
+  router.push('/auth/login');
+}
+
+/**
+ * Navigate to register screen
+ */
+export function navigateToRegister() {
+  router.push('/auth/register');
+}
+
+/**
+ * Navigate to forgot password screen
+ */
+export function navigateToForgotPassword() {
+  router.push('/auth/forgot-password');
+}
+
+/**
+ * Navigate to settings screen
+ */
+export function navigateToSettings() {
+  router.push('/settings');
 }
 
 /**

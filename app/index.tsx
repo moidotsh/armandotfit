@@ -13,11 +13,14 @@ import {
   Separator
 } from 'tamagui';
 import { format } from 'date-fns';
-import { BarChart2, TrendingUp, Clock, AlertCircle, Settings } from '@tamagui/lucide-icons';
+import { BarChart2, TrendingUp, Clock, AlertCircle, Settings, Radio, Bell, Activity, Database } from '@tamagui/lucide-icons';
 import { useAppTheme } from '../components/ThemeProvider';
 import { SplitType } from '../constants/theme';
 import { DaySelector } from '../components/DaySelector';
 import { FeatureSection } from '../components/FeatureCard';
+import { WorkoutNotifications, useWorkoutNotifications } from '../components/RealTime/WorkoutNotifications';
+import { AnalyticsDashboard } from '../components/Analytics/AnalyticsDashboard';
+import { useRealTime } from '../context/RealTimeContext';
 import { navigateToWorkout, NavigationPath } from '../navigation';
 import { router } from 'expo-router';
 
@@ -27,8 +30,15 @@ const APP_VERSION = "v1.0.3";
 export default function HomeScreen() {
   const { colors, fontSize, spacing, borderRadius, shadows, isDark, getShadow, isNarrow, screenWidth, getSpacing, getFontSize, getBorderRadius } = useAppTheme();
   const { width } = useWindowDimensions();
+  const { unreadSharesCount, isConnected } = useRealTime();
+  const { requestNotificationPermission } = useWorkoutNotifications();
   const today = new Date();
   const formattedDate = format(today, 'MMMM d, yyyy');
+
+  // Request notification permission on mount
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
 
   // State for selected split type - null by default (no selection)
   const [splitType, setSplitType] = useState<SplitType | null>(null);
@@ -125,6 +135,11 @@ export default function HomeScreen() {
       onPress: () => navigateToSection('progress')
     },
     {
+      icon: <Database size={isNarrow ? 25 : 30} color={colors.text} />,
+      title: "Exercises",
+      onPress: () => router.push('/exercise-database')
+    },
+    {
       icon: <Clock size={isNarrow ? 25 : 30} color={colors.text} />,
       title: "History",
       onPress: () => navigateToSection('history')
@@ -175,6 +190,46 @@ export default function HomeScreen() {
             Hi Arman!
           </H1>
           <XStack alignItems="center" space={spacing.small}>
+            <YStack position="relative">
+              <Button
+                size="$3"
+                circular
+                backgroundColor="transparent"
+                onPress={() => router.push('/live-feed')}
+                pressStyle={{ opacity: 0.7 }}
+                padding={spacing.small}
+              >
+                <Radio size={22} color={colors.text} />
+              </Button>
+              {unreadSharesCount > 0 && (
+                <YStack
+                  position="absolute"
+                  top={-4}
+                  right={-4}
+                  backgroundColor={colors.primary}
+                  minWidth={16}
+                  height={16}
+                  borderRadius={8}
+                  alignItems="center"
+                  justifyContent="center"
+                  paddingHorizontal={4}
+                >
+                  <Text fontSize={8} color={colors.cardBackground} fontWeight="600">
+                    {unreadSharesCount > 9 ? '9+' : unreadSharesCount}
+                  </Text>
+                </YStack>
+              )}
+            </YStack>
+            <Button
+              size="$3"
+              circular
+              backgroundColor="transparent"
+              onPress={() => router.push('/progression')}
+              pressStyle={{ opacity: 0.7 }}
+              padding={spacing.small}
+            >
+              <Activity size={22} color={colors.text} />
+            </Button>
             <Button
               size="$3"
               circular
@@ -185,12 +240,20 @@ export default function HomeScreen() {
             >
               <Settings size={22} color={colors.text} />
             </Button>
-            <Text
-              color={colors.textMuted}
-              fontSize={fontSize.small}
-            >
-              {APP_VERSION}
-            </Text>
+            <XStack alignItems="center" space={spacing.xsmall}>
+              <YStack
+                backgroundColor={isConnected ? colors.success : colors.textMuted}
+                width={6}
+                height={6}
+                borderRadius={3}
+              />
+              <Text
+                color={colors.textMuted}
+                fontSize={fontSize.small}
+              >
+                {APP_VERSION}
+              </Text>
+            </XStack>
           </XStack>
         </XStack>
         <Text color={colors.textMuted} fontSize={fontSize.medium}>{formattedDate}</Text>
@@ -337,8 +400,14 @@ export default function HomeScreen() {
         Start Workout
       </Button>
 
+      {/* Analytics Dashboard */}
+      <AnalyticsDashboard compact={true} />
+
       {/* Feature cards using the component */}
       <FeatureSection features={features} />
+
+      {/* Real-time notifications */}
+      <WorkoutNotifications />
     </YStack>
   );
 }
