@@ -122,26 +122,31 @@ export default function HomeScreen() {
   // Button height stays consistent
   const buttonHeight = 70;
 
-  // Feature data for cards
+  // Feature data for cards with enhanced descriptions and colors
   const features = [
     {
-      icon: <BarChart2 size={isNarrow ? 25 : 30} color={colors.text} />,
+      icon: <BarChart2 size={isNarrow ? 25 : 30} color={colors.primary} />,
       title: "Analytics",
+      subtitle: "Track your performance",
       onPress: () => navigateToSection('analytics')
     },
     {
-      icon: <TrendingUp size={isNarrow ? 25 : 30} color={colors.text} />,
-      title: "Progress",
+      icon: <TrendingUp size={isNarrow ? 25 : 30} color={colors.success} />,
+      title: "Progression",
+      subtitle: "Monitor your improvements",
+      badge: "New",
       onPress: () => navigateToSection('progress')
     },
     {
-      icon: <Database size={isNarrow ? 25 : 30} color={colors.text} />,
-      title: "Exercises",
+      icon: <Database size={isNarrow ? 25 : 30} color={colors.info} />,
+      title: "Exercise Library",
+      subtitle: "Browse 200+ exercises",
       onPress: () => router.push('/exercise-database')
     },
     {
-      icon: <Clock size={isNarrow ? 25 : 30} color={colors.text} />,
-      title: "History",
+      icon: <Clock size={isNarrow ? 25 : 30} color={colors.warning} />,
+      title: "Workout History",
+      subtitle: "Review past sessions",
       onPress: () => navigateToSection('history')
     }
   ];
@@ -402,6 +407,25 @@ export default function HomeScreen() {
 
       {/* Analytics Dashboard */}
       <AnalyticsDashboard compact={true} />
+
+      {/* Quick Actions Section */}
+      <YStack marginTop={spacing.large} space={spacing.medium}>
+        <XStack alignItems="center" space={spacing.small}>
+          <Text 
+            fontSize={fontSize.xlarge} 
+            fontWeight="700" 
+            color={colors.text}
+          >
+            Quick Actions
+          </Text>
+          <YStack 
+            flex={1} 
+            height={2} 
+            backgroundColor={colors.borderLight} 
+            borderRadius={1}
+          />
+        </XStack>
+      </YStack>
 
       {/* Feature cards using the component */}
       <FeatureSection features={features} />

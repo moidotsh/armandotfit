@@ -21,7 +21,7 @@ interface AnalyticsDashboardProps {
 }
 
 export function AnalyticsDashboard({ compact = false }: AnalyticsDashboardProps) {
-  const { colors, spacing } = useAppTheme();
+  const { colors, spacing, shadows } = useAppTheme();
   const { user, isAuthenticated } = useAuth();
   
   const [analytics, setAnalytics] = useState<WorkoutAnalytics | null>(null);
@@ -117,63 +117,139 @@ export function AnalyticsDashboard({ compact = false }: AnalyticsDashboardProps)
   }
 
   if (compact) {
+    const isGoalAchieved = analytics.weeklyGoalProgress.percentage >= 100;
+    
     return (
-      <YStack space={spacing.small}>
-        {/* Weekly Goal Progress */}
-        <Card backgroundColor={colors.cardBackground} padding={spacing.medium}>
-          <YStack space={spacing.small}>
+      <YStack space={spacing.large}>
+        {/* Weekly Goal Progress with enhanced design */}
+        <Card 
+          backgroundColor={colors.cardBackground} 
+          padding={spacing.large} 
+          {...shadows.small}
+        >
+          <YStack space={spacing.medium}>
             <XStack alignItems="center" justifyContent="space-between">
-              <XStack alignItems="center" space={spacing.small}>
-                <Target size={20} color={colors.primary} />
-                <Text fontSize={16} fontWeight="600" color={colors.text}>
-                  Weekly Goal
-                </Text>
+              <XStack alignItems="center" space={spacing.medium}>
+                <YStack
+                  width={40}
+                  height={40}
+                  borderRadius={20}
+                  backgroundColor={isGoalAchieved ? colors.success : colors.primarySubtle}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Target 
+                    size={20} 
+                    color={isGoalAchieved ? colors.white : colors.primary} 
+                  />
+                </YStack>
+                <YStack>
+                  <Text fontSize={18} fontWeight="700" color={colors.text}>
+                    Weekly Goal
+                  </Text>
+                  <Text fontSize={14} color={colors.textMuted}>
+                    {analytics.weeklyGoalProgress.completed} of {analytics.weeklyGoalProgress.target} workouts
+                  </Text>
+                </YStack>
               </XStack>
-              <Text fontSize={14} color={colors.textMuted}>
-                {analytics.weeklyGoalProgress.completed}/{analytics.weeklyGoalProgress.target}
-              </Text>
+              <YStack alignItems="flex-end">
+                <Text fontSize={24} fontWeight="700" color={isGoalAchieved ? colors.success : colors.primary}>
+                  {analytics.weeklyGoalProgress.percentage}%
+                </Text>
+                {isGoalAchieved && (
+                  <XStack alignItems="center" space={spacing.xsmall}>
+                    <Zap size={14} color={colors.success} />
+                    <Text fontSize={12} color={colors.success} fontWeight="600">
+                      Complete!
+                    </Text>
+                  </XStack>
+                )}
+              </YStack>
             </XStack>
             
             <Progress
               value={analytics.weeklyGoalProgress.percentage}
               backgroundColor={colors.cardAlt}
+              height={8}
+              borderRadius={4}
             >
-              <Progress.Indicator backgroundColor={colors.primary} />
+              <Progress.Indicator 
+                backgroundColor={isGoalAchieved ? colors.success : colors.primary} 
+                animation="bouncy"
+              />
             </Progress>
-            
-            <Text fontSize={12} color={colors.textMuted}>
-              {analytics.weeklyGoalProgress.percentage}% complete
-            </Text>
           </YStack>
         </Card>
 
-        {/* Quick Stats */}
-        <XStack space={spacing.small}>
-          <Card flex={1} backgroundColor={colors.cardBackground} padding={spacing.small}>
-            <YStack alignItems="center" space={spacing.xsmall}>
-              <Award size={16} color={colors.warning} />
-              <Text fontSize={12} color={colors.textMuted}>Streak</Text>
-              <Text fontSize={16} fontWeight="600" color={colors.text}>
+        {/* Quick Stats with enhanced cards */}
+        <XStack space={spacing.medium}>
+          <Card 
+            flex={1} 
+            backgroundColor={colors.cardBackground} 
+            padding={spacing.medium}
+            {...shadows.small}
+          >
+            <YStack alignItems="center" space={spacing.small}>
+              <YStack
+                width={36}
+                height={36}
+                borderRadius={18}
+                backgroundColor={colors.warning + '20'}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Award size={18} color={colors.warning} />
+              </YStack>
+              <Text fontSize={12} color={colors.textMuted} fontWeight="500">Current Streak</Text>
+              <Text fontSize={20} fontWeight="700" color={colors.text}>
                 {analytics.currentStreak}
               </Text>
             </YStack>
           </Card>
           
-          <Card flex={1} backgroundColor={colors.cardBackground} padding={spacing.small}>
-            <YStack alignItems="center" space={spacing.xsmall}>
-              <Clock size={16} color={colors.textMuted} />
-              <Text fontSize={12} color={colors.textMuted}>Avg Time</Text>
-              <Text fontSize={16} fontWeight="600" color={colors.text}>
+          <Card 
+            flex={1} 
+            backgroundColor={colors.cardBackground} 
+            padding={spacing.medium}
+            {...shadows.small}
+          >
+            <YStack alignItems="center" space={spacing.small}>
+              <YStack
+                width={36}
+                height={36}
+                borderRadius={18}
+                backgroundColor={colors.info + '20'}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Clock size={18} color={colors.info} />
+              </YStack>
+              <Text fontSize={12} color={colors.textMuted} fontWeight="500">Avg Time</Text>
+              <Text fontSize={20} fontWeight="700" color={colors.text}>
                 {analytics.averageWorkoutDuration}m
               </Text>
             </YStack>
           </Card>
           
-          <Card flex={1} backgroundColor={colors.cardBackground} padding={spacing.small}>
-            <YStack alignItems="center" space={spacing.xsmall}>
-              <BarChart2 size={16} color={colors.primary} />
-              <Text fontSize={12} color={colors.textMuted}>Total</Text>
-              <Text fontSize={16} fontWeight="600" color={colors.text}>
+          <Card 
+            flex={1} 
+            backgroundColor={colors.cardBackground} 
+            padding={spacing.medium}
+            {...shadows.small}
+          >
+            <YStack alignItems="center" space={spacing.small}>
+              <YStack
+                width={36}
+                height={36}
+                borderRadius={18}
+                backgroundColor={colors.primary + '20'}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <BarChart2 size={18} color={colors.primary} />
+              </YStack>
+              <Text fontSize={12} color={colors.textMuted} fontWeight="500">Total</Text>
+              <Text fontSize={20} fontWeight="700" color={colors.text}>
                 {analytics.totalWorkouts}
               </Text>
             </YStack>

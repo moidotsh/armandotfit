@@ -108,6 +108,8 @@ export const theme = {
       card: palette.white,                 
       cardAlt: palette.gray[100],          
       cardSubtle: palette.gray[200],       
+      cardBackground: palette.white,      
+      cardBackgroundHover: palette.gray[50],
       
       // Border colors
       border: palette.gray[300],           
@@ -119,9 +121,14 @@ export const theme = {
       textSecondary: palette.gray[700],    
       textMuted: palette.gray[600],        
       textSubtle: palette.gray[500],       
-      textOnPrimary: palette.white,        
+      textOnPrimary: palette.white,
+      white: palette.white,
       
       // Interactive element colors
+      primary: palette.orange.primary,
+      primaryLight: palette.orange.light,
+      primaryDark: palette.orange.dark,
+      primarySubtle: palette.orange.subtle,
       buttonBackground: palette.orange.primary,
       buttonBackgroundHover: palette.orange.dark,
       buttonBackgroundDisabled: palette.gray[300],
@@ -165,6 +172,7 @@ export const theme = {
   spacing: {
     xxs: 2,     
     xs: 4,      
+    xsmall: 6,
     small: 8,   
     medium: 16, 
     large: 24,  
