@@ -133,9 +133,6 @@ export default function WorkoutDetailScreen() {
               <Text fontSize={14} color={colors.textMuted}>
                 • Exercise categorization and custom exercises
               </Text>
-              <Text fontSize={14} color={colors.textMuted}>
-                • Rest timers and workout progression tracking
-              </Text>
             </YStack>
           </YStack>
 

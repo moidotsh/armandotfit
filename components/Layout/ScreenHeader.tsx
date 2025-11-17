@@ -97,9 +97,10 @@ export function ScreenHeader({
         <YStack flex={1}>
           <Text
             color={colors.text}
-            fontSize={isNarrow ? fontSize.xlarge : fontSize.xxlarge}
-            fontWeight="700"
-            numberOfLines={1}
+            fontSize={isNarrow ? fontSize.large : fontSize.xlarge}
+            fontWeight="600"
+            numberOfLines={2}
+            adjustsFontSizeToFit
           >
             {title}
           </Text>

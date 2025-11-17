@@ -47,7 +47,6 @@ export const FeatureCard = ({
       onPress={onPress}
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}
-      onPressChange={setIsPressed}
       {...shadows.small}
       focusStyle={{}}
       style={{

@@ -9,6 +9,7 @@ export enum NavigationPath {
     HOME = 'home',
     WORKOUT_DETAIL = 'workout-detail',
     SPLIT_SELECTION = 'split-selection',
+    WORKOUT_PROGRAMS = 'workout-programs',
     EXERCISE_DETAIL = 'exercise-detail',
     LOGIN = 'auth/login',
     REGISTER = 'auth/register',
@@ -23,6 +24,7 @@ export enum NavigationPath {
   export const navigationHierarchy: Record<string, NavigationPath> = {
     [NavigationPath.WORKOUT_DETAIL]: NavigationPath.HOME,
     [NavigationPath.SPLIT_SELECTION]: NavigationPath.HOME,
+    [NavigationPath.WORKOUT_PROGRAMS]: NavigationPath.HOME,
     // We'll add this when the page exists
     // 'exercise-detail': NavigationPath.WORKOUT_DETAIL
   };
@@ -32,6 +34,13 @@ export enum NavigationPath {
  */
 export function navigateToWorkout(splitType: SplitType | string, day: number, from: NavigationPath = NavigationPath.HOME) {
   router.push(`/workout-detail?type=${splitType}&day=${day}&from=${from}`);
+}
+
+/**
+ * Navigate to workout programs screen
+ */
+export function navigateToWorkoutPrograms() {
+  router.push('/workout-programs');
 }
 
 /**

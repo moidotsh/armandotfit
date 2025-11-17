@@ -3,6 +3,7 @@ export { AppHeader } from './AppHeader';
 export { BottomNav } from './BottomNav';
 export { 
   navigateToWorkout,
+  navigateToWorkoutPrograms,
   navigateToSplitSelection,
   navigateToHome,
   goBack,

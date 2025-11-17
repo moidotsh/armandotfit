@@ -62,6 +62,58 @@ export const ConstrainedLayout: React.FC<ConstrainedLayoutProps> = ({ children }
           margin-left: auto !important;
           margin-right: auto !important;
         }
+        
+        /* Global text wrapping fix for constrained view */
+        * {
+          overflow-wrap: break-word !important;
+          word-wrap: break-word !important;
+          word-break: break-word !important;
+          hyphens: auto !important;
+        }
+        
+        /* Ensure Tamagui Text components wrap properly */
+        [data-tamagui="Text"] {
+          white-space: pre-wrap !important;
+          overflow-wrap: break-word !important;
+          word-wrap: break-word !important;
+          max-width: 100% !important;
+        }
+        
+        /* Adjust font sizes for constrained view */
+        h1, [data-tamagui="H1"] {
+          font-size: 28px !important;
+          line-height: 1.3 !important;
+        }
+        
+        h2, [data-tamagui="H2"] {
+          font-size: 22px !important;
+          line-height: 1.3 !important;
+        }
+        
+        h3, [data-tamagui="H3"] {
+          font-size: 18px !important;
+          line-height: 1.3 !important;
+        }
+        
+        p, [data-tamagui="Text"] {
+          font-size: 14px !important;
+          line-height: 1.4 !important;
+        }
+        
+        /* Ensure cards and containers don't overflow */
+        [data-tamagui="Card"], [data-tamagui="YStack"], [data-tamagui="XStack"] {
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        
+        /* Fix button text overflow */
+        [data-tamagui="Button"] {
+          font-size: 14px !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          max-width: 100% !important;
+        }
       `;
       
       // Add to document head
@@ -117,8 +169,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    // Use boxShadow for web compatibility
+    // Add horizontal padding for better spacing
+    paddingHorizontal: 8,
+    // Ensure text wraps properly
     ...(Platform.OS === 'web' && {
+      overflowWrap: 'break-word',
+      wordWrap: 'break-word',
+      hyphens: 'auto',
+      boxSizing: 'border-box',
       boxShadow: '0 0 8px rgba(0, 0, 0, 0.3)'
     }),
     // Keep shadow props for native

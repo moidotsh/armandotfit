@@ -1,6 +1,6 @@
 // components/Progression/ProgressionDashboard.tsx - Exercise progression analytics dashboard
 import React, { useState, useEffect } from 'react';
-import { YStack, XStack, Text, Button, Card, ScrollView, Tabs } from 'tamagui';
+import { YStack, XStack, Text, Button, Card, ScrollView } from 'tamagui';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -27,7 +27,7 @@ interface ProgressionDashboardProps {
 }
 
 export function ProgressionDashboard({ exerciseName }: ProgressionDashboardProps) {
-  const { colors, spacing } = useAppTheme();
+  const { colors, spacing, fontSize } = useAppTheme();
   const { user, isAuthenticated } = useAuth();
   
   const [progressions, setProgressions] = useState<ExerciseProgression[]>([]);
@@ -35,7 +35,6 @@ export function ProgressionDashboard({ exerciseName }: ProgressionDashboardProps
   const [trainingLoad, setTrainingLoad] = useState<TrainingLoad[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedExercise, setSelectedExercise] = useState<ExerciseProgression | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     if (isAuthenticated && user?.id) {
@@ -138,24 +137,24 @@ export function ProgressionDashboard({ exerciseName }: ProgressionDashboardProps
   if (exerciseName && selectedExercise) {
     // Single exercise detailed view
     return (
-      <YStack space={spacing.medium}>
+      <YStack 
+        space={spacing.medium}
+        width="100%"
+      >
         <ExerciseProgressionDetail exercise={selectedExercise} />
       </YStack>
     );
   }
 
-  // Overview dashboard
+  // Overview dashboard with expandable sections
   return (
-    <YStack space={spacing.medium}>
-      <Tabs value={activeTab} onValueChange={setActiveTab} orientation="horizontal">
-        <Tabs.List backgroundColor={colors.cardBackground}>
-          <Tabs.Tab flex={1} value="overview">Overview</Tabs.Tab>
-          <Tabs.Tab flex={1} value="exercises">Exercises</Tabs.Tab>
-          <Tabs.Tab flex={1} value="insights">Insights</Tabs.Tab>
-          <Tabs.Tab flex={1} value="load">Training Load</Tabs.Tab>
-        </Tabs.List>
-
-        <Tabs.Content value="overview" flex={1}>
+    <ScrollView showsVerticalScrollIndicator={false} style={{ width: '100%' }}>
+      <YStack 
+        space={spacing.medium}
+        width="100%"
+      >
+        {/* Overview Section */}
+        <Card backgroundColor={colors.cardBackground} padding={spacing.small}>
           <OverviewTab 
             progressions={progressions}
             insights={insights}
@@ -165,9 +164,20 @@ export function ProgressionDashboard({ exerciseName }: ProgressionDashboardProps
             formatWeight={formatWeight}
             formatPercentage={formatPercentage}
           />
-        </Tabs.Content>
+        </Card>
 
-        <Tabs.Content value="exercises" flex={1}>
+        {/* Exercises Section */}
+        <Card backgroundColor={colors.cardBackground} padding={spacing.small}>
+          <YStack space={spacing.small}>
+            <XStack alignItems="center" justifyContent="space-between">
+              <Text fontSize={16} fontWeight="600" color={colors.text}>
+                Exercise Progression
+              </Text>
+              <Text fontSize={12} color={colors.textMuted}>
+                {progressions.length} tracked
+              </Text>
+            </XStack>
+          </YStack>
           <ExercisesTab 
             progressions={progressions}
             onSelectExercise={setSelectedExercise}
@@ -177,26 +187,48 @@ export function ProgressionDashboard({ exerciseName }: ProgressionDashboardProps
             formatWeight={formatWeight}
             formatPercentage={formatPercentage}
           />
-        </Tabs.Content>
+        </Card>
 
-        <Tabs.Content value="insights" flex={1}>
+        {/* Insights Section */}
+        <Card backgroundColor={colors.cardBackground} padding={spacing.small}>
+          <YStack space={spacing.small}>
+            <XStack alignItems="center" justifyContent="space-between">
+              <Text fontSize={16} fontWeight="600" color={colors.text}>
+                Performance Insights
+              </Text>
+              <Text fontSize={12} color={colors.textMuted}>
+                {insights.length} insights
+              </Text>
+            </XStack>
+          </YStack>
           <InsightsTab 
             insights={insights}
             colors={colors}
             spacing={spacing}
             getInsightIcon={getInsightIcon}
           />
-        </Tabs.Content>
+        </Card>
 
-        <Tabs.Content value="load" flex={1}>
+        {/* Training Load Section */}
+        <Card backgroundColor={colors.cardBackground} padding={spacing.small}>
+          <YStack space={spacing.small}>
+            <XStack alignItems="center" justifyContent="space-between">
+              <Text fontSize={16} fontWeight="600" color={colors.text}>
+                Training Load
+              </Text>
+              <Text fontSize={12} color={colors.textMuted}>
+                Last 30 days
+              </Text>
+            </XStack>
+          </YStack>
           <TrainingLoadTab 
             trainingLoad={trainingLoad}
             colors={colors}
             spacing={spacing}
           />
-        </Tabs.Content>
-      </Tabs>
-    </YStack>
+        </Card>
+      </YStack>
+    </ScrollView>
   );
 }
 
@@ -210,8 +242,10 @@ function OverviewTab({ progressions, insights, colors, spacing, getTrendIcon, fo
   const criticalInsights = insights.filter(i => i.severity === 'critical' || i.severity === 'warning');
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <YStack space={spacing.medium}>
+    <YStack 
+      space={spacing.medium}
+      width="100%"
+    >
         {/* Summary Stats */}
         <XStack space={spacing.small}>
           <Card flex={1} backgroundColor={colors.cardBackground} padding={spacing.medium}>
@@ -303,15 +337,16 @@ function OverviewTab({ progressions, insights, colors, spacing, getTrendIcon, fo
           </Card>
         )}
       </YStack>
-    </ScrollView>
   );
 }
 
 // Exercises Tab Component
 function ExercisesTab({ progressions, onSelectExercise, colors, spacing, getTrendIcon, formatWeight, formatPercentage }: any) {
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <YStack space={spacing.small}>
+    <YStack 
+      space={spacing.small}
+      width="100%"
+    >
         {progressions.length === 0 ? (
           <Card backgroundColor={colors.cardAlt} padding={spacing.large}>
             <YStack alignItems="center" space={spacing.small}>
@@ -339,7 +374,6 @@ function ExercisesTab({ progressions, onSelectExercise, colors, spacing, getTren
           ))
         )}
       </YStack>
-    </ScrollView>
   );
 }
 
@@ -354,10 +388,10 @@ function ExerciseProgressionCard({ progression, onPress, colors, spacing, getTre
       justifyContent="flex-start"
       pressStyle={{ opacity: 0.7 }}
     >
-      <Card backgroundColor={colors.cardBackground} padding={spacing.medium} width="100%">
-        <YStack space={spacing.small}>
+      <Card backgroundColor={colors.cardBackground} padding={spacing.small} width="100%">
+        <YStack space={spacing.xsmall}>
           <XStack alignItems="center" justifyContent="space-between">
-            <Text fontSize={16} fontWeight="600" color={colors.text}>
+            <Text fontSize={14} fontWeight="600" color={colors.text} numberOfLines={2}>
               {progression.exerciseName}
             </Text>
             <XStack alignItems="center" space={spacing.xsmall}>
@@ -428,8 +462,10 @@ function InsightsTab({ insights, colors, spacing, getInsightIcon }: any) {
   }, {});
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <YStack space={spacing.medium}>
+    <YStack 
+      space={spacing.medium}
+      width="100%"
+    >
         {insights.length === 0 ? (
           <Card backgroundColor={colors.cardAlt} padding={spacing.large}>
             <YStack alignItems="center" space={spacing.small}>
@@ -487,8 +523,7 @@ function InsightsTab({ insights, colors, spacing, getInsightIcon }: any) {
             </Card>
           ))
         )}
-      </YStack>
-    </ScrollView>
+    </YStack>
   );
 }
 
@@ -500,8 +535,10 @@ function TrainingLoadTab({ trainingLoad, colors, spacing }: any) {
     : 0;
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <YStack space={spacing.medium}>
+    <YStack 
+      space={spacing.medium}
+      width="100%"
+    >
         {/* Load Summary */}
         <XStack space={spacing.small}>
           <Card flex={1} backgroundColor={colors.cardBackground} padding={spacing.medium}>
@@ -570,8 +607,7 @@ function TrainingLoadTab({ trainingLoad, colors, spacing }: any) {
             )}
           </YStack>
         </Card>
-      </YStack>
-    </ScrollView>
+    </YStack>
   );
 }
 
@@ -580,8 +616,10 @@ function ExerciseProgressionDetail({ exercise }: { exercise: ExerciseProgression
   const { colors, spacing } = useAppTheme();
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <YStack space={spacing.medium}>
+    <YStack 
+      space={spacing.medium}
+      width="100%"
+    >
         {/* Exercise Header */}
         <Card backgroundColor={colors.cardBackground} padding={spacing.medium}>
           <YStack space={spacing.small}>
@@ -703,6 +741,5 @@ function ExerciseProgressionDetail({ exercise }: { exercise: ExerciseProgression
           </YStack>
         </Card>
       </YStack>
-    </ScrollView>
   );
 }

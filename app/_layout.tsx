@@ -15,6 +15,9 @@ import { Platform } from 'react-native';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { AuthGuard } from '../components/AuthGuard';
 
+// Ensure reanimated is loaded for Sheet animations
+import 'react-native-reanimated';
+
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
@@ -82,12 +85,6 @@ export default function RootLayout() {
                 />
                 <Stack.Screen 
                   name="settings" 
-                  options={{
-                    animation: 'slide_from_right',
-                  }}
-                />
-                <Stack.Screen 
-                  name="live-feed" 
                   options={{
                     animation: 'slide_from_right',
                   }}

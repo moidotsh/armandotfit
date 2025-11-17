@@ -13,15 +13,15 @@ import {
   Separator
 } from 'tamagui';
 import { format } from 'date-fns';
-import { BarChart2, TrendingUp, Clock, AlertCircle, Settings, Radio, Bell, Activity, Database } from '@tamagui/lucide-icons';
+import { BarChart2, TrendingUp, AlertCircle, Settings, Bell, Activity, Database, Calendar } from '@tamagui/lucide-icons';
 import { useAppTheme } from '../components/ThemeProvider';
 import { SplitType } from '../constants/theme';
 import { DaySelector } from '../components/DaySelector';
 import { FeatureSection } from '../components/FeatureCard';
-import { WorkoutNotifications, useWorkoutNotifications } from '../components/RealTime/WorkoutNotifications';
+import { useWorkoutNotifications } from '../components/RealTime/WorkoutNotifications';
 import { AnalyticsDashboard } from '../components/Analytics/AnalyticsDashboard';
 import { useRealTime } from '../context/RealTimeContext';
-import { navigateToWorkout, NavigationPath } from '../navigation';
+import { navigateToWorkout, navigateToWorkoutPrograms, NavigationPath } from '../navigation';
 import { router } from 'expo-router';
 
 // App version displayed in the UI
@@ -30,7 +30,7 @@ const APP_VERSION = "v1.0.3";
 export default function HomeScreen() {
   const { colors, fontSize, spacing, borderRadius, shadows, isDark, getShadow, isNarrow, screenWidth, getSpacing, getFontSize, getBorderRadius } = useAppTheme();
   const { width } = useWindowDimensions();
-  const { unreadSharesCount, isConnected } = useRealTime();
+  // const { unreadSharesCount, isConnected } = useRealTime();
   const { requestNotificationPermission } = useWorkoutNotifications();
   const today = new Date();
   const formattedDate = format(today, 'MMMM d, yyyy');
@@ -138,16 +138,16 @@ export default function HomeScreen() {
       onPress: () => navigateToSection('progress')
     },
     {
+      icon: <Calendar size={isNarrow ? 25 : 30} color={colors.info} />,
+      title: "Workout Programs",
+      subtitle: "View all workout routines",
+      onPress: () => navigateToWorkoutPrograms()
+    },
+    {
       icon: <Database size={isNarrow ? 25 : 30} color={colors.info} />,
       title: "Exercise Library",
       subtitle: "Browse 200+ exercises",
       onPress: () => router.push('/exercise-database')
-    },
-    {
-      icon: <Clock size={isNarrow ? 25 : 30} color={colors.warning} />,
-      title: "Workout History",
-      subtitle: "Review past sessions",
-      onPress: () => navigateToSection('history')
     }
   ];
 
@@ -195,36 +195,6 @@ export default function HomeScreen() {
             Hi Arman!
           </H1>
           <XStack alignItems="center" space={spacing.small}>
-            <YStack position="relative">
-              <Button
-                size="$3"
-                circular
-                backgroundColor="transparent"
-                onPress={() => router.push('/live-feed')}
-                pressStyle={{ opacity: 0.7 }}
-                padding={spacing.small}
-              >
-                <Radio size={22} color={colors.text} />
-              </Button>
-              {unreadSharesCount > 0 && (
-                <YStack
-                  position="absolute"
-                  top={-4}
-                  right={-4}
-                  backgroundColor={colors.primary}
-                  minWidth={16}
-                  height={16}
-                  borderRadius={8}
-                  alignItems="center"
-                  justifyContent="center"
-                  paddingHorizontal={4}
-                >
-                  <Text fontSize={8} color={colors.cardBackground} fontWeight="600">
-                    {unreadSharesCount > 9 ? '9+' : unreadSharesCount}
-                  </Text>
-                </YStack>
-              )}
-            </YStack>
             <Button
               size="$3"
               circular
@@ -246,12 +216,6 @@ export default function HomeScreen() {
               <Settings size={22} color={colors.text} />
             </Button>
             <XStack alignItems="center" space={spacing.xsmall}>
-              <YStack
-                backgroundColor={isConnected ? colors.success : colors.textMuted}
-                width={6}
-                height={6}
-                borderRadius={3}
-              />
               <Text
                 color={colors.textMuted}
                 fontSize={fontSize.small}
@@ -429,9 +393,6 @@ export default function HomeScreen() {
 
       {/* Feature cards using the component */}
       <FeatureSection features={features} />
-
-      {/* Real-time notifications */}
-      <WorkoutNotifications />
     </YStack>
   );
 }

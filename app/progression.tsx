@@ -19,7 +19,12 @@ export default function ProgressionScreen() {
         showBackButton={true}
       />
 
-      <YStack flex={1}>
+      <YStack 
+        flex={1} 
+        width="100%"
+        maxWidth={800}
+        alignSelf="center"
+      >
         <ProgressionDashboard />
       </YStack>
     </PageContainer>

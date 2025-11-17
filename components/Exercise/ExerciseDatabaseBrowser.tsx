@@ -384,7 +384,7 @@ export function ExerciseDatabaseBrowser({
                         </Text>
                       </YStack>
                       
-                      {exercise.primaryMuscleGroups.slice(0, 2).map((muscle) => (
+                      {exercise.muscleGroups?.slice(0, 2).map((muscle) => (
                         <YStack
                           key={muscle}
                           backgroundColor={colors.primary}
@@ -398,7 +398,7 @@ export function ExerciseDatabaseBrowser({
                         </YStack>
                       ))}
 
-                      {exercise.primaryMuscleGroups.length > 2 && (
+                      {exercise.muscleGroups && exercise.muscleGroups.length > 2 && (
                         <YStack
                           backgroundColor={colors.textMuted}
                           paddingHorizontal={spacing.small}
@@ -406,7 +406,7 @@ export function ExerciseDatabaseBrowser({
                           borderRadius={borderRadius.small}
                         >
                           <Text fontSize={fontSize.small} color="white">
-                            +{exercise.primaryMuscleGroups.length - 2}
+                            +{exercise.muscleGroups.length - 2}
                           </Text>
                         </YStack>
                       )}

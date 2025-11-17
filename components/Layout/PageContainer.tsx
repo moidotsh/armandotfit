@@ -101,7 +101,10 @@ export function PageContainer({
           {
             flex: 1,
             backgroundColor: colors.background,
-            ...defaultContentContainerStyle
+            ...defaultContentContainerStyle,
+            // Ensure proper text wrapping
+            overflowWrap: 'break-word',
+            wordWrap: 'break-word',
           },
           style
         ]}
@@ -122,7 +125,12 @@ export function PageContainer({
         },
         style
       ]}
-      contentContainerStyle={defaultContentContainerStyle}
+      contentContainerStyle={{
+        ...defaultContentContainerStyle,
+        // Ensure proper text wrapping
+        overflowWrap: 'break-word',
+        wordWrap: 'break-word',
+      }}
       showsVerticalScrollIndicator={showsVerticalScrollIndicator}
       scrollEventThrottle={16}
       keyboardDismissMode={keyboardAware ? 'on-drag' : 'none'}

@@ -1,6 +1,6 @@
 // components/Workout/ExerciseSelector.tsx - Exercise selection modal
 import React, { useState, useEffect } from 'react';
-import { YStack, XStack, Text, Button, Input, ScrollView, Card, Sheet } from 'tamagui';
+import { YStack, XStack, Text, Button, Input, ScrollView, Card } from 'tamagui';
 import { Search, Plus, Filter, X, Target, Dumbbell } from '@tamagui/lucide-icons';
 import { 
   ExerciseTemplate,
@@ -201,7 +201,7 @@ const EXERCISE_DATABASE: ExerciseTemplate[] = [
 ];
 
 export function ExerciseSelector({ onSelectExercise, onCancel }: ExerciseSelectorProps) {
-  const { colors, spacing } = useAppTheme();
+  const { colors, spacing, shadows } = useAppTheme();
 
   const handleExerciseSelect = (exercise: ServiceExerciseTemplate) => {
     // Convert service exercise template to workout exercise template
@@ -224,16 +224,26 @@ export function ExerciseSelector({ onSelectExercise, onCancel }: ExerciseSelecto
   };
 
   return (
-    <Sheet
-      modal
-      open={true}
-      onOpenChange={(open) => !open && onCancel()}
-      snapPoints={[90]}
-      dismissOnSnapToBottom
+    <YStack 
+      position="absolute" 
+      top={0} 
+      left={0} 
+      right={0} 
+      bottom={0}
+      backgroundColor="rgba(0,0,0,0.5)"
+      zIndex={100}
+      alignItems="center"
+      justifyContent="center"
     >
-      <Sheet.Overlay backgroundColor="rgba(0,0,0,0.5)" />
-      <Sheet.Handle />
-      <Sheet.Frame backgroundColor={colors.background} padding={spacing.medium}>
+      <Card
+        backgroundColor={colors.background}
+        padding={spacing.medium}
+        borderRadius={20}
+        width="90%"
+        height="80%"
+        maxHeight={600}
+        {...shadows.large}
+      >
         <YStack flex={1}>
           <XStack alignItems="center" justifyContent="space-between" marginBottom={spacing.medium}>
             <Text fontSize={20} fontWeight="600" color={colors.text}>
@@ -254,8 +264,8 @@ export function ExerciseSelector({ onSelectExercise, onCancel }: ExerciseSelecto
             showCreateButton={true}
           />
         </YStack>
-      </Sheet.Frame>
-    </Sheet>
+      </Card>
+    </YStack>
   );
 }
 

@@ -11,6 +11,7 @@ module.exports = function(api) {
             include: 'TAMAGUI_TARGET',
           },
         ],
+        'react-native-reanimated/plugin',
         [
           '@tamagui/babel-plugin',
           {
@@ -20,7 +21,6 @@ module.exports = function(api) {
             disableExtraction: process.env.NODE_ENV === 'development',
           },
         ],
-        'react-native-reanimated/plugin',
       ],
     };
   };
