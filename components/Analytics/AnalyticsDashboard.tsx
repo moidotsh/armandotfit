@@ -6,7 +6,6 @@ import {
   TrendingUp, 
   TrendingDown, 
   Target, 
-  Clock, 
   Calendar,
   Award,
   Activity,
@@ -58,15 +57,7 @@ export function AnalyticsDashboard({ compact = false }: AnalyticsDashboardProps)
     }
   };
 
-  const formatDuration = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    
-    if (hours > 0) {
-      return `${hours}h ${remainingMinutes}m`;
-    }
-    return `${minutes}m`;
-  };
+  
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
@@ -214,20 +205,7 @@ export function AnalyticsDashboard({ compact = false }: AnalyticsDashboardProps)
             {...shadows.small}
           >
             <YStack alignItems="center" space={spacing.small}>
-              <YStack
-                width={36}
-                height={36}
-                borderRadius={18}
-                backgroundColor={colors.info + '20'}
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Clock size={18} color={colors.info} />
-              </YStack>
-              <Text fontSize={12} color={colors.textMuted} fontWeight="500">Avg Time</Text>
-              <Text fontSize={20} fontWeight="700" color={colors.text}>
-                {analytics.averageWorkoutDuration}m
-              </Text>
+              
             </YStack>
           </Card>
           
@@ -292,15 +270,7 @@ export function AnalyticsDashboard({ compact = false }: AnalyticsDashboardProps)
           </YStack>
         </Card>
         
-        <Card flex={1} backgroundColor={colors.cardBackground} padding={spacing.medium}>
-          <YStack alignItems="center" space={spacing.small}>
-            <Clock size={24} color={colors.textMuted} />
-            <Text fontSize={12} color={colors.textMuted}>Total Time</Text>
-            <Text fontSize={20} fontWeight="600" color={colors.text}>
-              {formatDuration(analytics.totalDuration)}
-            </Text>
-          </YStack>
-        </Card>
+        
         
         <Card flex={1} backgroundColor={colors.cardBackground} padding={spacing.medium}>
           <YStack alignItems="center" space={spacing.small}>
@@ -366,17 +336,12 @@ export function AnalyticsDashboard({ compact = false }: AnalyticsDashboardProps)
               </Text>
             </XStack>
             
-            <XStack alignItems="center" space={spacing.small}>
-              <Clock size={16} color={colors.textMuted} />
-              <Text fontSize={14} color={colors.text}>
-                Prefers {analytics.mostActiveTimeOfDay} workouts
-              </Text>
-            </XStack>
+            
             
             <XStack alignItems="center" space={spacing.small}>
               <Activity size={16} color={colors.textMuted} />
               <Text fontSize={14} color={colors.text}>
-                Average {analytics.averageWorkoutDuration} minutes per workout
+                Works out {analytics.totalWorkouts} times per week
               </Text>
             </XStack>
           </YStack>
