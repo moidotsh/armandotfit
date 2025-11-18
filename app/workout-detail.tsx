@@ -105,6 +105,7 @@ export default function WorkoutDetailScreen() {
           date={formattedDate}
           title={workoutTitle}
           currentPath={NavigationPath.WORKOUT_DETAIL}
+          showBackButton={true}
         />
 
         {/* Workout Description */}

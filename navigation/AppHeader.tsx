@@ -35,9 +35,12 @@ export function AppHeader({
   const params = useLocalSearchParams<{ from?: string }>();
   
   const handleBackPress = () => {
+    console.log('Back button pressed', { currentPath, fromParam: params.from });
     if (onBackPress) {
+      console.log('Using custom onBackPress');
       onBackPress();
     } else {
+      console.log('Using goBack navigation');
       // Use hierarchy-aware back navigation
       goBack(currentPath, params.from);
     }
@@ -47,16 +50,19 @@ export function AppHeader({
     <XStack alignItems="center" space={spacing.small} marginBottom={spacing.medium}>
       {showBackButton && (
         <Button 
-          size="$3" 
+          size="$4" 
           circular 
-          icon={<ChevronLeft size="$1" />} 
+          backgroundColor={colors.cardBackground}
+          icon={<ChevronLeft size="$1" color={colors.text} />} 
           onPress={handleBackPress}
           focusStyle={{}}
+          pressStyle={{ opacity: 0.7 }}
           style={{
             WebkitTapHighlightColor: 'transparent',
             WebkitTouchCallout: 'none',
             userSelect: 'none',
-            outline: 'none'
+            outline: 'none',
+            ...{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }
           }}
         />
       )}
