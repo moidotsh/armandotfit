@@ -19,7 +19,7 @@ import { SplitType } from '../constants/theme';
 import { DaySelector } from '../components/DaySelector';
 import { FeatureSection } from '../components/FeatureCard';
 import { useWorkoutNotifications } from '../components/RealTime/WorkoutNotifications';
-import { AnalyticsDashboard } from '../components/Analytics/AnalyticsDashboard';
+
 import { useRealTime } from '../context/RealTimeContext';
 import { navigateToWorkout, navigateToWorkoutPrograms, NavigationPath } from '../navigation';
 import { router } from 'expo-router';
@@ -394,8 +394,7 @@ export default function HomeScreen() {
         Start Workout
       </Button>
 
-      {/* Analytics Dashboard */}
-      <AnalyticsDashboard compact={true} />
+      
 
       {/* Quick Actions Section */}
       <YStack marginTop={spacing.large} space={spacing.medium}>
