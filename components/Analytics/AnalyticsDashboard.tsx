@@ -301,57 +301,9 @@ export function AnalyticsDashboard({ compact = false }: AnalyticsDashboardProps)
             </Text>
           </YStack>
         </Card>
-        
-        
-        
-        <Card flex={1} backgroundColor={colors.cardBackground} padding={spacing.medium}>
-          <YStack alignItems="center" space={spacing.small}>
-            <Award size={24} color={colors.warning} />
-            <Text fontSize={12} color={colors.textMuted}>Best Streak</Text>
-            <Text fontSize={20} fontWeight="600" color={colors.text}>
-              {analytics.bestStreak}
-            </Text>
-          </YStack>
-        </Card>
       </XStack>
 
-      {/* Weekly Goal Progress */}
-      <Card backgroundColor={colors.cardBackground} padding={spacing.medium}>
-        <YStack space={spacing.medium}>
-          <XStack alignItems="center" justifyContent="space-between">
-            <XStack alignItems="center" space={spacing.small}>
-              <Target size={20} color={colors.primary} />
-              <Text fontSize={16} fontWeight="600" color={colors.text}>
-                Weekly Goal Progress
-              </Text>
-            </XStack>
-            <Text fontSize={14} color={colors.textMuted}>
-              {analytics.weeklyGoalProgress.completed}/{analytics.weeklyGoalProgress.target} workouts
-            </Text>
-          </XStack>
-          
-          <Progress
-            value={analytics.weeklyGoalProgress.percentage}
-            backgroundColor={colors.cardAlt}
-          >
-            <Progress.Indicator backgroundColor={colors.primary} />
-          </Progress>
-          
-          <XStack alignItems="center" justifyContent="space-between">
-            <Text fontSize={12} color={colors.textMuted}>
-              {analytics.weeklyGoalProgress.percentage}% complete
-            </Text>
-            {analytics.weeklyGoalProgress.percentage >= 100 && (
-              <XStack alignItems="center" space={spacing.xsmall}>
-                <Zap size={14} color={colors.success} />
-                <Text fontSize={12} color={colors.success} fontWeight="600">
-                  Goal achieved!
-                </Text>
-              </XStack>
-            )}
-          </XStack>
-        </YStack>
-      </Card>
+      
 
       {/* Insights */}
       <Card backgroundColor={colors.cardBackground} padding={spacing.medium}>

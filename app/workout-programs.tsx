@@ -10,12 +10,11 @@ import {
   Card, 
   useTheme,
   Button,
-  Accordion,
   Square,
   Progress,
   Separator
 } from 'tamagui';
-import { ChevronDown, ChevronRight, Dumbbell, Calendar, Clock, Target, Zap, User, TrendingUp, Star, Lock } from '@tamagui/lucide-icons';
+import { ChevronDown, ChevronRight, Dumbbell, Calendar, Target, Zap, User, TrendingUp, Star, Lock } from '@tamagui/lucide-icons';
 import { useAppTheme } from '../components/ThemeProvider';
 import { exercises, oneADaySplits, twoADaySplits } from '../data/workoutDataRefactored';
 import { router } from 'expo-router';
@@ -210,17 +209,21 @@ export default function WorkoutProgramsScreen() {
     );
   };
 
+  const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
+
   const renderWorkoutDay = (type: WorkoutType, day: number, title: string, workoutData: any) => {
     // For two-a-day splits, we need to combine am/pm exercises
     const exercises = type === 'twoADay' 
       ? [...(workoutData.am || []), ...(workoutData.pm || [])]
       : workoutData;
       
+    const workoutKey = `${type}-${day}`;
+    const isExpanded = expandedWorkout === workoutKey;
     const program = programInfo[selectedProgram];
       
     return (
       <Card
-        key={`${type}-${day}`}
+        key={workoutKey}
         bordered={false}
         backgroundColor={isDarkMode ? '$gray2' : '$white'}
         padding={0}
@@ -264,122 +267,120 @@ export default function WorkoutProgramsScreen() {
               </Text>
             </YStack>
           </XStack>
-          <Button
-            size="$3"
-            backgroundColor={program.color}
-            color="white"
-            fontWeight="600"
-            onPress={() => navigateToWorkout(type, day)}
-            pressStyle={{ scale: 0.95 }}
-            borderRadius={getBorderRadius('medium')}
-            paddingHorizontal={getSpacing('medium')}
-          >
-            Start
-          </Button>
+          <XStack space={getSpacing('small')}>
+            <Button
+              size="$3"
+              backgroundColor={isDarkMode ? '$gray3' : '$gray2'}
+              color={isDarkMode ? '$color' : '$color'}
+              fontWeight="600"
+              pressStyle={{ scale: 0.95, backgroundColor: isDarkMode ? '$gray4' : '$gray3' }}
+              borderRadius={getBorderRadius('medium')}
+              paddingHorizontal={getSpacing('medium')}
+              onPress={() => setExpandedWorkout(isExpanded ? null : workoutKey)}
+            >
+              {isExpanded ? 'Hide' : 'View'}
+            </Button>
+            <Button
+              size="$3"
+              backgroundColor={program.color}
+              color="white"
+              fontWeight="600"
+              onPress={() => navigateToWorkout(type, day)}
+              pressStyle={{ scale: 0.95 }}
+              borderRadius={getBorderRadius('medium')}
+              paddingHorizontal={getSpacing('medium')}
+            >
+              Start
+            </Button>
+          </XStack>
         </XStack>
 
-        {/* Exercise List */}
-        <Accordion 
-          value={[`${type}-${day}`]} 
-          type="multiple"
-          collapsible
-        >
-          <Accordion.Item value={`${type}-${day}`}>
-            <Accordion.Trigger 
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              padding={getSpacing('medium')}
-              backgroundColor="transparent"
-              pressStyle={{ backgroundColor: isDarkMode ? '$gray3' : '$gray1' }}
-            >
-              <XStack alignItems="center" space={getSpacing('xsmall')}>
-                <Target size={16} color={isDarkMode ? '$color11' : '$color9'} />
-                <Text fontSize={getFontSize('small')} fontWeight="600" color={isDarkMode ? '$color11' : '$color9'}>
-                  View Exercises
-                </Text>
-              </XStack>
-              <Accordion.TriggerDown>
-                <ChevronDown size={16} color={isDarkMode ? '$color11' : '$color9'} />
-              </Accordion.TriggerDown>
-              <Accordion.TriggerUp>
-                <ChevronRight size={16} color={isDarkMode ? '$color11' : '$color9'} />
-              </Accordion.TriggerUp>
-            </Accordion.Trigger>
-            
-            <Accordion.Content 
-              backgroundColor={isDarkMode ? '$gray2' : '$white'}
-              paddingHorizontal={getSpacing('medium')}
-              paddingBottom={getSpacing('medium')}
-            >
-              {type === 'twoADay' ? (
-                <YStack space={getSpacing('large')}>
-                  {/* AM Session */}
-                  <YStack>
-                    <XStack alignItems="center" space={getSpacing('small')} marginBottom={getSpacing('small')}>
-                      <Zap size={16} color={program.color} />
-                      <Text 
-                        fontSize={getFontSize('medium')} 
-                        fontWeight="700" 
-                        color={program.color}
-                      >
-                        AM Session
+        {/* Exercise List - only show when expanded */}
+        {isExpanded && (
+          <YStack 
+            backgroundColor={isDarkMode ? '$gray2' : '$white'}
+            paddingHorizontal={getSpacing('medium')}
+            paddingBottom={getSpacing('medium')}
+            paddingTop={getSpacing('small')}
+          >
+            {type === 'twoADay' ? (
+              <YStack space={getSpacing('large')}>
+                {/* AM Session */}
+                <YStack>
+                  <XStack alignItems="center" space={getSpacing('small')} marginBottom={getSpacing('small')}>
+                    <Zap size={16} color={program.color} />
+                    <Text 
+                      fontSize={getFontSize('medium')} 
+                      fontWeight="700" 
+                      color={program.color}
+                    >
+                      AM Session
+                    </Text>
+                    <Square 
+                      size={18} 
+                      borderRadius={9}
+                      backgroundColor={program.color}
+                      opacity={0.2}
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Text fontSize={10} color={program.color} fontWeight="bold">
+                        {workoutData.am?.length || 0}
                       </Text>
-                      <Square 
-                        size={18} 
-                        borderRadius={9}
-                        backgroundColor={program.color}
-                        opacity={0.2}
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <Text fontSize={10} color={program.color} fontWeight="bold">
-                          {workoutData.am?.length || 0}
-                        </Text>
-                      </Square>
-                    </XStack>
-                    <YStack space={getSpacing('xsmall')}>
-                      {workoutData.am?.map(renderExercise)}
-                    </YStack>
-                  </YStack>
-                  
-                  {/* PM Session */}
-                  <YStack>
-                    <XStack alignItems="center" space={getSpacing('small')} marginBottom={getSpacing('small')}>
-                      <Clock size={16} color={program.color} />
-                      <Text 
-                        fontSize={getFontSize('medium')} 
-                        fontWeight="700" 
-                        color={program.color}
-                      >
-                        PM Session
-                      </Text>
-                      <Square 
-                        size={18} 
-                        borderRadius={9}
-                        backgroundColor={program.color}
-                        opacity={0.2}
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <Text fontSize={10} color={program.color} fontWeight="bold">
-                          {workoutData.pm?.length || 0}
-                        </Text>
-                      </Square>
-                    </XStack>
-                    <YStack space={getSpacing('xsmall')}>
-                      {workoutData.pm?.map(renderExercise)}
-                    </YStack>
+                    </Square>
+                  </XStack>
+                  <YStack space={getSpacing('xsmall')}>
+                    {workoutData.am?.map(renderExercise)}
                   </YStack>
                 </YStack>
-              ) : (
-                <YStack space={getSpacing('xsmall')}>
-                  {exercises.map((exerciseId: string, index: number) => renderExercise(exerciseId, index))}
+                
+                {/* PM Session */}
+                <YStack>
+                  <XStack alignItems="center" space={getSpacing('small')} marginBottom={getSpacing('small')}>
+                    <Square 
+                      size={16} 
+                      borderRadius={8}
+                      backgroundColor={program.color}
+                      opacity={0.2}
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Text fontSize={10} color={program.color} fontWeight="bold">
+                        PM
+                      </Text>
+                    </Square>
+                    <Text 
+                      fontSize={getFontSize('medium')} 
+                      fontWeight="700" 
+                      color={program.color}
+                    >
+                      PM Session
+                    </Text>
+                    <Square 
+                      size={18} 
+                      borderRadius={9}
+                      backgroundColor={program.color}
+                      opacity={0.2}
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Text fontSize={10} color={program.color} fontWeight="bold">
+                        {workoutData.pm?.length || 0}
+                      </Text>
+                    </Square>
+                  </XStack>
+                  <YStack space={getSpacing('xsmall')}>
+                    {workoutData.pm?.map(renderExercise)}
+                  </YStack>
                 </YStack>
-              )}
-            </Accordion.Content>
-          </Accordion.Item>
-        </Accordion>
+              </YStack>
+            ) : (
+              <YStack space={getSpacing('xsmall')}>
+                {exercises.map((exerciseId: string, index: number) => renderExercise(exerciseId, index))}
+              </YStack>
+            )}
+          </YStack>
+        )}
       </Card>
     );
   };

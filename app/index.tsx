@@ -188,12 +188,38 @@ export default function HomeScreen() {
 
       <YStack space="$2" paddingBottom={spacing.small}>
         <XStack alignItems="flex-start" justifyContent="space-between" width="100%">
-          <H1
-            color={colors.text}
-            fontSize={isNarrow ? 40 : 50}
-          >
-            Hi Arman!
-          </H1>
+          <YStack>
+            <XStack alignItems="baseline" space={spacing.small}>
+              <H1
+                color={colors.text}
+                fontSize={isNarrow ? 40 : 50}
+              >
+                Hi Arman!
+              </H1>
+              {/* Streak badge inline with greeting */}
+              <XStack alignItems="center" space={spacing.xsmall}>
+                <YStack
+                  width={24}
+                  height={24}
+                  borderRadius={12}
+                  backgroundColor={colors.warning + '20'}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Zap size={12} color={colors.warning} />
+                </YStack>
+                <Text 
+                  fontSize={16} 
+                  fontWeight="600" 
+                  color={colors.text}
+                  opacity={0.9}
+                >
+                  5
+                </Text>
+              </XStack>
+            </XStack>
+            <Text color={colors.textMuted} fontSize={fontSize.medium} marginTop={spacing.xsmall}>{formattedDate}</Text>
+          </YStack>
           <XStack alignItems="center" space={spacing.small}>
             <Button
               size="$3"
@@ -224,24 +250,6 @@ export default function HomeScreen() {
               </Text>
             </XStack>
           </XStack>
-        </XStack>
-        <Text color={colors.textMuted} fontSize={fontSize.medium}>{formattedDate}</Text>
-        
-        {/* Minimal streak badge */}
-        <XStack alignItems="center" justifyContent="flex-start" marginTop={spacing.small}>
-          <YStack
-            width={20}
-            height={20}
-            borderRadius={10}
-            backgroundColor={colors.warning + '20'}
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Zap size={10} color={colors.warning} />
-          </YStack>
-          <Text fontSize={12} fontWeight="600" color={colors.text} marginLeft={spacing.small}>
-            5
-          </Text>
         </XStack>
       </YStack>
 

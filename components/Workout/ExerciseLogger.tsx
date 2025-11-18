@@ -1,7 +1,7 @@
 // components/Workout/ExerciseLogger.tsx - Detailed exercise logging component
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Button, Input, Card, ScrollView } from 'tamagui';
-import { Plus, Minus, Clock, Weight, RotateCcw, Check, X, Edit3 } from '@tamagui/lucide-icons';
+import { Plus, Minus, Weight, RotateCcw, Check, X, Edit3 } from '@tamagui/lucide-icons';
 import { 
   LoggedExercise, 
   ExerciseSet, 
@@ -34,28 +34,6 @@ export function ExerciseLogger({
 }: ExerciseLoggerProps) {
   const { colors, spacing } = useAppTheme();
   const [showEquipmentEditor, setShowEquipmentEditor] = useState(false);
-  const [restTimer, setRestTimer] = useState<number | null>(null);
-  const [restStartTime, setRestStartTime] = useState<Date | null>(null);
-
-  // Rest timer effect
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (restTimer !== null && restStartTime) {
-      interval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - restStartTime.getTime()) / 1000);
-        if (elapsed >= restTimer) {
-          setRestTimer(null);
-          setRestStartTime(null);
-          // Could add notification here
-        }
-      }, 1000);
-    }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [restTimer, restStartTime]);
 
   const addSet = () => {
     const newSet: ExerciseSet = {
@@ -126,15 +104,6 @@ export function ExerciseLogger({
     if (set.completed) return colors.success;
     if (!isRepInRange(set.reps, set.repRange)) return colors.warning;
     return colors.textMuted;
-  };
-
-  const formatRestTime = (): string => {
-    if (!restTimer || !restStartTime) return '';
-    const elapsed = Math.floor((Date.now() - restStartTime.getTime()) / 1000);
-    const remaining = Math.max(0, restTimer - elapsed);
-    const minutes = Math.floor(remaining / 60);
-    const seconds = remaining % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -215,7 +184,6 @@ export function ExerciseLogger({
               onUpdate={(updates) => updateSet(set.id, updates)}
               onComplete={() => completeSet(set.id)}
               onRemove={() => removeSet(set.id)}
-              onStartRest={startRestTimer}
               colors={colors}
               spacing={spacing}
             />
@@ -272,7 +240,6 @@ interface SetLoggerProps {
   onUpdate: (updates: Partial<ExerciseSet>) => void;
   onComplete: () => void;
   onRemove: () => void;
-  onStartRest: (seconds: number) => void;
   colors: any;
   spacing: any;
 }
@@ -367,17 +334,7 @@ function SetLogger({
             </Text>
           </YStack>
 
-          {/* Rest Timer Buttons */}
-          {set.completed && (
-            <YStack space={spacing.xsmall}>
-              <Text fontSize={10} color={colors.textMuted}>Rest</Text>
-              <XStack space={spacing.xsmall}>
-                <Button size="$1" onPress={() => onStartRest(60)}>1m</Button>
-                <Button size="$1" onPress={() => onStartRest(90)}>1.5m</Button>
-                <Button size="$1" onPress={() => onStartRest(120)}>2m</Button>
-              </XStack>
-            </YStack>
-          )}
+          {/* Rest Timer - removed */}
         </XStack>
 
         {/* Notes */}

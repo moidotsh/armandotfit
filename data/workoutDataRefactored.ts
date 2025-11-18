@@ -97,7 +97,7 @@ export interface Exercise {
   export const twoADaySplits = [
     {
       "day": 1,
-      "title": "Chest Press / Triceps / Side Delts",
+      "title": "Workout Day 1",
       "am": [
         "barbell-press-incline",
         "leg-press-machine",
@@ -113,7 +113,7 @@ export interface Exercise {
     },
     {
       "day": 2,
-      "title": "Chest Fly / Biceps / Rear Delts",
+      "title": "Workout Day 2",
       "am": [
         "seated-cable-row-v-grip",
         "dumbbell-curl-seated-incline",
@@ -129,7 +129,7 @@ export interface Exercise {
     },
     {
       "day": 3,
-      "title": "Chest Press / Triceps / Side Delts",
+      "title": "Workout Day 3",
       "am": [
         "dumbbell-press-incline",
         "tricep-dip-machine",
@@ -145,7 +145,7 @@ export interface Exercise {
     },
     {
       "day": 4,
-      "title": "Chest Fly / Biceps / Rear Delts",
+      "title": "Workout Day 4",
       "am": [
         "lat-pulldown-reverse-grip",
         "leg-extension-machine",
