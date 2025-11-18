@@ -13,7 +13,7 @@ import {
   Separator
 } from 'tamagui';
 import { format } from 'date-fns';
-import { BarChart2, TrendingUp, AlertCircle, Settings, Bell, Activity, Database, Calendar } from '@tamagui/lucide-icons';
+import { BarChart2, TrendingUp, AlertCircle, Settings, Bell, Activity, Database, Calendar, Zap } from '@tamagui/lucide-icons';
 import { useAppTheme } from '../components/ThemeProvider';
 import { SplitType } from '../constants/theme';
 import { DaySelector } from '../components/DaySelector';
@@ -226,6 +226,23 @@ export default function HomeScreen() {
           </XStack>
         </XStack>
         <Text color={colors.textMuted} fontSize={fontSize.medium}>{formattedDate}</Text>
+        
+        {/* Minimal streak badge */}
+        <XStack alignItems="center" justifyContent="flex-start" marginTop={spacing.small}>
+          <YStack
+            width={20}
+            height={20}
+            borderRadius={10}
+            backgroundColor={colors.warning + '20'}
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Zap size={10} color={colors.warning} />
+          </YStack>
+          <Text fontSize={12} fontWeight="600" color={colors.text} marginLeft={spacing.small}>
+            5
+          </Text>
+        </XStack>
       </YStack>
 
       {/* Workout Configuration Card */}

@@ -111,25 +111,23 @@ export function AnalyticsDashboard({ compact = false }: AnalyticsDashboardProps)
     const isGoalAchieved = analytics.weeklyGoalProgress.percentage >= 100;
     
     return (
-      <YStack space={spacing.medium}>
-        {/* Minimal streak badge at the top */}
+      <YStack>
+        {/* Minimal streak badge */}
         <XStack alignItems="center" justifyContent="flex-start">
           <YStack
-            width={32}
-            height={32}
-            borderRadius={16}
+            width={20}
+            height={20}
+            borderRadius={10}
             backgroundColor={colors.warning + '20'}
             alignItems="center"
             justifyContent="center"
           >
-            <Zap size={16} color={colors.warning} />
+            <Zap size={10} color={colors.warning} />
           </YStack>
-          <Text fontSize={16} fontWeight="600" color={colors.text} marginLeft={spacing.small}>
+          <Text fontSize={12} fontWeight="600" color={colors.text} marginLeft={spacing.small}>
             {analytics.currentStreak}
           </Text>
         </XStack>
-
-        {/* Weekly Goal Progress */}
         <Card 
           backgroundColor={colors.cardBackground} 
           padding={spacing.large} 
@@ -256,6 +254,23 @@ export function AnalyticsDashboard({ compact = false }: AnalyticsDashboardProps)
 
   return (
     <YStack space={spacing.medium}>
+      {/* Minimal streak badge at the very top */}
+      <XStack alignItems="center" justifyContent="flex-start">
+        <YStack
+          width={20}
+          height={20}
+          borderRadius={10}
+          backgroundColor={colors.warning + '20'}
+          alignItems="center"
+          justifyContent="center"
+        >
+          <Zap size={10} color={colors.warning} />
+        </YStack>
+        <Text fontSize={12} fontWeight="600" color={colors.text} marginLeft={spacing.small}>
+          {analytics.currentStreak}
+        </Text>
+      </XStack>
+      
       {/* Header */}
       <XStack alignItems="center" justifyContent="space-between">
         <XStack alignItems="center" space={spacing.small}>
