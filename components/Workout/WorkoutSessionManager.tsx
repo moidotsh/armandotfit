@@ -1,7 +1,7 @@
 // components/Workout/WorkoutSessionManager.tsx - Main workout session management
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Button, Input, ScrollView, Card } from 'tamagui';
-import { Plus, Play, Pause, Square, Save, Clock, Target } from '@tamagui/lucide-icons';
+import { Plus, Play, Pause, Square, Save, Clock, Target, ChevronLeft } from '@tamagui/lucide-icons';
 import { 
   WorkoutSession, 
   LoggedExercise, 
@@ -14,6 +14,7 @@ import {
 import { ExerciseLogger } from './ExerciseLogger';
 import { ExerciseSelector } from './ExerciseSelector';
 import { useAppTheme } from '../ThemeProvider';
+import { NavigationPath } from '../../navigation';
 
 interface WorkoutSessionManagerProps {
   splitType: 'oneADay' | 'twoADay';
@@ -175,21 +176,49 @@ export function WorkoutSessionManager({
 
   return (
     <YStack flex={1} backgroundColor={colors.background}>
+      {/* Navigation Header */}
+      <XStack 
+        alignItems="center" 
+        justifyContent="flex-start" 
+        paddingHorizontal={spacing.medium}
+        paddingTop={spacing.medium}
+        paddingBottom={spacing.small}
+        backgroundColor={colors.background}
+      >
+        <Button 
+          size="$4" 
+          circular 
+          backgroundColor={colors.cardBackground}
+          icon={<ChevronLeft size="$1" color={colors.text} />} 
+          onPress={onCancel}
+          pressStyle={{ opacity: 0.7 }}
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            WebkitTouchCallout: 'none',
+            userSelect: 'none',
+            outline: 'none',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}
+        />
+        <Text 
+          marginLeft={spacing.small}
+          fontSize={18} 
+          fontWeight="600" 
+          color={colors.text}
+        >
+          {splitType} - Day {day} {sessionType && `(${sessionType})`}
+        </Text>
+      </XStack>
+
       {/* Session Header */}
-      <Card backgroundColor={colors.cardBackground} padding={spacing.medium} marginBottom={spacing.medium}>
+      <Card backgroundColor={colors.cardBackground} padding={spacing.medium} marginHorizontal={spacing.medium} marginBottom={spacing.medium}>
         <YStack space={spacing.medium}>
-          {/* Title and Timer */}
-          <XStack alignItems="center" justifyContent="space-between">
-            <YStack>
-              <Text fontSize={20} fontWeight="600" color={colors.text}>
-                {splitType} - Day {day} {sessionType && `(${sessionType})`}
-              </Text>
-              <Text fontSize={14} color={colors.textMuted}>
-                {new Date().toLocaleDateString()}
-              </Text>
-            </YStack>
-            
-            <XStack alignItems="center" space={spacing.small}>
+          {/* Timer */}
+          <XStack alignItems="center" justifyContent="flex-end">
+            <Text fontSize={14} color={colors.textMuted}>
+              {new Date().toLocaleDateString()}
+            </Text>
+            <XStack alignItems="center" space={spacing.small} marginLeft={spacing.medium}>
               <Clock size={20} color={colors.primary} />
               <Text fontSize={18} fontWeight="600" color={colors.text}>
                 {formatTime(sessionTimer)}
@@ -264,7 +293,7 @@ export function WorkoutSessionManager({
 
       {/* Exercise List */}
       <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-        <YStack paddingHorizontal={spacing.medium} space={spacing.medium}>
+        <YStack paddingHorizontal={spacing.medium} space={spacing.medium} marginTop={spacing.small}>
           {session.exercises.map((exercise, index) => (
             <ExerciseLogger
               key={exercise.id}
@@ -303,6 +332,9 @@ export function WorkoutSessionManager({
           </Card>
         </YStack>
       </ScrollView>
+
+      {/* Bottom padding for navigation space */}
+      <YStack height={spacing.xlarge} />
 
       {/* Exercise Selector Modal */}
       {showExerciseSelector && (
