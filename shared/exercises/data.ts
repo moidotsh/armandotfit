@@ -86,6 +86,70 @@ export const EquipmentSlug = {
 export type EquipmentSlug = (typeof EquipmentSlug)[keyof typeof EquipmentSlug];
 
 // ──────────────────────────────────────────────────────────────────────
+// Display-name maps (slug → human string)
+// ──────────────────────────────────────────────────────────────────────
+// Local canonical display strings. Mirrors the seed migration's
+// display_name columns so attribute chips can render without a DB
+// round-trip on the split-preview / active-session surfaces. If the two
+// drift, the seed SQL is the source of truth — fix it here to match.
+
+export const MUSCLE_DISPLAY_NAMES: Record<MuscleSlug, string> = {
+  [MuscleSlug.CHEST]: 'Chest',
+  [MuscleSlug.UPPER_CHEST]: 'Upper Chest',
+  [MuscleSlug.LOWER_CHEST]: 'Lower Chest',
+  [MuscleSlug.UPPER_BACK]: 'Upper Back',
+  [MuscleSlug.LATS]: 'Lats',
+  [MuscleSlug.LOWER_BACK]: 'Lower Back',
+  [MuscleSlug.TRAPS]: 'Traps',
+  [MuscleSlug.RHOMBOIDS]: 'Rhomboids',
+  [MuscleSlug.FRONT_DELTS]: 'Front Delts',
+  [MuscleSlug.SIDE_DELTS]: 'Side Delts',
+  [MuscleSlug.REAR_DELTS]: 'Rear Delts',
+  [MuscleSlug.BICEPS]: 'Biceps',
+  [MuscleSlug.TRICEPS]: 'Triceps',
+  [MuscleSlug.FOREARMS]: 'Forearms',
+  [MuscleSlug.ABS]: 'Abs',
+  [MuscleSlug.LOWER_ABS]: 'Lower Abs',
+  [MuscleSlug.OBLIQUES]: 'Obliques',
+  [MuscleSlug.QUADS]: 'Quads',
+  [MuscleSlug.HAMSTRINGS]: 'Hamstrings',
+  [MuscleSlug.GLUTES]: 'Glutes',
+  [MuscleSlug.CALVES]: 'Calves',
+  [MuscleSlug.TIBIALIS]: 'Tibialis',
+};
+
+export const EQUIPMENT_DISPLAY_NAMES: Record<EquipmentSlug, string> = {
+  [EquipmentSlug.BARBELL]: 'Barbell',
+  [EquipmentSlug.DUMBBELL]: 'Dumbbell',
+  [EquipmentSlug.KETTLEBELL]: 'Kettlebell',
+  [EquipmentSlug.INCLINE_BENCH]: 'Incline Bench',
+  [EquipmentSlug.FLAT_BENCH]: 'Flat Bench',
+  [EquipmentSlug.DECLINE_BENCH]: 'Decline Bench',
+  [EquipmentSlug.SQUAT_RACK]: 'Squat Rack',
+  [EquipmentSlug.PULL_UP_BAR]: 'Pull-up Bar',
+  [EquipmentSlug.CABLE_ROPE]: 'Cable Rope',
+  [EquipmentSlug.CABLE_HANDLE]: 'Cable Handle',
+  [EquipmentSlug.CABLE_STRAIGHT_BAR]: 'Cable Straight Bar',
+  [EquipmentSlug.CABLE_V_BAR]: 'Cable V-Bar',
+  [EquipmentSlug.CABLE_LAT_BAR]: 'Cable Lat Bar',
+  [EquipmentSlug.LEG_PRESS_MACHINE]: 'Leg Press Machine',
+  [EquipmentSlug.CHEST_FLY_MACHINE]: 'Chest Fly Machine',
+  [EquipmentSlug.LAT_PULLDOWN_MACHINE]: 'Lat Pulldown Machine',
+  [EquipmentSlug.SEATED_ROW_MACHINE]: 'Seated Row Machine',
+  [EquipmentSlug.LEG_EXTENSION_MACHINE]: 'Leg Extension Machine',
+  [EquipmentSlug.LEG_CURL_MACHINE]: 'Leg Curl Machine',
+  [EquipmentSlug.HIP_ADDUCTION_MACHINE]: 'Hip Adduction Machine',
+  [EquipmentSlug.CALF_RAISE_MACHINE]: 'Calf Raise Machine',
+  [EquipmentSlug.TRICEP_EXTENSION_MACHINE]: 'Tricep Extension Machine',
+  [EquipmentSlug.DIP_MACHINE]: 'Dip Machine',
+  [EquipmentSlug.ABDOMINAL_MACHINE]: 'Abdominal Machine',
+  [EquipmentSlug.BACK_EXTENSION_STATION]: 'Back Extension Station',
+  [EquipmentSlug.CAPTAINS_CHAIR]: "Captain's Chair",
+  [EquipmentSlug.RESISTANCE_BAND]: 'Resistance Band',
+  [EquipmentSlug.TIBIA_RAISE_MACHINE]: 'Tibia Raise Machine',
+};
+
+// ──────────────────────────────────────────────────────────────────────
 // Exercise data shape
 // ──────────────────────────────────────────────────────────────────────
 
@@ -647,4 +711,57 @@ export const SYSTEM_EXERCISES_BY_SLUG: Record<string, SystemExerciseData> =
 /** Returns the system exercise data for a given slug, or undefined. */
 export function getSystemExercise(slug: string): SystemExerciseData | undefined {
   return SYSTEM_EXERCISES_BY_SLUG[slug];
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Attribute formatting (slugs → display strings)
+// ──────────────────────────────────────────────────────────────────────
+
+/**
+ * Normalizes the equipment field (which can be a slug or an isRequired
+ * object) to just the slug.
+ */
+function equipmentSlugOf(
+  entry: EquipmentSlug | { slug: EquipmentSlug; isRequired: boolean },
+): EquipmentSlug {
+  return typeof entry === 'string' ? entry : entry.slug;
+}
+
+export interface ExerciseAttributeLabels {
+  /** Comma-joined equipment display names, e.g. "Barbell, Incline Bench". */
+  equipmentLabel: string;
+  /** Comma-joined primary muscle display names, e.g. "Upper Chest, Front Delts". */
+  primaryMuscleLabel: string;
+  /** Comma-joined secondary muscle display names (empty string if none). */
+  secondaryMuscleLabel: string;
+}
+
+/**
+ * Resolves a SystemExerciseData's muscle/equipment slugs into
+ * human-readable display strings for chip-style attribute rendering.
+ * Used by the split preview + active-session surfaces where we want to
+ * show attribute context inline without a DB join round-trip.
+ */
+export function formatExerciseAttributes(
+  exercise: SystemExerciseData,
+): ExerciseAttributeLabels {
+  const equipmentLabel = exercise.equipment
+    .map(equipmentSlugOf)
+    .map((s) => EQUIPMENT_DISPLAY_NAMES[s] ?? s)
+    .join(', ');
+  const primaryMuscleLabel = exercise.primaryMuscles
+    .map((s) => MUSCLE_DISPLAY_NAMES[s] ?? s)
+    .join(', ');
+  const secondaryMuscleLabel = exercise.secondaryMuscles
+    .map((s) => MUSCLE_DISPLAY_NAMES[s] ?? s)
+    .join(', ');
+  return { equipmentLabel, primaryMuscleLabel, secondaryMuscleLabel };
+}
+
+/** Formats a [min, max] rep range as "min-max" (or '—' if missing). */
+export function formatRepRange(reps: [number, number] | null | undefined): string {
+  if (!reps || reps.length !== 2) return '—';
+  const [min, max] = reps;
+  if (min === max) return String(min);
+  return `${min}-${max}`;
 }

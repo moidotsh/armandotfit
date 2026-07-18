@@ -114,6 +114,22 @@ interface WorkoutState {
     targetRepRange?: string | null;
     restTimerSeconds?: number;
   }) => string; // returns the new draft's localId
+  /**
+   * Bulk-populate the draft from the suggested-exercises source. Creates
+   * each exercise with its default sets pre-populated at the exercise's
+   * default rep range. The caller MUST guard with `draft.exercises.length
+   * === 0` — this method overwrites draft.exercises unconditionally so
+   * that re-runs after a partial manual edit don't double-add. Idempotency
+   * lives at the call site, not here.
+   */
+  hydrateSuggestedExercises: (suggested: Array<{
+    exerciseId: ID;
+    exerciseName: string;
+    variation?: string | null;
+    defaultSets: number;
+    defaultReps: [number, number];
+    restTimerSeconds?: number;
+  }>) => void;
   removeExerciseFromDraft: (localId: string) => void;
   addSetToDraft: (
     exerciseLocalId: string,
@@ -210,6 +226,45 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
         get().selectedExerciseLocalId === localId
           ? filtered[0]?.localId ?? null
           : get().selectedExerciseLocalId,
+    });
+  },
+
+  hydrateSuggestedExercises: (suggested) => {
+    const draft = get().draft;
+    if (!draft) return;
+    const exercises: DraftExercise[] = suggested.map((s, i) => {
+      const exerciseLocalId = newLocalId();
+      const repRange = `${s.defaultReps[0]}-${s.defaultReps[1]}`;
+      const sets: DraftSet[] = Array.from({ length: s.defaultSets }, (_, idx) => ({
+        localId: newLocalId(),
+        setNumber: idx + 1,
+        targetReps: null,
+        actualReps: null,
+        weight: null,
+        repRange,
+        restDurationSeconds: null,
+        notes: null,
+        completed: false,
+      }));
+      const next: DraftExercise = {
+        localId: exerciseLocalId,
+        exerciseId: s.exerciseId,
+        exerciseName: s.variation
+          ? `${s.exerciseName} · ${s.variation}`
+          : s.exerciseName,
+        orderInWorkout: i + 1,
+        userGrip: null,
+        userEquipmentNotes: null,
+        targetRepRange: repRange,
+        restTimerSeconds: s.restTimerSeconds ?? 60,
+        notes: null,
+        sets,
+      };
+      return next;
+    });
+    set({
+      draft: { ...draft, exercises },
+      selectedExerciseLocalId: exercises[0]?.localId ?? null,
     });
   },
 

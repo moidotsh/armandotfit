@@ -15,6 +15,7 @@ export {
   useMuscleCategories,
   useMuscles,
   useEquipmentTypes,
+  useSuggestedExercises,
 } from './useExercises';
 export {
   useDashboardSummary,

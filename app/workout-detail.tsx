@@ -4,7 +4,7 @@
 //   - no id: live logging against workoutStore.draft
 // Save path flushes via useLogWorkout and clears the store.
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -35,9 +35,11 @@ import {
 import {
   useWorkoutDetail,
   useLogWorkout,
+  useSuggestedExercises,
 } from '../hooks';
 import { useWorkoutStore } from '../stores';
-import type { ExerciseSet } from '../shared/types';
+import { getSystemExercise, getDayTitle } from '../shared/exercises';
+import type { ExerciseSet, ID } from '../shared/types';
 
 export default function WorkoutDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -58,8 +60,48 @@ export default function WorkoutDetailScreen() {
   const setDraftDuration = useWorkoutStore((s) => s.setDraftDuration);
   const resetSession = useWorkoutStore((s) => s.resetSession);
   const toLogWorkoutDTO = useWorkoutStore((s) => s.toLogWorkoutDTO);
+  const hydrateSuggestedExercises = useWorkoutStore(
+    (s) => s.hydrateSuggestedExercises,
+  );
 
   const logMutation = useLogWorkout();
+
+  // Pre-hydrate the draft from the day's suggested exercises once per
+  // session. Idempotent via hydratedRef + the empty-draft check, so a
+  // user who discards all exercises and re-adds manually won't get
+  // re-seeded. The PM block is intentionally omitted here — twoADay
+  // AM/PM picker is a future improvement; for now AM is the default.
+  const suggestedQuery = useSuggestedExercises(
+    draft?.splitType ?? 'oneADay',
+    draft?.day ?? 1,
+    'am',
+    Boolean(draft),
+  );
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (!draft) {
+      hydratedRef.current = false;
+      return;
+    }
+    if (hydratedRef.current) return;
+    if (draft.exercises.length > 0) return;
+    const suggested = suggestedQuery.data;
+    if (!suggested || suggested.length === 0) return;
+    const payload = suggested.flatMap((ex) => {
+      const local = ex.slug ? getSystemExercise(ex.slug) : undefined;
+      if (!local) return [];
+      return [{
+        exerciseId: ex.id as ID,
+        exerciseName: ex.name,
+        variation: local.variation ?? null,
+        defaultSets: local.defaultSets,
+        defaultReps: local.defaultReps,
+      }];
+    });
+    if (payload.length === 0) return;
+    hydratedRef.current = true;
+    hydrateSuggestedExercises(payload);
+  }, [draft, suggestedQuery.data, hydrateSuggestedExercises]);
 
   // If no id and no active draft, redirect to split-selection once.
   useEffect(() => {
@@ -195,6 +237,14 @@ export default function WorkoutDetailScreen() {
     );
   }
 
+  // Header eyebrow surfaces the day title when available (e.g. "Full Body
+  // Day 1"); falls back to the split-type + day number for rest days / v1
+  // splits without title metadata.
+  const dayTitle = getDayTitle(draft.splitType, draft.day);
+  const eyebrow = dayTitle
+    ? dayTitle
+    : `${draft.splitType === 'oneADay' ? '1-a-day' : 'AM/PM'} · day ${draft.day}`;
+
   return (
     <SafeAreaView
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
@@ -203,7 +253,7 @@ export default function WorkoutDetailScreen() {
       <MobileAtmosphere surface="training" />
       <MobileHeader
         title="Active session"
-        eyebrow={`${draft.splitType === 'oneADay' ? '1-a-day' : 'AM/PM'} · day ${draft.day}`}
+        eyebrow={eyebrow}
         onBack={safeGoBack}
       />
       <ScrollView
@@ -216,11 +266,18 @@ export default function WorkoutDetailScreen() {
         </MobileSectionEyebrow>
 
         {draft.exercises.length === 0 ? (
-          <MobileSurface padding={20}>
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              No exercises yet. Tap below to add your first one.
-            </Text>
-          </MobileSurface>
+          suggestedQuery.isLoading ||
+          (suggestedQuery.data != null && suggestedQuery.data.length > 0) ? (
+            <MobileSurface padding={20}>
+              <LoadingSpinner />
+            </MobileSurface>
+          ) : (
+            <MobileSurface padding={20}>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                No exercises planned for this day. Tap below to add your own.
+              </Text>
+            </MobileSurface>
+          )
         ) : (
           draft.exercises.map((ex) => (
             <View key={ex.localId} style={{ marginBottom: 12 }}>

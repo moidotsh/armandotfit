@@ -228,3 +228,18 @@ export function getExercisesForDay(
   if (!entry) return [];
   return session === 'am' ? entry.am : entry.pm;
 }
+
+/**
+ * Returns the day's title (e.g. "Full Body Day 1") for the active-session
+ * header + split preview surfaces. Empty string for rest days / out of range.
+ */
+export function getDayTitle(
+  split: 'oneADay' | 'twoADay',
+  day: number,
+): string {
+  if (day < 1 || day > 4) return '';
+  if (split === 'oneADay') {
+    return ONE_A_DAY_SPLITS.find((d) => d.day === day)?.title ?? '';
+  }
+  return TWO_A_DAY_SPLITS.find((d) => d.day === day)?.title ?? '';
+}

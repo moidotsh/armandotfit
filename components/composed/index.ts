@@ -12,3 +12,6 @@ export type { ExerciseListItemProps } from './ExerciseListItem';
 
 export { SetRow } from './SetRow';
 export type { SetRowProps } from './SetRow';
+
+export { SplitExerciseRow } from './SplitExerciseRow';
+export type { SplitExerciseRowProps } from './SplitExerciseRow';

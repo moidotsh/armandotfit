@@ -110,11 +110,15 @@ export function useEquipmentTypes() {
  * The hook does one round-trip per slug in parallel; for the v2 seed
  * this is ≤7 lookups per day. A list-by-slugs repository method is a
  * future optimization if this becomes hot.
+ *
+ * Pass `enabled: false` to skip the fetch entirely (e.g. when no draft
+ * exists yet — avoids a wasted round-trip on a default-keyed cache miss).
  */
 export function useSuggestedExercises(
   split: PreferredSplit,
   day: number,
   session: 'am' | 'pm' = 'am',
+  enabled: boolean = true,
 ) {
   const slugs = getExercisesForDay(split, day, session);
   return useQuery({
@@ -128,6 +132,7 @@ export function useSuggestedExercises(
       );
       return results.filter((e): e is Exercise => e !== null);
     },
+    enabled,
     staleTime: Infinity, // system exercises are immutable per release
   });
 }
