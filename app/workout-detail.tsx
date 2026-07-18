@@ -24,7 +24,7 @@ import {
   MobileInput,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { SetRow } from '../components/composed';
+import { SetRow, EditableSetRow } from '../components/composed';
 import { useToast } from '../context';
 import { useAppTheme } from '../context';
 import {
@@ -62,6 +62,12 @@ export default function WorkoutDetailScreen() {
   const toLogWorkoutDTO = useWorkoutStore((s) => s.toLogWorkoutDTO);
   const hydrateSuggestedExercises = useWorkoutStore(
     (s) => s.hydrateSuggestedExercises,
+  );
+  const addSetToDraft = useWorkoutStore((s) => s.addSetToDraft);
+  const updateSetInDraft = useWorkoutStore((s) => s.updateSetInDraft);
+  const removeSetFromDraft = useWorkoutStore((s) => s.removeSetFromDraft);
+  const removeExerciseFromDraft = useWorkoutStore(
+    (s) => s.removeExerciseFromDraft,
   );
 
   const logMutation = useLogWorkout();
@@ -285,18 +291,50 @@ export default function WorkoutDetailScreen() {
           draft.exercises.map((ex) => (
             <View key={ex.localId} style={{ marginBottom: 12 }}>
               <MobileSurface padding={12}>
-                <Text style={[styles.exerciseName, { color: colors.text }]}>
-                  {ex.exerciseName}
-                </Text>
+                <View style={styles.exerciseHeader}>
+                  <Text style={[styles.exerciseName, { color: colors.text }]}>
+                    {ex.exerciseName}
+                  </Text>
+                  <Pressable
+                    onPress={() => removeExerciseFromDraft(ex.localId)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove ${ex.exerciseName} from session`}
+                    hitSlop={8}
+                  >
+                    <Text
+                      style={[
+                        styles.removeExerciseCta,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      Remove
+                    </Text>
+                  </Pressable>
+                </View>
                 {ex.sets.length > 0 ? (
                   <View style={{ marginTop: 8 }}>
                     {ex.sets.map((s) => (
-                      <SetRow
+                      <EditableSetRow
                         key={s.localId}
                         setNumber={s.setNumber}
-                        actualReps={s.actualReps}
                         weight={s.weight}
+                        reps={s.actualReps}
                         completed={s.completed}
+                        repRange={s.repRange}
+                        onChangeWeight={(w) =>
+                          updateSetInDraft(ex.localId, s.localId, { weight: w })
+                        }
+                        onChangeReps={(r) =>
+                          updateSetInDraft(ex.localId, s.localId, { actualReps: r })
+                        }
+                        onToggleComplete={() =>
+                          updateSetInDraft(ex.localId, s.localId, {
+                            completed: !s.completed,
+                          })
+                        }
+                        onRemove={() =>
+                          removeSetFromDraft(ex.localId, s.localId)
+                        }
                       />
                     ))}
                   </View>
@@ -305,6 +343,17 @@ export default function WorkoutDetailScreen() {
                     No sets logged.
                   </Text>
                 )}
+                <Pressable
+                  onPress={() => addSetToDraft(ex.localId)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Add set to ${ex.exerciseName}`}
+                  hitSlop={6}
+                  style={styles.addSetCta}
+                >
+                  <Text style={[styles.addCta, { color: colors.brand }]}>
+                    + Add set
+                  </Text>
+                </Pressable>
               </MobileSurface>
             </View>
           ))
@@ -365,7 +414,15 @@ const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
   bodyText: { fontSize: 14, lineHeight: 20 },
   emptyText: { fontSize: 13, lineHeight: 18 },
-  exerciseName: { fontSize: 14, fontWeight: '600' },
+  exerciseName: { fontSize: 14, fontWeight: '600', flex: 1 },
+  exerciseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  removeExerciseCta: { fontSize: 12, fontWeight: '500' },
+  addSetCta: { marginTop: 8, alignSelf: 'flex-start' },
   addCta: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
   errorText: { fontSize: 12, lineHeight: 16 },
 });
