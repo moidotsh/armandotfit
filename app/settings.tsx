@@ -19,7 +19,7 @@ import {
   MobileSelectionList,
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
-import { navigateToPremiumShowcase } from '../navigation';
+import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile } from '../hooks';
 import { DAY_OF_WEEK_LABELS } from '../constants';
 import { logger } from '../utils/logger';
@@ -80,7 +80,7 @@ export default function SettingsScreen() {
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface="analytics" />
-      <MobileHeader title="Settings" eyebrow="Account" />
+      <MobileHeader title="Settings" eyebrow="Account" onBack={safeGoBack} />
       <ScrollView contentContainerStyle={styles.body}>
         <MobileSurface padding={0}>
           <MobileSettingsRow label="Email" value={session?.email ?? '—'} />
@@ -91,7 +91,7 @@ export default function SettingsScreen() {
           />
         </MobileSurface>
 
-        <MobileSectionEyebrow>Appearance</MobileSectionEyebrow>
+        <MobileSectionEyebrow flush={false}>Appearance</MobileSectionEyebrow>
         <MobileSurface padding={0}>
           {PREFERENCE_ORDER.map((pref, i) => {
             const isActive = preference === pref;
@@ -136,24 +136,22 @@ export default function SettingsScreen() {
           })}
         </MobileSurface>
 
-        <MobileSectionEyebrow>Training</MobileSectionEyebrow>
-        <MobileSurface padding={4}>
-          <MobileSelectionList
-            multiSelect
-            selectedIds={restDayIds}
-            onSelect={handleToggleRestDay}
-            options={DAY_OF_WEEK_LABELS.map((d) => ({
-              id: String(d.id),
-              label: d.label,
-            }))}
-          />
-        </MobileSurface>
+        <MobileSectionEyebrow flush={false}>Training</MobileSectionEyebrow>
+        <MobileSelectionList
+          multiSelect
+          selectedIds={restDayIds}
+          onSelect={handleToggleRestDay}
+          options={DAY_OF_WEEK_LABELS.map((d) => ({
+            id: String(d.id),
+            label: d.label,
+          }))}
+        />
         <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
           Rest days are visually deactivated in the workout-day picker. The
           cycle counter ignores them — it only advances when you log a workout.
         </Text>
 
-        <MobileSectionEyebrow>Reference</MobileSectionEyebrow>
+        <MobileSectionEyebrow flush={false}>Reference</MobileSectionEyebrow>
         <MobileSurface padding={0}>
           <MobileSettingsRow
             label="Design System Showcase"

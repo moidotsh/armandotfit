@@ -15,7 +15,7 @@ import {
 import { LoadingSpinner } from '../components/primitives';
 import { ExerciseListItem } from '../components/composed';
 import { useAppTheme } from '../context';
-import { navigateToExerciseDetail } from '../navigation';
+import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises } from '../hooks';
 import { useExerciseStore } from '../stores';
 import type { Exercise } from '../shared/types';
@@ -51,7 +51,7 @@ export default function ExerciseDatabaseScreen() {
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface="training" />
-      <MobileHeader title="Exercises" eyebrow="Library" />
+      <MobileHeader title="Exercises" eyebrow="Library" onBack={safeGoBack} />
       <View style={styles.body}>
         <MobileInput
           label="Search"
