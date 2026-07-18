@@ -24,6 +24,7 @@ import {
   MobileInput,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
+import { SetRow } from '../components/composed';
 import { useToast } from '../context';
 import { useAppTheme } from '../context';
 import {
@@ -159,17 +160,13 @@ export default function WorkoutDetailScreen() {
                   </MobileSectionEyebrow>
                   <MobileSurface padding={12}>
                     {ex.sets.map((s: ExerciseSet) => (
-                      <View key={s.id} style={styles.setRow}>
-                        <Text style={[styles.setNumber, { color: colors.textSecondary }]}>
-                          {s.setNumber}
-                        </Text>
-                        <Text style={[styles.setText, { color: colors.text }]}>
-                          {s.actualReps ?? '–'} reps @ {s.weight ?? '–'}
-                        </Text>
-                        <Text style={[styles.setStatus, { color: s.completed ? colors.brand : colors.textSecondary }]}>
-                          {s.completed ? '✓' : '○'}
-                        </Text>
-                      </View>
+                      <SetRow
+                        key={s.id}
+                        setNumber={s.setNumber}
+                        actualReps={s.actualReps}
+                        weight={s.weight}
+                        completed={s.completed}
+                      />
                     ))}
                   </MobileSurface>
                 </View>
@@ -234,17 +231,13 @@ export default function WorkoutDetailScreen() {
                 {ex.sets.length > 0 ? (
                   <View style={{ marginTop: 8 }}>
                     {ex.sets.map((s) => (
-                      <View key={s.localId} style={styles.setRow}>
-                        <Text style={[styles.setNumber, { color: colors.textSecondary }]}>
-                          {s.setNumber}
-                        </Text>
-                        <Text style={[styles.setText, { color: colors.text }]}>
-                          {s.actualReps ?? '–'} reps @ {s.weight ?? '–'}
-                        </Text>
-                        <Text style={[styles.setStatus, { color: s.completed ? colors.brand : colors.textSecondary }]}>
-                          {s.completed ? '✓' : '○'}
-                        </Text>
-                      </View>
+                      <SetRow
+                        key={s.localId}
+                        setNumber={s.setNumber}
+                        actualReps={s.actualReps}
+                        weight={s.weight}
+                        completed={s.completed}
+                      />
                     ))}
                   </View>
                 ) : (
@@ -313,15 +306,6 @@ const styles = StyleSheet.create({
   bodyText: { fontSize: 14, lineHeight: 20 },
   emptyText: { fontSize: 13, lineHeight: 18 },
   exerciseName: { fontSize: 14, fontWeight: '600' },
-  setRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-    gap: 12,
-  },
-  setNumber: { fontSize: 12, fontWeight: '600', minWidth: 18 },
-  setText: { fontSize: 13, flex: 1 },
-  setStatus: { fontSize: 14, fontWeight: '600' },
   addCta: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
   errorText: { fontSize: 12, lineHeight: 16 },
 });

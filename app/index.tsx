@@ -4,7 +4,7 @@
 // vellum's placeholder home.
 
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   MobileAtmosphere,
@@ -15,6 +15,7 @@ import {
   MobileSectionEyebrow,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
+import { WorkoutSessionItem } from '../components/composed';
 import { useAuth, useAppTheme } from '../context';
 import {
   navigateToSettings,
@@ -125,26 +126,11 @@ export default function HomeScreen() {
         ) : (
           <View style={styles.recentList}>
             {recent.map((w) => (
-              <Pressable
+              <WorkoutSessionItem
                 key={w.id}
-                onPress={() => navigateToWorkoutDetail(w.id)}
-                accessibilityRole="button"
-              >
-                <MobileSurface padding={14}>
-                  <View style={styles.rowBetween}>
-                    <Text style={[styles.workoutDate, { color: colors.text }]}>
-                      {new Date(w.date).toLocaleDateString(undefined, {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </Text>
-                    <Text style={[styles.workoutDuration, { color: colors.textSecondary }]}>
-                      {w.duration}m · day {w.day}
-                    </Text>
-                  </View>
-                </MobileSurface>
-              </Pressable>
+                session={w}
+                onPress={navigateToWorkoutDetail}
+              />
             ))}
           </View>
         )}
@@ -196,7 +182,5 @@ const styles = StyleSheet.create({
   actionsRow: { flexDirection: 'row', gap: 8 },
   actionButton: { flex: 1 },
   recentList: { gap: 8 },
-  workoutDate: { fontSize: 14, fontWeight: '600' },
-  workoutDuration: { fontSize: 12 },
   emptyText: { fontSize: 13, lineHeight: 18 },
 });

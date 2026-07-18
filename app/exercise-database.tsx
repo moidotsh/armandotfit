@@ -4,24 +4,18 @@
 // round-trip; this route just renders it.
 
 import React, { useEffect } from 'react';
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   MobileAtmosphere,
-  MobileSurface,
   MobileHeader,
   MobileInput,
   MobileSectionEyebrow,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
+import { ExerciseListItem } from '../components/composed';
 import { useAppTheme } from '../context';
-import { navigateToExerciseDetail, safeGoBack } from '../navigation';
+import { navigateToExerciseDetail } from '../navigation';
 import { useExercises } from '../hooks';
 import { useExerciseStore } from '../stores';
 import type { Exercise } from '../shared/types';
@@ -45,17 +39,10 @@ export default function ExerciseDatabaseScreen() {
   }, [resetFilters]);
 
   const renderItem = ({ item }: { item: Exercise }) => (
-    <Pressable
-      onPress={() => navigateToExerciseDetail(item.id)}
-      accessibilityRole="button"
-    >
-      <MobileSurface padding={14}>
-        <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
-        <Text style={[styles.meta, { color: colors.textSecondary }]}>
-          {[item.exerciseType, item.difficultyLevel].filter(Boolean).join(' · ')}
-        </Text>
-      </MobileSurface>
-    </Pressable>
+    <ExerciseListItem
+      exercise={item}
+      onPress={navigateToExerciseDetail}
+    />
   );
 
   return (
@@ -97,6 +84,4 @@ const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { flex: 1, paddingHorizontal: 20, paddingTop: 12 },
   listContent: { paddingBottom: 24 },
-  name: { fontSize: 14, fontWeight: '600' },
-  meta: { fontSize: 12, marginTop: 2 },
 });
