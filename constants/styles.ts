@@ -91,6 +91,17 @@ export const Z_INDEX = {
  * screen must reference SCREEN_BODY_STYLE. The audit exists because the
  * per-screen inline approach silently drifted (5 screens lost the
  * constraint between QA1 and QA2); the audit prevents the next drift.
+ *
+ * Mobile-only. The 420pt column is the right shape for a mobile-first
+ * PWA on any viewport (mobile-shaped, with whitespace on the sides at
+ * desktop widths). If a consumer later wants true tablet/desktop
+ * layouts (multi-column dashboards, sidebar nav, persistent rails),
+ * the right move is to add a sibling `DesktopPremium` kit with its
+ * own body constant — NOT to parameterize this one. The MobilePremium
+ * primitives are tuned for mobile constraints (490px height budget,
+ * safe-area insets, touch targets); reusing them at desktop widths
+ * would require retuning each one. See docs/contributing.md →
+ * "Adding desktop support" for the evolution path.
  */
 export const SCREEN_BODY_STYLE = {
   flex: 1,

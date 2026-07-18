@@ -73,6 +73,43 @@ The MobilePremium kit is documented in `docs/architecture/mobile-premium-design-
 
 `docs/architecture/pwa-installability.md` is the canonical reference. The load-bearing invariant: Expo Web static export strips every PWA-related tag from `<head>` except `<link rel="icon">`. The runtime injection block in `app/_layout.tsx` restores them. Don't remove that block. If a future Expo SDK version stops stripping those tags, the injection block becomes a no-op (the existence guards make it safe to leave in place).
 
+## Adding desktop support
+
+Vellum ships mobile-first. Every MobilePremium primitive is tuned for mobile constraints — the 490px height-budget test, safe-area insets, touch-target sizing, atmosphere density — and `SCREEN_BODY_STYLE` (in `constants/styles.ts`) bakes in the 420pt centered column that gives every screen the mobile shape on any viewport.
+
+A consumer who later wants a *true* tablet or desktop layout (multi-column dashboards, sidebar nav, persistent rails, dense data tables) has two options. The first is almost always the right one.
+
+### Option A — add a sibling `DesktopPremium` kit (recommended)
+
+Port the qep-tracker pattern: build a sibling kit at `components/DesktopPremium/` with its own layout primitives, its own body constant, its own constraint set. The MobilePremium kit stays mobile-only.
+
+Why a sibling kit and not a parameterized MobilePremium:
+
+- **Different constraints.** MobilePremium primitives assume the 490px height budget, safe-area insets, and touch targets. Desktop layouts don't have a height budget (the viewport is tall), have no safe-area insets, and tolerate smaller click targets with hover. Parameterizing one kit to serve both means every primitive carries both constraint sets forever — the complexity compounds with each new primitive.
+- **Different atmosphere density.** The 7-palette atmosphere system is calibrated for mobile surface sizes. At desktop widths the same palettes read differently.
+- **Different layout vocabulary.** Mobile screens are scroll-first; desktop screens are grid-first. The body container's job is fundamentally different.
+
+Concretely:
+
+1. Create `components/DesktopPremium/` with its own primitives (`DesktopSurface`, `DesktopHeader`, `DesktopActionFooter`, etc.).
+2. Add a `DESKTOP_BODY_STYLE` (or no constraint) in a new `constants/desktop-styles.ts` — NOT a parameterization of `SCREEN_BODY_STYLE`.
+3. Add a `useLayoutMode(): 'mobile' | 'tablet' | 'desktop'` hook driven by `useWindowDimensions()` + the existing `BREAKPOINTS` / `CONTAINER_THRESHOLDS` constants.
+4. Pick mobile vs desktop at the route level — expo-router's per-route `_layout.tsx` is the natural branching point.
+5. Scope the SB1 audit (`scripts/audit-screen-body.ts`) to mobile-only directories by adding the desktop routes' directory to the early-return in `walk()`. Do NOT sprinkle `// sb1-exempt` across desktop routes — that hides the structural distinction.
+6. If useful, add a parallel `audit-desktop-body.ts` for the desktop kit's body contract.
+
+### Option B — relax `SCREEN_BODY_STYLE` to a wider breakpoint (rare)
+
+For a "mobile-but-wider-on-tablet" treatment — same primitives, same layouts, just more breathing room at ≥768px — add a `SCREEN_BODY_STYLE_TABLET` variant or a `useScreenBodyStyle()` hook that reads `useWindowDimensions()`. The SB1 audit accepts any variant (regex match for `SCREEN_BODY_STYLE` covers `SCREEN_BODY_STYLE_TABLET` too).
+
+This works for the narrow case of a tablet-friendly mobile app. It doesn't scale to true desktop layouts (multi-column, persistent nav rails). Most consumers wanting "desktop" actually want Option A.
+
+### What NOT to do
+
+- **Don't parameterize `SCREEN_BODY_STYLE` with a `mode` parameter.** Two callers, two intents, one primitive, eventual confusion. Keep the mobile constant mobile-only.
+- **Don't reuse `MobileSurface` / `MobileHeader` / `MobileActionFooter` on desktop screens.** The MobilePremium kit is mobile-shaped by design; reusing it at desktop widths requires retuning each primitive. Build desktop equivalents.
+- **Don't drop the SB1 audit when adding desktop routes.** Scope it; don't delete it. The mobile body contract still applies to mobile screens.
+
 ## Workspace integration
 
 Vellum lives at `qep/vellum/`. It's a sibling of `qep-tracker/`, `qepler/`, `qep-tracker-insights/`, `landing/`, `shop/`. Workspace docs that mention vellum:

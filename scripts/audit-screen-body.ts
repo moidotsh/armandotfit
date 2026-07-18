@@ -16,9 +16,15 @@
  * the screen author acknowledged the constraint by importing the name.
  *
  * Suppress with `// sb1-exempt`. Reserve for genuinely-different screen
- * shapes (e.g. a future full-bleed camera screen). Auth screens with
- * the standard SafeAreaView → MobileAtmosphere → MobileHeader → body
- * shape are NOT exempt.
+ * shapes (full-bleed camera, AR overlay). Auth screens with the standard
+ * SafeAreaView → MobileAtmosphere → MobileHeader → body shape are NOT
+ * exempt.
+ *
+ * When a consumer adds a DesktopPremium sibling kit, do NOT sprinkle
+ * `// sb1-exempt` across the desktop routes. Scope this audit's walk
+ * to mobile-only directories instead (add the desktop routes' directory
+ * to the early-return in walk()). See docs/contributing.md →
+ * "Adding desktop support" for the evolution path.
  *
  * Mirrors the structure of scripts/audit-component-quality.ts.
  *
