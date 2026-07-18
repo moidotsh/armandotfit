@@ -19,6 +19,7 @@ import { LoadingSpinner } from '../components/primitives';
 import { useAppTheme } from '../context';
 import { safeGoBack, navigateToAnalytics } from '../navigation';
 import { useDashboardSummary } from '../hooks';
+import { SCREEN_BODY_STYLE } from '../constants';
 
 export default function ProgressionScreen() {
   const { colors } = useAppTheme();
@@ -118,7 +119,7 @@ export default function ProgressionScreen() {
 
 const styles = StyleSheet.create({
   shell: { flex: 1 },
-  body: { flex: 1 },
+  body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
   rowBetween: {
     flexDirection: 'row',

@@ -47,6 +47,20 @@
         display: flex;
         flex-direction: column;
       }
+      /* Hide scrollbars across the entire app. The mobile-native
+         indicators are gated per-ScrollView via
+         showsVerticalScrollIndicator={false}; on web the only
+         systematic way to suppress the always-visible desktop
+         scrollbar is global CSS. A visible scrollbar on the
+         centered 420pt mobile-first column reads as desktop chrome
+         and breaks the immersive feel. */
+      *::-webkit-scrollbar {
+        display: none;
+      }
+      * {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
     </style>
   </head>
   <body>

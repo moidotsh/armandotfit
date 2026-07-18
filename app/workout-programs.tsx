@@ -14,6 +14,7 @@ import {
 } from '../components/MobilePremium';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
+import { SCREEN_BODY_STYLE } from '../constants';
 
 export default function WorkoutProgramsScreen() {
   const { colors } = useAppTheme();
@@ -39,5 +40,5 @@ export default function WorkoutProgramsScreen() {
 
 const styles = StyleSheet.create({
   shell: { flex: 1 },
-  body: { paddingHorizontal: 20, paddingTop: 12 },
+  body: { ...SCREEN_BODY_STYLE, paddingHorizontal: 20, paddingTop: 12 },
 });

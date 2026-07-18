@@ -73,3 +73,28 @@ export const Z_INDEX = {
   /** Toast notifications */
   toast: 600,
 } as const;
+
+/**
+ * The screen-body centered-column constraint. Every full-screen route's
+ * body container (ScrollView, FlatList, or outermost View) applies this
+ * via `[SCREEN_BODY_STYLE, ...]` or `...SCREEN_BODY_STYLE` in its body
+ * StyleSheet entry.
+ *
+ * Why a constant and not a wrapper primitive: the body is one of three
+ * shapes (ScrollView / FlatList / View) and each carries screen-specific
+ * contentContainerStyle / keyboard handling / ref / onScroll props. A
+ * wrapper would need 80% of those props to earn its keep. A constant is
+ * the minimum surface that enforces the constraint identically across
+ * consumers (vellum + armandotfit share the same file verbatim).
+ *
+ * Enforced by scripts/audit-screen-body.ts (SB1) — every app/*.tsx
+ * screen must reference SCREEN_BODY_STYLE. The audit exists because the
+ * per-screen inline approach silently drifted (5 screens lost the
+ * constraint between QA1 and QA2); the audit prevents the next drift.
+ */
+export const SCREEN_BODY_STYLE = {
+  flex: 1,
+  maxWidth: 420,
+  alignSelf: 'center' as const,
+  width: '100%' as const,
+};

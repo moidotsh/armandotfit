@@ -17,6 +17,7 @@ import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory } from '../hooks';
 import { AnalyticsService } from '../services';
+import { SCREEN_BODY_STYLE } from '../constants';
 
 type Range = 7 | 30 | 90;
 
@@ -112,7 +113,7 @@ export default function AnalyticsScreen() {
 
 const styles = StyleSheet.create({
   shell: { flex: 1 },
-  body: { flex: 1 },
+  body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
   rangeRow: { flexDirection: 'row', gap: 12 },
   rangeChip: {

@@ -18,6 +18,7 @@ import {
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
 import { replaceWithLogin } from '../navigation';
+import { SCREEN_BODY_STYLE } from '../constants';
 
 export default function RegisterScreen() {
   const { signUp } = useAuth();
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   body: {
-    flex: 1,
+    ...SCREEN_BODY_STYLE,
     paddingHorizontal: 20,
     paddingTop: 12,
   },

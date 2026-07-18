@@ -39,6 +39,7 @@ import {
 } from '../hooks';
 import { useWorkoutStore } from '../stores';
 import { getSystemExercise, getDayTitle } from '../shared/exercises';
+import { SCREEN_BODY_STYLE } from '../constants';
 import type { ExerciseSet, ID } from '../shared/types';
 
 export default function WorkoutDetailScreen() {
@@ -410,7 +411,7 @@ export default function WorkoutDetailScreen() {
 
 const styles = StyleSheet.create({
   shell: { flex: 1 },
-  body: { flex: 1 },
+  body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
   bodyText: { fontSize: 14, lineHeight: 20 },
   emptyText: { fontSize: 13, lineHeight: 18 },

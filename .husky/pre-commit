@@ -103,6 +103,16 @@ bun run scripts/audit-runtime-resilience.ts || {
   exit 1
 }
 
+# Screen-body audit (SB1): hard fail.
+echo "→ Running screen-body audit…" >&2
+bun run scripts/audit-screen-body.ts || {
+  echo "" >&2
+  echo "  ERROR: Screen-body violations found. See above." >&2
+  echo "  (skip with --no-verify if you genuinely need to.)" >&2
+  echo "" >&2
+  exit 1
+}
+
 # Structural ESLint (S6/S8): hard fail.
 echo "→ Running structural ESLint (S6/S8)…" >&2
 eslint . --config eslint.structure.config.js --quiet || {

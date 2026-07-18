@@ -44,7 +44,7 @@ export {
 // Centralized style constants. Complement theme.ts with layout/visual
 // values that don't belong in the theme hook (border radius, input dims,
 // card padding, z-index layers).
-export { BORDER_RADIUS, INPUT, CARD, Z_INDEX } from './styles';
+export { BORDER_RADIUS, INPUT, CARD, Z_INDEX, SCREEN_BODY_STYLE } from './styles';
 
 // App-level layout config (cross-cutting switches for screen composition).
 export { APP_LAYOUT } from './layout';

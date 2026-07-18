@@ -21,7 +21,7 @@ import {
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile } from '../hooks';
-import { DAY_OF_WEEK_LABELS } from '../constants';
+import { DAY_OF_WEEK_LABELS, SCREEN_BODY_STYLE } from '../constants';
 import { logger } from '../utils/logger';
 
 const PREFERENCE_LABELS: Record<ColorSchemePreference, string> = {
@@ -175,10 +175,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   body: {
-    flex: 1,
-    maxWidth: 420,
-    alignSelf: 'center',
-    width: '100%',
+    ...SCREEN_BODY_STYLE,
   },
   bodyContent: {
     paddingHorizontal: 20,

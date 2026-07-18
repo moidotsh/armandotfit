@@ -18,6 +18,7 @@ import { useAppTheme } from '../context';
 import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises } from '../hooks';
 import { useExerciseStore } from '../stores';
+import { SCREEN_BODY_STYLE } from '../constants';
 import type { Exercise } from '../shared/types';
 
 export default function ExerciseDatabaseScreen() {
@@ -83,10 +84,7 @@ export default function ExerciseDatabaseScreen() {
 const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: {
-    flex: 1,
-    maxWidth: 420,
-    alignSelf: 'center',
-    width: '100%',
+    ...SCREEN_BODY_STYLE,
     paddingHorizontal: 20,
     paddingTop: 12,
   },

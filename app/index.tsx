@@ -29,7 +29,7 @@ import {
 import { LoadingSpinner } from '../components/primitives';
 import { HamburgerButton, WorkoutSessionItem } from '../components/composed';
 import { useAuth, useAppTheme } from '../context';
-import { theme, APP_LAYOUT } from '../constants';
+import { theme, APP_LAYOUT, SCREEN_BODY_STYLE } from '../constants';
 import {
   navigateToSettings,
   navigateToWorkoutDetail,
@@ -282,7 +282,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   shell: { flex: 1 },
-  body: { flex: 1, maxWidth: 420, alignSelf: 'center', width: '100%' },
+  body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12 },
   rowBetween: {
     flexDirection: 'row',

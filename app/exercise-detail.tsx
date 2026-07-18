@@ -20,6 +20,7 @@ import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
 import { useExerciseDetail } from '../hooks';
 import { useWorkoutStore } from '../stores';
+import { SCREEN_BODY_STYLE } from '../constants';
 import type { ID } from '../shared/types';
 
 export default function ExerciseDetailScreen() {
@@ -150,7 +151,7 @@ export default function ExerciseDetailScreen() {
 
 const styles = StyleSheet.create({
   shell: { flex: 1 },
-  body: { flex: 1 },
+  body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
   bodyText: { fontSize: 14, lineHeight: 20 },
   tips: { fontSize: 13, lineHeight: 18, fontStyle: 'italic' },

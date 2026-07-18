@@ -36,6 +36,7 @@ import {
   DAY_OF_WEEK_LABELS,
   getUpcomingWorkoutSlots,
   getNextSplitDay,
+  SCREEN_BODY_STYLE,
   type SessionMode,
   type UpcomingWorkoutSlot,
 } from '../constants';
@@ -285,7 +286,7 @@ export default function SplitSelectionScreen() {
 
 const styles = StyleSheet.create({
   shell: { flex: 1 },
-  body: { flex: 1, maxWidth: 420, alignSelf: 'center', width: '100%' },
+  body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
   dayGrid: {
     flexDirection: 'row',
