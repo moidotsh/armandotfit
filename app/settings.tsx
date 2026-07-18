@@ -137,15 +137,17 @@ export default function SettingsScreen() {
         </MobileSurface>
 
         <MobileSectionEyebrow flush={false}>Training</MobileSectionEyebrow>
-        <MobileSelectionList
-          multiSelect
-          selectedIds={restDayIds}
-          onSelect={handleToggleRestDay}
-          options={DAY_OF_WEEK_LABELS.map((d) => ({
-            id: String(d.id),
-            label: d.label,
-          }))}
-        />
+        <MobileSurface>
+          <MobileSelectionList
+            multiSelect
+            selectedIds={restDayIds}
+            onSelect={handleToggleRestDay}
+            options={DAY_OF_WEEK_LABELS.map((d) => ({
+              id: String(d.id),
+              label: d.label,
+            }))}
+          />
+        </MobileSurface>
         <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
           Rest days are visually deactivated in the workout-day picker. The
           cycle counter ignores them — it only advances when you log a workout.

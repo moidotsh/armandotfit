@@ -151,11 +151,13 @@ export default function SplitSelectionScreen() {
         showsVerticalScrollIndicator={false}
       >
         <MobileSectionEyebrow>Split</MobileSectionEyebrow>
-        <MobileSelectionList
-          options={SPLIT_OPTIONS}
-          selectedId={splitChoice}
-          onSelect={setSplitChoice}
-        />
+        <MobileSurface>
+          <MobileSelectionList
+            options={SPLIT_OPTIONS}
+            selectedId={splitChoice}
+            onSelect={setSplitChoice}
+          />
+        </MobileSurface>
 
         <View style={{ height: 16 }} />
         <MobileSectionEyebrow>Workout day</MobileSectionEyebrow>
@@ -231,11 +233,13 @@ export default function SplitSelectionScreen() {
           <>
             <View style={{ height: 16 }} />
             <MobileSectionEyebrow>Session</MobileSectionEyebrow>
-            <MobileSelectionList
-              options={SESSION_OPTIONS}
-              selectedId={sessionChoice}
-              onSelect={setSessionChoice}
-            />
+            <MobileSurface>
+              <MobileSelectionList
+                options={SESSION_OPTIONS}
+                selectedId={sessionChoice}
+                onSelect={setSessionChoice}
+              />
+            </MobileSurface>
           </>
         ) : null}
 
