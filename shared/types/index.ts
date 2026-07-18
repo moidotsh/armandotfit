@@ -6,3 +6,8 @@
 
 export * from './api';
 export * from './env';
+// Domain types (armandotfit consumers)
+export * from './profile';
+export * from './exercise';
+export * from './workout';
+export * from './analytics';

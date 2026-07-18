@@ -1,8 +1,8 @@
 // utils/supabase/repositories/index.ts
-// Barrel for the repository pattern. Domain-agnostic — consumers add
-// concrete repositories (e.g. `WorkoutRepository`) to this folder and
-// re-export them here. The audit gate (S9) treats this folder as the
-// single legitimate home for direct `supabase.*` calls.
+// Barrel for the repository pattern. Vellum's infrastructure (types,
+// BaseRepository) + armandotfit's concrete repositories. The audit gate
+// (S9) treats this folder as the single legitimate home for direct
+// `supabase.*` calls.
 
 export {
   type IRepository,
@@ -16,3 +16,10 @@ export {
 } from './types';
 
 export { BaseRepository } from './BaseRepository';
+
+// armandotfit concrete repositories
+export { UserProfileRepository, userProfileRepository } from './UserProfileRepository';
+export { ExerciseRepository, exerciseRepository } from './ExerciseRepository';
+export { WorkoutRepository, workoutRepository } from './WorkoutRepository';
+export { StreakRepository, streakRepository } from './StreakRepository';
+export { ProgressionRepository, progressionRepository } from './ProgressionRepository';

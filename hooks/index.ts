@@ -68,3 +68,7 @@ export type {
   VariantConfig,
 } from './useContainerVariant';
 export { useAuthNavigation } from './useAuthNavigation';
+
+// armandotfit domain queries + mutations
+export * from './queries';
+export * from './mutations';
