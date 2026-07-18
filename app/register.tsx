@@ -4,7 +4,7 @@
 // session exists. The AuthProvider fires `session === null` and the
 // user stays on this screen with a "check your inbox" notice.
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -17,10 +17,10 @@ import {
   MobileAlert,
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
-import { replaceWithLogin, replaceWithHome } from '../navigation';
+import { replaceWithLogin } from '../navigation';
 
 export default function RegisterScreen() {
-  const { session, signUp } = useAuth();
+  const { signUp } = useAuth();
   const { colors } = useAppTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,10 +28,6 @@ export default function RegisterScreen() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [confirmationNeeded, setConfirmationNeeded] = useState(false);
-
-  useEffect(() => {
-    if (session) replaceWithHome();
-  }, [session]);
 
   const handleSubmit = async () => {
     setError(null);

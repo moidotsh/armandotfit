@@ -3,7 +3,7 @@
 // On success, the central AuthGuard in app/_layout.tsx routes to
 // home — no per-screen redirect effect needed.
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -16,20 +16,15 @@ import {
   MobileAlert,
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
-import { navigateToRegister, navigateToForgotPassword, replaceWithHome } from '../navigation';
+import { navigateToRegister, navigateToForgotPassword } from '../navigation';
 
 export default function LoginScreen() {
-  const { session, signIn } = useAuth();
+  const { signIn } = useAuth();
   const { colors } = useAppTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  // Redirect to home when a session lands.
-  useEffect(() => {
-    if (session) replaceWithHome();
-  }, [session]);
 
   const handleSubmit = async () => {
     setError(null);
@@ -39,7 +34,7 @@ export default function LoginScreen() {
     if (!result.success) {
       setError(result.error ?? 'Sign-in failed.');
     }
-    // On success, the useEffect above will fire navigateToHome().
+    // On success, the central AuthGuard in _layout.tsx redirects home.
   };
 
   return (

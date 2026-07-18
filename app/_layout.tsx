@@ -35,7 +35,7 @@ import { isWeb, hasDocument, hasWindow } from '../utils/platform';
 import { logger } from '../utils';
 import { initializeNetworkListeners } from '../stores';
 import { AuthProvider, ToastProvider, ThemeProvider, useAppTheme } from '../context';
-import { ToastContainer } from '../components/primitives';
+import { AuthGuard, ToastContainer } from '../components/primitives';
 import { QueryProvider } from '../lib/react-query';
 
 function RootShell() {
@@ -129,17 +129,19 @@ function RootShell() {
       <SafeAreaProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <AuthProvider>
-            <ToastProvider>
-              <QueryProvider>
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    contentStyle: { backgroundColor: colors.backgroundDeep },
-                  }}
-                />
-                <ToastContainer />
-              </QueryProvider>
-            </ToastProvider>
+            <AuthGuard>
+              <ToastProvider>
+                <QueryProvider>
+                  <Stack
+                    screenOptions={{
+                      headerShown: false,
+                      contentStyle: { backgroundColor: colors.backgroundDeep },
+                    }}
+                  />
+                  <ToastContainer />
+                </QueryProvider>
+              </ToastProvider>
+            </AuthGuard>
           </AuthProvider>
         </GestureHandlerRootView>
       </SafeAreaProvider>

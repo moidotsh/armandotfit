@@ -1,12 +1,20 @@
 // context/AuthContext.tsx
-// Auth context — wires vellum's AuthService to the React tree. The
-// `useAuth()` hook is the consumer-side surface; the provider reads
-// the session once on mount and subscribes to Supabase auth state
-// changes so sign-in / sign-out / token refresh propagate.
+// Auth context — wires AuthService to the React tree. The `useAuth()`
+// hook is the consumer-side surface; the provider reads the session
+// once on mount and subscribes to Supabase auth state changes so
+// sign-in / sign-out / token refresh propagate.
+//
+// Each session write also mirrors into authStore (via non-reactive
+// `useAuthStore.getState()` calls) so the central AuthGuard + the
+// `safeGoBack()` helper can read live auth status without subscribing
+// to this context. The local `session`/`initializing` React state
+// remains the source of truth for `useAuth()` consumers; the store
+// is a parallel write target.
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { AuthService, type AuthSession } from '../utils/supabase';
 import { logger } from '../utils';
+import { useAuthStore } from '../stores';
 
 interface AuthContextValue {
   session: AuthSession | null;
@@ -26,22 +34,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Restore session on mount + subscribe to auth state changes. The
   // `cancelled` flag guards every setState after the await window so
   // an unmount during restoreSession doesn't try to write into a
-  // gone provider (audit R1).
+  // gone provider (audit R1). Each session write mirrors into
+  // authStore so the AuthGuard + safeGoBack() can read live status.
   useEffect(() => {
     let cancelled = false;
     let unsubscribe = () => {};
+
+    // Mark loading while restore is in flight so the AuthGuard waits
+    // before deciding to redirect (status starts at 'idle' from the
+    // persisted store; flip to 'loading' to gate the redirect).
+    useAuthStore.getState().setStatus('loading');
 
     (async () => {
       try {
         const restored = await AuthService.restoreSession();
         if (cancelled) return;
         setSession(restored);
+        useAuthStore.getState().setSession(
+          restored ? { userId: restored.userId, email: restored.email } : null,
+        );
         unsubscribe = AuthService.onAuthStateChange((next) => {
           if (cancelled) return;
           setSession(next);
+          useAuthStore.getState().setSession(
+            next ? { userId: next.userId, email: next.email } : null,
+          );
         });
       } catch (e) {
         if (!cancelled) logger.warn('auth', 'AuthProvider restore failed', e);
+        if (!cancelled) useAuthStore.getState().setSession(null);
       } finally {
         if (!cancelled) setInitializing(false);
       }
@@ -59,17 +80,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       initializing,
       signIn: async (email, password) => {
         const r = await AuthService.signIn(email, password);
-        if (r.success && r.session) setSession(r.session);
+        if (r.success && r.session) {
+          setSession(r.session);
+          useAuthStore.getState().setSession({
+            userId: r.session.userId,
+            email: r.session.email,
+          });
+        }
         return { success: r.success, error: r.error };
       },
       signUp: async (email, password) => {
         const r = await AuthService.signUp(email, password);
-        if (r.success && r.session) setSession(r.session);
+        if (r.success && r.session) {
+          setSession(r.session);
+          useAuthStore.getState().setSession({
+            userId: r.session.userId,
+            email: r.session.email,
+          });
+        }
         return { success: r.success, error: r.error };
       },
       signOut: async () => {
         await AuthService.signOut();
         setSession(null);
+        useAuthStore.getState().setSession(null);
       },
       resetPassword: async (email) => {
         const r = await AuthService.resetPassword(email);
