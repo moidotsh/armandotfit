@@ -1,6 +1,6 @@
 // stores/index.ts
-// Barrel for cross-cutting Zustand stores. Domain stores (e.g.
-// workoutStore) are added by consumers and re-exported here.
+// Barrel for Zustand stores. Vellum's cross-cutting stores (auth, UI,
+// network, tour) + armandotfit's domain stores (workout, exercise).
 
 export { useAuthStore, type AuthStatus } from './authStore';
 export { useUIStore } from './uiStore';
@@ -12,3 +12,12 @@ export {
 } from './networkStore';
 export { useTourStore, useTourVisibility } from './tourStore';
 export { zustandStorage } from './storage';
+
+// armandotfit domain stores
+export {
+  useWorkoutStore,
+  type DraftSession,
+  type DraftExercise,
+  type DraftSet,
+} from './workoutStore';
+export { useExerciseStore } from './exerciseStore';
