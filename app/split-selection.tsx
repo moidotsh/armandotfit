@@ -290,13 +290,16 @@ const styles = StyleSheet.create({
   dayGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    // Center the last row so a 7-day window renders as 4 + 3 with the
+    // 3 centered, not left-aligned.
+    justifyContent: 'center',
     gap: 6,
   },
   dayTile: {
-    // 7 columns share the row equally. Percentage-width on a flex-wrapped
-    // row is supported via RN's DimensionValue (string form).
-    width: `${100 / 7}%`,
-    aspectRatio: 0.78,
+    // 4 per row max so 7 days wraps to 4 + 3. The 24% width leaves room
+    // for the 6px gap between tiles without forcing a tighter wrap.
+    width: '24%',
+    aspectRatio: 0.85,
     borderRadius: 10,
     borderWidth: 1.5,
     alignItems: 'center',
