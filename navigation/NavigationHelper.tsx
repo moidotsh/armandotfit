@@ -11,6 +11,8 @@ export enum NavigationPath {
     SPLIT_SELECTION = 'split-selection',
     WORKOUT_PROGRAMS = 'workout-programs',
     EXERCISE_DETAIL = 'exercise-detail',
+    // Temporarily disabled Training Journey
+    // TRAINING_JOURNEY = 'training-journey',
     LOGIN = 'auth/login',
     REGISTER = 'auth/register',
     FORGOT_PASSWORD = 'auth/forgot-password',
@@ -84,6 +86,13 @@ export function navigateToForgotPassword() {
 export function navigateToSettings() {
   router.push('/settings');
 }
+
+/**
+ * Navigate to training journey screen (Temporarily disabled)
+ */
+// export function navigateToTrainingJourney() {
+//   router.push('/training-journey');
+// }
 
 /**
  * Intelligent back navigation that respects the app hierarchy

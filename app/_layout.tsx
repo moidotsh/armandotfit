@@ -101,6 +101,14 @@ export default function RootLayout() {
                     animation: 'slide_from_right',
                   }}
                 />
+                {/* Temporarily disabled Training Journey route
+                <Stack.Screen 
+                  name="training-journey" 
+                  options={{
+                    animation: 'slide_from_right',
+                  }}
+                />
+                */}
                 {/* Auth screens - these should be accessible without authentication */}
                 <Stack.Screen 
                   name="auth/login" 

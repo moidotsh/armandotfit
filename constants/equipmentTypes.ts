@@ -10,6 +10,24 @@ export enum EquipmentCategory {
     SMITH = 'Smith',
     STATION = 'Station'
   }
+
+// Equipment manufacturers for gym-specific differentiation
+export enum EquipmentManufacturer {
+    LIFEFITNESS = 'Lifefitness',
+    NAUTILUS = 'Nautilus',
+    HAMMER_STRENGTH = 'Hammer Strength',
+    CYBEX = 'Cybex',
+    PRECOR = 'Precor',
+    MATRIX = 'Matrix',
+    TECHNOGYM = 'Technogym',
+    HOIST = 'Hoist',
+    FREE_MOTION = 'FreeMotion',
+    STAR_TRAC = 'Star Trac',
+    PENTLAND = 'Pentland',
+    PANATTA = 'Panatta',
+    GYM80 = 'Gym80',
+    CUSTOM = 'Custom'
+  }
   
   // Free weight subcategories
   export enum FreeWeightType {
@@ -68,7 +86,9 @@ export enum EquipmentCategory {
     // Optional fields based on category
     subType?: FreeWeightType | StationType | MachineType;
     attachment?: CableAttachment;
-    name?: string; // For custom or specific equipment names
+    manufacturer?: EquipmentManufacturer; // Equipment manufacturer
+    model?: string;                       // Specific model name/number
+    name?: string;                        // For custom or specific equipment names
   }
   
   // Helper function to create equipment objects more easily
@@ -76,15 +96,53 @@ export enum EquipmentCategory {
     category: EquipmentCategory,
     subType?: FreeWeightType | StationType | MachineType,
     attachment?: CableAttachment,
+    manufacturer?: EquipmentManufacturer,
+    model?: string,
     name?: string
   ): Equipment {
     return {
       category,
       subType,
       attachment,
+      manufacturer,
+      model,
       name
     };
   }
+
+  // Common exercise tags for variations and techniques
+  export const CommonExerciseTags = {
+    // Variation types
+    ECCENTRIC: { id: 'ecc', tag: 'ECC', name: 'Eccentric-focused', category: 'emphasis' as const },
+    CONCENTRIC: { id: 'con', tag: 'CON', name: 'Concentric-focused', category: 'emphasis' as const },
+    ISOMETRIC: { id: 'iso', tag: 'ISO', name: 'Isometric hold', category: 'technique' as const },
+    PAUSE: { id: 'pause', tag: 'PAUSE', name: 'Pause rep', category: 'technique' as const },
+    PARTIAL: { id: 'partial', tag: 'PARTIAL', name: 'Partial range', category: 'technique' as const },
+    
+    // Grip variations
+    WIDE: { id: 'wide', tag: 'WIDE', name: 'Wide grip', category: 'variation' as const },
+    NARROW: { id: 'narrow', tag: 'NARROW', name: 'Narrow grip', category: 'variation' as const },
+    CLOSE: { id: 'close', tag: 'CLOSE', name: 'Close grip', category: 'variation' as const },
+    NEUTRAL: { id: 'neutral', tag: 'NEUTRAL', name: 'Neutral grip', category: 'variation' as const },
+    REVERSE: { id: 'reverse', tag: 'REV', name: 'Reverse grip', category: 'variation' as const },
+    HOOK: { id: 'hook', tag: 'HOOK', name: 'Hook grip', category: 'variation' as const },
+    
+    // Stance variations
+    SUMO: { id: 'sumo', tag: 'SUMO', name: 'Sumo stance', category: 'variation' as const },
+    NARROW_STANCE: { id: 'narrow-stance', tag: 'NARROW-ST', name: 'Narrow stance', category: 'variation' as const },
+    
+    // Equipment modifiers
+    CHAINS: { id: 'chains', tag: 'CHAIN', name: 'With chains', category: 'equipment' as const },
+    BANDS: { id: 'bands', tag: 'BAND', name: 'With bands', category: 'equipment' as const },
+    SLINGSHOT: { id: 'slingshot', tag: 'SLING', name: 'With slingshot', category: 'equipment' as const },
+    BOARDS: { id: 'boards', tag: 'BOARD', name: 'Board press', category: 'equipment' as const },
+    
+    // Other techniques
+    DROPSET: { id: 'dropset', tag: 'DROP', name: 'Drop set', category: 'technique' as const },
+    SUPSET: { id: 'superset', tag: 'SUPER', name: 'Superset', category: 'technique' as const },
+    REST_PAUSE: { id: 'rest-pause', tag: 'RP', name: 'Rest-pause', category: 'technique' as const },
+    MYO_REPS: { id: 'myo-reps', tag: 'MYO', name: 'Myo-reps', category: 'technique' as const }
+  };
   
   // Commonly used equipment combinations for quick reference
   export const CommonEquipment = {
@@ -101,7 +159,7 @@ export enum EquipmentCategory {
     INCLINE_BENCH: createEquipment(EquipmentCategory.STATION, StationType.INCLINE_BENCH),
     DECLINE_BENCH: createEquipment(EquipmentCategory.STATION, StationType.DECLINE_BENCH),
     
-    // Machines
+    // Machines (generic)
     LEG_PRESS: createEquipment(EquipmentCategory.MACHINE, MachineType.LEG_PRESS),
     CHEST_FLY: createEquipment(EquipmentCategory.MACHINE, MachineType.CHEST_FLY),
     LAT_PULLDOWN: createEquipment(EquipmentCategory.MACHINE, MachineType.LAT_PULLDOWN),
@@ -112,5 +170,25 @@ export enum EquipmentCategory {
     CABLE_HANDLE: createEquipment(EquipmentCategory.CABLE, undefined, CableAttachment.SINGLE_HANDLE),
     
     // Smith machine
-    SMITH: createEquipment(EquipmentCategory.SMITH)
+    SMITH: createEquipment(EquipmentCategory.SMITH),
+    
+    // Manufacturer-specific examples (for gyms with multiple similar machines)
+    CHEST_PRESS_LIFEFITNESS: createEquipment(
+      EquipmentCategory.MACHINE, 
+      MachineType.CHEST_PRESS, 
+      undefined, 
+      EquipmentManufacturer.LIFEFITNESS
+    ),
+    CHEST_PRESS_NAUTILUS: createEquipment(
+      EquipmentCategory.MACHINE, 
+      MachineType.CHEST_PRESS, 
+      undefined, 
+      EquipmentManufacturer.NAUTILUS
+    ),
+    LAT_PULLDOWN_CYBEX: createEquipment(
+      EquipmentCategory.MACHINE, 
+      MachineType.LAT_PULLDOWN, 
+      undefined, 
+      EquipmentManufacturer.CYBEX
+    )
   };

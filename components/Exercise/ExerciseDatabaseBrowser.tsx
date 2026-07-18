@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { YStack, XStack, Text, Card, Button, Input, Select, ScrollView } from 'tamagui';
-import { Search, Filter, Plus, Star, Trash2, Edit, ChevronDown } from '@tamagui/lucide-icons';
+import { YStack, XStack, Text, Card, Button, Input, Select, ScrollView, Separator } from 'tamagui';
+import { Search, Filter, Plus, Star, Trash2, Edit, ChevronDown, X } from '@tamagui/lucide-icons';
 import { useAppTheme } from '../ThemeProvider';
 import { useAuth } from '../../context/AuthContext';
 import { exerciseService, ExerciseTemplate, ExerciseFilters } from '../../services/exerciseService';
 import { ExerciseCategory, MuscleGroup } from '../../types/workout';
 import { CustomExerciseCreator } from './CustomExerciseCreator';
+import { 
+  Exercise, 
+  ExerciseTag, 
+  EquipmentRegistry 
+} from '../../types/exercise';
+import { 
+  EquipmentCategory
+} from '../../constants/equipmentTypes';
 
 interface ExerciseDatabaseBrowserProps {
   onExerciseSelect?: (exercise: ExerciseTemplate) => void;
@@ -26,12 +34,16 @@ export function ExerciseDatabaseBrowser({
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showCreator, setShowCreator] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<ExerciseTag[]>([]);
+  const [selectedEquipmentCategories, setSelectedEquipmentCategories] = useState<EquipmentCategory[]>([]);
 
   const [filters, setFilters] = useState<ExerciseFilters>({
     category: undefined,
     primaryMuscleGroup: undefined,
     difficulty: undefined,
-    isCustom: undefined
+    isCustom: undefined,
+    equipmentCategory: undefined,
+    tags: undefined
   });
 
   const muscleGroups: MuscleGroup[] = [
@@ -40,6 +52,10 @@ export function ExerciseDatabaseBrowser({
   ];
 
   const categories: ExerciseCategory[] = ['calisthenic', 'free_weight', 'cables', 'machine'];
+
+  const equipmentCategories: EquipmentCategory[] = [
+    'Bodyweight', 'FreeWeight', 'Machine', 'Cable', 'Smith', 'Station'
+  ];
 
   useEffect(() => {
     loadExercises();
@@ -84,11 +100,17 @@ export function ExerciseDatabaseBrowser({
       category: undefined,
       primaryMuscleGroup: undefined,
       difficulty: undefined,
-      isCustom: undefined
+      isCustom: undefined,
+      equipmentCategory: undefined,
+      tags: undefined
     });
+    setSelectedTags([]);
+    setSelectedEquipmentCategories([]);
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => value !== undefined);
+  const hasActiveFilters = Object.values(filters).some(value => value !== undefined) ||
+                          selectedTags.length > 0 ||
+                          selectedEquipmentCategories.length > 0;
 
   if (showCreator) {
     return (
@@ -217,7 +239,66 @@ export function ExerciseDatabaseBrowser({
                     </Select.Content>
                   </Select>
                 </YStack>
+
+                <YStack flex={1} minWidth={120}>
+                  <Text fontSize={fontSize.small} color={colors.textMuted} marginBottom={spacing.xsmall}>
+                    Equipment Type
+                  </Text>
+                  <Select
+                    value={filters.equipmentCategory || 'all'}
+                    onValueChange={(value) => updateFilters('equipmentCategory', value === 'all' ? undefined : value)}
+                  >
+                    <Select.Trigger backgroundColor={colors.inputBackground} borderColor={colors.border}>
+                      <Select.Value color={colors.text} />
+                      <ChevronDown size={14} color={colors.textMuted} />
+                    </Select.Trigger>
+                    <Select.Content>
+                      <Select.Viewport>
+                        <Select.Item value="all">
+                          <Select.ItemText>All Equipment</Select.ItemText>
+                        </Select.Item>
+                        {equipmentCategories.map((category) => (
+                          <Select.Item key={category} value={category}>
+                            <Select.ItemText>{category.replace('_', ' ')}</Select.ItemText>
+                          </Select.Item>
+                        ))}
+                      </Select.Viewport>
+                    </Select.Content>
+                  </Select>
+                </YStack>
+
+                
               </XStack>
+
+              <Separator />
+
+              {/* Equipment Categories */}
+              <YStack>
+                <Text fontSize={fontSize.small} color={colors.textMuted} marginBottom={spacing.xsmall}>
+                  Equipment Categories
+                </Text>
+                <XStack flexWrap="wrap" gap={spacing.xsmall}>
+                  {equipmentCategories.map((category) => (
+                    <Button
+                      key={category}
+                      size="$2"
+                      theme={selectedEquipmentCategories.includes(category) ? 'blue' : undefined}
+                      variant={selectedEquipmentCategories.includes(category) ? undefined : 'outlined'}
+                      onPress={() => {
+                        const newCategories = selectedEquipmentCategories.includes(category)
+                          ? selectedEquipmentCategories.filter(c => c !== category)
+                          : [...selectedEquipmentCategories, category];
+                        setSelectedEquipmentCategories(newCategories);
+                        updateFilters('equipmentCategory', newCategories.length > 0 ? newCategories : undefined);
+                      }}
+                    >
+                      {category.replace('_', ' ')}
+                    </Button>
+                  ))}
+                </XStack>
+              </YStack>
+
+              
 
               <XStack space={spacing.small}>
                 <YStack flex={1}>

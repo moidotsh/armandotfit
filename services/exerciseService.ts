@@ -7,6 +7,14 @@ import {
   RepRange,
   GripType
 } from '../types/workout';
+import { 
+  Exercise, 
+  ExerciseVariation, 
+  ExerciseInstance, 
+  ExerciseTag, 
+  EquipmentRegistry 
+} from '../types/exercise';
+import { CommonExerciseTags } from '../constants/equipmentTypes';
 
 export interface ExerciseVariation {
   id: string;
@@ -640,6 +648,251 @@ class ExerciseService {
 
       return true;
     });
+  }
+
+  /**
+   * Smart parsing of exercise input text to extract tags and equipment info
+   */
+  parseExerciseInput(inputText: string): {
+    baseName: string;
+    extractedTags: ExerciseTag[];
+    equipmentInfo?: string;
+    manufacturer?: string;
+    model?: string;
+    notes?: string;
+  } {
+    const text = inputText.trim().toUpperCase();
+    const tags: ExerciseTag[] = [];
+    
+    // Extract common tags from text
+    const tagPatterns = [
+      { pattern: /\bECC\b/i, tag: CommonExerciseTags.ECCENTRIC },
+      { pattern: /\bCON\b/i, tag: CommonExerciseTags.CONCENTRIC },
+      { pattern: /\bISO\b/i, tag: CommonExerciseTags.ISOMETRIC },
+      { pattern: /\bPAUSE\b/i, tag: CommonExerciseTags.PAUSE },
+      { pattern: /\bPARTIAL\b/i, tag: CommonExerciseTags.PARTIAL },
+      { pattern: /\bWIDE\b/i, tag: CommonExerciseTags.WIDE },
+      { pattern: /\bNARROW\b/i, tag: CommonExerciseTags.NARROW },
+      { pattern: /\bCLOSE\b/i, tag: CommonExerciseTags.CLOSE },
+      { pattern: /\bNEUTRAL\b|\bNEU\b/i, tag: CommonExerciseTags.NEUTRAL },
+      { pattern: /\bREV\b|\bREVERSE\b/i, tag: CommonExerciseTags.REVERSE },
+      { pattern: /\bHOOK\b/i, tag: CommonExerciseTags.HOOK },
+      { pattern: /\bSUMO\b/i, tag: CommonExerciseTags.SUMO },
+      { pattern: /\bCHAIN\b/i, tag: CommonExerciseTags.CHAINS },
+      { pattern: /\bBAND\b/i, tag: CommonExerciseTags.BANDS },
+      { pattern: /\bSLING\b/i, tag: CommonExerciseTags.SLINGSHOT },
+      { pattern: /\bBOARD\b/i, tag: CommonExerciseTags.BOARDS },
+      { pattern: /\bDROP\b/i, tag: CommonExerciseTags.DROPSET },
+      { pattern: /\bSUPER\b/i, tag: CommonExerciseTags.SUPSET },
+      { pattern: /\bRP\b|\bREST-PAUSE\b/i, tag: CommonExerciseTags.REST_PAUSE },
+      { pattern: /\bMYO\b/i, tag: CommonExerciseTags.MYO_REPS }
+    ];
+
+    // Extract equipment identifiers (patterns like LF-CP1, NA-CP2)
+    const equipmentPattern = /([A-Z]{2,4})-?([A-Z]{1,4}\d{0,2})/gi;
+    const equipmentMatches = text.match(equipmentPattern);
+    let equipmentInfo = equipmentMatches ? equipmentMatches[0] : undefined;
+
+    // Extract manufacturer info
+    const manufacturerPatterns = [
+      { name: 'LIFEFITNESS', pattern: /\bLF\b/i },
+      { name: 'NAUTILUS', pattern: /\bNA\b/i },
+      { name: 'HAMMER', pattern: /\bHS\b|\bHAMMER\b/i },
+      { name: 'CYBEX', pattern: /\bCY\b/i },
+      { name: 'PRECOR', pattern: /\bPR\b/i },
+      { name: 'MATRIX', pattern: /\bMX\b|\bMATRIX\b/i },
+      { name: 'TECHNOGYM', pattern: /\bTG\b|\bTECHNO\b/i }
+    ];
+
+    let manufacturer;
+    for (const mp of manufacturerPatterns) {
+      if (mp.pattern.test(text)) {
+        manufacturer = mp.name;
+        break;
+      }
+    }
+
+    // Extract tags
+    for (const tp of tagPatterns) {
+      if (tp.pattern.test(text)) {
+        tags.push(tp.tag);
+      }
+    }
+
+    // Extract base name (remove tags and equipment identifiers)
+    let baseName = inputText;
+    
+    // Remove equipment identifiers
+    if (equipmentInfo) {
+      baseName = baseName.replace(new RegExp(equipmentInfo, 'gi'), '').trim();
+    }
+    
+    // Remove tags
+    for (const tag of tags) {
+      baseName = baseName.replace(new RegExp(tag.tag, 'gi'), '').trim();
+    }
+    
+    // Clean up extra spaces and brackets
+    baseName = baseName.replace(/\s+/g, ' ').replace(/^\[|\]$/g, '').trim();
+
+    return {
+      baseName,
+      extractedTags: tags,
+      equipmentInfo,
+      manufacturer,
+      notes: inputText !== baseName ? inputText : undefined
+    };
+  }
+
+  /**
+   * Suggest exercise variations based on user input and gym equipment
+   */
+  async suggestVariations(
+    baseExercise: Exercise,
+    userInput: string,
+    gymId?: string
+  ): Promise<ExerciseVariation[]> {
+    const parsed = this.parseExerciseInput(userInput);
+    const suggestions: ExerciseVariation[] = [];
+
+    // Get gym-specific equipment if gymId provided
+    let gymEquipment: EquipmentRegistry[] = [];
+    if (gymId) {
+      gymEquipment = await this.getGymEquipment(gymId);
+    }
+
+    // Find variations that match the parsed tags
+    for (const variation of baseExercise.commonVariations) {
+      let matchScore = 0;
+      
+      // Check for matching tags
+      for (const tag of parsed.extractedTags) {
+        if (variation.tags.some(vt => vt.id === tag.id)) {
+          matchScore += 2;
+        }
+      }
+
+      // Check for equipment manufacturer match
+      if (parsed.manufacturer && variation.manufacturer === parsed.manufacturer) {
+        matchScore += 3;
+      }
+
+      // Check for gym equipment match
+      if (gymEquipment.length > 0) {
+        for (const ge of gymEquipment) {
+          if (ge.baseEquipment.category === variation.equipmentType.category &&
+              ge.manufacturer === variation.manufacturer) {
+            matchScore += 5;
+            break;
+          }
+        }
+      }
+
+      if (matchScore > 0) {
+        suggestions.push({ ...variation, matchScore } as ExerciseVariation & { matchScore: number });
+      }
+    }
+
+    // Sort by match score (highest first)
+    return suggestions.sort((a, b) => (b as any).matchScore - (a as any).matchScore);
+  }
+
+  /**
+   * Get equipment registry for a specific gym
+   */
+  async getGymEquipment(gymId: string): Promise<EquipmentRegistry[]> {
+    try {
+      const { data, error } = await supabase
+        .from('equipment_registry')
+        .select('*')
+        .eq('gym_id', gymId)
+        .eq('is_active', true);
+
+      if (error) {
+        console.error('Error fetching gym equipment:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error getting gym equipment:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Create or update gym equipment registry
+   */
+  async upsertEquipmentRegistry(
+    equipment: Omit<EquipmentRegistry, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<{ success: boolean; equipmentId?: string; error?: string }> {
+    try {
+      const { data, error } = await supabase
+        .from('equipment_registry')
+        .upsert({
+          gym_id: equipment.gymId,
+          equipment_category: equipment.baseEquipment.category,
+          manufacturer: equipment.manufacturer,
+          model: equipment.model,
+          custom_identifier: equipment.customIdentifier,
+          location: equipment.location,
+          notes: equipment.notes,
+          weight_ratio: equipment.weightRatio,
+          photo: equipment.photo,
+          is_active: equipment.isActive,
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error upserting equipment registry:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, equipmentId: data.id };
+    } catch (error) {
+      console.error('Error upserting equipment registry:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  }
+
+  /**
+   * Create exercise instance with smart parsing
+   */
+  async createExerciseInstance(
+    baseExerciseId: string,
+    userInput: string,
+    performanceData: {
+      sets: number;
+      reps: number | string;
+      weight?: number;
+      unit?: 'lbs' | 'kg';
+      rpe?: number;
+      rir?: number;
+      rest?: number;
+    },
+    userId: string
+  ): Promise<{ success: boolean; instance?: ExerciseInstance; error?: string }> {
+    try {
+      const parsed = this.parseExerciseInput(userInput);
+      
+      const instance: ExerciseInstance = {
+        baseExerciseId,
+        customVariation: parsed.notes,
+        customEquipment: parsed.equipmentInfo,
+        parsedTags: parsed.extractedTags,
+        ...performanceData
+      };
+
+      // Here you would typically save to the database
+      // For now, return the created instance
+      
+      return { success: true, instance };
+    } catch (error) {
+      console.error('Error creating exercise instance:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
   }
 }
 

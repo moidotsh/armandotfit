@@ -5,6 +5,13 @@ import { useAppTheme } from '../ThemeProvider';
 import { useAuth } from '../../context/AuthContext';
 import { exerciseService } from '../../services/exerciseService';
 import { ExerciseCategory, FreeWeightSubType, GripType, MuscleGroup } from '../../types/workout';
+import { 
+  Exercise, 
+  ExerciseVariation
+} from '../../types/exercise';
+import { 
+  EquipmentCategory
+} from '../../constants/equipmentTypes';
 
 interface CustomExerciseCreatorProps {
   onExerciseCreated?: (exerciseId: string) => void;
@@ -18,15 +25,20 @@ export function CustomExerciseCreator({ onExerciseCreated, onCancel }: CustomExe
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category: 'free_weight' as ExerciseCategory,
+    category: 'FreeWeight' as keyof typeof equipmentOptions,
     primaryMuscleGroups: [] as MuscleGroup[],
     secondaryMuscleGroups: [] as MuscleGroup[],
     supportedGrips: [] as GripType[],
-    freeWeightSubTypes: [] as FreeWeightSubType[],
+    customGrip: '',
     instructions: '',
     tips: '',
-    difficultyLevel: 'intermediate' as 'beginner' | 'intermediate' | 'advanced'
+    difficultyLevel: 'intermediate' as 'beginner' | 'intermediate' | 'advanced',
+    equipment: [] as string[],
+    customTags: '',
+    model: ''
   });
+
+  const [selectedCategory, setSelectedCategory] = useState<keyof typeof equipmentOptions>('FreeWeight');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +53,49 @@ export function CustomExerciseCreator({ onExerciseCreated, onCancel }: CustomExe
     'wide', 'narrow', 'close', 'standard'
   ];
 
-  const freeWeightSubTypes: FreeWeightSubType[] = ['dumbbells', 'barbell'];
+  
+
+  const equipmentOptions = {
+    Bodyweight: [
+      { id: 'bodyweight', name: 'Bodyweight Only' }
+    ],
+    FreeWeight: [
+      { id: 'dumbbell', name: 'Dumbbell' },
+      { id: 'barbell', name: 'Barbell' },
+      { id: 'kettlebell', name: 'Kettlebell' },
+      { id: 'weight_plate', name: 'Weight Plates' }
+    ],
+    Station: [
+      { id: 'bench', name: 'Flat Bench' },
+      { id: 'incline_bench', name: 'Incline Bench' },
+      { id: 'decline_bench', name: 'Decline Bench' },
+      { id: 'squat_rack', name: 'Squat Rack' },
+      { id: 'pull_up_bar', name: 'Pull-up Bar' },
+      { id: 'dip_bars', name: 'Dip Bars' }
+    ],
+    Machine: [
+      { id: 'machine_chest_press', name: 'Chest Press Machine' },
+      { id: 'machine_leg_press', name: 'Leg Press Machine' },
+      { id: 'machine_leg_extension', name: 'Leg Extension Machine' },
+      { id: 'machine_leg_curl', name: 'Leg Curl Machine' },
+      { id: 'machine_lat_pulldown', name: 'Lat Pulldown Machine' },
+      { id: 'machine_seated_row', name: 'Seated Row Machine' },
+      { id: 'machine_shoulder_press', name: 'Shoulder Press Machine' },
+      { id: 'machine_cable_cross', name: 'Cable Crossover Machine' }
+    ],
+    Cable: [
+      { id: 'cable_rope', name: 'Cable Rope Attachment' },
+      { id: 'cable_bar', name: 'Cable Bar Attachment' },
+      { id: 'cable_handle', name: 'Cable Handle Attachment' },
+      { id: 'cable_v_bar', name: 'Cable V-Bar Attachment' },
+      { id: 'cable_single_handle', name: 'Cable Single Handle' }
+    ],
+    Smith: [
+      { id: 'smith_machine', name: 'Smith Machine' }
+    ]
+  };
+
+  
 
   const handleSubmit = async () => {
     if (!user?.id) {
@@ -59,6 +113,11 @@ export function CustomExerciseCreator({ onExerciseCreated, onCancel }: CustomExe
       return;
     }
 
+    if (formData.equipment.length === 0) {
+      setError('At least one equipment type is required');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -70,10 +129,13 @@ export function CustomExerciseCreator({ onExerciseCreated, onCancel }: CustomExe
         primaryMuscleGroups: formData.primaryMuscleGroups,
         secondaryMuscleGroups: formData.secondaryMuscleGroups,
         supportedGrips: formData.supportedGrips,
-        freeWeightSubTypes: formData.category === 'free_weight' ? formData.freeWeightSubTypes : undefined,
+        customGrip: formData.customGrip.trim() || undefined,
         instructions: formData.instructions.trim() || undefined,
         tips: formData.tips.trim() || undefined,
-        difficultyLevel: formData.difficultyLevel
+        difficultyLevel: formData.difficultyLevel,
+        equipment: formData.equipment,
+        customTags: formData.customTags.trim() || undefined,
+        model: formData.model.trim() || undefined
       };
 
       const result = await exerciseService.createCustomExercise(exerciseData, user.id);
@@ -191,30 +253,103 @@ export function CustomExerciseCreator({ onExerciseCreated, onCancel }: CustomExe
             </Select>
           </YStack>
 
-          {formData.category === 'free_weight' && (
-            <YStack space={spacing.small}>
-              <Text fontSize={fontSize.medium} fontWeight="500" color={colors.text}>
-                Free Weight Sub-Types
+          <YStack space={spacing.small}>
+            <Text fontSize={fontSize.medium} fontWeight="500" color={colors.text}>
+              Equipment Category *
+            </Text>
+            <XStack flexWrap="wrap" gap={spacing.small}>
+              {Object.keys(equipmentOptions).map((category) => (
+                <Button
+                  key={category}
+                  size="$2"
+                  theme={selectedCategory === category ? 'blue' : undefined}
+                  variant={selectedCategory === category ? undefined : 'outlined'}
+                  onPress={() => {
+                    setSelectedCategory(category as keyof typeof equipmentOptions);
+                    // Clear equipment selection when category changes
+                    updateFormData('equipment', []);
+                  }}
+                >
+                  {category.replace('_', ' ')}
+                </Button>
+              ))}
+            </XStack>
+          </YStack>
+
+          <YStack space={spacing.small}>
+            <Text fontSize={fontSize.medium} fontWeight="500" color={colors.text}>
+              Equipment *
+            </Text>
+            <XStack flexWrap="wrap" gap={spacing.small}>
+              {equipmentOptions[selectedCategory].map((option) => (
+                <Button
+                  key={option.id}
+                  size="$2"
+                  theme={formData.equipment.includes(option.id) ? 'blue' : undefined}
+                  variant={formData.equipment.includes(option.id) ? undefined : 'outlined'}
+                  onPress={() => toggleArrayItem(
+                    formData.equipment, 
+                    option.id, 
+                    (newArray) => updateFormData('equipment', newArray)
+                  )}
+                >
+                  {option.name}
+                </Button>
+              ))}
+            </XStack>
+            {formData.equipment.length === 0 && (
+              <Text fontSize="$1" color={colors.textSecondary} marginTop="$1">
+                Select at least one equipment option
               </Text>
-              <XStack flexWrap="wrap" gap={spacing.small}>
-                {freeWeightSubTypes.map((subType) => (
-                  <Button
-                    key={subType}
-                    size="$2"
-                    theme={formData.freeWeightSubTypes.includes(subType) ? 'blue' : undefined}
-                    variant={formData.freeWeightSubTypes.includes(subType) ? undefined : 'outlined'}
-                    onPress={() => toggleArrayItem(
-                      formData.freeWeightSubTypes, 
-                      subType, 
-                      (newArray) => updateFormData('freeWeightSubTypes', newArray)
-                    )}
-                  >
-                    {subType.charAt(0).toUpperCase() + subType.slice(1)}
-                  </Button>
-                ))}
-              </XStack>
-            </YStack>
-          )}
+            )}
+          </YStack>
+
+          <YStack space={spacing.small}>
+            <Text fontSize={fontSize.medium} fontWeight="500" color={colors.text}>
+              Custom Tags
+            </Text>
+            <Input
+              value={formData.customTags}
+              onChangeText={(text) => updateFormData('customTags', text)}
+              placeholder="e.g., ecc, wide, chain, pause, bands"
+              backgroundColor={colors.inputBackground}
+              borderColor={colors.border}
+              color={colors.text}
+            />
+            <Text fontSize={fontSize.small} color={colors.textSecondary}>
+              Enter comma-separated tags for variations and techniques
+            </Text>
+          </YStack>
+
+          <YStack space={spacing.small}>
+            <Text fontSize={fontSize.medium} fontWeight="500" color={colors.text}>
+              Custom Grip
+            </Text>
+            <Input
+              value={formData.customGrip}
+              onChangeText={(text) => updateFormData('customGrip', text)}
+              placeholder="e.g., wide grip, neutral grip, mixed grip"
+              backgroundColor={colors.inputBackground}
+              borderColor={colors.border}
+              color={colors.text}
+            />
+          </YStack>
+
+          <YStack space={spacing.small}>
+            <Text fontSize={fontSize.medium} fontWeight="500" color={colors.text}>
+              Model (Optional)
+            </Text>
+            <Input
+              value={formData.model}
+              onChangeText={(text) => updateFormData('model', text)}
+              placeholder="e.g., Signature Series, Pro Plus"
+              backgroundColor={colors.inputBackground}
+              borderColor={colors.border}
+              color={colors.text}
+            />
+          </YStack>
+
+          
 
           <YStack space={spacing.small}>
             <Text fontSize={fontSize.medium} fontWeight="500" color={colors.text}>

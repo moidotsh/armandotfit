@@ -137,6 +137,14 @@ export default function HomeScreen() {
       badge: "New",
       onPress: () => navigateToSection('progress')
     },
+    // Temporarily disabled Training Journey feature
+    // {
+    //   icon: <Activity size={isNarrow ? 25 : 30} color={colors.warning} />,
+    //   title: "Training Journey",
+    //   subtitle: "Explore your fitness world",
+    //   badge: "🎮",
+    //   onPress: () => router.push('/training-journey')
+    // },
     {
       icon: <Calendar size={isNarrow ? 25 : 30} color={colors.info} />,
       title: "Workout Programs",
