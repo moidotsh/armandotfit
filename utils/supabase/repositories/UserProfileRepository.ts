@@ -30,6 +30,7 @@ interface ProfileRow {
   display_name: string | null;
   preferred_split: PreferredSplit;
   weekly_goal: WeeklyGoal;
+  rest_days: number[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -179,6 +180,7 @@ function toProfile(row: ProfileRow): Profile {
     displayName: row.display_name,
     preferredSplit: row.preferred_split,
     weeklyGoal: row.weekly_goal,
+    restDays: row.rest_days ?? [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -191,6 +193,7 @@ function toSnakeUpdate(dto: ProfileUpdateDTO): Record<string, unknown> {
   if (dto.displayName !== undefined) out.display_name = dto.displayName;
   if (dto.preferredSplit !== undefined) out.preferred_split = dto.preferredSplit;
   if (dto.weeklyGoal !== undefined) out.weekly_goal = dto.weeklyGoal;
+  if (dto.restDays !== undefined) out.rest_days = dto.restDays;
   return out;
 }
 

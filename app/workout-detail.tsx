@@ -69,12 +69,12 @@ export default function WorkoutDetailScreen() {
   // Pre-hydrate the draft from the day's suggested exercises once per
   // session. Idempotent via hydratedRef + the empty-draft check, so a
   // user who discards all exercises and re-adds manually won't get
-  // re-seeded. The PM block is intentionally omitted here — twoADay
-  // AM/PM picker is a future improvement; for now AM is the default.
+  // re-seeded. The session mode (AM/PM) is threaded through from the
+  // draft so twoADay sessions hydrate the correct exercise list.
   const suggestedQuery = useSuggestedExercises(
     draft?.splitType ?? 'oneADay',
     draft?.day ?? 1,
-    'am',
+    draft?.sessionMode ?? 'am',
     Boolean(draft),
   );
   const hydratedRef = useRef(false);
@@ -239,11 +239,14 @@ export default function WorkoutDetailScreen() {
 
   // Header eyebrow surfaces the day title when available (e.g. "Full Body
   // Day 1"); falls back to the split-type + day number for rest days / v1
-  // splits without title metadata.
+  // splits without title metadata. For twoADay, suffix the session mode
+  // so AM vs PM is visible at a glance.
   const dayTitle = getDayTitle(draft.splitType, draft.day);
+  const sessionSuffix =
+    draft.splitType === 'twoADay' ? ` · ${draft.sessionMode.toUpperCase()}` : '';
   const eyebrow = dayTitle
-    ? dayTitle
-    : `${draft.splitType === 'oneADay' ? '1-a-day' : 'AM/PM'} · day ${draft.day}`;
+    ? `${dayTitle}${sessionSuffix}`
+    : `${draft.splitType === 'oneADay' ? '1-a-day' : 'AM/PM'} · day ${draft.day}${sessionSuffix}`;
 
   return (
     <SafeAreaView

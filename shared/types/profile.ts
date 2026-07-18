@@ -21,6 +21,10 @@ export type WeeklyGoal = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 /**
  * Profile row, repository-normalized shape. Field names are camelCase;
  * UserProfileRepository maps to/from the snake_case DB columns.
+ *
+ * restDays is an array of JS getDay integers (Sun=0..Sat=6) the user has
+ * marked as rest. Defaults to [] — the settings screen is where the user
+ * picks these. UI-only; the cycle counter doesn't read it.
  */
 export interface Profile extends Timestamps {
   id: ID;
@@ -30,6 +34,7 @@ export interface Profile extends Timestamps {
   displayName: string | null;
   preferredSplit: PreferredSplit;
   weeklyGoal: WeeklyGoal;
+  restDays: number[];
 }
 
 /**
@@ -43,4 +48,5 @@ export interface ProfileUpdateDTO {
   displayName?: string | null;
   preferredSplit?: PreferredSplit;
   weeklyGoal?: WeeklyGoal;
+  restDays?: number[];
 }

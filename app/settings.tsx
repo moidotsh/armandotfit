@@ -4,7 +4,7 @@
 // settings (e.g. notification preferences, training config) land in
 // consumer-extended surfaces.
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Sun, Moon, Monitor, Check } from '@tamagui/lucide-icons-2';
@@ -16,9 +16,13 @@ import {
   MobileSettingsRow,
   MobileActionFooter,
   MobilePrimaryButton,
+  MobileSelectionList,
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase } from '../navigation';
+import { useProfile, useUpdateProfile } from '../hooks';
+import { DAY_OF_WEEK_LABELS } from '../constants';
+import { logger } from '../utils/logger';
 
 const PREFERENCE_LABELS: Record<ColorSchemePreference, string> = {
   light: 'Light',
@@ -44,6 +48,31 @@ export default function SettingsScreen() {
   const { session, signOut } = useAuth();
   const { preference, setPreference, colorScheme, colors } = useAppTheme();
   const accent = colors.brand;
+
+  // Rest-days multi-select state. Reads from the profile cache; mutates
+  // via the patch-profile mutation, which optimistically updates the
+  // cache so the toggle feels instant.
+  const profileQuery = useProfile();
+  const updateProfile = useUpdateProfile();
+  const restDays = profileQuery.data?.restDays ?? [];
+
+  const handleToggleRestDay = useCallback(
+    (id: string) => {
+      const dow = Number(id);
+      if (!Number.isInteger(dow) || dow < 0 || dow > 6) return;
+      const next = restDays.includes(dow)
+        ? restDays.filter((d) => d !== dow)
+        : [...restDays, dow].sort((a, b) => a - b);
+      updateProfile.mutate({ restDays: next }, {
+        onError: (err) => {
+          logger.warn('mutations', 'rest-day update failed:', err.message);
+        },
+      });
+    },
+    [restDays, updateProfile],
+  );
+
+  const restDayIds = restDays.map(String);
 
   return (
     <SafeAreaView
@@ -107,6 +136,23 @@ export default function SettingsScreen() {
           })}
         </MobileSurface>
 
+        <MobileSectionEyebrow>Training</MobileSectionEyebrow>
+        <MobileSurface padding={4}>
+          <MobileSelectionList
+            multiSelect
+            selectedIds={restDayIds}
+            onSelect={handleToggleRestDay}
+            options={DAY_OF_WEEK_LABELS.map((d) => ({
+              id: String(d.id),
+              label: d.label,
+            }))}
+          />
+        </MobileSurface>
+        <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
+          Rest days are visually deactivated in the workout-day picker. The
+          cycle counter ignores them — it only advances when you log a workout.
+        </Text>
+
         <MobileSectionEyebrow>Reference</MobileSectionEyebrow>
         <MobileSurface padding={0}>
           <MobileSettingsRow
@@ -160,5 +206,11 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  sectionHint: {
+    fontSize: 11,
+    lineHeight: 14,
+    marginTop: 8,
+    paddingHorizontal: 4,
   },
 });

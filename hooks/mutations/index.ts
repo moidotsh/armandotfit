@@ -11,3 +11,4 @@ export {
   useUpdateSet,
   useDeleteSet,
 } from './useUpdateSession';
+export { useUpdateProfile } from './useUpdateProfile';

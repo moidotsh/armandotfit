@@ -22,3 +22,4 @@ export {
   useStreaks,
   useAnalyticsHistory,
 } from './useProgression';
+export { useProfile } from './useProfile';

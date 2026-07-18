@@ -52,7 +52,20 @@ export { BORDER_RADIUS, INPUT, CARD, Z_INDEX } from './styles';
 export {
   WORKOUT_SPLITS,
   WORKOUT_SPLIT_LIST,
-  DAY_OF_WEEK_LIST,
+  SESSION_MODE_LIST,
+  MIN_SPLIT_DAY,
+  MAX_SPLIT_DAY,
+  DAY_OF_WEEK_LABELS,
+  getNextSplitDay,
   parseDayId,
+  isRestDay,
+  getUpcomingDays,
+  getUpcomingWorkoutSlots,
+  nextWorkoutDay,
 } from './workoutSplits';
-export type { WorkoutSplitInfo, DayOfWeekInfo } from './workoutSplits';
+export type {
+  WorkoutSplitInfo,
+  SessionMode,
+  UpcomingDay,
+  UpcomingWorkoutSlot,
+} from './workoutSplits';

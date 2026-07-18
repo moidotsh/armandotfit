@@ -38,6 +38,7 @@
 // =============================================================================
 
 import { create } from 'zustand';
+import type { SessionMode } from '../constants';
 import type {
   ExerciseSetInputDTO,
   ID,
@@ -78,6 +79,14 @@ export interface DraftSession {
   date: string;
   splitType: PreferredSplit;
   day: number;
+  /**
+   * AM vs PM session, only meaningful for twoADay splits (oneADay is
+   * implicitly AM). Drives the suggested-exercises lookup — Day N's AM
+   * and PM slugs map to different workouts. Not persisted to a column:
+   * AM and PM are separate workout_session rows distinguished by their
+   * exercises; the mode is planning-time context only.
+   */
+  sessionMode: SessionMode;
   duration: number;
   notes: string | null;
   exercises: DraftExercise[];
@@ -107,6 +116,7 @@ interface WorkoutState {
     date?: string;
     splitType: PreferredSplit;
     day: number;
+    sessionMode?: SessionMode;
   }) => void;
   addExerciseToDraft: (exercise: {
     exerciseId: ID;
@@ -173,11 +183,12 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
   sessionStartedAt: null,
   isSessionActive: false,
 
-  startSession: ({ date, splitType, day }) => {
+  startSession: ({ date, splitType, day, sessionMode = 'am' }) => {
     const draft: DraftSession = {
       date: date ?? new Date().toISOString(),
       splitType,
       day,
+      sessionMode,
       duration: 0,
       notes: null,
       exercises: [],
