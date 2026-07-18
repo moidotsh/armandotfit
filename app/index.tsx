@@ -232,6 +232,7 @@ export default function HomeScreen() {
         activePathname={activePathname}
         atmosphere="training"
         brandPersistence={APP_LAYOUT.navDrawerBrandPersistence}
+        anchor={APP_LAYOUT.navDrawerAnchor}
         header={
           APP_LAYOUT.navDrawerBrandPersistence === 'slideout' ? (
             <View style={styles.drawerHeader}>

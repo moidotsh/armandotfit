@@ -35,6 +35,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
   type ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -58,6 +59,8 @@ export interface MobileNavDrawerItem {
 }
 
 export type NavDrawerBrandPersistence = 'cutout' | 'slideout';
+
+export type NavDrawerAnchor = 'window' | 'column';
 
 export interface MobileNavDrawerProps {
   /** Whether the drawer is open (controlled). */
@@ -94,6 +97,23 @@ export interface MobileNavDrawerProps {
    * it diverges.
    */
   cutoutHeight?: number;
+  /**
+   * Where the panel slides in from on wide viewports.
+   * - 'window' (default): panel's resting position is x=0 of the
+   *   window. On wide desktop the drawer appears detached from the
+   *   centered 420pt column.
+   * - 'column': panel's resting position is the left edge of the
+   *   centered 420pt column (computed from useWindowDimensions), so
+   *   the drawer stays attached to centered content on any viewport.
+   *   On narrow viewports the two modes converge.
+   */
+  anchor?: NavDrawerAnchor;
+  /**
+   * Override the centered column width the 'column' anchor computes
+   * against. Defaults to 420 (matches the body maxWidth on every
+   * MobilePremium screen).
+   */
+  columnWidth?: number;
   /** Test ID. */
   testID?: string;
 }
@@ -115,12 +135,22 @@ export function MobileNavDrawer({
   atmosphere = 'analytics',
   brandPersistence = 'slideout',
   cutoutHeight,
+  anchor = 'window',
+  columnWidth = 420,
   testID,
 }: MobileNavDrawerProps) {
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
   const reduced = useReducedMotion();
   const pressedStyle = usePressedStyle();
+  const { width: windowWidth } = useWindowDimensions();
+
+  // In 'column' mode the panel's resting (open) position is the left
+  // edge of the centered column, so the drawer stays attached to the
+  // 420pt content on any viewport. On windows narrower than the column
+  // the offset collapses to 0 and the two anchor modes converge.
+  const columnLeft = Math.max(0, (windowWidth - columnWidth) / 2);
+  const anchorOffset = anchor === 'column' ? columnLeft : 0;
 
   // In cutout mode the panel + scrim start below the home header so the
   // brand shows through. Default height matches MobileHomeHeader's brand
@@ -226,7 +256,10 @@ export function MobileNavDrawer({
             width: DRAWER_WIDTH,
             backgroundColor: isCutout ? 'transparent' : colors.backgroundDeep,
             borderRightColor: colors.mobilePremium.hairlineBorder,
-            transform: [{ translateX: animatedIn ? 0 : -DRAWER_WIDTH }],
+            // Closed: translateX(-DRAWER_WIDTH) → panel off-screen left.
+            // Open: translateX(anchorOffset) → panel at the column's
+            // left edge in 'column' mode, or x=0 in 'window' mode.
+            transform: [{ translateX: animatedIn ? anchorOffset : -DRAWER_WIDTH }],
             ...(isWeb
               ? {
                   transition: `transform ${slideDuration}ms ${slideEasing}`,

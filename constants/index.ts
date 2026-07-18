@@ -48,7 +48,7 @@ export { BORDER_RADIUS, INPUT, CARD, Z_INDEX } from './styles';
 
 // App-level layout config (cross-cutting switches for screen composition).
 export { APP_LAYOUT } from './layout';
-export type { NavDrawerBrandPersistence } from './layout';
+export type { NavDrawerBrandPersistence, NavDrawerAnchor } from './layout';
 
 // Workout split metadata (decoupled from theme for SOC). The day→exercise
 // assignments live in shared/exercises/splits.ts because they're typed
