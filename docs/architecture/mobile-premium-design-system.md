@@ -214,6 +214,7 @@ via the path alias, or `../MobilePremium` relatively).
 | Component | Purpose |
 |---|---|
 | `MobileAlert` | Inline alert with a 24px icon circle. `variant: 'success' \| 'warning' \| 'error' \| 'info'`. |
+| `SkeletonBlock` | Loading placeholder. Reads `colors.cardAlt` and pulses opacity via `useShimmer` (1.0 → 0.5 → 1.0, 1200ms; collapses to flat under `prefers-reduced-motion: reduce`). Uses `Animated.View`, not `ActivityIndicator`, so the C4 audit doesn't apply by construction. Consumer composes per-screen skeletons (e.g. armandotfit's `DashboardSkeleton`, `WorkoutListSkeleton`) from this primitive. |
 
 ### Forms
 
@@ -396,6 +397,19 @@ new. Under reduced motion: fade-only.
 `useFocusRing()` is the input-focus counterpart. Apply to `MobileInput`
 — it already wires it internally; reach for the hook directly only if
 you're building a new input primitive.
+
+### Placeholder — `useShimmer`
+
+```tsx
+const opacity = useShimmer();
+return <Animated.View style={{ opacity, backgroundColor: colors.cardAlt }} />;
+```
+
+Looping opacity pulse (1.0 → 0.5 → 1.0 over 1200ms, `useNativeDriver`).
+Consumed by `SkeletonBlock`; useful directly when a consumer composes a
+custom placeholder shape the primitive doesn't cover. Under reduced
+motion: holds at opacity=1 (flat placeholder, no pulse). Standalone hook
+(not coupled to a feature module).
 
 ### What's missing on purpose
 
