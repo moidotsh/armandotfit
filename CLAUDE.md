@@ -16,6 +16,7 @@ Load-bearing rules that aren't obvious from the code:
 6. **Audit scripts are canonical.** If this file and `scripts/audit-*.ts` disagree, the scripts win. This file is a cheatsheet; the scripts are the load-bearing enforcement.
 7. **The 490px height-budget test** (from qep-tracker's mobile design system) carries over. Any new MobilePremium screen must fit at 490px viewport height (iPhone SE compact) without scrolling for the primary action. See `docs/architecture/mobile-premium-design-system.md`.
 8. **`archive-v1/` holds the pre-port tree.** The original armandotfit implementation (68 commits, v1 fitness app) is preserved under `archive-v1/` as a browsable reference during the port. It is deleted in a-Phase 7 once domain parity is reached. Until then, treat it as read-only reference material — port fitness logic out of it, never modify it in place.
+9. **Supabase project: `mfeyywnwbjejzzbqzmop`.** Created 2026-07-18 for the v2 port (separate from qepler `stykxxzhuakniqcvjsev` and qep-tracker `zkqnenhlrunyvhctsxbv`). Migrations live in `supabase/migrations/`. The squashed baseline (`00000000000000_initial_schema.sql`) is the canonical schema reference — do not read pre-squash archive-v1/database/*.sql files in isolation, they have divergent/overlapping table definitions that the baseline resolves.
 
 ## Pre-commit checks (read before committing)
 

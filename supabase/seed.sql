@@ -1,0 +1,16 @@
+-- supabase/seed.sql
+--
+-- Intentionally empty. Mirrors qep-tracker's 2026-06-21 squash discipline:
+-- schema lives in the baseline migration, seed data lives elsewhere.
+--
+-- The reference tables that need data to be useful (muscle_categories,
+-- muscles, equipment_types) are seeded via one of:
+--   1. A separate seed-data migration (e.g. 00000000000001_reference_data.sql)
+--      that the consumer authors when the seed set stabilizes.
+--   2. App-level first-run initialization (the app detects empty reference
+--      tables on first authenticated session and inserts the seed rows
+--      via the service role).
+--   3. Manual insert via the Supabase dashboard during project setup.
+--
+-- Do NOT put INSERT statements here — Supabase runs seed.sql on every
+-- `supabase db reset`, which would clobber consumer-managed reference data.
