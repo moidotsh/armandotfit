@@ -3,9 +3,19 @@
 // needs: streak, weekly goal, quick actions, recent workouts. Replaces
 // vellum's placeholder home.
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { usePathname } from 'expo-router';
+import {
+  Home,
+  PlusCircle,
+  Dumbbell,
+  TrendingUp,
+  BarChart2,
+  BookOpen,
+  Settings,
+} from '@tamagui/lucide-icons-2';
 import {
   MobileAtmosphere,
   MobileSurface,
@@ -13,9 +23,11 @@ import {
   MobilePrimaryButton,
   MobileActionFooter,
   MobileSectionEyebrow,
+  MobileNavDrawer,
+  type MobileNavDrawerItem,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { WorkoutSessionItem } from '../components/composed';
+import { HamburgerButton, WorkoutSessionItem } from '../components/composed';
 import { useAuth, useAppTheme } from '../context';
 import {
   navigateToSettings,
@@ -24,6 +36,8 @@ import {
   navigateToProgression,
   navigateToAnalytics,
   navigateToSplitSelection,
+  navigateToHome,
+  navigateToWorkoutPrograms,
 } from '../navigation';
 import {
   useDashboardSummary,
@@ -35,10 +49,57 @@ export default function HomeScreen() {
   const { colors } = useAppTheme();
   const summaryQuery = useDashboardSummary();
   const recentQuery = useRecentWorkouts(5);
+  const activePathname = usePathname();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const summary = summaryQuery.data;
   const streak = summary?.streak;
   const recent = recentQuery.data ?? [];
+
+  const navItems: MobileNavDrawerItem[] = [
+    {
+      id: '/',
+      label: 'Home',
+      icon: <Home size={18} color={colors.text} />,
+      onPress: navigateToHome,
+    },
+    {
+      id: '/split-selection',
+      label: 'Start workout',
+      icon: <PlusCircle size={18} color={colors.text} />,
+      onPress: navigateToSplitSelection,
+    },
+    {
+      id: '/exercise-database',
+      label: 'Exercises',
+      icon: <Dumbbell size={18} color={colors.text} />,
+      onPress: navigateToExerciseDatabase,
+    },
+    {
+      id: '/progression',
+      label: 'Progression',
+      icon: <TrendingUp size={18} color={colors.text} />,
+      onPress: navigateToProgression,
+    },
+    {
+      id: '/analytics',
+      label: 'Analytics',
+      icon: <BarChart2 size={18} color={colors.text} />,
+      onPress: navigateToAnalytics,
+    },
+    {
+      id: '/workout-programs',
+      label: 'Programs',
+      icon: <BookOpen size={18} color={colors.text} />,
+      onPress: navigateToWorkoutPrograms,
+    },
+    {
+      id: '/settings',
+      label: 'Settings',
+      icon: <Settings size={18} color={colors.text} />,
+      onPress: navigateToSettings,
+    },
+  ];
 
   return (
     <SafeAreaView
@@ -49,6 +110,9 @@ export default function HomeScreen() {
       <MobileHeader
         title="armandotfit"
         eyebrow={session?.email ? `Welcome back, ${session.email.split('@')[0]}` : 'Welcome'}
+        leftAction={
+          <HamburgerButton isOpen={drawerOpen} onPress={() => setDrawerOpen(true)} />
+        }
       />
       <ScrollView
         style={styles.body}
@@ -163,6 +227,13 @@ export default function HomeScreen() {
           Sign out
         </MobilePrimaryButton>
       </MobileActionFooter>
+      <MobileNavDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        items={navItems}
+        activePathname={activePathname}
+        atmosphere="training"
+      />
     </SafeAreaView>
   );
 }

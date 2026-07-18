@@ -1,0 +1,352 @@
+// components/MobilePremium/MobileNavDrawer.tsx
+// Left-side hamburger drawer for mobile navigation. The shell-level
+// mechanism (slide / scrim / items / active-highlight / badge) — consumers
+// pass their own items list, plus optional header (brand slot) and footer
+// (sign-out slot). Domain branding lives in those slots; this primitive
+// carries none.
+//
+// Premium signals:
+//   • Slides in from the left with an iOS-sheet curve
+//     (cubic-bezier(0.32, 0.72, 0, 1)). The scrim behind crossfades.
+//   • Drawer body uses MobileAtmosphere so consumers pick the palette.
+//   • Active row gets a 3px brand strip on the left edge + brand-tinted
+//     background + bolder label. Inactive rows render the icon at 55%
+//     opacity so the active item pops without a color shift.
+//   • prefers-reduced-motion collapses the slide to instant and the
+//     scrim to a short fade — the drawer still works, just without motion.
+//   • Tapping the scrim or any item calls onClose() after the press
+//     handler runs. Drawer state is fully controlled by the consumer.
+//
+// Cutout: none. The drawer covers the full screen height including the
+// top safe area. The brand slot (the `header` prop) renders inside the
+// drawer at the top, padded by the safe-area inset.
+
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type ViewStyle,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppTheme } from '../../context';
+import { useReducedMotion } from '../../hooks';
+import { isWeb } from '../../utils';
+import { usePressedStyle } from '../premium/shared';
+import { MobileAtmosphere, type MobileAtmosphereSurface } from './MobileAtmosphere';
+
+export interface MobileNavDrawerItem {
+  /** Stable id; typically the route pathname (used for active match). */
+  id: string;
+  /** Display label. */
+  label: string;
+  /** Optional leading icon. */
+  icon?: React.ReactNode;
+  /** Optional count badge. Hidden when 0 / undefined. */
+  badge?: number;
+  /** Tap handler. Drawer closes after this fires. */
+  onPress: () => void;
+}
+
+export interface MobileNavDrawerProps {
+  /** Whether the drawer is open (controlled). */
+  open: boolean;
+  /** Close handler. Fires on scrim tap, item tap, or external dismiss. */
+  onClose: () => void;
+  /** Nav items. */
+  items: MobileNavDrawerItem[];
+  /** Pathname of the active route, used to highlight the matching item. */
+  activePathname?: string;
+  /** Optional element rendered at the top of the drawer (brand slot). */
+  header?: React.ReactNode;
+  /** Optional element rendered at the bottom (sign-out slot, etc.). */
+  footer?: React.ReactNode;
+  /** Atmosphere surface for the drawer body (default: 'primary'). */
+  atmosphere?: MobileAtmosphereSurface;
+  /** Test ID. */
+  testID?: string;
+}
+
+const DRAWER_WIDTH = 304;
+
+/**
+ * Mobile navigation drawer. Slides in from the left with a glass scrim.
+ * Shell-level mechanism only — branding, items, and footer are all
+ * consumer-supplied.
+ */
+export function MobileNavDrawer({
+  open,
+  onClose,
+  items,
+  activePathname,
+  header,
+  footer,
+  atmosphere = 'analytics',
+  testID,
+}: MobileNavDrawerProps) {
+  const { colors } = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const reduced = useReducedMotion();
+  const pressedStyle = usePressedStyle();
+
+  // Mount + animate state. The drawer renders in the tree while open OR
+  // while an exit animation is in flight; `shouldRender` gates the render
+  // and `animatedIn` drives the slide.
+  const [shouldRender, setShouldRender] = useState(false);
+  const [animatedIn, setAnimatedIn] = useState(false);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Motion timings. Reduced motion collapses the slide to instant and
+  // the scrim to a short fade. Unmount delay = max(slide, scrim) so the
+  // exit animation completes before the component leaves the tree.
+  const slideDuration = reduced ? 0 : 300;
+  const scrimDuration = reduced ? 150 : 250;
+  const unmountDelay = Math.max(slideDuration, scrimDuration);
+  // iOS sheet curve — fast start, smooth deceleration.
+  const slideEasing = 'cubic-bezier(0.32, 0.72, 0, 1)';
+
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true);
+      // Double-rAF so the initial state (translateX(-100%)) lands before
+      // the transition kicks in — otherwise the drawer pops in fully
+      // visible and slides out, which reads as a glitch.
+      const raf = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setAnimatedIn(true);
+        });
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+    setAnimatedIn(false);
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    closeTimeoutRef.current = setTimeout(() => {
+      setShouldRender(false);
+    }, unmountDelay);
+  }, [open, unmountDelay]);
+
+  // Clean up any pending unmount timer on tear-down.
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
+
+  if (!shouldRender) return null;
+
+  const isActive = (id: string) => {
+    if (id === '/') {
+      return activePathname === '/' || activePathname === '' || activePathname == null;
+    }
+    if (activePathname == null) return false;
+    // startsWith so nested routes (e.g. /workout-detail/123) highlight
+    // their parent item.
+    return activePathname === id || activePathname.startsWith(`${id}/`);
+  };
+
+  const accent = colors.brand;
+
+  return (
+    <View style={styles.overlay} testID={testID} pointerEvents="box-none">
+      {/* Glass scrim — taps dismiss the drawer. */}
+      <Pressable
+        onPress={onClose}
+        style={[
+          styles.scrim,
+          {
+            backgroundColor: `${colors.backgroundDeep}cc`,
+            opacity: animatedIn ? 1 : 0,
+            ...(isWeb
+              ? {
+                  transition: `opacity ${scrimDuration}ms ease`,
+                }
+              : null),
+          },
+        ]}
+      />
+
+      {/* Drawer panel — slides from left. */}
+      <Animated.View
+        style={[
+          styles.panel,
+          {
+            width: DRAWER_WIDTH,
+            backgroundColor: colors.backgroundDeep,
+            transform: [{ translateX: animatedIn ? 0 : -DRAWER_WIDTH }],
+            ...(isWeb
+              ? {
+                  transition: `transform ${slideDuration}ms ${slideEasing}`,
+                }
+              : null),
+          },
+        ]}
+      >
+        <MobileAtmosphere surface={atmosphere} />
+
+        {/* Glass tint over the atmosphere — softens the orbs so the rows read. */}
+        <View
+          style={[
+            styles.panelTint,
+            { backgroundColor: `${colors.backgroundDeep}99` },
+          ]}
+          pointerEvents="none"
+        />
+
+        <View style={styles.panelContent}>
+          {header ? (
+            <View style={[styles.header, { paddingTop: insets.top + 12 }]}>{header}</View>
+          ) : (
+            <View style={{ height: insets.top + 12 }} />
+          )}
+
+          <View style={styles.items}>
+            {items.map((item) => {
+              const active = isActive(item.id);
+              const showBadge = item.badge != null && item.badge > 0;
+              return (
+                <View key={item.id} style={styles.itemWrap}>
+                  {/* Left accent strip — visible only on the active item. */}
+                  <View
+                    style={[
+                      styles.activeStrip,
+                      { backgroundColor: accent, opacity: active ? 1 : 0 },
+                    ]}
+                    pointerEvents="none"
+                  />
+                  <Pressable
+                    onPress={() => {
+                      item.onPress();
+                      onClose();
+                    }}
+                    hitSlop={4}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    accessibilityLabel={item.label}
+                    style={({ pressed }) => [
+                      styles.item,
+                      { backgroundColor: active ? `${accent}1a` : 'transparent' },
+                      pressed ? pressedStyle : null,
+                    ]}
+                  >
+                    {item.icon ? (
+                      <View style={[styles.itemIcon, { opacity: active ? 1 : 0.55 }]}>
+                        {item.icon}
+                      </View>
+                    ) : null}
+                    <Text
+                      style={[
+                        styles.itemLabel,
+                        {
+                          color: active ? accent : colors.text,
+                          fontWeight: active ? '600' : '400',
+                          opacity: active ? 1 : 0.85,
+                        },
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                    {showBadge ? (
+                      <View
+                        style={[styles.badge, { backgroundColor: accent }]}
+                        pointerEvents="none"
+                      >
+                        <Text style={[styles.badgeText, { color: colors.textOnBrand }]}>
+                          {item.badge! > 99 ? '99+' : item.badge}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
+
+          {footer ? <View style={styles.footer}>{footer}</View> : null}
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 100,
+  },
+  scrim: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  panel: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    overflow: 'hidden',
+  },
+  panelTint: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  panelContent: {
+    flex: 1,
+    position: 'relative',
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  items: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 4,
+  },
+  itemWrap: {
+    position: 'relative',
+  },
+  activeStrip: {
+    position: 'absolute',
+    top: 9,
+    bottom: 9,
+    left: 0,
+    width: 3,
+    borderRadius: 2,
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    minHeight: 42,
+  },
+  itemIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 22,
+  },
+  itemLabel: {
+    flex: 1,
+    fontSize: 13,
+  },
+  badge: {
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 5,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  footer: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+});
+
+export default MobileNavDrawer;

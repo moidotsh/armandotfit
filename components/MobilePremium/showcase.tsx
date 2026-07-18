@@ -15,7 +15,7 @@
 import React, { useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Sun, Moon, Monitor, Mail, Lock, Eye, EyeOff, Settings, Bell, Info, ChevronRight } from '@tamagui/lucide-icons-2';
+import { Sun, Moon, Monitor, Mail, Lock, Eye, EyeOff, Settings, Bell, Info, ChevronRight, Home, Dumbbell, TrendingUp } from '@tamagui/lucide-icons-2';
 import { theme } from '../../constants';
 import { useAppTheme, useToast, type ColorSchemePreference } from '../../context';
 import {
@@ -46,6 +46,8 @@ import { MobileSelectionList } from './MobileSelectionList';
 import { MobileStepRail } from './MobileStepRail';
 import { MobileDialog } from './MobileDialog';
 import { MobileSelect } from './MobileSelect';
+import { MobileNavDrawer } from './MobileNavDrawer';
+import type { MobileNavDrawerItem } from './MobileNavDrawer';
 import { PALETTES, type AtmosphereSurface } from '../premium/shared';
 
 const SURFACES: AtmosphereSurface[] = [
@@ -303,6 +305,7 @@ function ContainerVariantDemo() {
 export function Showcase() {
   const { colors } = useAppTheme();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [stepperValue, setStepperValue] = useState(5);
   const [checked, setChecked] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>('option-a');
@@ -310,6 +313,34 @@ export function Showcase() {
   const [inputValue, setInputValue] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [selectValue, setSelectValue] = useState('monthly');
+
+  const drawerItems: MobileNavDrawerItem[] = [
+    {
+      id: '/',
+      label: 'Home',
+      icon: <Home size={18} color={colors.text} />,
+      onPress: () => {},
+    },
+    {
+      id: '/exercises',
+      label: 'Exercises',
+      icon: <Dumbbell size={18} color={colors.text} />,
+      onPress: () => {},
+    },
+    {
+      id: '/progress',
+      label: 'Progress',
+      icon: <TrendingUp size={18} color={colors.text} />,
+      badge: 3,
+      onPress: () => {},
+    },
+    {
+      id: '/settings',
+      label: 'Settings',
+      icon: <Settings size={18} color={colors.text} />,
+      onPress: () => {},
+    },
+  ];
 
   return (
     <SafeAreaView
@@ -579,6 +610,21 @@ export function Showcase() {
           <ContainerVariantDemo />
         </View>
 
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Nav Drawer (left-side hamburger)</MobileSectionEyebrow>
+          <MobileSurface>
+            <Text style={[styles.bodyText, { color: colors.text }]}>
+              MobileNavDrawer slides in from the left with a glass scrim. Active route is
+              highlighted with a 3px brand strip and tinted background. Tapping the scrim
+              or any item dismisses the drawer.
+            </Text>
+          </MobileSurface>
+          <View style={styles.spacer} />
+          <MobilePrimaryButton onPress={() => setDrawerOpen(true)}>
+            Open drawer demo
+          </MobilePrimaryButton>
+        </View>
+
         <MobileActionFooter
           primary={{
             onPress: () => setDialogOpen(true),
@@ -603,6 +649,24 @@ export function Showcase() {
           backdrop-tap-to-close everywhere.
         </Text>
       </MobileDialog>
+
+      <MobileNavDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        items={drawerItems}
+        activePathname="/exercises"
+        atmosphere="analytics"
+        header={
+          <View>
+            <Text style={[theme.typography.mobileEyebrow, { color: colors.textMuted }]}>
+              Showcase
+            </Text>
+            <Text style={[theme.typography.mobileTitle, { color: colors.text, marginTop: 2 }]}>
+              MobileNavDrawer
+            </Text>
+          </View>
+        }
+      />
     </SafeAreaView>
   );
 }

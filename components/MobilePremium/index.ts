@@ -51,6 +51,12 @@ export type { MobileStepRailProps } from './MobileStepRail';
 export { MobileDialog } from './MobileDialog';
 export type { MobileDialogProps } from './MobileDialog';
 
+export { MobileNavDrawer } from './MobileNavDrawer';
+export type {
+  MobileNavDrawerProps,
+  MobileNavDrawerItem,
+} from './MobileNavDrawer';
+
 // Motion re-export (alias of components/premium/shared).
 export * from './MobileMotion';
 
