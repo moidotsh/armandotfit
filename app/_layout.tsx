@@ -89,7 +89,7 @@ function RootShell() {
     ensureMeta('apple-mobile-web-app-capable', 'yes');
     ensureMeta('mobile-web-app-capable', 'yes');
     ensureMeta('apple-mobile-web-app-status-bar-style', colorScheme === 'dark' ? 'black' : 'default');
-    ensureMeta('apple-mobile-web-app-title', 'Vellum');
+    ensureMeta('apple-mobile-web-app-title', 'armandotfit');
     ensureMeta('theme-color', colors.background, '(min-width: 701px)');
     ensureMeta('theme-color', colors.brand, '(max-width: 700px)');
 

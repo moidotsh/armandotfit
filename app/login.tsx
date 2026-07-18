@@ -1,9 +1,7 @@
 // app/login.tsx
 // Email + password login. Wires AuthService.signIn via useAuth.
-// On success, the auth state change fires inside AuthProvider and
-// this screen unmounts (the AuthGuard in app/_layout.tsx-equivalent
-// flow routes to home — for vellum, that's a simple useEffect in
-// each auth screen).
+// On success, the central AuthGuard in app/_layout.tsx routes to
+// home — no per-screen redirect effect needed.
 
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -84,7 +82,7 @@ export default function LoginScreen() {
 
         <View style={{ height: 16 }} />
         <Text style={[styles.help, { color: colors.textSecondary }]}>
-          New to vellum?{' '}
+          New to armandotfit?{' '}
           <Text
             accessibilityRole="link"
             onPress={navigateToRegister}

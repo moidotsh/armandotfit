@@ -1,5 +1,5 @@
 // app/register.tsx
-// Email + password registration. Vellum's default auth flow — Supabase
+// Email + password registration. Default auth flow — Supabase
 // sends a confirmation email; until the user clicks the link, no
 // session exists. The AuthProvider fires `session === null` and the
 // user stays on this screen with a "check your inbox" notice.

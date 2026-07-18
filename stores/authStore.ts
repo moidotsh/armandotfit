@@ -1,7 +1,7 @@
 // stores/authStore.ts
 // Cross-cutting auth state. Slim by design — domain auth concerns
 // (e.g. PIN re-auth, encryption-key status) live in consumer-added
-// stores. Vellum's authStore only carries the user identity + status
+// stores. This authStore only carries the user identity + status
 // that every consumer needs.
 
 // =============================================================================
@@ -94,7 +94,7 @@ export const useAuthStore = create<AuthState>()(
       reset: () => set(initialState),
     }),
     {
-      name: 'vellum-auth',
+      name: 'armandotfit-auth',
       storage: createJSONStorage(() => zustandStorage),
       partialize: (state) => ({
         userId: state.userId,
