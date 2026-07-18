@@ -15,8 +15,8 @@ Load-bearing rules that aren't obvious from the code:
 5. **Brand color is armandotfit orange (`#FF9500`).** Overridden from vellum's default indigo in `constants/theme.ts` → `theme.colors.{light,dark}.{brand, brandHover, brandPress, brandMuted, brandSoft, buttonBackground, buttonBackgroundDisabled}` + the `glass.inputFocusBackground` key in each mode. Icons in `assets/` and `public/icons/` are armandotfit-branded.
 6. **Audit scripts are canonical.** If this file and `scripts/audit-*.ts` disagree, the scripts win. This file is a cheatsheet; the scripts are the load-bearing enforcement.
 7. **The 490px height-budget test** (from qep-tracker's mobile design system) carries over. Any new MobilePremium screen must fit at 490px viewport height (iPhone SE compact) without scrolling for the primary action. See `docs/architecture/mobile-premium-design-system.md`.
-8. **`archive-v1/` holds the pre-port tree.** The original armandotfit implementation (68 commits, v1 fitness app) is preserved under `archive-v1/` as a browsable reference during the port. It is deleted in a-Phase 7 once domain parity is reached. Until then, treat it as read-only reference material — port fitness logic out of it, never modify it in place.
-9. **Supabase project: `mfeyywnwbjejzzbqzmop`.** Created 2026-07-18 for the v2 port (separate from qepler `stykxxzhuakniqcvjsev` and qep-tracker `zkqnenhlrunyvhctsxbv`). Migrations live in `supabase/migrations/`. The squashed baseline (`00000000000000_initial_schema.sql`) is the canonical schema reference — do not read pre-squash archive-v1/database/*.sql files in isolation, they have divergent/overlapping table definitions that the baseline resolves.
+8. **Supabase project: `mfeyywnwbjejzzbqzmop`.** Created 2026-07-18 for the v2 port (separate from qepler `stykxxzhuakniqcvjsev` and qep-tracker `zkqnenhlrunyvhctsxbv`). Migrations live in `supabase/migrations/`. The squashed baseline (`00000000000000_initial_schema.sql`) is the canonical schema reference — the v1's pre-port `database/*.sql` files are no longer in the working tree (preserved in git history at commit `21303ed5c`); they had divergent/overlapping table definitions that the baseline resolves and should not be consulted going forward.
+9. **System exercise library ships as a seed migration.** `supabase/migrations/20260718000002_seed_system_exercises.sql` loads the 28 system exercises + their muscle/equipment reference data + the slug columns that join them to the TS-side `ExerciseKey` union in `shared/exercises/splits.ts`. Adding a new system exercise means landing it in BOTH the SQL seed AND the splits.ts/data.ts files in the same change — the contract is enforced by review, not by an audit.
 
 ## Pre-commit checks (read before committing)
 
@@ -62,13 +62,19 @@ Structural ESLint (`eslint.structure.config.js`) enforces two more:
 
 Armandotfit is a **direct-copy consumer** of vellum (sibling repo at `../vellum/`). The shell — design system, audit scripts, PWA plumbing, provider stack, skeleton auth routes — was copied from vellum in a-Phase 0. Armandotfit owns its domain layer on top:
 
-- **Domain routes** → `app/` (home, workout-detail, exercise-database, progression, analytics, workout-programs, split-selection). Vellum's skeleton routes (login, register, forgot-password, settings, dev/premium) carry over.
-- **Domain stores** → `stores/` (workoutStore, exerciseStore — both ephemeral, not persisted). Vellum's cross-cutting stores (authStore, uiStore, networkStore) carry over.
+- **Domain routes** → `app/` (home dashboard, split-selection, workout-detail, exercise-database, exercise-detail, progression, analytics, workout-programs). Vellum's skeleton routes (login, register, forgot-password, settings, dev/premium) carry over.
+- **Domain stores** → `stores/` (workoutStore — active draft state, exerciseStore — browse filter state; both ephemeral, not persisted). Vellum's cross-cutting stores (authStore, uiStore, networkStore) carry over.
 - **Domain repositories** → `utils/supabase/repositories/` (WorkoutRepository, ExerciseRepository, ProgressionRepository, UserProfileRepository, StreakRepository).
 - **Domain services** → `services/` (workoutService, progressionService, analyticsService).
-- **React Query hooks** → `hooks/queries/`, `hooks/mutations/`.
-- **Domain types** → `shared/types/` (workout, exercise, progression — extend the existing barrel).
-- **Components** → `components/` three-tier structure (primitives, composed, feature components inside route dirs).
+- **React Query hooks** → `hooks/queries/`, `hooks/mutations/`. Includes `useSuggestedExercises` which hydrates a split-day's exercise slugs against the DB.
+- **Domain types** → `shared/types/` (workout, exercise, progression, analytics, profile).
+- **Domain data** → `shared/exercises/` (splits.ts — typed day→exercise-key assignments; data.ts — 28-exercise system library with muscles/equipment/instructions).
+- **Components** → three-tier structure:
+  - `components/MobilePremium/` — primitive kit (copied from vellum).
+  - `components/primitives/` — atomic wrappers (LoadingSpinner, Toast, etc.).
+  - `components/composed/` — domain-specific rows/cards composed from MobilePremium primitives (WorkoutSessionItem, ExerciseListItem, SetRow).
+  - Feature components live inside their route files (`app/workout-detail.tsx` IS the active-session feature component).
+- **Constants** → `constants/workoutSplits.ts` holds split metadata + day-of-week labels, decoupled from theme for SOC.
 
 When vellum ships an update that armandotfit wants (e.g. a new MobilePremium primitive, an audit-script fix), the workflow is: copy the relevant file(s) from `../vellum/` into armandotfit, re-apply armandotfit's brand overrides if they touch `constants/theme.ts` or icon assets, commit. No submodule, no npm link — direct file copy with per-file ownership at the armandotfit side. Vellum changes that touch `CLAUDE.md` or `ARCHITECTURE.md` may also need to be mirrored here if they affect shared discipline (audit-script behavior, design-system tokens, etc.).
 

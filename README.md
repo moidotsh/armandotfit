@@ -1,40 +1,31 @@
-# Vellum
+# armandotfit
 
-> A clean, domain-agnostic PWA-first Expo+Tamagui+Supabase+Bun starter repo. The qep-tracker architecture, retuned for **light-mode-only** + **PWA-only** + **email/password auth**. Clone it, drop in your domain, ship.
+> A fitness PWA — workout splits, exercise library, progression, streak, real-time session logging. Built on [vellum](../vellum) (sibling repo): the qep-tracker architecture retuned for PWA-only + email/password auth + light-mode-first.
 
-## What vellum is
+## What armandotfit is
 
-- A **starter**, not a framework. You clone it, you own the copy, you modify freely. (Like `create-next-app`, like `expo-template-*`.)
-- The **qep-tracker architecture**: 47-pattern constitution, 10-audit pre-commit gate, repository pattern, Zustand + React Query, barrel exports, premium Mobile design system.
-- **Light-mode-only.** Single theme, no dark variant. Every surface, every token, every MobilePremium primitive is tuned for light from day one.
-- **PWA-only.** Static web export. No iOS build, no Android build. The runtime manifest-injection block in `app/_layout.tsx` is load-bearing — don't remove it.
-- **Email/password auth by default.** Consumers needing PIN+device-UUID auth (qep-tracker parity) re-add the 4 PIN primitives + `audit-rpc-auth.ts` + a `verify_session` RPC as a customization (see `CLAUDE.md` → "When to add PIN auth").
+The first consumer of vellum. Vellum absorbed the one-time architectural cost (47-pattern constitution, 10-audit pre-commit gate, repository pattern, MobilePremium design system forked to light, PWA runtime-injection block). Armandotfit owns its domain layer on top — the fitness logic that turns the shell into a shipping app.
 
-## What vellum isn't
-
-- A framework. There's no `npm install vellum`. You clone, you own.
-- A multi-app monorepo. Each consumer is its own repo with its own git history.
-- A dark-mode starter. If you need dark mode, retune every MobilePremium primitive yourself (the work is real — see `docs/architecture/mobile-premium-design-system.md`).
-- A native mobile starter. The Expo config is web-only. (You can re-add iOS/Android by changing `app.config.ts`, but you're on your own for native module setup.)
+- **PWA-only.** Static web export. No iOS, no Android. Installable from the browser.
+- **Light is the default; dark is opt-in.** Theme palette ships both modes; the active palette resolves at runtime via `useAppTheme()`.
+- **Email/password auth.** Inherited from vellum. No PIN primitives.
+- **Brand color: armandotfit orange (`#FF9500`)** — overridden from vellum's default indigo.
+- **Supabase project: `mfeyywnwbjejzzbqzmop`** (created 2026-07-18 for the v2 port).
 
 ## Quickstart
 
 ```bash
-git clone github.com/moidotsh/vellum my-app
-cd my-app
-rm -rf .git && git init
+git clone github.com/moidotsh/armandotfit
+cd armandotfit
+bun install
 ```
 
 Then:
 
-1. Find-and-replace `vellum` → `my-app` in `package.json`, `app.config.ts`, `app.json`, `public/manifest.json`, `CLAUDE.md`.
-2. Copy `.env.local.example` → `.env.local`, fill in your Supabase URL + anon key.
-3. Replace `public/icons/` and `assets/` with your brand icons.
-4. Override `theme.colors.light.brand` in `constants/theme.ts` to your brand color.
-5. `bun install && bun run web`.
-6. Visit `localhost:8081`. Visit `/dev/premium` to see the design system. Visit `/login`, `/register`, `/settings` to confirm the shell flows work.
-
-The full consumer guide (with the PIN-auth extension path) is in `CLAUDE.md` → "How to consume".
+1. Copy `.env.local.example` → `.env.local`, fill in the Supabase URL + anon key for project `mfeyywnwbjejzzbqzmop`.
+2. Apply migrations: `bunx supabase db push` (or run them via the Supabase dashboard).
+3. `bun run web`.
+4. Visit `localhost:8081`. Register → log in → land on the home dashboard. Visit `/dev/premium` to see the design-system showcase.
 
 ## The architecture, in 30 seconds
 
@@ -47,32 +38,55 @@ Route (app/) → Hook (hooks/) → Service (services/) → Repository (utils/sup
 
 - **No direct Supabase calls outside repositories.** `audit-data-layer.ts` (S9) enforces this.
 - **No `console.log` outside `utils/logger.ts`.** `audit-logging-errors.ts` (S11) enforces this.
-- **No hardcoded hex colors.** `audit-ui-theme.ts` (S7) enforces this — use `theme.colors.light.*`.
+- **No hardcoded hex colors.** `audit-ui-theme.ts` (S7) enforces this — use `theme.colors.{light,dark}.*`.
 - **No `setInterval` without `clearInterval`.** `audit-runtime-resilience.ts` (R4a) enforces this.
 
 The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 10-audit pre-commit gate is documented in `CLAUDE.md` → "Pre-commit checks".
 
-## The design system
+## Domain shape
 
-Vellum ships the MobilePremium kit — the qep-tracker mobile design system, retuned for light. Four pillars:
+| Concern | Where it lives |
+|---|---|
+| Workout splits (Full Body / AM-PM) | `constants/workoutSplits.ts` + `shared/exercises/splits.ts` (4-day oneADay + 4-day twoADay assignments) |
+| Exercise library (28 system exercises) | `shared/exercises/data.ts` (TS-side) + `supabase/migrations/20260718000002_seed_system_exercises.sql` (DB seed) |
+| Active session state | `stores/workoutStore.ts` (ephemeral draft) + `hooks/mutations/useLogWorkout.ts` (optimistic flush) |
+| Exercise browse filter state | `stores/exerciseStore.ts` |
+| Workout history | `hooks/queries/useWorkouts.ts` + `WorkoutRepository` |
+| Progression / streaks | `hooks/queries/useProgression.ts` + `ProgressionRepository` + `StreakRepository` (RPC wrapper) |
+| Analytics (weekly bucketing) | `services/analyticsService.ts` + `hooks/queries/useProgression.ts` |
+| Suggested exercises (split-day hydration) | `hooks/queries/useExercises.ts` → `useSuggestedExercises` |
 
-1. **Calm air** — generous spacing, no visual noise.
-2. **Considered motion** — every animation has a reason; `prefers-reduced-motion: reduce` is the default.
-3. **Material surfaces** — hairline inner border + soft gradient + outer glow + tint. One surface treatment, applied consistently.
-4. **The 490px height-budget test** — every screen must fit at 490px viewport height (iPhone SE compact) without scrolling for the primary action.
+Routes:
 
-Canonical reference: `docs/architecture/mobile-premium-design-system.md`. The visual source of truth: `app/dev/premium.tsx` (the showcase — visit it on `localhost:8081/dev/premium`).
+| Route | Role |
+|---|---|
+| `/` | Home dashboard — streak, weekly goal, recent workouts, quick actions |
+| `/split-selection` | Pick split (1-a-day / AM-PM) + day of week → start session |
+| `/workout-detail` | Active session (live draft) OR read-only detail (with `?id=`) |
+| `/exercise-database` | Browse 28 system exercises + user custom |
+| `/exercise-detail` | Single exercise with instructions/tips/muscles/equipment |
+| `/progression` | Streaks + totals + weekly goal |
+| `/analytics` | Range-selectable weekly bucketed workouts |
+| `/workout-programs` | Curated templates — stub for v2 |
+| `/login`, `/register`, `/forgot-password`, `/settings` | Inherited from vellum |
+| `/dev/premium` | MobilePremium showcase — visual source of truth |
+
+## Components (3-tier structure)
+
+- **`components/MobilePremium/`** — primitive kit (copied from vellum, brand-overridden). MobileSurface, MobileHeader, MobileInput, MobileActionFooter, etc.
+- **`components/primitives/`** — atomic wrappers (LoadingSpinner, Toast, AppLoading).
+- **`components/composed/`** — domain-specific rows/cards composed from primitives (WorkoutSessionItem, ExerciseListItem, SetRow).
+- **Feature components** live inside their route files (`app/workout-detail.tsx` IS the active-session feature component).
 
 ## Reference docs
 
 | Doc | What it owns |
 |---|---|
-| `CLAUDE.md` | Repo operating context (invariants, pre-commit checks, consumer guide, doc maintenance). Auto-loads in Claude Code sessions at the vellum root. |
+| `CLAUDE.md` | Repo operating context (invariants, pre-commit checks, vellum relationship, doc maintenance). Auto-loads in Claude Code sessions at the armandotfit root. |
 | `ARCHITECTURE.md` | The 47-pattern constitution. Every architectural decision is grounded here. |
-| `docs/OWNERSHIP.md` | Claim-type → canonical-owner map. Settles "which doc owns X" disputes. |
+| `docs/OWNERSHIP.md` | Claim-type → canonical-owner map. |
 | `docs/architecture/mobile-premium-design-system.md` | The MobilePremium kit (four pillars, primitive inventory, atmosphere palettes, gating policy). |
 | `docs/architecture/pwa-installability.md` | The PWA installability contract (manifest, SW, runtime injection). |
-| `docs/contributing.md` | How to evolve vellum itself (when to fix in vellum vs. in a consumer). |
 
 ## Stack
 
@@ -91,4 +105,4 @@ Canonical reference: `docs/architecture/mobile-premium-design-system.md`. The vi
 
 ## License
 
-MIT. Clone it, own it, ship it.
+MIT.
