@@ -96,11 +96,15 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'armandotfit-auth',
       storage: createJSONStorage(() => zustandStorage),
-      partialize: (state) => ({
-        userId: state.userId,
-        email: state.email,
-        status: state.status,
-      }),
+      // Auth state is fully re-derived on every boot — AuthProvider's
+      // mount-time setStatus('loading') + restoreSession() decide the
+      // initial status. Persisting any of these lets a stale
+      // 'authenticated' or stale userId survive a reload, which fires
+      // queries against a dead session (the `enabled: !!userId` gates
+      // light up before restore resolves). The persist middleware
+      // stays (forward-compat for future fields that genuinely need to
+      // survive reloads) but partialize returns nothing today.
+      partialize: () => ({}),
     },
   ),
 );

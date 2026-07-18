@@ -9,13 +9,14 @@
 // Sits inside <AuthProvider> in _layout.tsx and wraps the <Stack/>.
 // Idempotent: re-runs only when status or the root segment changes.
 //
-// While status is 'idle' (pre-restore persisted value) or 'loading'
+// While status is 'idle' (initial store state on every boot — authStore
+// no longer persists status, see stores/authStore.ts) or 'loading'
 // (restore in flight), the guard renders children unchanged so the
-// restore window doesn't flash a redirect. The AuthProvider's setStatus
-// flip to 'loading' on mount is what unblocks this — without it, the
-// restored 'authenticated'/'unauthenticated' value would gate the very
-// first render and we'd never see 'idle' anyway, but the explicit flip
-// keeps the semantics clear.
+// restore window doesn't flash a redirect. The AuthProvider's
+// mount-time setStatus('loading') call is what guarantees 'loading' is
+// observed; without it, status would stay at 'idle' through the first
+// render. AuthGuard treats both identically, so the explicit flip is
+// belt-and-suspenders.
 
 import React, { useEffect } from 'react';
 import { useSegments } from 'expo-router';

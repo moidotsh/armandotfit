@@ -29,7 +29,14 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(null);
-  const [initializing, setInitializing] = useState(true);
+  // `initializing` defaults to false so children render on first paint
+  // instead of waiting on restoreSession() (the prior `true` default
+  // blocked first paint for ~800ms on cold boots). The authStore.status
+  // (driven by the mount-time setStatus call below) is what AuthGuard
+  // reads to gate redirects — `useAuth().session` stays null until
+  // restore resolves, which is what the `enabled: !!userId` gates on
+  // queries already guard against.
+  const [initializing, setInitializing] = useState(false);
 
   // Restore session on mount + subscribe to auth state changes. The
   // `cancelled` flag guards every setState after the await window so
@@ -40,9 +47,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     let unsubscribe = () => {};
 
-    // Mark loading while restore is in flight so the AuthGuard waits
-    // before deciding to redirect (status starts at 'idle' from the
-    // persisted store; flip to 'loading' to gate the redirect).
+    // Mark loading while restore is in flight so AuthGuard waits
+    // before deciding to redirect. authStore no longer persists
+    // status (see stores/authStore.ts partialize), so this call is
+    // what guarantees `status === 'loading'` on every boot — without
+    // it, status would stay at 'idle' (initial state) and AuthGuard
+    // would still skip redirects (idle is gated too), but the
+    // explicit flip keeps the semantics clear and survives any
+    // future change to AuthGuard's idle handling.
     useAuthStore.getState().setStatus('loading');
 
     (async () => {
