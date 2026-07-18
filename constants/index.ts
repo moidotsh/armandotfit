@@ -45,3 +45,14 @@ export {
 // values that don't belong in the theme hook (border radius, input dims,
 // card padding, z-index layers).
 export { BORDER_RADIUS, INPUT, CARD, Z_INDEX } from './styles';
+
+// Workout split metadata (decoupled from theme for SOC). The day→exercise
+// assignments live in shared/exercises/splits.ts because they're typed
+// against the ExerciseKey union there.
+export {
+  WORKOUT_SPLITS,
+  WORKOUT_SPLIT_LIST,
+  DAY_OF_WEEK_LIST,
+  parseDayId,
+} from './workoutSplits';
+export type { WorkoutSplitInfo, DayOfWeekInfo } from './workoutSplits';

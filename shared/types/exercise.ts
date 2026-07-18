@@ -33,6 +33,8 @@ export interface MuscleCategory {
   id: ID;
   name: string;
   displayName: string;
+  /** Stable slug matching the seed migration. Null on user-created rows. */
+  slug: string | null;
   createdAt: string;
 }
 
@@ -41,6 +43,8 @@ export interface Muscle {
   name: string;
   displayName: string;
   muscleCategoryId: ID | null;
+  /** Stable slug matching the seed migration. Null on user-created rows. */
+  slug: string | null;
   createdAt: string;
 }
 
@@ -49,6 +53,8 @@ export interface EquipmentType {
   name: string;
   displayName: string;
   category: EquipmentCategory | null;
+  /** Stable slug matching the seed migration. Null on user-created rows. */
+  slug: string | null;
   createdAt: string;
 }
 
@@ -72,6 +78,11 @@ export interface Exercise extends Timestamps {
   tips: string | null;
   isSystemExercise: boolean;
   createdByUserId: ID | null;
+  /**
+   * Stable slug matching the seed migration (and the ExerciseKey union in
+   * shared/exercises/splits.ts). Null on user-created custom exercises.
+   */
+  slug: string | null;
 }
 
 /**

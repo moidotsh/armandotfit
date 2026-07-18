@@ -6,6 +6,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { exerciseRepository } from '../../utils/supabase/repositories';
 import { queryKeys } from '../../lib/react-query';
+import { getExercisesForDay } from '../../shared/exercises';
+import type { PreferredSplit } from '../../shared/types';
 import type {
   Exercise,
   ExerciseFilter,
@@ -94,5 +96,38 @@ export function useEquipmentTypes() {
       return res.data;
     },
     staleTime: Infinity,
+  });
+}
+
+/**
+ * Suggested exercises for a given split + day. Pulls the slug list from
+ * shared/exercises/splits.ts and hydrates each against the DB via the
+ * slug lookup. Returns an empty array when the day is a rest day (5–7)
+ * or the split is unknown. Slugs that don't resolve to a DB row (seed
+ * migration hasn't run, or the slug was retired) are silently dropped —
+ * the user can still add exercises manually.
+ *
+ * The hook does one round-trip per slug in parallel; for the v2 seed
+ * this is ≤7 lookups per day. A list-by-slugs repository method is a
+ * future optimization if this becomes hot.
+ */
+export function useSuggestedExercises(
+  split: PreferredSplit,
+  day: number,
+  session: 'am' | 'pm' = 'am',
+) {
+  const slugs = getExercisesForDay(split, day, session);
+  return useQuery({
+    queryKey: queryKeys.exercises.list({ suggestedFor: `${split}-${day}-${session}` }),
+    queryFn: async () => {
+      const results = await Promise.all(
+        slugs.map(async (slug) => {
+          const res = await exerciseRepository.findBySlug(slug);
+          return res.success ? res.data : null;
+        }),
+      );
+      return results.filter((e): e is Exercise => e !== null);
+    },
+    staleTime: Infinity, // system exercises are immutable per release
   });
 }

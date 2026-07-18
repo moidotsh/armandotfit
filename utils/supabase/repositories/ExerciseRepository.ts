@@ -49,6 +49,7 @@ interface ExerciseRow {
   tips: string | null;
   is_system_exercise: boolean;
   created_by_user_id: string | null;
+  slug: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -83,6 +84,7 @@ interface MuscleCategoryRow {
   id: string;
   name: string;
   display_name: string;
+  slug: string | null;
   created_at: string;
 }
 
@@ -91,6 +93,7 @@ interface MuscleRow {
   name: string;
   display_name: string;
   muscle_category_id: string | null;
+  slug: string | null;
   created_at: string;
 }
 
@@ -99,6 +102,7 @@ interface EquipmentTypeRow {
   name: string;
   display_name: string;
   category: string | null;
+  slug: string | null;
   created_at: string;
 }
 
@@ -199,6 +203,25 @@ export class ExerciseRepository
       return ok(data ? toExercise(data as ExerciseRow) : null);
     } catch (e) {
       return this.handleError('findById', e);
+    }
+  }
+
+  /**
+   * Find a system exercise by its stable slug. Used by the suggested-
+   * exercises hydration path (slug → full exercise row → repository cache).
+   * Returns null for unknown slugs rather than erroring.
+   */
+  async findBySlug(slug: string): Promise<RepositoryResult<Exercise | null>> {
+    try {
+      const { data, error } = await supabase
+        .from(ExerciseRepository.EXERCISES)
+        .select('*')
+        .eq('slug', slug)
+        .maybeSingle();
+      if (error) throw error;
+      return ok(data ? toExercise(data as ExerciseRow) : null);
+    } catch (e) {
+      return this.handleError('findBySlug', e);
     }
   }
 
@@ -634,6 +657,7 @@ function toExercise(row: ExerciseRow): Exercise {
     tips: row.tips,
     isSystemExercise: row.is_system_exercise,
     createdByUserId: row.created_by_user_id,
+    slug: row.slug,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -645,6 +669,7 @@ function toMuscle(row: MuscleRow): Muscle {
     name: row.name,
     displayName: row.display_name,
     muscleCategoryId: row.muscle_category_id,
+    slug: row.slug,
     createdAt: row.created_at,
   };
 }
@@ -654,6 +679,7 @@ function toMuscleCategory(row: MuscleCategoryRow): MuscleCategory {
     id: row.id,
     name: row.name,
     displayName: row.display_name,
+    slug: row.slug,
     createdAt: row.created_at,
   };
 }
@@ -664,6 +690,7 @@ function toEquipmentType(row: EquipmentTypeRow): EquipmentType {
     name: row.name,
     displayName: row.display_name,
     category: row.category as EquipmentType['category'],
+    slug: row.slug,
     createdAt: row.created_at,
   };
 }

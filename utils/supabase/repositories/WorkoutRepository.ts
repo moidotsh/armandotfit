@@ -151,7 +151,7 @@ export class WorkoutRepository
       const { data: exRows, error: exError } = await supabase
         .from(WorkoutRepository.SESSION_EXERCISES)
         .select(
-          '*, exercise:exercises(id, name, description, exercise_type, difficulty_level, instructions, tips, is_system_exercise, created_by_user_id, created_at, updated_at)',
+          '*, exercise:exercises(id, name, description, exercise_type, difficulty_level, instructions, tips, is_system_exercise, created_by_user_id, slug, created_at, updated_at)',
         )
         .eq('workout_session_id', id)
         .order('order_in_workout', { ascending: true });
@@ -269,7 +269,7 @@ export class WorkoutRepository
           const { data: parentEx, error: parentErr } = await supabase
             .from(WorkoutRepository.SESSION_EXERCISES)
             .select(
-              'exercise:exercises(id, name, description, exercise_type, difficulty_level, instructions, tips, is_system_exercise, created_by_user_id, created_at, updated_at)',
+              'exercise:exercises(id, name, description, exercise_type, difficulty_level, instructions, tips, is_system_exercise, created_by_user_id, slug, created_at, updated_at)',
             )
             .eq('id', exerciseEntry.id)
             .maybeSingle();
@@ -520,6 +520,7 @@ function toExerciseFromJoin(row: {
   tips: string | null;
   is_system_exercise: boolean;
   created_by_user_id: string | null;
+  slug: string | null;
   created_at: string;
   updated_at: string;
 }): Exercise {
@@ -533,6 +534,7 @@ function toExerciseFromJoin(row: {
     tips: row.tips,
     isSystemExercise: row.is_system_exercise,
     createdByUserId: row.created_by_user_id,
+    slug: row.slug,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

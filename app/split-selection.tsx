@@ -19,30 +19,27 @@ import {
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, safeGoBack } from '../navigation';
 import { useWorkoutStore } from '../stores';
+import {
+  WORKOUT_SPLIT_LIST,
+  DAY_OF_WEEK_LIST,
+  parseDayId,
+} from '../constants';
 import type { PreferredSplit } from '../shared/types';
 
-const SPLIT_OPTIONS: MobileSelectionOption[] = [
-  {
-    id: 'oneADay',
-    label: '1-a-day',
-    description: 'Full Body / Push-Pull-Legs / etc. — one session today.',
-  },
-  {
-    id: 'twoADay',
-    label: 'AM / PM',
-    description: 'Two sessions today (morning + evening).',
-  },
-];
+// Map the canonical split + day-of-week metadata into the shape
+// MobileSelectionList expects. The id is the stringified enum/number so
+// it threads through selectedId without coercion; parseDayId reverses
+// the day id back to a 1..7 integer for the startSession payload.
+const SPLIT_OPTIONS: MobileSelectionOption[] = WORKOUT_SPLIT_LIST.map((s) => ({
+  id: s.id,
+  label: s.label,
+  description: s.description,
+}));
 
-const DAY_OPTIONS: MobileSelectionOption[] = [
-  { id: '1', label: 'Monday' },
-  { id: '2', label: 'Tuesday' },
-  { id: '3', label: 'Wednesday' },
-  { id: '4', label: 'Thursday' },
-  { id: '5', label: 'Friday' },
-  { id: '6', label: 'Saturday' },
-  { id: '7', label: 'Sunday' },
-];
+const DAY_OPTIONS: MobileSelectionOption[] = DAY_OF_WEEK_LIST.map((d) => ({
+  id: d.id,
+  label: d.label,
+}));
 
 export default function SplitSelectionScreen() {
   const { colors } = useAppTheme();
@@ -53,7 +50,7 @@ export default function SplitSelectionScreen() {
   const handleStart = () => {
     startSession({
       splitType: splitChoice as PreferredSplit,
-      day: parseInt(dayChoice, 10),
+      day: parseDayId(dayChoice),
     });
     navigateToWorkoutDetail();
   };
