@@ -7,22 +7,24 @@
 //     Auth/data flows will fail at runtime with a clear "Invalid URL" error
 //     from the Supabase SDK — that's the right shape for "not set up yet."
 //
-//   - Production: throw at module load (bundle time). A production deploy
-//     with missing env is a misconfiguration that should fail the build,
-//     not silently degrade in users' browsers.
+//   - Production: throw at module load. A production deploy with missing
+//     env is a misconfiguration that should fail at first page load, not
+//     silently degrade in users' browsers.
 //
-// The dynamic `process.env[key]` access in requiredEnv is intentional: the
-// helper exists to avoid restating the throw/warn boilerplate for each of
-// the two required vars below. Expo's bundler inlines the static access in
-// the call sites (the exports below) — this helper just centralizes the guard.
-/* eslint-disable expo/no-dynamic-env-var */
+// CRITICAL: Expo's bundler inlines `process.env.EXPO_PUBLIC_*` ONLY for
+// static member access (literal key). Dynamic access like `process.env[key]`
+// defeats the inliner — the access ships as a runtime lookup against an
+// empty `process.env` in the browser, returns undefined, and the throw
+// fires regardless of whether the var was set at build time. So the static
+// access MUST happen at the call site (the two exports below), not inside
+// the helper. The helper takes the already-resolved value as its second
+// argument and only centralizes the throw/warn/return-'' boilerplate.
 
 import { logger } from '../utils/logger';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-function requiredEnv(key: string): string {
-  const value = process.env[key];
+function requiredEnv(key: string, value: string | undefined): string {
   if (value) return value;
 
   const message = `Missing required env var: ${key}. Vellum needs EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY set in .env.local (or your host's env). See utils/envValidation.ts.`;
@@ -42,6 +44,16 @@ function requiredEnv(key: string): string {
   return '';
 }
 
-export const SUPABASE_URL: string = requiredEnv('EXPO_PUBLIC_SUPABASE_URL');
-export const SUPABASE_ANON_KEY: string = requiredEnv('EXPO_PUBLIC_SUPABASE_ANON_KEY');
+// Static access at the call site so Expo's babel inliner can replace
+// `process.env.EXPO_PUBLIC_*` with the build-time value. Do NOT refactor
+// these into a loop or a helper that takes the key as a variable — that
+// breaks inlining and the bundle ships without the value.
+export const SUPABASE_URL: string = requiredEnv(
+  'EXPO_PUBLIC_SUPABASE_URL',
+  process.env.EXPO_PUBLIC_SUPABASE_URL,
+);
+export const SUPABASE_ANON_KEY: string = requiredEnv(
+  'EXPO_PUBLIC_SUPABASE_ANON_KEY',
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+);
 export const SUPABASE_FUNCTIONS_URL: string = `${SUPABASE_URL}/functions/v1`;
