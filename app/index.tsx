@@ -29,7 +29,7 @@ import {
 import { LoadingSpinner } from '../components/primitives';
 import { HamburgerButton, WorkoutSessionItem } from '../components/composed';
 import { useAuth, useAppTheme } from '../context';
-import { theme } from '../constants';
+import { theme, APP_LAYOUT } from '../constants';
 import {
   navigateToSettings,
   navigateToWorkoutDetail,
@@ -114,7 +114,10 @@ export default function HomeScreen() {
           session?.email ? `Welcome back, ${session.email.split('@')[0]}` : 'Welcome'
         }
         menuButton={
-          <HamburgerButton isOpen={drawerOpen} onPress={() => setDrawerOpen(true)} />
+          <HamburgerButton
+            isOpen={drawerOpen}
+            onPress={() => setDrawerOpen((prev) => !prev)}
+          />
         }
       />
       <ScrollView
@@ -228,40 +231,43 @@ export default function HomeScreen() {
         items={navItems}
         activePathname={activePathname}
         atmosphere="training"
+        brandPersistence={APP_LAYOUT.navDrawerBrandPersistence}
         header={
-          <View style={styles.drawerHeader}>
-            <View style={styles.drawerBrandRow}>
-              <Pressable
-                onPress={() => setDrawerOpen(false)}
-                hitSlop={12}
-                accessibilityLabel="Close menu"
-                accessibilityRole="button"
-                style={({ pressed }) => [
-                  styles.iconButton,
-                  pressed ? { opacity: 0.6 } : null,
-                ]}
-              >
-                <X size={22} color={colors.text} />
-              </Pressable>
+          APP_LAYOUT.navDrawerBrandPersistence === 'slideout' ? (
+            <View style={styles.drawerHeader}>
+              <View style={styles.drawerBrandRow}>
+                <Pressable
+                  onPress={() => setDrawerOpen(false)}
+                  hitSlop={12}
+                  accessibilityLabel="Close menu"
+                  accessibilityRole="button"
+                  style={({ pressed }) => [
+                    styles.iconButton,
+                    pressed ? { opacity: 0.6 } : null,
+                  ]}
+                >
+                  <X size={22} color={colors.text} />
+                </Pressable>
+                <Text
+                  style={[theme.typography.mobileTitle, { color: colors.text }]}
+                  numberOfLines={1}
+                >
+                  armandotfit
+                </Text>
+              </View>
               <Text
-                style={[theme.typography.mobileTitle, { color: colors.text }]}
+                style={[
+                  theme.typography.mobileSubtitle,
+                  { color: colors.textSecondary, marginTop: 4 },
+                ]}
                 numberOfLines={1}
               >
-                armandotfit
+                {session?.email
+                  ? `Welcome back, ${session.email.split('@')[0]}`
+                  : 'Welcome'}
               </Text>
             </View>
-            <Text
-              style={[
-                theme.typography.mobileSubtitle,
-                { color: colors.textSecondary, marginTop: 4 },
-              ]}
-              numberOfLines={1}
-            >
-              {session?.email
-                ? `Welcome back, ${session.email.split('@')[0]}`
-                : 'Welcome'}
-            </Text>
-          </View>
+          ) : undefined
         }
         footer={
           <MobilePrimaryButton variant="ghost" onPress={() => void signOut()}>

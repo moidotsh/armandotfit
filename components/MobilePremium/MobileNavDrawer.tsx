@@ -1,9 +1,20 @@
 // components/MobilePremium/MobileNavDrawer.tsx
 // Left-side hamburger drawer for mobile navigation. The shell-level
 // mechanism (slide / scrim / items / active-highlight / badge) — consumers
-// pass their own items list, plus optional header (brand slot) and footer
-// (sign-out slot). Domain branding lives in those slots; this primitive
-// carries none.
+// pass their own items list, plus optional header (brand slot, slideout
+// mode only) and footer (sign-out slot). Domain branding lives in those
+// slots; this primitive carries none.
+//
+// Brand persistence modes (brandPersistence prop):
+//   • 'slideout' (default): panel covers full screen height; brand lives
+//     in the `header` slot. The home header is covered while the drawer
+//     is open. Use when the home header is small or doesn't carry critical
+//     context.
+//   • 'cutout': panel + scrim start below the home header so the brand
+//     and hamburger (which the consumer swaps to X) stay visible at the
+//     same position. Matches the qep-tracker pattern. The `header` prop
+//     is ignored. The consumer's home header must render at the same
+//     x/y position so the brand persists visually as the drawer slides.
 //
 // Premium signals:
 //   • Slides in from the left with an iOS-sheet curve
@@ -16,10 +27,6 @@
 //     scrim to a short fade — the drawer still works, just without motion.
 //   • Tapping the scrim or any item calls onClose() after the press
 //     handler runs. Drawer state is fully controlled by the consumer.
-//
-// Cutout: none. The drawer covers the full screen height including the
-// top safe area. The brand slot (the `header` prop) renders inside the
-// drawer at the top, padded by the safe-area inset.
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -50,6 +57,8 @@ export interface MobileNavDrawerItem {
   onPress: () => void;
 }
 
+export type NavDrawerBrandPersistence = 'cutout' | 'slideout';
+
 export interface MobileNavDrawerProps {
   /** Whether the drawer is open (controlled). */
   open: boolean;
@@ -59,12 +68,32 @@ export interface MobileNavDrawerProps {
   items: MobileNavDrawerItem[];
   /** Pathname of the active route, used to highlight the matching item. */
   activePathname?: string;
-  /** Optional element rendered at the top of the drawer (brand slot). */
+  /**
+   * Optional element rendered at the top of the drawer (brand slot).
+   * Ignored when brandPersistence is 'cutout' — the home header shows
+   * through the transparent gap at the top of the panel instead.
+   */
   header?: React.ReactNode;
   /** Optional element rendered at the bottom (sign-out slot, etc.). */
   footer?: React.ReactNode;
   /** Atmosphere surface for the drawer body (default: 'primary'). */
   atmosphere?: MobileAtmosphereSurface;
+  /**
+   * How the brand area is handled when the drawer is open.
+   * - 'slideout' (default): panel covers full screen height; brand lives
+   *   in the `header` slot.
+   * - 'cutout': panel + scrim start below the home header; brand shows
+   *   through the transparent gap at the top.
+   * See file header for the full pattern comparison.
+   */
+  brandPersistence?: NavDrawerBrandPersistence;
+  /**
+   * Override the transparent cutout height at the top of the panel
+   * (cutout mode only). Defaults to insets.top + 76 to match
+   * MobileHomeHeader with subtitle. Size to match your home header if
+   * it diverges.
+   */
+  cutoutHeight?: number;
   /** Test ID. */
   testID?: string;
 }
@@ -84,12 +113,24 @@ export function MobileNavDrawer({
   header,
   footer,
   atmosphere = 'analytics',
+  brandPersistence = 'slideout',
+  cutoutHeight,
   testID,
 }: MobileNavDrawerProps) {
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
   const reduced = useReducedMotion();
   const pressedStyle = usePressedStyle();
+
+  // In cutout mode the panel + scrim start below the home header so the
+  // brand shows through. Default height matches MobileHomeHeader with
+  // subtitle (safe-area top + 8 padding + 36 brand row + 4 gap + 20
+  // subtitle + 8 padding = insets.top + 76). Override via cutoutHeight
+  // when the home header diverges.
+  const isCutout = brandPersistence === 'cutout';
+  const effectiveCutoutHeight = isCutout
+    ? (cutoutHeight ?? insets.top + 76)
+    : 0;
 
   // Mount + animate state. The drawer renders in the tree while open OR
   // while an exit animation is in flight; `shouldRender` gates the render
@@ -150,7 +191,8 @@ export function MobileNavDrawer({
 
   return (
     <View style={styles.overlay} testID={testID} pointerEvents="box-none">
-      {/* Glass scrim — taps dismiss the drawer. */}
+      {/* Glass scrim — taps dismiss the drawer. In cutout mode the scrim
+          starts below the home header so the brand stays fully bright. */}
       <Pressable
         onPress={onClose}
         style={[
@@ -158,6 +200,7 @@ export function MobileNavDrawer({
           {
             backgroundColor: `${colors.backgroundDeep}cc`,
             opacity: animatedIn ? 1 : 0,
+            ...(isCutout ? { top: effectiveCutoutHeight } : null),
             ...(isWeb
               ? {
                   transition: `opacity ${scrimDuration}ms ease`,
@@ -167,7 +210,8 @@ export function MobileNavDrawer({
         ]}
       />
 
-      {/* Drawer panel — slides from left. */}
+      {/* Drawer panel — slides from left. In cutout mode the panel starts
+          below the home header so the brand shows through above it. */}
       <Animated.View
         style={[
           styles.panel,
@@ -175,6 +219,7 @@ export function MobileNavDrawer({
             width: DRAWER_WIDTH,
             backgroundColor: colors.backgroundDeep,
             transform: [{ translateX: animatedIn ? 0 : -DRAWER_WIDTH }],
+            ...(isCutout ? { top: effectiveCutoutHeight } : null),
             ...(isWeb
               ? {
                   transition: `transform ${slideDuration}ms ${slideEasing}`,
@@ -195,7 +240,7 @@ export function MobileNavDrawer({
         />
 
         <View style={styles.panelContent}>
-          {header ? (
+          {isCutout ? null : header ? (
             <View style={[styles.header, { paddingTop: insets.top + 12 }]}>{header}</View>
           ) : (
             <View style={{ height: insets.top + 12 }} />
