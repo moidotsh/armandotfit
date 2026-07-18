@@ -1,7 +1,7 @@
 // app/exercise-detail.tsx
 // Detail card for a single exercise: instructions, tips, muscles worked,
-// required equipment, variations. Read-only — adding to a workout goes
-// through the active-session UI (a-Phase 5).
+// required equipment, variations. When a draft session is active, an
+// "Add to active session" CTA in the footer wires to addExerciseToDraft.
 
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -12,18 +12,23 @@ import {
   MobileSurface,
   MobileHeader,
   MobileSectionEyebrow,
+  MobilePrimaryButton,
+  MobileActionFooter,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { useAppTheme } from '../context';
+import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
 import { useExerciseDetail } from '../hooks';
 import { useWorkoutStore } from '../stores';
+import type { ID } from '../shared/types';
 
 export default function ExerciseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors } = useAppTheme();
+  const { showToast } = useToast();
   const query = useExerciseDetail(id ?? null);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
+  const addExerciseToDraft = useWorkoutStore((s) => s.addExerciseToDraft);
 
   const exercise = query.data;
 
@@ -120,18 +125,25 @@ export default function ExerciseDetailScreen() {
                 </MobileSurface>
               </>
             )}
-
-            {isSessionActive ? (
-              <>
-                <View style={{ height: 24 }} />
-                <Text style={[styles.note, { color: colors.textSecondary }]}>
-                  Add this to your active session from the workout screen.
-                </Text>
-              </>
-            ) : null}
           </>
         )}
       </ScrollView>
+      {isSessionActive && exercise ? (
+        <MobileActionFooter>
+          <MobilePrimaryButton
+            onPress={() => {
+              addExerciseToDraft({
+                exerciseId: exercise.id as ID,
+                exerciseName: exercise.name,
+              });
+              showToast('success', `Added ${exercise.name} to session`);
+              safeGoBack();
+            }}
+          >
+            Add to active session
+          </MobilePrimaryButton>
+        </MobileActionFooter>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -150,5 +162,4 @@ const styles = StyleSheet.create({
   },
   label: { fontSize: 14, fontWeight: '500' },
   tag: { fontSize: 12 },
-  note: { fontSize: 12, lineHeight: 16, textAlign: 'center' },
 });
