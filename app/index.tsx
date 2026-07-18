@@ -26,8 +26,12 @@ import {
   MobileNavDrawer,
   type MobileNavDrawerItem,
 } from '../components/MobilePremium';
-import { LoadingSpinner } from '../components/primitives';
-import { HamburgerButton, WorkoutSessionItem } from '../components/composed';
+import {
+  HamburgerButton,
+  WorkoutSessionItem,
+  DashboardSkeleton,
+  WorkoutListSkeleton,
+} from '../components/composed';
 import { useAuth, useAppTheme } from '../context';
 import { theme, APP_LAYOUT, SCREEN_BODY_STYLE } from '../constants';
 import {
@@ -127,10 +131,10 @@ export default function HomeScreen() {
       >
         {/* Streak + weekly goal */}
         <MobileSectionEyebrow>Today</MobileSectionEyebrow>
-        <MobileSurface padding={20}>
-          {summaryQuery.isLoading ? (
-            <LoadingSpinner />
-          ) : (
+        {summaryQuery.isLoading ? (
+          <DashboardSkeleton />
+        ) : (
+          <MobileSurface padding={20}>
             <View>
               <View style={styles.rowBetween}>
                 <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
@@ -157,8 +161,8 @@ export default function HomeScreen() {
                 </Text>
               </View>
             </View>
-          )}
-        </MobileSurface>
+          </MobileSurface>
+        )}
 
         {/* Quick actions */}
         <View style={{ height: 16 }} />
@@ -184,9 +188,7 @@ export default function HomeScreen() {
         <View style={{ height: 16 }} />
         <MobileSectionEyebrow>Recent workouts</MobileSectionEyebrow>
         {recentQuery.isLoading ? (
-          <MobileSurface padding={20}>
-            <LoadingSpinner />
-          </MobileSurface>
+          <WorkoutListSkeleton />
         ) : recent.length === 0 ? (
           <MobileSurface padding={20}>
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>

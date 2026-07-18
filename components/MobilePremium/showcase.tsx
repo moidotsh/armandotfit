@@ -49,6 +49,7 @@ import { MobileDialog } from './MobileDialog';
 import { MobileSelect } from './MobileSelect';
 import { MobileNavDrawer } from './MobileNavDrawer';
 import type { MobileNavDrawerItem } from './MobileNavDrawer';
+import { SkeletonBlock } from './SkeletonBlock';
 import { PALETTES, type AtmosphereSurface } from '../premium/shared';
 
 const SURFACES: AtmosphereSurface[] = [
@@ -237,6 +238,41 @@ function AnimationDemo() {
           </MobilePrimaryButton>
         </View>
       </MobileSurface>
+    </View>
+  );
+}
+
+/**
+ * SkeletonBlock + useShimmer demo. Three variants — a full-width bar, a
+ * short bar, and a circular avatar placeholder — plus a stacked avatar+
+ * two-line composition. The shimmer pulse is the live useShimmer output;
+ * under `prefers-reduced-motion: reduce` the blocks render as flat
+ * `colors.cardAlt` rectangles with no animation.
+ */
+function SkeletonDemo() {
+  const { colors } = useAppTheme();
+  return (
+    <View>
+      <MobileSurface>
+        <SkeletonBlock height={16} />
+        <View style={{ height: 12 }} />
+        <SkeletonBlock width="60%" height={16} />
+      </MobileSurface>
+      <View style={styles.spacer} />
+      <MobileSurface>
+        <View style={styles.skeletonAvatarRow}>
+          <SkeletonBlock width={48} height={48} borderRadius={24} />
+          <View style={styles.skeletonAvatarMeta}>
+            <SkeletonBlock width="80%" height={14} />
+            <View style={{ height: 8 }} />
+            <SkeletonBlock width="50%" height={12} />
+          </View>
+        </View>
+      </MobileSurface>
+      <Text style={[styles.animLabel, { color: colors.textSecondary, marginTop: 12 }]}>
+        useShimmer pulses 1.0 → 0.5 → 1.0 over 1200ms via Animated.loop;
+        collapses to a flat placeholder under prefers-reduced-motion: reduce.
+      </Text>
     </View>
   );
 }
@@ -634,6 +670,11 @@ export function Showcase() {
         </View>
 
         <View style={styles.section}>
+          <MobileSectionEyebrow>Skeleton (loading placeholders)</MobileSectionEyebrow>
+          <SkeletonDemo />
+        </View>
+
+        <View style={styles.section}>
           <MobileSectionEyebrow>Nav Drawer (left-side hamburger)</MobileSectionEyebrow>
           <MobileSurface>
             <Text style={[styles.bodyText, { color: colors.text }]}>
@@ -712,6 +753,14 @@ const styles = StyleSheet.create({
   },
   spacer: {
     height: 12,
+  },
+  skeletonAvatarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  skeletonAvatarMeta: {
+    flex: 1,
   },
   homeMenuButton: {
     width: 36,

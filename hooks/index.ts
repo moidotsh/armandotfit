@@ -68,6 +68,8 @@ export type {
   VariantConfig,
 } from './useContainerVariant';
 export { useAuthNavigation } from './useAuthNavigation';
+export { useShimmer } from './useShimmer';
+export type { UseShimmerOptions } from './useShimmer';
 
 // armandotfit domain queries + mutations
 export * from './queries';

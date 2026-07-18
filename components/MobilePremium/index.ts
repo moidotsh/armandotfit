@@ -60,6 +60,9 @@ export type {
   MobileNavDrawerItem,
 } from './MobileNavDrawer';
 
+export { SkeletonBlock } from './SkeletonBlock';
+export type { SkeletonBlockProps } from './SkeletonBlock';
+
 // Motion re-export (alias of components/premium/shared).
 export * from './MobileMotion';
 
