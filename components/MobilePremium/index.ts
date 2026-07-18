@@ -12,6 +12,9 @@ export type { MobileSurfaceProps } from './MobileSurface';
 export { MobileHeader } from './MobileHeader';
 export type { MobileHeaderProps } from './MobileHeader';
 
+export { MobileHomeHeader } from './MobileHomeHeader';
+export type { MobileHomeHeaderProps } from './MobileHomeHeader';
+
 export { MobileActionFooter } from './MobileActionFooter';
 export type { MobileActionFooterProps } from './MobileActionFooter';
 

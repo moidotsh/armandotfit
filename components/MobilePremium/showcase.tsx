@@ -15,7 +15,7 @@
 import React, { useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Sun, Moon, Monitor, Mail, Lock, Eye, EyeOff, Settings, Bell, Info, ChevronRight, Home, Dumbbell, TrendingUp } from '@tamagui/lucide-icons-2';
+import { Sun, Moon, Monitor, Mail, Lock, Eye, EyeOff, Settings, Bell, Info, ChevronRight, Home, Dumbbell, TrendingUp, Menu } from '@tamagui/lucide-icons-2';
 import { theme } from '../../constants';
 import { useAppTheme, useToast, type ColorSchemePreference } from '../../context';
 import {
@@ -34,6 +34,7 @@ import {
 import { MobileAtmosphere } from './MobileAtmosphere';
 import { MobileSurface } from './MobileSurface';
 import { MobileHeader } from './MobileHeader';
+import { MobileHomeHeader } from './MobileHomeHeader';
 import { MobileActionFooter } from './MobileActionFooter';
 import { MobilePrimaryButton } from './MobilePrimaryButton';
 import { MobileInput } from './MobileInput';
@@ -375,6 +376,28 @@ export function Showcase() {
         </View>
 
         <View style={styles.section}>
+          <MobileSectionEyebrow>Home Header (brand + subtitle row)</MobileSectionEyebrow>
+          <MobileHomeHeader
+            brand="Showcase"
+            subtitle="Welcome back, visitor"
+            menuButton={
+              <Pressable
+                onPress={() => {}}
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel="Open menu"
+                style={({ pressed }) => [
+                  styles.homeMenuButton,
+                  pressed ? { opacity: 0.6 } : null,
+                ]}
+              >
+                <Menu size={22} color={colors.text} />
+              </Pressable>
+            }
+          />
+        </View>
+
+        <View style={styles.section}>
           <MobileSectionEyebrow>Theme</MobileSectionEyebrow>
           <ThemeSelector />
         </View>
@@ -689,6 +712,13 @@ const styles = StyleSheet.create({
   },
   spacer: {
     height: 12,
+  },
+  homeMenuButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bodyText: {
     fontSize: 14,
