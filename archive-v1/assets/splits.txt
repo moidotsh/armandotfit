@@ -1,0 +1,87 @@
+Each split follows your updated rules exactly, including:
+* Chest alternation (Press → Fly → Press → Fly)
+* No more than one of each major category per day (Chest, Arms, Shoulders, Back, UpperLeg, LowerLeg)
+* Abs once per day
+* No overlap of muscle groups across AM/PM
+* Any muscle group hit twice in a day is kept in the same block
+* Fatigue-managed ordering (heavy → light, interleaved)
+✅ 1-A-DAY SPLIT (4 days/week)
+Each day = 6 exercises (1 per category) + abs
+Day 1 – Press Day
+* Chest – Incline Barbell Press
+* Arms – Overhead Cable Tricep Extension
+* Shoulders – Egyptian Cable Lateral Raise
+* Back – Lower Back Extension
+* UpperLeg – Leg Press
+* LowerLeg – Tibia Raise Machine
+* Abs – Captain’s Chair Leg Raise
+Day 2 – Fly Day
+* Chest – Machine Fly
+* Arms – Incline Dumbbell Curl
+* Shoulders – Cable Reverse Flyes
+* Back – Reverse Grip Lat Pulldown
+* UpperLeg – Seated Leg Curl
+* LowerLeg – Standing Calf Raise
+* Abs – Machine Ab Crunch
+Day 3 – Press Day
+* Chest – Incline Dumbbell Press
+* Arms – Machine Tricep Dip
+* Shoulders – Chest-Supported Dumbbell Lateral Raise
+* Back – Dumbbell Pullover
+* UpperLeg – Bulgarian Split Squat
+* LowerLeg – Tibia Raise Machine
+* Abs – Captain’s Chair Leg Raise
+Day 4 – Fly Day
+* Chest – Incline Dumbbell Fly
+* Arms – Reverse Curl + Hammer Curl Superset
+* Shoulders – Rope Face Pulls
+* Back – Chest-Supported Lever Row
+* UpperLeg – Leg Extension
+* LowerLeg – Leg Press Calf Raise
+* Abs – Machine Ab Crunch
+✅ 2-A-DAY SPLIT (4 days/week)
+Each day = 2 workouts (AM + PM) of 4 exercises → 8 total exercises/day → Each full day must contain one of each category (Chest, Arms, etc.) → No overlap of muscle groups across blocks → Abs once per day → Same muscle group may only appear twice if both in same block
+Day 1 – Chest Press / Triceps / Side Delts
+🟦 AM
+* Chest – Incline Barbell Press
+* UpperLeg – Leg Press
+* Arms – Overhead Cable Tricep Extension
+* Shoulders – Egyptian Cable Lateral Raise
+🟨 PM
+* LowerLeg – Tibia Raise Machine
+* Back – Lower Back Extension
+* Abs – Captain’s Chair Leg Raise
+* Arms – Cable Tricep Kickback
+Day 2 – Chest Fly / Biceps / Rear Delts
+🟦 AM
+* Back – Seated Cable Row
+* Arms – Incline Dumbbell Curl
+* Chest – Machine Fly
+* UpperLeg – Seated Leg Curl
+🟨 PM
+* Shoulders – Cable Reverse Flyes
+* LowerLeg – Standing Calf Raise
+* Back/Shoulders – Rope Grip Face Pull
+* Abs – Machine Ab Crunch
+Day 3 – Chest Press / Triceps / Side Delts
+🟦 AM
+* Chest – Incline Dumbbell Press
+* Arms – Machine Tricep Dip
+* Shoulders – Chest-Supported Dumbbell Lateral Raise
+* UpperLeg – Bulgarian Split Squat
+🟨 PM
+* LowerLeg – Tibia Raise Machine
+* Back – Dumbbell Pullover
+* Abs – Captain’s Chair Leg Raise
+* UpperLeg (Accessory) – Hip Adduction Machine
+Day 4 – Chest Fly / Biceps / Rear Delts
+🟦 AM
+* Back – Reverse Grip Lat Pulldown
+* UpperLeg – Leg Extension
+* Chest – Incline Dumbbell Fly
+* Arms – Reverse Curl + Hammer Curl Superset
+🟨 PM
+* Shoulders – Rope Face Pulls
+* LowerLeg – Leg Press Calf Raise
+* Abs – Machine Ab Crunch
+* Back – Chest-Supported Lever Row

@@ -1,0 +1,13 @@
+[install]
+# Use exact versions
+exact = true
+production = false
+optional = true
+
+[install.cache]
+# Enable the global cache
+enabled = true
+
+# JavaScript runtime options
+[runtime]
+env = { NODE_ENV = "production" }
