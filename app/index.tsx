@@ -4,7 +4,7 @@
 // vellum's placeholder home.
 
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePathname } from 'expo-router';
 import {
@@ -15,13 +15,13 @@ import {
   BarChart2,
   BookOpen,
   Settings,
+  X,
 } from '@tamagui/lucide-icons-2';
 import {
   MobileAtmosphere,
   MobileSurface,
-  MobileHeader,
+  MobileHomeHeader,
   MobilePrimaryButton,
-  MobileActionFooter,
   MobileSectionEyebrow,
   MobileNavDrawer,
   type MobileNavDrawerItem,
@@ -29,6 +29,7 @@ import {
 import { LoadingSpinner } from '../components/primitives';
 import { HamburgerButton, WorkoutSessionItem } from '../components/composed';
 import { useAuth, useAppTheme } from '../context';
+import { theme } from '../constants';
 import {
   navigateToSettings,
   navigateToWorkoutDetail,
@@ -107,10 +108,12 @@ export default function HomeScreen() {
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface="training" />
-      <MobileHeader
-        title="armandotfit"
-        eyebrow={session?.email ? `Welcome back, ${session.email.split('@')[0]}` : 'Welcome'}
-        leftAction={
+      <MobileHomeHeader
+        brand="armandotfit"
+        subtitle={
+          session?.email ? `Welcome back, ${session.email.split('@')[0]}` : 'Welcome'
+        }
+        menuButton={
           <HamburgerButton isOpen={drawerOpen} onPress={() => setDrawerOpen(true)} />
         }
       />
@@ -219,20 +222,52 @@ export default function HomeScreen() {
           </MobilePrimaryButton>
         </View>
       </ScrollView>
-      <MobileActionFooter>
-        <MobilePrimaryButton variant="ghost" onPress={navigateToSettings}>
-          Settings
-        </MobilePrimaryButton>
-        <MobilePrimaryButton variant="ghost" onPress={() => void signOut()}>
-          Sign out
-        </MobilePrimaryButton>
-      </MobileActionFooter>
       <MobileNavDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         items={navItems}
         activePathname={activePathname}
         atmosphere="training"
+        header={
+          <View style={styles.drawerHeader}>
+            <View style={styles.drawerBrandRow}>
+              <Pressable
+                onPress={() => setDrawerOpen(false)}
+                hitSlop={12}
+                accessibilityLabel="Close menu"
+                accessibilityRole="button"
+                style={({ pressed }) => [
+                  styles.iconButton,
+                  pressed ? { opacity: 0.6 } : null,
+                ]}
+              >
+                <X size={22} color={colors.text} />
+              </Pressable>
+              <Text
+                style={[theme.typography.mobileTitle, { color: colors.text }]}
+                numberOfLines={1}
+              >
+                armandotfit
+              </Text>
+            </View>
+            <Text
+              style={[
+                theme.typography.mobileSubtitle,
+                { color: colors.textSecondary, marginTop: 4 },
+              ]}
+              numberOfLines={1}
+            >
+              {session?.email
+                ? `Welcome back, ${session.email.split('@')[0]}`
+                : 'Welcome'}
+            </Text>
+          </View>
+        }
+        footer={
+          <MobilePrimaryButton variant="ghost" onPress={() => void signOut()}>
+            Sign out
+          </MobilePrimaryButton>
+        }
       />
     </SafeAreaView>
   );
@@ -254,4 +289,20 @@ const styles = StyleSheet.create({
   actionButton: { flex: 1 },
   recentList: { gap: 8 },
   emptyText: { fontSize: 13, lineHeight: 18 },
+  drawerHeader: {
+    paddingHorizontal: 20,
+  },
+  drawerBrandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 36,
+    gap: 10,
+  },
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
