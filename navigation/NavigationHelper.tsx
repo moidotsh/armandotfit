@@ -1,197 +1,163 @@
 // navigation/NavigationHelper.tsx
-import { router } from 'expo-router';
-import { SplitType } from '../constants/theme';
+//
+// The single legitimate site for raw `router.push` / `router.replace` /
+// `router.back` calls (audit C1 allows them here and in
+// `hooks/useAuthNavigation.ts`). Every other file in the app navigates
+// through the helpers exported from this file — that way the call sites
+// read as intent (`replaceWithLogin()`) rather than mechanism
+// (`router.replace('/login')`), and a global navigation change (e.g.
+// swizzling every push with a transition) lands in one place.
+//
+// Naming convention:
+//   - `navigateToX()` — `router.push` (drills in; adds to back-stack).
+//   - `replaceWithX()` — `router.replace` (redirects; back-stack stays
+//     where it was). Use for auth-flow redirects and "you can't go back
+//     to where you were" transitions (post-login, post-logout, post-register).
+//
+// Vellum ships helpers for the shell routes only. Consumers add their
+// own helpers for domain routes (workout, exercise, dashboard, …) by
+// extending this file or by adding a sibling (e.g. `DomainNavigation.tsx`
+// re-exported from `navigation/index.tsx`).
+
+import { router, Router } from 'expo-router';
+import { useAuthStore } from '../stores';
 
 /**
- * App navigation hierarchy paths
+ * Shell navigation paths. Consumers add their own routes to a sibling
+ * enum (or extend this one) — the `navigationHierarchy` map below is
+ * the source of truth for "what's the parent of X?" used by `goBack`.
  */
 export enum NavigationPath {
-    HOME = 'home',
-    WORKOUT_DETAIL = 'workout-detail',
-    SPLIT_SELECTION = 'split-selection',
-    WORKOUT_PROGRAMS = 'workout-programs',
-    EXERCISE_DETAIL = 'exercise-detail',
-    // Temporarily disabled Training Journey
-    // TRAINING_JOURNEY = 'training-journey',
-    LOGIN = 'auth/login',
-    REGISTER = 'auth/register',
-    FORGOT_PASSWORD = 'auth/forgot-password',
-    SETTINGS = 'settings'
-  }
-  
-  /**
-   * Define the navigation hierarchy relationships
-   * This maps each route to its parent route for back navigation
-   */
-  export const navigationHierarchy: Record<string, NavigationPath> = {
-    [NavigationPath.WORKOUT_DETAIL]: NavigationPath.HOME,
-    [NavigationPath.SPLIT_SELECTION]: NavigationPath.HOME,
-    [NavigationPath.WORKOUT_PROGRAMS]: NavigationPath.HOME,
-    // We'll add this when the page exists
-    // 'exercise-detail': NavigationPath.WORKOUT_DETAIL
-  };
-
-/**
- * Navigate to workout detail screen
- */
-export function navigateToWorkout(splitType: SplitType | string, day: number, from: NavigationPath = NavigationPath.HOME) {
-  router.push(`/workout-detail?type=${splitType}&day=${day}&from=${from}`);
+  HOME = 'home',
+  LOGIN = 'login',
+  REGISTER = 'register',
+  FORGOT_PASSWORD = 'forgot-password',
+  SETTINGS = 'settings',
+  DEV_PREMIUM = 'dev/premium',
 }
 
 /**
- * Navigate to workout programs screen
+ * Parent-of map used by `goBack(currentPath)`. Each value is the route
+ * the user should land on if they hit "back" from the key route.
+ *
+ * Shell routes parent to HOME (the post-auth entry point) except for
+ * FORGOT_PASSWORD, which parents to LOGIN (reached from the login screen
+ * and meant to return there).
  */
-export function navigateToWorkoutPrograms() {
-  router.push('/workout-programs');
-}
+export const navigationHierarchy: Record<string, NavigationPath> = {
+  [NavigationPath.LOGIN]: NavigationPath.HOME,
+  [NavigationPath.REGISTER]: NavigationPath.HOME,
+  [NavigationPath.FORGOT_PASSWORD]: NavigationPath.LOGIN,
+  [NavigationPath.SETTINGS]: NavigationPath.HOME,
+  [NavigationPath.DEV_PREMIUM]: NavigationPath.HOME,
+};
 
-/**
- * Navigate to split selection screen
- */
-export function navigateToSplitSelection(type: SplitType | string = 'oneADay', from: NavigationPath = NavigationPath.HOME) {
-  router.push(`/split-selection?type=${type}&from=${from}`);
-}
+// ─── Push helpers (drill in) ────────────────────────────────────────────
 
-/**
- * Navigate to home screen
- */
 export function navigateToHome() {
   router.push('/');
 }
 
-/**
- * Navigate to login screen
- */
 export function navigateToLogin() {
-  router.push('/auth/login');
+  router.push('/login');
 }
 
-/**
- * Navigate to register screen
- */
 export function navigateToRegister() {
-  router.push('/auth/register');
+  router.push('/register');
 }
 
-/**
- * Navigate to forgot password screen
- */
 export function navigateToForgotPassword() {
-  router.push('/auth/forgot-password');
+  router.push('/forgot-password');
 }
 
-/**
- * Navigate to settings screen
- */
 export function navigateToSettings() {
   router.push('/settings');
 }
 
 /**
- * Navigate to training journey screen (Temporarily disabled)
+ * Navigate to the design-system showcase. Useful while developing — not
+ * linked from any user-facing surface by default.
  */
-// export function navigateToTrainingJourney() {
-//   router.push('/training-journey');
-// }
+export function navigateToPremiumShowcase() {
+  router.push('/dev/premium');
+}
+
+// ─── Replace helpers (redirects) ────────────────────────────────────────
+
+export function replaceWithHome() {
+  router.replace('/');
+}
+
+export function replaceWithLogin() {
+  router.replace('/login');
+}
+
+export function replaceWithRegister() {
+  router.replace('/register');
+}
 
 /**
- * Intelligent back navigation that respects the app hierarchy
- * If from parameter is provided in route, use that
- * Otherwise, use the defined hierarchy
+ * Replace with the forgot-password screen. Reached from the login
+ * screen's "forgot password?" link. `push` is usually right there
+ * (login should stay in the back-stack) — this variant is for the rare
+ * redirect-from-deep-link case.
  */
-export function goBack(currentPath: NavigationPath | string, fromParam?: string) {
-    // If a specific 'from' path is defined in the URL params, prioritize that
-    if (fromParam) {
-      if (fromParam === 'home' || Object.values(NavigationPath).includes(fromParam as NavigationPath)) {
-        navigateToPath(fromParam as NavigationPath);
-        return;
-      }
-    }
-    
-    // If the current path is a known path in our hierarchy
-    if (Object.values(NavigationPath).includes(currentPath as NavigationPath)) {
-      const parentPath = navigationHierarchy[currentPath] || NavigationPath.HOME;
-      navigateToPath(parentPath);
-      return;
-    }
-    
-    // Default fallback - just go home
-    navigateToHome();
+export function replaceWithForgotPassword() {
+  router.replace('/forgot-password');
+}
+
+// ─── Back navigation ────────────────────────────────────────────────────
+
+/**
+ * Safe back navigation — prefers `router.back()` when there's history to
+ * go back to, otherwise falls back to home (if authenticated) or login.
+ *
+ * Use this instead of `router.back()` anywhere a user can hit "back"
+ * without a guaranteed parent route (deep links, refreshed PWA tabs).
+ *
+ * Reads auth state via `useAuthStore.getState()` (non-reactive) so the
+ * decision reflects the current auth state at call time without
+ * subscribing the helper to the store.
+ */
+export function safeGoBack() {
+  if (router.canGoBack()) {
+    router.back();
+    return;
   }
 
+  const { status } = useAuthStore.getState();
+  if (status === 'authenticated') {
+    router.replace('/');
+  } else {
+    router.replace('/login');
+  }
+}
+
 /**
- * Navigate to any path in the app
+ * Hierarchy-respecting back navigation. Given the current path, jumps
+ * to its declared parent (see `navigationHierarchy`) instead of
+ * trusting the browser's history stack.
+ *
+ * Prefer `safeGoBack()` for the common case — this variant is for
+ * flows where the parent route is meaningfully different from "the page
+ * you came from" (e.g. settings deep-linked from a notification should
+ * back to home, not to the notification).
  */
-/**
- * Navigate to any path in the app
- */
-export function navigateToPath(path: NavigationPath, params: Record<string, string> = {}) {
-    // Add debugging logs
-    console.log('NavigateToPath called with:', { path, params });
-    
-    // Handle home route specially
-    if (path === NavigationPath.HOME) {
-      console.log('Navigating to home');
+export function goBack(currentPath: NavigationPath | string) {
+  if (Object.values(NavigationPath).includes(currentPath as NavigationPath)) {
+    const parentPath = navigationHierarchy[currentPath] || NavigationPath.HOME;
+    if (parentPath === NavigationPath.HOME) {
       router.push('/');
       return;
     }
-    
-    // Try the direct string approach for exercise-detail
-    if (path === NavigationPath.EXERCISE_DETAIL) {
-      // Build query string manually
-      const queryString = Object.entries(params)
-        .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
-        .join('&');
-        
-      const fullPath = `/exercise-detail${queryString ? `?${queryString}` : ''}`;
-      console.log('Using direct navigation to:', fullPath);
-      
-      try {
-        router.push(fullPath as any);
-        console.log('Direct navigation attempt completed');
-      } catch (error) {
-        console.error('Direct navigation error:', error);
-      }
-      return;
-    }
-    
-    // For other routes, use the object approach
-    const navigationObject = {
-      pathname: `/${path}`,
-      params
-    };
-    
-    console.log('Navigation object:', navigationObject);
-    
-    try {
-      router.push(navigationObject as any);
-      console.log('Navigation successful');
-    } catch (error) {
-      console.error('Navigation error:', error);
-    }
+    router.push(`/${parentPath}`);
+    return;
   }
 
-/**
- * Type aliases for route params - to be used with useLocalSearchParams
- * We use type annotation instead of interfaces to avoid the Route constraint issue
- */
-export type WorkoutDetailRouteParams = {
-  type?: string;
-  day?: string;
-  from?: string;
-};
+  router.push('/');
+}
 
-export type SplitSelectionRouteParams = {
-  type?: string;
-  from?: string;
-};
-
-export type ExerciseDetailRouteParams = {
-    id?: string;
-    from?: string;
-  };
-  
-  // Define future route types here - we'll add the actual routes later
-  export const FUTURE_ROUTES = {
-    EXERCISE_DETAIL: 'exercise-detail'
-  };
+// Re-export the underlying router instance + type for consumers that
+// need to pass it along (e.g. a navigation context provider).
+export { router as routerInstance };
+export type { Router };

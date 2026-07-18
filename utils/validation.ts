@@ -1,183 +1,160 @@
-// utils/validation.ts - Input validation and sanitization utilities
+// utils/validation.ts
+// Generic, domain-agnostic input validation. Domain-specific validation
+// (workouts, products, sessions, etc.) lives in consumer repos — usually
+// co-located with the repository that needs it. Keeping this file slim is
+// load-bearing: every helper here ends up in every consumer.
 
-/**
- * Email validation regex
- */
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+}
 
-/**
- * Strong password requirements:
- * - At least 8 characters
- * - At least one uppercase letter
- * - At least one lowercase letter  
- * - At least one number
- * - At least one special character
- */
-const STRONG_PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+export interface DateValidationResult {
+  isValid: boolean;
+  error?: string;
+  normalizedDate?: string;
+}
 
-/**
- * Basic sanitization - removes potentially dangerous characters
- */
+export interface ValidationConfig {
+  allowFutureDates?: boolean;
+  maxDaysInPast?: number;
+}
+
+const DEFAULT_CONFIG: Required<ValidationConfig> = {
+  allowFutureDates: false,
+  maxDaysInPast: 365,
+};
+
+export function validateDateInput(
+  dateString: string,
+  config: Partial<ValidationConfig> = {},
+): DateValidationResult {
+  const validationConfig = { ...DEFAULT_CONFIG, ...config };
+  const { allowFutureDates, maxDaysInPast } = validationConfig;
+
+  const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) {
+    return { isValid: false, error: 'Invalid date format' };
+  }
+
+  if (!allowFutureDates) {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const compareDate = new Date(date);
+    compareDate.setHours(0, 0, 0, 0);
+
+    if (compareDate > now) {
+      return { isValid: false, error: 'Date cannot be in the future' };
+    }
+  }
+
+  const now = new Date();
+  const daysInPast = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (daysInPast > maxDaysInPast) {
+    return {
+      isValid: false,
+      error: `Date is too far in the past (more than ${maxDaysInPast} days)`,
+    };
+  }
+
+  const normalizedDate = date.toISOString().split('T')[0];
+
+  return { isValid: true, normalizedDate };
+}
+
 export function sanitizeInput(input: string): string {
-  if (typeof input !== 'string') return '';
-  
   return input
-    .trim()
-    .replace(/[<>]/g, '') // Remove potential HTML tags
-    .replace(/javascript:/gi, '') // Remove javascript: protocols
-    .replace(/on\w+=/gi, '') // Remove potential event handlers
-    .slice(0, 1000); // Limit length
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
 }
 
-/**
- * Sanitize and validate display name
- */
-export function validateDisplayName(name: string): { isValid: boolean; error?: string; sanitized: string } {
-  const sanitized = sanitizeInput(name);
-  
-  if (!sanitized || sanitized.length < 1) {
-    return { isValid: false, error: 'Display name is required', sanitized };
-  }
-  
-  if (sanitized.length > 50) {
-    return { isValid: false, error: 'Display name must be 50 characters or less', sanitized };
-  }
-  
-  // Allow letters, numbers, spaces, hyphens, apostrophes
-  if (!/^[a-zA-Z0-9\s\-']+$/.test(sanitized)) {
-    return { isValid: false, error: 'Display name contains invalid characters', sanitized };
-  }
-  
-  return { isValid: true, sanitized };
-}
-
-/**
- * Validate email address
- */
-export function validateEmail(email: string): { isValid: boolean; error?: string; sanitized: string } {
-  const sanitized = sanitizeInput(email).toLowerCase();
-  
-  if (!sanitized) {
-    return { isValid: false, error: 'Email is required', sanitized };
-  }
-  
-  if (!EMAIL_REGEX.test(sanitized)) {
-    return { isValid: false, error: 'Please enter a valid email address', sanitized };
-  }
-  
-  if (sanitized.length > 254) {
-    return { isValid: false, error: 'Email address is too long', sanitized };
-  }
-  
-  return { isValid: true, sanitized };
-}
-
-/**
- * Validate password strength
- */
-export function validatePassword(password: string): { isValid: boolean; error?: string; strength: 'weak' | 'medium' | 'strong' } {
-  if (!password) {
-    return { isValid: false, error: 'Password is required', strength: 'weak' };
-  }
-  
-  if (password.length < 8) {
-    return { isValid: false, error: 'Password must be at least 8 characters long', strength: 'weak' };
-  }
-  
-  if (password.length > 128) {
-    return { isValid: false, error: 'Password is too long', strength: 'weak' };
-  }
-  
-  // Check for strong password
-  if (STRONG_PASSWORD_REGEX.test(password)) {
-    return { isValid: true, strength: 'strong' };
-  }
-  
-  // Check for medium password (at least uppercase, lowercase, and number)
-  const hasUpper = /[A-Z]/.test(password);
-  const hasLower = /[a-z]/.test(password);
-  const hasNumber = /\d/.test(password);
-  
-  if (hasUpper && hasLower && hasNumber) {
-    return { isValid: true, strength: 'medium' };
-  }
-  
-  return { 
-    isValid: false, 
-    error: 'Password must contain uppercase, lowercase, and number characters', 
-    strength: 'weak' 
-  };
-}
-
-/**
- * Validate workout preferences
- */
-export function validateWorkoutPreferences(data: {
-  preferredSplit?: string;
-  weeklyGoal?: number;
-  defaultDay?: number;
-}): { isValid: boolean; errors: string[] } {
+export function validateAndSanitize(input: string, maxLength = 1000): ValidationResult {
   const errors: string[] = [];
-  
-  if (data.preferredSplit && !['oneADay', 'twoADay'].includes(data.preferredSplit)) {
-    errors.push('Invalid workout split preference');
+
+  if (typeof input !== 'string') {
+    return { isValid: false, errors: ['Input must be a string'], warnings: [] };
   }
-  
-  if (data.weeklyGoal !== undefined) {
-    if (typeof data.weeklyGoal !== 'number' || data.weeklyGoal < 1 || data.weeklyGoal > 7) {
-      errors.push('Weekly goal must be between 1 and 7 workouts');
-    }
+
+  if (input.length > maxLength) {
+    errors.push(`Input exceeds maximum length of ${maxLength} characters`);
   }
-  
-  if (data.defaultDay !== undefined) {
-    if (typeof data.defaultDay !== 'number' || data.defaultDay < 1 || data.defaultDay > 7) {
-      errors.push('Default day must be between 1 and 7');
-    }
+
+  if (input.includes('\0')) {
+    errors.push('Input contains null bytes');
   }
-  
-  return { isValid: errors.length === 0, errors };
+
+  return { isValid: errors.length === 0, errors, warnings: [] };
+}
+
+export function formatValidationErrors(result: ValidationResult): string {
+  return result.isValid ? '' : result.errors.join(', ');
+}
+
+export function formatValidationWarnings(result: ValidationResult): string {
+  return result.warnings.length === 0 ? '' : result.warnings.join(', ');
 }
 
 /**
- * Rate limiting helper
+ * Normalize a date string to YYYY-MM-DD format for consistent comparisons.
+ * Builds the string from local components (NOT toISOString) so users east of
+ * UTC don't see their date shifted backwards by a day.
  */
-export class RateLimiter {
-  private attempts: Map<string, number[]> = new Map();
-  
-  constructor(
-    private maxAttempts: number = 5,
-    private windowMs: number = 15 * 60 * 1000 // 15 minutes
-  ) {}
-  
-  isAllowed(identifier: string): boolean {
-    const now = Date.now();
-    const attempts = this.attempts.get(identifier) || [];
-    
-    // Clean old attempts
-    const recentAttempts = attempts.filter(time => now - time < this.windowMs);
-    
-    if (recentAttempts.length >= this.maxAttempts) {
-      return false;
+export function normalizeDateToISO(date: string): string | null {
+  if (!date || typeof date !== 'string') {
+    return null;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return date;
+  }
+
+  if (date.includes('T')) {
+    const isoDate = date.split('T')[0];
+    if (/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
+      return isoDate;
     }
-    
-    // Record this attempt
-    recentAttempts.push(now);
-    this.attempts.set(identifier, recentAttempts);
-    
-    return true;
   }
-  
-  getRemainingTime(identifier: string): number {
-    const attempts = this.attempts.get(identifier) || [];
-    if (attempts.length < this.maxAttempts) return 0;
-    
-    const oldestAttempt = Math.min(...attempts);
-    const remainingMs = this.windowMs - (Date.now() - oldestAttempt);
-    
-    return Math.max(0, remainingMs);
+
+  const parsedDate = new Date(date);
+  if (isNaN(parsedDate.getTime())) {
+    return null;
   }
+
+  const y = parsedDate.getFullYear();
+  const m = String(parsedDate.getMonth() + 1).padStart(2, '0');
+  const d = String(parsedDate.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
-// Global rate limiters
-export const authRateLimiter = new RateLimiter(5, 15 * 60 * 1000); // 5 attempts per 15 minutes
-export const profileUpdateRateLimiter = new RateLimiter(10, 60 * 1000); // 10 updates per minute
+export function isSameDay(date1: string, date2: string): boolean {
+  const normalized1 = normalizeDateToISO(date1);
+  const normalized2 = normalizeDateToISO(date2);
+
+  if (!normalized1 || !normalized2) {
+    return false;
+  }
+
+  return normalized1 === normalized2;
+}
+
+/**
+ * Compose multiple validators — short-circuits on the first failure.
+ * Useful for repository input validation where several checks must pass.
+ */
+export function composeValidators(
+  ...validators: Array<() => ValidationResult>
+): ValidationResult {
+  for (const validator of validators) {
+    const result = validator();
+    if (!result.isValid) {
+      return result;
+    }
+  }
+  return { isValid: true, errors: [], warnings: [] };
+}

@@ -1,0 +1,254 @@
+// utils/errors.ts
+// Standardized error handling. AppError is the boundary-crossing error type —
+// audit-logging-errors (S10) blocks raw `throw new Error(...)` outside its
+// carve-out and expects AppError for anything that crosses a service boundary.
+
+export enum ErrorCode {
+  NETWORK_ERROR = 'ERR_NETWORK',
+  TIMEOUT = 'ERR_TIMEOUT',
+  SERVER_ERROR = 'ERR_SERVER',
+  RATE_LIMITED = 'ERR_RATE_LIMITED',
+
+  AUTH_ERROR = 'ERR_AUTH',
+  INVALID_CREDENTIALS = 'ERR_INVALID_CREDENTIALS',
+  SESSION_EXPIRED = 'ERR_SESSION_EXPIRED',
+  UNAUTHORIZED = 'ERR_UNAUTHORIZED',
+
+  VALIDATION_ERROR = 'ERR_VALIDATION',
+  INVALID_INPUT = 'ERR_INVALID_INPUT',
+  DUPLICATE_ENTRY = 'ERR_DUPLICATE',
+
+  NOT_FOUND = 'ERR_NOT_FOUND',
+  DATA_CORRUPTION = 'ERR_DATA_CORRUPTION',
+  ENCRYPTION_ERROR = 'ERR_ENCRYPTION',
+
+  STORAGE_ERROR = 'ERR_STORAGE',
+  STORAGE_FULL = 'ERR_STORAGE_FULL',
+
+  UNKNOWN = 'ERR_UNKNOWN',
+  CANCELLED = 'ERR_CANCELLED',
+}
+
+export class AppError extends Error {
+  public readonly code: ErrorCode;
+  public readonly details?: unknown;
+  public readonly timestamp: Date;
+  public readonly recoverable: boolean;
+
+  constructor(
+    message: string,
+    code: ErrorCode = ErrorCode.UNKNOWN,
+    options?: {
+      details?: unknown;
+      recoverable?: boolean;
+      cause?: Error;
+    },
+  ) {
+    super(message, { cause: options?.cause });
+    this.name = 'AppError';
+    this.code = code;
+    this.details = options?.details;
+    this.timestamp = new Date();
+    this.recoverable = options?.recoverable ?? isRecoverableCode(code);
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, AppError);
+    }
+  }
+
+  static fromUnknown(error: unknown, defaultMessage = 'An unexpected error occurred'): AppError {
+    if (error instanceof AppError) {
+      return error;
+    }
+    if (error instanceof Error) {
+      return new AppError(error.message, ErrorCode.UNKNOWN, {
+        cause: error,
+        details: error,
+      });
+    }
+    return new AppError(defaultMessage, ErrorCode.UNKNOWN, { details: error });
+  }
+
+  is(code: ErrorCode): boolean {
+    return this.code === code;
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      code: this.code,
+      recoverable: this.recoverable,
+      timestamp: this.timestamp.toISOString(),
+      details: this.details,
+      stack: this.stack,
+    };
+  }
+}
+
+function isRecoverableCode(code: ErrorCode): boolean {
+  const recoverableCodes = [
+    ErrorCode.NETWORK_ERROR,
+    ErrorCode.TIMEOUT,
+    ErrorCode.RATE_LIMITED,
+    ErrorCode.SESSION_EXPIRED,
+    ErrorCode.STORAGE_FULL,
+  ];
+  return recoverableCodes.includes(code);
+}
+
+export function getUserFriendlyMessage(error: AppError | Error | unknown): string {
+  if (error instanceof AppError) {
+    switch (error.code) {
+      case ErrorCode.NETWORK_ERROR:
+        return 'Unable to connect. Please check your internet connection and try again.';
+      case ErrorCode.TIMEOUT:
+        return 'The request took too long. Please try again.';
+      case ErrorCode.SERVER_ERROR:
+        return 'Server error. Please try again later.';
+      case ErrorCode.RATE_LIMITED:
+        return 'Too many requests. Please wait a moment and try again.';
+      case ErrorCode.AUTH_ERROR:
+      case ErrorCode.INVALID_CREDENTIALS:
+        return 'Invalid credentials. Please try again.';
+      case ErrorCode.SESSION_EXPIRED:
+        return 'Your session has expired. Please log in again.';
+      case ErrorCode.UNAUTHORIZED:
+        return 'You are not authorized to perform this action.';
+      case ErrorCode.VALIDATION_ERROR:
+      case ErrorCode.INVALID_INPUT:
+        return error.message || 'Invalid input. Please check your entries.';
+      case ErrorCode.DUPLICATE_ENTRY:
+        return 'This entry already exists.';
+      case ErrorCode.NOT_FOUND:
+        return 'The requested item was not found.';
+      case ErrorCode.DATA_CORRUPTION:
+        return 'Data corruption detected. Please contact support.';
+      case ErrorCode.ENCRYPTION_ERROR:
+        return 'Unable to secure your data. Please try again.';
+      case ErrorCode.STORAGE_ERROR:
+      case ErrorCode.STORAGE_FULL:
+        return 'Storage error. Please free up space and try again.';
+      case ErrorCode.CANCELLED:
+        return 'Operation cancelled.';
+      default:
+        return error.message || 'An unexpected error occurred.';
+    }
+  }
+
+  if (error instanceof Error) {
+    return error.message || 'An unexpected error occurred.';
+  }
+
+  return 'An unexpected error occurred.';
+}
+
+export function handleApiError(error: unknown, context?: string): AppError {
+  if (error instanceof AppError) {
+    return error;
+  }
+
+  if (error instanceof TypeError && error.message.includes('fetch')) {
+    return new AppError('Network request failed', ErrorCode.NETWORK_ERROR, {
+      cause: error as Error,
+      details: { context },
+    });
+  }
+
+  if (isSupabaseError(error)) {
+    return handleSupabaseError(error, context);
+  }
+
+  if (error instanceof Error) {
+    return new AppError(error.message, ErrorCode.UNKNOWN, {
+      cause: error,
+      details: { context },
+    });
+  }
+
+  return new AppError('An unexpected error occurred', ErrorCode.UNKNOWN, {
+    details: { error, context },
+  });
+}
+
+interface SupabaseError {
+  message: string;
+  code?: string;
+  details?: string;
+  hint?: string;
+}
+
+function isSupabaseError(error: unknown): error is SupabaseError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as Record<string, unknown>).message === 'string'
+  );
+}
+
+function handleSupabaseError(error: SupabaseError, context?: string): AppError {
+  const code = mapSupabaseCode(error.code);
+
+  return new AppError(error.message || 'Database error', code, {
+    details: {
+      supabaseCode: error.code,
+      supabaseDetails: error.details,
+      supabaseHint: error.hint,
+      context,
+    },
+  });
+}
+
+function mapSupabaseCode(code?: string): ErrorCode {
+  if (!code) return ErrorCode.UNKNOWN;
+
+  const codeMap: Record<string, ErrorCode> = {
+    PGRST301: ErrorCode.NOT_FOUND,
+    PGRST302: ErrorCode.NOT_FOUND,
+    '23505': ErrorCode.DUPLICATE_ENTRY,
+    '23503': ErrorCode.VALIDATION_ERROR,
+    '23502': ErrorCode.VALIDATION_ERROR,
+    '22001': ErrorCode.VALIDATION_ERROR,
+    '22003': ErrorCode.VALIDATION_ERROR,
+    '08006': ErrorCode.NETWORK_ERROR,
+    '08001': ErrorCode.NETWORK_ERROR,
+    '57014': ErrorCode.TIMEOUT,
+  };
+
+  return codeMap[code] || ErrorCode.UNKNOWN;
+}
+
+export type Result<T, E = AppError> =
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+export function success<T>(data: T): Result<T> {
+  return { success: true, data };
+}
+
+export function failure<E = AppError>(error: E): Result<never, E> {
+  return { success: false, error };
+}
+
+export async function tryAsync<T>(
+  operation: () => Promise<T>,
+  context?: string,
+): Promise<Result<T>> {
+  try {
+    const data = await operation();
+    return success(data);
+  } catch (error) {
+    return failure(handleApiError(error, context));
+  }
+}
+
+export function isSuccess<T>(result: Result<T>): result is { success: true; data: T } {
+  return result.success === true;
+}
+
+export function isFailure<T>(result: Result<T>): result is { success: false; error: AppError } {
+  return result.success === false;
+}
+
+export default AppError;

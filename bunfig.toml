@@ -1,13 +1,4 @@
 [install]
-# Use exact versions
-exact = true
-production = false
-optional = true
-
-[install.cache]
-# Enable the global cache
-enabled = true
-
-# JavaScript runtime options
-[runtime]
-env = { NODE_ENV = "production" }
+# Vellum uses bun for everything. Never commit package-lock.json or yarn.lock —
+# audit-pattern-compliance enforces this at pre-commit.
+saveLockfile = true

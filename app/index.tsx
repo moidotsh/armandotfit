@@ -1,430 +1,86 @@
-// Updated app/index.tsx with navigation components and settings button
+// app/index.tsx
+// Home placeholder. Vellum ships a single-CTA surface so the auth →
+// home flow is verifiable end-to-end. Consumers replace this with
+// their actual home/dashboard route (and re-evaluate gating per the
+// §9 decision framework in docs/architecture/mobile-premium-design-system.md).
 
-import React, { useState, useRef, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { Animated, useWindowDimensions } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  YStack,
-  XStack,
-  Text,
-  Card,
-  H1,
-  Button,
-  Separator
-} from 'tamagui';
-import { format } from 'date-fns';
-import { BarChart2, TrendingUp, AlertCircle, Settings, Bell, Activity, Database, Calendar, Zap } from '@tamagui/lucide-icons';
-import { useAppTheme } from '../components/ThemeProvider';
-import { SplitType } from '../constants/theme';
-import { DaySelector } from '../components/DaySelector';
-import { FeatureSection } from '../components/FeatureCard';
-import { useWorkoutNotifications } from '../components/RealTime/WorkoutNotifications';
-
-import { useRealTime } from '../context/RealTimeContext';
-import { navigateToWorkout, navigateToWorkoutPrograms, NavigationPath } from '../navigation';
-import { router } from 'expo-router';
-
-// App version displayed in the UI
-const APP_VERSION = "v1.0.3";
+  MobileAtmosphere,
+  MobileSurface,
+  MobileHeader,
+  MobilePrimaryButton,
+  MobileActionFooter,
+  MobileSectionEyebrow,
+} from '../components/MobilePremium';
+import { useAuth, useAppTheme } from '../context';
+import { navigateToSettings, navigateToPremiumShowcase } from '../navigation';
 
 export default function HomeScreen() {
-  const { colors, fontSize, spacing, borderRadius, shadows, isDark, getShadow, isNarrow, screenWidth, getSpacing, getFontSize, getBorderRadius } = useAppTheme();
-  const { width } = useWindowDimensions();
-  // const { unreadSharesCount, isConnected } = useRealTime();
-  const { requestNotificationPermission } = useWorkoutNotifications();
-  const today = new Date();
-  const formattedDate = format(today, 'MMMM d, yyyy');
-
-  // Request notification permission on mount
-  useEffect(() => {
-    requestNotificationPermission();
-  }, []);
-
-  // State for selected split type - null by default (no selection)
-  const [splitType, setSplitType] = useState<SplitType | null>(null);
-
-  // State for selected day - null by default (no selection)
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
-
-  // State for showing the alert message
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  // FIXED: Calculate proper pill colors based on theme
-  const getToggleStyles = () => {
-    return {
-      backgroundColor: isDark ? "#333333" : "#DDDDDD", // Darker in dark mode, lighter in light mode
-      pillColor: isDark ? "#FFFFFF" : "#FFFFFF", // Always white pill
-      selectedTextColor: "#000000", // Always black text on white pill
-      unselectedTextColor: isDark ? "#FFFFFF" : "#333333" // White on dark, dark on light
-    };
-  };
-
-  const toggleStyles = getToggleStyles();
-
-  // ADD THIS TEST SECTION to verify the enhanced theme is working:
-  console.log('🎨 Enhanced Theme Test:', {
-    'New Colors Available': Object.keys(colors).length > 5,
-    'New Spacing Scale': spacing.xxxlarge === 64,
-    'Helper Functions': typeof getShadow === 'function',
-    'Responsive Helpers': typeof isNarrow === 'boolean'
-  });
-
-  // Handle alert animation
-  useEffect(() => {
-    if (showAlert) {
-      Animated.sequence([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(2000),
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        })
-      ]).start(() => setShowAlert(false));
-    }
-  }, [showAlert, fadeAnim]);
-
-  const handleStartWorkoutPress = () => {
-    if (!splitType && !selectedDay) {
-      setAlertMessage('Please select a workout type and day');
-      setShowAlert(true);
-    } else if (!splitType) {
-      setAlertMessage('Please select a workout type');
-      setShowAlert(true);
-    } else if (!selectedDay) {
-      setAlertMessage('Please select a workout day');
-      setShowAlert(true);
-    } else {
-      navigateToWorkout(splitType, selectedDay, NavigationPath.HOME);
-    }
-  };
-
-  const handleSplitTypeChange = (type: SplitType) => {
-    setSplitType(type);
-    // Keep the selected day if it's valid (1-4)
-    setSelectedDay(prevDay => (prevDay && prevDay >= 1 && prevDay <= 4) ? prevDay : null);
-  };
-
-  const navigateToSection = (section: string) => {
-    console.log(`Navigate to ${section}`);
-    // Future implementation
-  };
-
-  // Check if we're ready to start the workout
-  const isStartEnabled = splitType !== null && selectedDay !== null;
-
-  // Button height stays consistent
-  const buttonHeight = 70;
-
-  // Feature data for cards with enhanced descriptions and colors
-  const features = [
-    {
-      icon: <BarChart2 size={isNarrow ? 25 : 30} color={colors.primary} />,
-      title: "Analytics",
-      subtitle: "Track your performance",
-      onPress: () => navigateToSection('analytics')
-    },
-    {
-      icon: <TrendingUp size={isNarrow ? 25 : 30} color={colors.success} />,
-      title: "Progression",
-      subtitle: "Monitor your improvements",
-      badge: "New",
-      onPress: () => navigateToSection('progress')
-    },
-    // Temporarily disabled Training Journey feature
-    // {
-    //   icon: <Activity size={isNarrow ? 25 : 30} color={colors.warning} />,
-    //   title: "Training Journey",
-    //   subtitle: "Explore your fitness world",
-    //   badge: "🎮",
-    //   onPress: () => router.push('/training-journey')
-    // },
-    {
-      icon: <Calendar size={isNarrow ? 25 : 30} color={colors.info} />,
-      title: "Workout Programs",
-      subtitle: "View all workout routines",
-      onPress: () => navigateToWorkoutPrograms()
-    },
-    {
-      icon: <Database size={isNarrow ? 25 : 30} color={colors.info} />,
-      title: "Exercise Library",
-      subtitle: "Browse 200+ exercises",
-      onPress: () => router.push('/exercise-database')
-    }
-  ];
+  const { session, signOut } = useAuth();
+  const { colors } = useAppTheme();
 
   return (
-    <YStack
-      flex={1}
-      backgroundColor={colors.background}
-      paddingTop={60}
-      paddingHorizontal={isNarrow ? spacing.medium : spacing.large}
-      overflow="scroll" // Enable scrolling
-    >
-      <StatusBar style={isDark ? 'light' : 'dark'} />
-
-      {/* Inline alert message */}
-      {showAlert && (
-        <Animated.View
-          style={{
-            position: 'absolute',
-            top: 100,
-            left: isNarrow ? spacing.medium : spacing.large,
-            right: isNarrow ? spacing.medium : spacing.large,
-            backgroundColor: colors.alert,
-            padding: spacing.medium,
-            borderRadius: borderRadius.medium,
-            flexDirection: 'row',
-            alignItems: 'center',
-            zIndex: 10,
-            opacity: fadeAnim,
-            ...shadows.medium
-          }}
-        >
-          <AlertCircle color="white" style={{ marginRight: 10 }} />
-          <Text color="white" fontWeight="bold">
-            {alertMessage}
+    <SafeAreaView style={[styles.shell, { backgroundColor: colors.backgroundDeep }]} edges={['top', 'bottom']}>
+      <MobileAtmosphere surface="analytics" />
+      <MobileHeader
+        title="Vellum"
+        eyebrow="Welcome"
+      />
+      <View style={styles.body}>
+        <MobileSectionEyebrow>Getting Started</MobileSectionEyebrow>
+        <MobileSurface padding={20}>
+          <Text style={[styles.text, { color: colors.text }]}>
+            This is vellum&rsquo;s home placeholder. The shell is wired end-to-end:
+            auth, navigation, MobilePremium design system, Zustand stores,
+            React Query, and the 10-audit pre-commit gate all work.
           </Text>
-        </Animated.View>
-      )}
-
-      <YStack space="$2" paddingBottom={spacing.small}>
-        <XStack alignItems="flex-start" justifyContent="space-between" width="100%">
-          <YStack>
-            <XStack alignItems="baseline" space={spacing.small}>
-              <H1
-                color={colors.text}
-                fontSize={isNarrow ? 40 : 50}
-              >
-                Hi Arman!
-              </H1>
-              {/* Streak badge inline with greeting */}
-              <XStack alignItems="center" space={spacing.xsmall}>
-                <YStack
-                  width={24}
-                  height={24}
-                  borderRadius={12}
-                  backgroundColor={colors.warning + '20'}
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Zap size={12} color={colors.warning} />
-                </YStack>
-                <Text 
-                  fontSize={16} 
-                  fontWeight="600" 
-                  color={colors.text}
-                  opacity={0.9}
-                >
-                  5
-                </Text>
-              </XStack>
-            </XStack>
-            <Text color={colors.textMuted} fontSize={fontSize.medium} marginTop={spacing.xsmall}>{formattedDate}</Text>
-          </YStack>
-          <XStack alignItems="center" space={spacing.small}>
-            <Button
-              size="$3"
-              circular
-              backgroundColor="transparent"
-              onPress={() => router.push('/progression')}
-              pressStyle={{ opacity: 0.7 }}
-              padding={spacing.small}
-            >
-              <Activity size={22} color={colors.text} />
-            </Button>
-            <Button
-              size="$3"
-              circular
-              backgroundColor="transparent"
-              onPress={() => router.push('/settings')}
-              pressStyle={{ opacity: 0.7 }}
-              padding={spacing.small}
-            >
-              <Settings size={22} color={colors.text} />
-            </Button>
-            <XStack alignItems="center" space={spacing.xsmall}>
-              <Text
-                color={colors.textMuted}
-                fontSize={fontSize.small}
-              >
-                {APP_VERSION}
-              </Text>
-            </XStack>
-          </XStack>
-        </XStack>
-      </YStack>
-
-      {/* Workout Configuration Card */}
-      <Card
-        marginTop={spacing.xlarge}
-        marginBottom={spacing.large}
-        backgroundColor={colors.cardAlt}
-        padding={spacing.medium}
-        borderRadius={borderRadius.medium}
-      >
-        {/* Split Type Selection */}
-        <YStack width="100%" space={spacing.medium}>
-          <Text
-            color={colors.text}
-            fontSize={fontSize.large}
-            fontWeight="600"
-          >
-            Full Body:
+          <View style={{ height: 12 }} />
+          <Text style={[styles.text, { color: colors.textSecondary }]}>
+            Signed in as{' '}
+            <Text style={{ color: colors.text, fontWeight: '600' }}>
+              {session?.email ?? 'unknown'}
+            </Text>
+            .
           </Text>
+        </MobileSurface>
 
-          {/* Split Type Toggle */}
-          <XStack
-            height={50}
-            position="relative"
-            maxWidth="100%"
-            overflow="hidden"
-            // Prevent focus styling on mobile web
-            focusable={false}
-            userSelect="none"
-            // Add these webkit properties to disable focus appearance
-            style={{
-              WebkitTapHighlightColor: 'transparent',
-              WebkitTouchCallout: 'none',
-              userSelect: 'none',
-              outline: 'none'
-            }}
-          >
-            {/* Dark background container */}
-            <XStack
-              position="absolute"
-              left={0}
-              right={0}
-              top={0}
-              bottom={0}
-              backgroundColor={toggleStyles.backgroundColor}
-              borderRadius={borderRadius.pill}
-            />
-
-            {/* White pill for selected option */}
-            {splitType && (
-              <XStack
-                position="absolute"
-                width="50%"
-                height={50}
-                borderRadius={borderRadius.pill}
-                backgroundColor={toggleStyles.pillColor}
-                left={splitType === 'oneADay' ? 0 : "50%"}
-                top={0}
-              />
-            )}
-
-            {/* Toggle Buttons */}
-            <Button
-              position="absolute"
-              left={0}
-              top={0}
-              width="50%"
-              height={50}
-              backgroundColor="transparent"
-              color={splitType === 'oneADay' ? toggleStyles.selectedTextColor : toggleStyles.unselectedTextColor}
-              onPress={() => handleSplitTypeChange('oneADay')}
-              zIndex={1}
-              // FIXED: Remove conflicting focus/style properties
-              outlineWidth={0}
-              outlineStyle="none"
-              style={{
-                WebkitTapHighlightColor: 'transparent',
-                WebkitTouchCallout: 'none',
-                userSelect: 'none',
-              }}
-            >
-              Single
-            </Button>
-
-            <Button
-              position="absolute"
-              left="50%"
-              top={0}
-              width="50%"
-              height={50}
-              backgroundColor="transparent"
-              color={splitType === 'twoADay' ? toggleStyles.selectedTextColor : toggleStyles.unselectedTextColor}
-              onPress={() => handleSplitTypeChange('twoADay')}
-              zIndex={1}
-              // FIXED: Remove conflicting focus/style properties
-              outlineWidth={0}
-              outlineStyle="none"
-              style={{
-                WebkitTapHighlightColor: 'transparent',
-                WebkitTouchCallout: 'none',
-                userSelect: 'none',
-              }}
-            >
-              Dual
-            </Button>
-          </XStack>
-
-          <Separator marginVertical={spacing.medium} />
-
-          {/* Day Selection - Now with consistent orange highlighting */}
-          <DaySelector
-            selectedDay={selectedDay}
-            onDaySelect={setSelectedDay}
-          />
-        </YStack>
-      </Card>
-
-      {/* Start Workout Button - Fixed height regardless of state */}
-      <Button
-        size="$8"  // Use a consistent larger size 
-        backgroundColor={isStartEnabled ? colors.buttonBackground : colors.buttonBackgroundDisabled}
-        color="white"
-        fontWeight="bold"
-        fontSize={isNarrow ? fontSize.large : fontSize.xlarge}
-        height={buttonHeight} // Explicitly set height to be consistent
-        marginVertical={spacing.large} // Fixed margin
-        borderRadius={borderRadius.large}
-        onPress={handleStartWorkoutPress}
-        opacity={isStartEnabled ? 1 : 0.7}
-        disabled={!isStartEnabled}
-        pressStyle={{ scale: 0.98, opacity: 0.9 }} // Add press animation
-        // Prevent focus styling on mobile web
-        focusStyle={{}}
-        style={{
-          WebkitTapHighlightColor: 'transparent',
-          WebkitTouchCallout: 'none',
-          userSelect: 'none',
-          outline: 'none'
-        }}
-      >
-        Start Workout
-      </Button>
-
-      
-
-      {/* Quick Actions Section */}
-      <YStack marginTop={spacing.large} space={spacing.medium}>
-        <XStack alignItems="center" space={spacing.small}>
-          <Text 
-            fontSize={fontSize.xlarge} 
-            fontWeight="700" 
-            color={colors.text}
-          >
-            Quick Actions
+        <View style={{ height: 16 }} />
+        <MobileSectionEyebrow>Reference</MobileSectionEyebrow>
+        <MobileSurface padding={20}>
+          <Text style={[styles.text, { color: colors.text }]}>
+            Visit the design-system showcase to see every MobilePremium
+            primitive and all 7 atmosphere palettes side-by-side. This is
+            the visual source of truth for what vellum ships.
           </Text>
-          <YStack 
-            flex={1} 
-            height={2} 
-            backgroundColor={colors.borderLight} 
-            borderRadius={1}
-          />
-        </XStack>
-      </YStack>
-
-      {/* Feature cards using the component */}
-      <FeatureSection features={features} />
-    </YStack>
+          <View style={{ height: 12 }} />
+          <MobilePrimaryButton variant="ghost" onPress={navigateToPremiumShowcase}>
+            Open Showcase
+          </MobilePrimaryButton>
+        </MobileSurface>
+      </View>
+      <MobileActionFooter>
+        <MobilePrimaryButton onPress={() => void signOut()}>
+          Sign Out
+        </MobilePrimaryButton>
+      </MobileActionFooter>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  shell: {
+    flex: 1,
+  },
+  body: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
+  text: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+});

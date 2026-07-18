@@ -1,140 +1,156 @@
-// app/_layout.tsx - Updated with Authentication and ConstrainedLayout
+// app/_layout.tsx
+// Root layout. Provider stack + PWA bootstrap.
+//
+// Provider stack (outer → inner):
+//   TamaguiProvider(defaultTheme=colorScheme) → ThemeProvider →
+//   SafeAreaProvider → AuthProvider → ToastProvider → QueryProvider → Stack
+//   + <ToastContainer/> (sibling of Stack, picks up toasts from anywhere)
+//
+// ThemeProvider sits INSIDE TamaguiProvider so the dynamic `defaultTheme`
+// (Tamagui's own light/dark) tracks the resolved colorScheme. Both stay
+// in sync — provider order is load-bearing.
+//
+// Two web-only useEffect blocks are load-bearing:
+//
+//   1. PWA runtime injection — Expo Web's static export strips every
+//      PWA-related tag from <head> except <link rel="icon">. This block
+//      restores the manifest link, apple-touch-icon, apple-mobile-web-app-*
+//      metas, and both theme-color metas at runtime. See
+//      docs/architecture/pwa-installability.md §2-3.
+//
+//   2. Service worker registration — Android Chrome's installability
+//      criteria require a registered SW with a fetch handler. Production-
+//      only, gated on `isWeb` + `'serviceWorker' in navigator`. See
+//      docs/architecture/pwa-installability.md §4.
+
+import '../utils/cryptoPolyfill';
+
 import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
-import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
 import { TamaguiProvider } from 'tamagui';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import config from '../tamagui.config';
-import { ThemeProvider } from '../components/ThemeProvider';
-import { AuthProvider } from '../context/AuthContext';
-import { WorkoutDataProvider } from '../context/WorkoutDataContext';
-import { RealTimeProvider } from '../context/RealTimeContext';
-import { ConstrainedLayout } from '../components/ConstrainedLayout';
-import { theme } from '../constants/theme';
-import { Platform } from 'react-native';
-import { LoadingScreen } from '@/components/LoadingScreen';
-import { AuthGuard } from '../components/AuthGuard';
+import { isWeb, hasDocument, hasWindow } from '../utils/platform';
+import { logger } from '../utils';
+import { initializeNetworkListeners } from '../stores';
+import { AuthProvider, ToastProvider, ThemeProvider, useAppTheme } from '../context';
+import { ToastContainer } from '../components/primitives';
+import { QueryProvider } from '../lib/react-query';
 
-// Ensure reanimated is loaded for Sheet animations
-import 'react-native-reanimated';
+function RootShell() {
+  const { colorScheme, colors } = useAppTheme();
 
-// Prevent the splash screen from auto-hiding
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  // Always use light theme
-  const [loaded] = useFonts({
-    // You can add custom fonts here if needed
-  });
-
+  // Network listener — web online/offline events. The cleanup is paired
+  // so audit R4b's listener-pairing rule holds.
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-    
-    // Force light mode on web
-    if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      document.documentElement.classList.remove('dark-theme');
-      document.documentElement.classList.add('light-theme');
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
-  }, [loaded]);
+    const cleanup = initializeNetworkListeners();
+    return cleanup;
+  }, []);
 
-  if (!loaded) {
-    return <LoadingScreen />; // ⬅️ Use our slick SVG loader here
-  }
+  // PWA runtime injection + service worker registration. Both gated on
+  // isWeb — native has no document or navigator.serviceWorker.
+  useEffect(() => {
+    if (!isWeb || !hasDocument() || !hasWindow()) return;
 
-  // Get the light background color
-  const backgroundColor = theme.colors.light.background;
+    // Inject PWA / Add-to-Home-Screen tags. Expo Web's static export
+    // (`expo export --platform web`) strips everything in <head> except
+    // <link rel="icon"> when generating dist/index.html — the manifest
+    // link, apple-touch-icon, apple-mobile-web-app-* metas, and both
+    // theme-color metas all disappear. Without these in the deployed
+    // HTML, Chrome Android registers the service worker (registered
+    // below) but shows an empty Manifest tab in DevTools and never
+    // promotes "Add to Home Screen" to "Install app" — the install
+    // flows fall back to a browser shortcut with an address bar.
+    //
+    // Each tag is guarded with an existence check so React StrictMode's
+    // double-mount in dev doesn't append duplicates. The theme-color
+    // metas pull from the LIVE palette so they follow colorScheme.
+    const ensureMeta = (name: string, content: string, media?: string) => {
+      const selector = `meta[name="${name}"]${media ? `[media="${media}"]` : ''}`;
+      if (document.querySelector(selector)) return;
+      const m = document.createElement('meta');
+      m.name = name;
+      m.content = content;
+      if (media) m.setAttribute('media', media);
+      document.head.appendChild(m);
+    };
+    const ensureLink = (rel: string, href: string, type?: string) => {
+      if (document.querySelector(`link[rel="${rel}"][href="${href}"]`)) return;
+      const l = document.createElement('link');
+      l.rel = rel;
+      l.href = href;
+      if (type) l.type = type;
+      document.head.appendChild(l);
+    };
+    ensureLink('manifest', '/manifest.json');
+    ensureLink('apple-touch-icon', '/icons/192.png');
+    ensureLink('icon', '/icons/192.png', 'image/png');
+    ensureMeta('apple-mobile-web-app-capable', 'yes');
+    ensureMeta('mobile-web-app-capable', 'yes');
+    ensureMeta('apple-mobile-web-app-status-bar-style', colorScheme === 'dark' ? 'black' : 'default');
+    ensureMeta('apple-mobile-web-app-title', 'Vellum');
+    ensureMeta('theme-color', colors.background, '(min-width: 701px)');
+    ensureMeta('theme-color', colors.brand, '(max-width: 700px)');
+
+    // Register the installability-enabling service worker (passthrough,
+    // no caching). Android Chrome's PWA installability criteria require
+    // a registered SW with a fetch handler; without it, "Add to Home
+    // Screen" on Android Chrome creates a browser shortcut that opens
+    // WITH the address bar visible. See public/sw.js for the SW itself.
+    //
+    // Production-only (the SW install/activate lifecycle across refreshes
+    // is one less thing to debug when dev doesn't register one). The
+    // load listener is paired with a removeEventListener cleanup so the
+    // audit-R4b pairing rule holds.
+    if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) {
+      return;
+    }
+    const register = () => {
+      navigator.serviceWorker.register('/sw.js').catch((err) => {
+        logger.warn('general', 'SW registration failed:', err);
+      });
+    };
+    if (document.readyState === 'complete') {
+      register();
+      return;
+    }
+    window.addEventListener('load', register, { once: true });
+    // Note: cleanup for the load listener is in the parent effect's
+    // cleanup phase below. The runtime-injected tags are intentionally
+    // not cleaned up — they persist across the page lifetime.
+    return () => {
+      window.removeEventListener('load', register);
+    };
+  }, [colorScheme, colors]);
 
   return (
-    <TamaguiProvider config={config} defaultTheme="light">
-      <ThemeProvider>
-        <AuthProvider>
-          <WorkoutDataProvider>
-            <RealTimeProvider>
-              <ConstrainedLayout>
-              <AuthGuard>
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  animation: 'fade',
-                  contentStyle: {
-                    backgroundColor,
-                  },
-                }}
-              >
-                <Stack.Screen name="index" />
-                <Stack.Screen 
-                  name="workout-detail" 
-                  options={{
-                    animation: 'slide_from_right',
+    <TamaguiProvider config={config} defaultTheme={colorScheme}>
+      <SafeAreaProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <AuthProvider>
+            <ToastProvider>
+              <QueryProvider>
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colors.backgroundDeep },
                   }}
                 />
-                <Stack.Screen 
-                  name="split-selection" 
-                  options={{
-                    animation: 'slide_from_right',
-                  }}
-                />
-                <Stack.Screen 
-                  name="exercise-detail" 
-                  options={{
-                    animation: 'slide_from_right',
-                  }}
-                />
-                <Stack.Screen 
-                  name="settings" 
-                  options={{
-                    animation: 'slide_from_right',
-                  }}
-                />
-                <Stack.Screen 
-                  name="progression" 
-                  options={{
-                    animation: 'slide_from_right',
-                  }}
-                />
-                <Stack.Screen 
-                  name="exercise-database" 
-                  options={{
-                    animation: 'slide_from_right',
-                  }}
-                />
-                {/* Temporarily disabled Training Journey route
-                <Stack.Screen 
-                  name="training-journey" 
-                  options={{
-                    animation: 'slide_from_right',
-                  }}
-                />
-                */}
-                {/* Auth screens - these should be accessible without authentication */}
-                <Stack.Screen 
-                  name="auth/login" 
-                  options={{
-                    animation: 'slide_from_bottom',
-                  }}
-                />
-                <Stack.Screen 
-                  name="auth/register" 
-                  options={{
-                    animation: 'slide_from_bottom',
-                  }}
-                />
-                <Stack.Screen 
-                  name="auth/forgot-password" 
-                  options={{
-                    animation: 'slide_from_right',
-                  }}
-                />
-              </Stack>
-              </AuthGuard>
-            </ConstrainedLayout>
-            </RealTimeProvider>
-          </WorkoutDataProvider>
-        </AuthProvider>
-      </ThemeProvider>
+                <ToastContainer />
+              </QueryProvider>
+            </ToastProvider>
+          </AuthProvider>
+        </GestureHandlerRootView>
+      </SafeAreaProvider>
     </TamaguiProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootShell />
+    </ThemeProvider>
   );
 }

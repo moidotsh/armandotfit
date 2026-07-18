@@ -1,290 +1,385 @@
-// constants/theme.ts - REPLACE YOUR EXISTING FILE WITH THIS
-export type SplitType = 'oneADay' | 'twoADay';
+// constants/theme.ts
+// Armandotfit's canonical token palette. Light is the default surface; dark
+// is opt-in (toggle via useAppTheme().setColorScheme('dark')). audit-ui-theme
+// (S7) still enforces "no hardcoded hex" — both modes resolve through
+// `theme.colors[colorScheme].*` via useAppTheme() (or a direct constants
+// import).
+//
+// The `brand` slot is the single override point. Vellum (the starter this
+// repo was cloned from) ships with a neutral indigo default; armandotfit
+// overrides it to its identity orange (`#FF9500`). Everything else (grays,
+// semantic status colors, surface tokens) stays domain-agnostic.
+//
+// Adding dark mode to a consumer's brand slot: vellum's `dark.brand` is
+// slightly brighter than `light.brand` so it holds its own against a dark
+// surface. Armandotfit's orange is bright enough on both surfaces, so dark
+// stays at `#FF9500` and uses lighter orange variants for hover/press —
+// `dark.brand*` is the brighter companion, not a derived shade.
 
-// Keep your existing workout split definitions
-interface WorkoutSplitInfo {
-  id: SplitType;
-  name: string;
-  description: string;
-}
+import type { TextStyle } from 'react-native';
 
-interface WorkoutSplits {
-  fullBody: WorkoutSplitInfo;
-  amPm: WorkoutSplitInfo;
-}
+// TextStyle-shaped typography tokens. Typing these explicitly avoids the
+// `fontWeight: string` widening that breaks spread-into-<Text> calls
+// (RN's TextStyle.fontWeight is a union of string literals, not `string`).
+type TypographyToken = Pick<
+  TextStyle,
+  'fontSize' | 'fontWeight' | 'lineHeight' | 'letterSpacing'
+>;
 
-export const WORKOUT_SPLITS: WorkoutSplits = {
-  fullBody: {
-    id: 'oneADay',
-    name: 'Full Body Split',
-    description: 'Complete all muscle groups in a single session'
-  },
-  amPm: {
-    id: 'twoADay',
-    name: 'AM/PM Split',
-    description: 'Two targeted sessions each day'
-  }
-};
-
-// Enhanced color palette - optimized for gym environment
-const palette = {
-  // Primary brand colors - keeping your orange but enhanced
-  orange: {
-    primary: '#FF9500',
-    light: '#FFB74D',
-    dark: '#E67700',
-    subtle: '#FFF3E0'
-  },
-  
-  // Neutral grays - better contrast for gym lighting
-  gray: {
-    50: '#FAFAFA',    // Almost white background
-    100: '#F5F5F5',   // Very light background
-    200: '#EEEEEE',   // Light background
-    300: '#E0E0E0',   // Light border
-    400: '#BDBDBD',   // Medium border
-    500: '#9E9E9E',   // Medium text
-    600: '#757575',   // Dark text
-    700: '#616161',   // Darker text
-    800: '#424242',   // Very dark text
-    900: '#212121',   // Almost black
-    950: '#0F0F0F'    // Pure dark
-  },
-  
-  // Base colors
-  white: '#FFFFFF',
-  black: '#000000',
-  
-  // Semantic colors
-  success: '#4CAF50',   
-  warning: '#FF9800',   
-  error: '#F44336',     
-  info: '#2196F3',      
-  
-  // Exercise category colors - brighter for gym visibility
-  exercise: {
-    chest: '#E53E3E',     // Red
-    arms: '#805AD5',      // Purple
-    shoulders: '#3182CE', // Blue
-    back: '#38A169',      // Green
-    upperLeg: '#D69E2E',  // Yellow/Gold
-    lowerLeg: '#DD6B20',  // Orange
-    abs: '#ECC94B',       // Light yellow
-    cardio: '#E53E3E',    // Red variant
-  }
-};
-
-// Keep your existing category colors but enhance them
-export const categoryColors: Record<string, string> = {
-  'Chest': palette.exercise.chest,
-  'Arms': palette.exercise.arms,
-  'Shoulders': palette.exercise.shoulders,
-  'Back': palette.exercise.back,
-  'UpperLeg': palette.exercise.upperLeg,
-  'LowerLeg': palette.exercise.lowerLeg,
-  'Abs': palette.exercise.abs,
-  'Back/Shoulders': '#22C55E',
-  'UpperLeg (Accessory)': '#F59E0B'
-};
-
-// Enhanced theme structure
 export const theme = {
-  // Color system - comprehensive light theme
   colors: {
-    // Brand colors
-    primary: palette.orange.primary,
-    primaryLight: palette.orange.light,
-    primaryDark: palette.orange.dark,
-    primarySubtle: palette.orange.subtle,
-    
-    // Light theme colors
+    // ── Light surface (default) ────────────────────────────────────────
+    // Vellum's default surface. Every MobilePremium primitive defaults
+    // to this palette unless the consumer flips `colorScheme` to 'dark'.
     light: {
-      // Background colors
-      background: palette.gray[50],        
-      backgroundAlt: palette.gray[100],    
-      backgroundSubtle: palette.gray[200], 
-      
-      // Card colors
-      card: palette.white,                 
-      cardAlt: palette.gray[100],          
-      cardSubtle: palette.gray[200],       
-      cardBackground: palette.white,      
-      cardBackgroundHover: palette.gray[50],
-      
-      // Border colors
-      border: palette.gray[300],           
-      borderLight: palette.gray[200],      
-      borderDark: palette.gray[400],       
-      
+      // UI element colors
+      background: '#FFFFFF',
+      backgroundAlt: '#F8F9FB',
+      card: '#FFFFFF',
+      cardAlt: '#F3F4F6',
+      border: '#E5E7EB',
+
+      // Card border colors for subtle definition (light-tuned: dark-on-light
+      // hairline reads as a precision edge instead of a heavy outline).
+      cardBorder: 'rgba(15, 23, 42, 0.06)',
+      cardBorderHover: 'rgba(15, 23, 42, 0.12)',
+
       // Text colors
-      text: palette.gray[900],             
-      textSecondary: palette.gray[700],    
-      textMuted: palette.gray[600],        
-      textSubtle: palette.gray[500],       
-      textOnPrimary: palette.white,
-      white: palette.white,
-      
-      // Interactive element colors
-      primary: palette.orange.primary,
-      primaryLight: palette.orange.light,
-      primaryDark: palette.orange.dark,
-      primarySubtle: palette.orange.subtle,
-      buttonBackground: palette.orange.primary,
-      buttonBackgroundHover: palette.orange.dark,
-      buttonBackgroundDisabled: palette.gray[300],
-      buttonText: palette.white,
-      buttonTextDisabled: palette.gray[500],
-      
-      // State colors
-      success: palette.success,
-      warning: palette.warning,
-      error: palette.error,
-      info: palette.info,
-      
-      // Special UI elements
-      overlay: 'rgba(0, 0, 0, 0.5)',
-      shadow: 'rgba(0, 0, 0, 0.1)',
-      highlight: palette.orange.subtle,
-      
-      // Exercise-specific colors
-      exerciseCard: palette.white,
-      exerciseCardHover: palette.gray[50],
-      
-      // Icon backgrounds
-      iconBackground: palette.gray[200],
-      iconBackgroundHover: palette.gray[300],
-      
-      // Alert colors
-      alert: palette.error,
-      alertBackground: '#FFEBEE',
-      
-      // Toggle and switch colors
-      toggleBackground: palette.gray[300],
-      toggleBackgroundActive: palette.orange.primary,
-      
-      // Arrow and chevron colors
-      arrow: palette.gray[400],
-      arrowHover: palette.gray[600],
-    }
+      text: '#0F172A',
+      textMuted: '#64748B',
+      textSecondary: '#475569',
+
+      // Interactive element colors — the `brand` slot.
+      // Armandotfit identity: orange `#FF9500` (ported from v1 theme — see
+      // archive-v1/constants/theme.ts). Hover darkens to a richer orange
+      // (vellum convention: hover goes deeper); press darkens further.
+      brand: '#FF9500',
+      brandHover: '#E67700',
+      brandPress: '#B85C00',
+      brandMuted: 'rgba(255, 149, 0, 0.08)',
+      brandSoft: 'rgba(255, 149, 0, 0.12)',
+      buttonBackground: '#FF9500',
+      buttonBackgroundDisabled: 'rgba(255, 149, 0, 0.5)',
+
+      // Semantic status colors (iOS-style — consistent across consumers)
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+      },
+
+      // Re-export aliases for parity with qep-tracker call sites that used
+      // `success` and `alert` at the top level. Consumers porting code over
+      // don't have to rewrite these on day one.
+      success: '#10B981',
+      alert: '#EF4444',
+
+      // Text color for content rendered on top of the brand color slot
+      // (e.g. MobilePrimaryButton label, selected-state check icon). Pure
+      // white regardless of which brand hue the consumer picked — every
+      // default brand shade is dark enough that white reads cleanly.
+      textOnBrand: '#FFFFFF',
+
+      // Deeper background for full-bleed screens (auth, onboarding).
+      // Light-mode interpretation: a faintly-cooler off-white that lets a
+      // central card pop without losing the light feel.
+      backgroundDeep: '#F1F5F9',
+
+      // Text color variants. `textColors.muted` and `textMuted` are unified
+      // (same value, both names) — mirrors the qep-tracker r9 audit decision
+      // so consumers don't have to remember which "muted" to use.
+      textColors: {
+        muted: '#64748B',
+        secondary: '#64748B',
+        tertiary: '#94A3B8',
+      },
+
+      // Icon background tints (semantic — same keys as qep-tracker, retuned
+      // for light: darker hue on pale tint instead of bright hue on dark).
+      iconBackground: {
+        blue: 'rgba(59, 130, 246, 0.12)',
+        green: 'rgba(16, 185, 129, 0.12)',
+        purple: 'rgba(168, 85, 247, 0.12)',
+        orange: 'rgba(249, 115, 22, 0.12)',
+        white: 'rgba(15, 23, 42, 0.06)',
+      },
+
+      // Glassmorphism (light). Retuned from qep-tracker's dark glass:
+      // backdrop is a near-solid pale tint instead of dark smoked glass;
+      // borders are dark hairlines instead of light bleed-through.
+      glass: {
+        background: 'rgba(255, 255, 255, 0.72)',
+        backgroundLight: 'rgba(255, 255, 255, 0.55)',
+        border: 'rgba(15, 23, 42, 0.08)',
+        borderHighlight: 'rgba(15, 23, 42, 0.15)',
+        borderHover: 'rgba(15, 23, 42, 0.12)',
+        emptyInputBorder: 'rgba(15, 23, 42, 0.2)',
+        panelBackground: 'rgba(255, 255, 255, 0.6)',
+        inputBackground: 'rgba(15, 23, 42, 0.03)',
+        inputFocusBackground: 'rgba(255, 149, 0, 0.05)',
+        orbBlue: 'rgba(59, 130, 246, 0.10)',
+        orbPurple: 'rgba(168, 85, 247, 0.08)',
+        orbTeal: 'rgba(20, 184, 166, 0.08)',
+        orbIndigo: 'rgba(79, 70, 229, 0.10)',
+      },
+
+      // Alert background tint for error containers.
+      alertBackground: 'rgba(239, 68, 68, 0.08)',
+
+      // ── Mobile premium primitive kit tokens ───────────────────────────
+      // Consumed by components/MobilePremium/*. These are the light-tuned
+      // siblings of qep-tracker's dark mobilePremium tokens.
+      //
+      // Design rationale (see docs/architecture/mobile-premium-design-system.md):
+      //   • Hairline inner border = a 1px line at low opacity DARK. Reads as
+      //     a precision edge against a light surface (inverse of the dark
+      //     kit's low-opacity white).
+      //   • Surface gradient = top ~3% darker than bottom, suggesting soft
+      //     directional light hitting a physical object from above.
+      //   • Soft glow = the outer shadow identity of a surface. One value,
+      //     applied consistently.
+      //   • No Android Chrome fallback tint — on a light surface, the
+      //     default ~4% dark alpha reads as intended; no saturate() wash-out
+      //     failure mode to compensate for.
+      mobilePremium: {
+        // Hairline border (inner) — dark-on-light at low opacity.
+        hairlineBorder: 'rgba(15, 23, 42, 0.08)',
+        hairlineBorderStrong: 'rgba(15, 23, 42, 0.15)',
+
+        // Surface gradient stops — top slightly darker than bottom by ~3%
+        // luminance. Dark alpha over light surface composites correctly.
+        surfaceGradientTop: 'rgba(15, 23, 42, 0.03)',
+        surfaceGradientBottom: 'rgba(15, 23, 42, 0.005)',
+
+        // Soft outer glow — the surface's shadow identity (web only).
+        // Lighter than the dark kit's glow because the surface is already
+        // bright; we want a soft elevation cue, not a heavy vignette.
+        surfaceGlow: '0 8px 32px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04)',
+
+        // Backdrop blur for web (saturate is safe on light surfaces).
+        surfaceBackdropBlur: 'blur(24px) saturate(160%)',
+
+        // Android Chrome fallback — near-solid surface + milder blur.
+        // Mirrors qep-tracker's fallback shape, retuned for light.
+        androidChromeSurfaceBackground: 'rgba(255, 255, 255, 0.88)',
+        androidChromeSurfaceBlur: 'blur(12px)',
+
+        // Faint vignette to settle the atmosphere into the edges (web).
+        // Much softer than the dark kit's vignette — a whisper of depth,
+        // not a visible darkening.
+        atmosphereVignette: 'inset 0 0 160px 60px rgba(15, 23, 42, 0.04)',
+
+        // Rail (progress) — fill travels across a 2px track.
+        railTrack: 'rgba(15, 23, 42, 0.08)',
+        railFillShadow: '0 0 8px currentColor',
+      },
+    },
+
+    // ── Dark surface (opt-in) ──────────────────────────────────────────
+    // Mirror of `light` with every key retuned for dark surfaces. Active
+    // when the consumer calls `useAppTheme().setColorScheme('dark')` (or
+    // when system preference resolves to dark — see ThemeProvider's
+    // detection logic). The structural shape MUST match `light` so
+    // `theme.colors[colorScheme].*` is type-safe in TS.
+    dark: {
+      // UI element colors — dark surfaces. Slightly cooler than pure
+      // charcoal to feel "calm dark" instead of "OLED black".
+      background: '#0B0F19',
+      backgroundAlt: '#111827',
+      card: '#161E2E',
+      cardAlt: '#1E293B',
+      border: '#334155',
+
+      // Card border colors (dark-tuned: light-on-dark hairline reads as
+      // a precision edge against the dark surface).
+      cardBorder: 'rgba(226, 232, 240, 0.08)',
+      cardBorderHover: 'rgba(226, 232, 240, 0.15)',
+
+      // Text colors — inverted from light.
+      text: '#F1F5F9',
+      textMuted: '#94A3B8',
+      textSecondary: '#CBD5E1',
+
+      // Interactive element colors — the `brand` slot. Orange holds its
+      // own against dark surfaces, so dark brand stays at the identity
+      // hue; hover/press brighten (inverse of light's darken pattern) so
+      // the engagement state reads as a glow against the dark surface.
+      brand: '#FF9500',
+      brandHover: '#FFB74D',
+      brandPress: '#FFC966',
+      brandMuted: 'rgba(255, 149, 0, 0.16)',
+      brandSoft: 'rgba(255, 149, 0, 0.20)',
+      buttonBackground: '#FF9500',
+      buttonBackgroundDisabled: 'rgba(255, 149, 0, 0.4)',
+
+      // Semantic status colors — brightened for dark contrast.
+      status: {
+        success: '#34D399',
+        warning: '#FBBF24',
+        error: '#F87171',
+        info: '#60A5FA',
+      },
+
+      // Aliases matching `light` (qep-tracker call-site parity).
+      success: '#34D399',
+      alert: '#F87171',
+
+      // Text on brand — stays white; the dark-mode brand is bright enough
+      // that white reads cleanly. Consumers with a very pale brand may
+      // want to override this to '#0B0F19'.
+      textOnBrand: '#FFFFFF',
+
+      // Deeper background for full-bleed screens (auth, onboarding) —
+      // darker still so a central card pops.
+      backgroundDeep: '#050810',
+
+      // Text color variants.
+      textColors: {
+        muted: '#94A3B8',
+        secondary: '#CBD5E1',
+        tertiary: '#64748B',
+      },
+
+      // Icon background tints — dark-tuned (brighter hue on dark tint).
+      iconBackground: {
+        blue: 'rgba(96, 165, 250, 0.18)',
+        green: 'rgba(52, 211, 153, 0.18)',
+        purple: 'rgba(192, 132, 252, 0.18)',
+        orange: 'rgba(251, 146, 60, 0.18)',
+        white: 'rgba(226, 232, 240, 0.08)',
+      },
+
+      // Glassmorphism (dark). Retuned from light: backdrop is smoked
+      // glass instead of frosted white; borders are light hairlines.
+      glass: {
+        background: 'rgba(22, 30, 46, 0.72)',
+        backgroundLight: 'rgba(22, 30, 46, 0.55)',
+        border: 'rgba(226, 232, 240, 0.08)',
+        borderHighlight: 'rgba(226, 232, 240, 0.18)',
+        borderHover: 'rgba(226, 232, 240, 0.12)',
+        emptyInputBorder: 'rgba(226, 232, 240, 0.20)',
+        panelBackground: 'rgba(11, 15, 25, 0.6)',
+        inputBackground: 'rgba(226, 232, 240, 0.04)',
+        inputFocusBackground: 'rgba(255, 149, 0, 0.10)',
+        orbBlue: 'rgba(59, 130, 246, 0.20)',
+        orbPurple: 'rgba(168, 85, 247, 0.16)',
+        orbTeal: 'rgba(20, 184, 166, 0.16)',
+        orbIndigo: 'rgba(99, 102, 241, 0.20)',
+      },
+
+      // Alert background tint for error containers (dark-mode red wash).
+      alertBackground: 'rgba(248, 113, 113, 0.12)',
+
+      // ── Mobile premium primitive kit tokens (dark) ───────────────────
+      // Mirrors the light `mobilePremium` block, retuned for dark surfaces:
+      //   • Hairline border = light-on-dark at low opacity (inverse of
+      //     the light kit's dark-on-light).
+      //   • Surface gradient = top slightly lighter than bottom (suggests
+      //     a soft overhead light catching a raised surface).
+      //   • Stronger outer glow — dark surfaces need more shadow to read
+      //     as elevated against a dark background.
+      mobilePremium: {
+        hairlineBorder: 'rgba(226, 232, 240, 0.08)',
+        hairlineBorderStrong: 'rgba(226, 232, 240, 0.15)',
+
+        surfaceGradientTop: 'rgba(226, 232, 240, 0.05)',
+        surfaceGradientBottom: 'rgba(226, 232, 240, 0.01)',
+
+        surfaceGlow: '0 8px 32px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.30)',
+
+        surfaceBackdropBlur: 'blur(24px) saturate(140%)',
+
+        androidChromeSurfaceBackground: 'rgba(22, 30, 46, 0.88)',
+        androidChromeSurfaceBlur: 'blur(12px)',
+
+        atmosphereVignette: 'inset 0 0 160px 60px rgba(0, 0, 0, 0.30)',
+
+        railTrack: 'rgba(226, 232, 240, 0.10)',
+        railFillShadow: '0 0 8px currentColor',
+      },
+    },
   },
-  
-  // Enhanced spacing system
+
+  // Spacing system
   spacing: {
-    xxs: 2,     
-    xs: 4,      
-    xsmall: 6,
-    small: 8,   
-    medium: 16, 
-    large: 24,  
-    xlarge: 32, 
+    xxs: 2,
+    xs: 4,
+    small: 8,
+    medium: 16,
+    large: 24,
+    xlarge: 32,
     xxlarge: 48,
-    xxxlarge: 64,
   },
-  
-  // Enhanced font sizes
+
+  // Font sizes
   fontSize: {
-    xxs: 10,    
-    xs: 12,     
-    small: 14,  
-    medium: 16, 
-    large: 18,  
-    xlarge: 22, 
-    xxlarge: 28,
-    xxxlarge: 36,
-    display: 48,
-  },
-  
-  // Font weights
-  fontWeight: {
-    light: '300',
-    regular: '400',
-    medium: '500',
-    semibold: '600',
-    bold: '700',
-    extrabold: '800'
+    xs: 12,
+    small: 14,
+    medium: 16,
+    large: 18,
+    xlarge: 24,
+    xxlarge: 32,
   },
 
-  // Enhanced border radius system
+  // Border radius
   borderRadius: {
-    none: 0,
-    xs: 2,
-    small: 4,
-    medium: 8,
-    large: 12,
-    xlarge: 16,
-    xxlarge: 20,
+    small: 8,
+    medium: 12,
+    large: 16,
     pill: 9999,
-    circle: '50%'
   },
 
-  // Shadow system for depth
-  shadows: {
-    none: {
-      shadowColor: 'transparent',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0,
-      shadowRadius: 0,
-      elevation: 0
-    },
-    small: {
-      shadowColor: palette.black,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
-      elevation: 1
-    },
-    medium: {
-      shadowColor: palette.black,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3
-    },
-    large: {
-      shadowColor: palette.black,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
-      elevation: 6
-    },
-    xlarge: {
-      shadowColor: palette.black,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.2,
-      shadowRadius: 16,
-      elevation: 12
-    }
+  // ── Named type styles ─────────────────────────────────────────────────
+  // Premium reads through type. Consumers import the named style and spread
+  // it; they do NOT pick ad-hoc fontSize/fontWeight values for titles and
+  // subtitles. These mirror qep-tracker's typography tokens verbatim — the
+  // discipline travels, the surface retunes elsewhere.
+  typography: {
+    mobileTitle: {
+      fontSize: 22,
+      fontWeight: '600',
+      lineHeight: 28,
+      letterSpacing: -0.2,
+    } satisfies TypographyToken,
+    mobileSubtitle: {
+      fontSize: 14,
+      fontWeight: '400',
+      lineHeight: 20,
+      letterSpacing: 0,
+    } satisfies TypographyToken,
+    mobileBody: {
+      fontSize: 14,
+      fontWeight: '400',
+      lineHeight: 22,
+      letterSpacing: 0,
+    } satisfies TypographyToken,
+    mobileAction: {
+      fontSize: 15,
+      fontWeight: '600',
+      lineHeight: 20,
+      letterSpacing: 0.4,
+    } satisfies TypographyToken,
+    mobileEyebrow: {
+      fontSize: 11,
+      fontWeight: '600',
+      lineHeight: 14,
+      letterSpacing: 1.4,
+    } satisfies TypographyToken,
+    mobileFieldLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      lineHeight: 16,
+      letterSpacing: 0.1,
+    } satisfies TypographyToken,
   },
-
-  // Animation durations
-  animation: {
-    fast: 150,
-    medium: 250,
-    slow: 350,
-    verySlow: 500,
-    easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-    easeOut: 'cubic-bezier(0, 0, 0.2, 1)',
-    easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
-  },
-
-  // Z-index scale
-  zIndex: {
-    background: -1,
-    base: 0,
-    raised: 1,
-    overlay: 10,
-    modal: 100,
-    tooltip: 1000,
-    toast: 10000
-  },
-
-  // Breakpoints for responsive design
-  breakpoints: {
-    xs: 0,
-    sm: 576,
-    md: 768,
-    lg: 992,
-    xl: 1200,
-    xxl: 1400
-  }
 };
+
+// The two color schemes vellum supports. `light` is the default. Type-wide
+// so consumers can type their own APIs (`onChangeColorScheme(next: ColorScheme)`).
+export type ColorScheme = 'light' | 'dark';
+
+// Convenience aliases — the resolved palette shape for either mode. Both
+// `light` and `dark` are structurally identical, so the union collapses to
+// a single shape.
+export type ColorPalette = typeof theme.colors.light;

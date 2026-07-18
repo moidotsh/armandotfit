@@ -1,7 +1,7 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# Dependencies
 node_modules/
+.pnp/
+.pnp.js
 
 # Expo
 .expo/
@@ -9,7 +9,7 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# Native artifacts
 *.orig.*
 *.jks
 *.p8
@@ -17,23 +17,32 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
-# Metro
+# Metro / build caches
 .metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
-.DS_Store
-*.pem
-
-# local env files
-.env*.local
-
-# typescript
 *.tsbuildinfo
 
-app-example
-.vercel
+# Tamagui
+.tamagui/
+
+# Env
+.env
+.env.local
+.env.*.local
+.env.local.dev
+.env.local.prod
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Vercel
+.vercel/
+
+# Tests
+coverage/
+__screenshots__/
+
+# NOTE: bun.lock IS committed. Only package-lock.json and yarn.lock are
+# forbidden (audit-pattern-compliance enforces "only bun.lock at root").

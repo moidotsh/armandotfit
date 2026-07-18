@@ -1,0 +1,108 @@
+# armandotfit
+
+> armandotfit is a fitness PWA (workout splits, exercise library, progression, streak, real-time session logging) built on [vellum](../vellum) — the qep-tracker architecture (47-pattern constitution, 10-audit pre-commit gate, repository pattern, Zustand + React Query, barrel exports) retuned for **PWA-only** + **email/password auth**. Vellum is the starter; armandotfit is its first consumer.
+
+This file is the repo-level operating context for Claude Code sessions at the armandotfit root. It auto-loads. Read the relevant section before landing any armandotfit change.
+
+## Invariants
+
+Load-bearing rules that aren't obvious from the code:
+
+1. **Bun only.** Never commit `package-lock.json` or `yarn.lock`. `audit-pattern-compliance.ts` (S19) enforces this.
+2. **PWA-only.** No native build artifacts ship. `app.config.ts` is web-static-export only (`output: "static"`). The runtime manifest-injection block in `app/_layout.tsx` is load-bearing — Expo Web's static export strips `<link rel="manifest">` from `dist/index.html`, and runtime injection restores it. Don't remove that block without reading `docs/architecture/pwa-installability.md` first.
+3. **Light is the default; dark is opt-in.** `constants/theme.ts` ships both `theme.colors.light` and `theme.colors.dark` — structurally identical palettes, retuned for their respective surfaces. The active palette is resolved at runtime by `useAppTheme()` (in `context/ThemeContext.tsx`); components read `colors.*` directly and never index by mode. The user's preference persists across sessions via `zustandStorage` (web localStorage / native AsyncStorage), with `'system'` as the default (defers to OS prefer-color-scheme). `audit-ui-theme.ts` (S7) bans hardcoded hex colors — both modes resolve through `theme.colors[colorScheme].*`.
+4. **Email/password auth.** Armandotfit uses email/password (inherited from vellum). No PIN primitives ship. If the threat model later requires PIN+device-UUID auth (qep-tracker parity), port the 4 PIN primitives + `audit-rpc-auth.ts` + `verify_session` RPC from qep-tracker.
+5. **Brand color is armandotfit orange (`#FF9500`).** Overridden from vellum's default indigo in `constants/theme.ts` → `theme.colors.{light,dark}.{brand, brandHover, brandPress, brandMuted, brandSoft, buttonBackground, buttonBackgroundDisabled}` + the `glass.inputFocusBackground` key in each mode. Icons in `assets/` and `public/icons/` are armandotfit-branded.
+6. **Audit scripts are canonical.** If this file and `scripts/audit-*.ts` disagree, the scripts win. This file is a cheatsheet; the scripts are the load-bearing enforcement.
+7. **The 490px height-budget test** (from qep-tracker's mobile design system) carries over. Any new MobilePremium screen must fit at 490px viewport height (iPhone SE compact) without scrolling for the primary action. See `docs/architecture/mobile-premium-design-system.md`.
+8. **`archive-v1/` holds the pre-port tree.** The original armandotfit implementation (68 commits, v1 fitness app) is preserved under `archive-v1/` as a browsable reference during the port. It is deleted in a-Phase 7 once domain parity is reached. Until then, treat it as read-only reference material — port fitness logic out of it, never modify it in place.
+
+## Pre-commit checks (read before committing)
+
+Armandotfit has 10 structural audits + `tsc --noEmit` + structural ESLint that run on every `git commit` via `.husky/pre-commit`. Any failure blocks the commit. Run them on the working tree **before** staging:
+
+    cd armandotfit && bun run lint:structure && bunx tsc --noEmit
+
+**Canonical source:** `scripts/audit-*.ts`. If this section and the scripts disagree, the scripts win.
+
+### The two universal escape hatches
+
+- **`// <check>-exempt`** — suppresses one violation within a 300-char lookback (e.g. `// s7-exempt`, `// c1-exempt`). Use sparingly with a justification; every rule exists because violations have bitten.
+- **`git commit --no-verify`** — skips the hook entirely. Reserve for genuine emergencies.
+
+### The 10 audits, in pre-commit order
+
+| # | Script | Codes | Catches |
+|---|--------|-------|---------|
+| 1 | `audit-barrels.ts` | `[S5-internal]`, `[S5-external]` | Own-barrel imports (circular); direct-path imports when a barrel re-exports the symbol. Only audit with `--fix`. |
+| 2 | `audit-data-layer.ts` | `[S9-import]`, `[S9-call]`, `[S13]`, `[D5]` | Direct `supabase.*` in `app/`/`hooks/`/`components/`; inline `queryKey: [...]`; repository methods not returning `RepositoryResult<T>`. |
+| 3 | `audit-state.ts` | `[D3]`, `[D10]` | `useMutation` not touching a cache primitive; Zustand stores missing the 5 `// SECTION:` markers. |
+| 4 | `audit-security.ts` | `[S12]`, `[SE2]`, `[S10]` | Anchored regex `.test()` in client code; AsyncStorage imports outside the allowlist; `Alert.alert` with raw `error.message`. |
+| 5 | `audit-logging-errors.ts` | `[S11]`, `[S10]` | Live `console.*`; raw `throw new Error(...)` outside the carve-out. |
+| 6 | `audit-ui-theme.ts` | `[S7]`, `[C3]` | Hardcoded hex colors; `Dimensions.get('window'/'screen')`. **Critical for brand-color enforcement.** |
+| 7 | `audit-component-quality.ts` | `[C1]`, `[C2]`, `[C4]` | Direct `router.push/replace/back`; RN `Modal`; `ActivityIndicator` outside loading primitives. |
+| 8 | `audit-testing-types.ts` | `[D6]`, `[T1]`, `[T2]` | UI code importing raw `shared/types`; test files outside `__tests__/`; inline `vi.mock()`. |
+| 9 | `audit-pattern-compliance.ts` | `[S19]`, `[C10]` | `package-lock.json`/`yarn.lock` in tree; imports of deprecated symbols. |
+| 10 | `audit-runtime-resilience.ts` | `[R4a]`, `[R4b]`, `[R1]` | `setInterval` without `clearInterval`; `addEventListener` without `removeEventListener`; async `useEffect` that awaits then setState/navigates without a cancellation guard. |
+
+Structural ESLint (`eslint.structure.config.js`) enforces two more:
+- **`[S6]`** — `{expr && <Component/>}` render leak.
+- **`[S8]`** — raw `fetch()`.
+
+### The five that bite most often
+
+1. **S5 barrels** — same-folder imports go to the relative source (`./Foo`); cross-folder imports go through the folder barrel. Run `bun run scripts/audit-barrels.ts --fix` to auto-rewrite.
+2. **C1 router calls** — never call `router.push/replace/back` directly outside `navigation/NavigationHelper.tsx` and `hooks/useAuthNavigation.ts`. Extend the helper when adding domain routes.
+3. **S9 supabase** — never `import` from `@supabase/supabase-js` or call `supabase.from/auth/rpc/...` in `app/`, `hooks/`, or `components/`. Go through `utils/supabase/*` or `services/*`.
+4. **S7 hex colors** — never hardcode `'#FF9500'` in component code. Pull from `theme.colors.light.*` via `useAppTheme()` or a `constants` import. SVG vectors and `constants/theme.ts` are exempt.
+5. **S11 console** — never ship `console.log/error/warn`. Use `logger` from `utils/logger`. (`utils/logger.ts` is the only legitimate `console.*` site.)
+
+## Vellum relationship
+
+Armandotfit is a **direct-copy consumer** of vellum (sibling repo at `../vellum/`). The shell — design system, audit scripts, PWA plumbing, provider stack, skeleton auth routes — was copied from vellum in a-Phase 0. Armandotfit owns its domain layer on top:
+
+- **Domain routes** → `app/` (home, workout-detail, exercise-database, progression, analytics, workout-programs, split-selection). Vellum's skeleton routes (login, register, forgot-password, settings, dev/premium) carry over.
+- **Domain stores** → `stores/` (workoutStore, exerciseStore — both ephemeral, not persisted). Vellum's cross-cutting stores (authStore, uiStore, networkStore) carry over.
+- **Domain repositories** → `utils/supabase/repositories/` (WorkoutRepository, ExerciseRepository, ProgressionRepository, UserProfileRepository, StreakRepository).
+- **Domain services** → `services/` (workoutService, progressionService, analyticsService).
+- **React Query hooks** → `hooks/queries/`, `hooks/mutations/`.
+- **Domain types** → `shared/types/` (workout, exercise, progression — extend the existing barrel).
+- **Components** → `components/` three-tier structure (primitives, composed, feature components inside route dirs).
+
+When vellum ships an update that armandotfit wants (e.g. a new MobilePremium primitive, an audit-script fix), the workflow is: copy the relevant file(s) from `../vellum/` into armandotfit, re-apply armandotfit's brand overrides if they touch `constants/theme.ts` or icon assets, commit. No submodule, no npm link — direct file copy with per-file ownership at the armandotfit side. Vellum changes that touch `CLAUDE.md` or `ARCHITECTURE.md` may also need to be mirrored here if they affect shared discipline (audit-script behavior, design-system tokens, etc.).
+
+## Documentation maintenance
+
+This is the contract that prevents doc drift. For every change you land in code, the table below says **what triggers a doc update** and **where the update lands**.
+
+| Change you're making | Update this doc | When |
+|---|---|---|
+| New pattern (S/C/D/SE/T/R code) | `ARCHITECTURE.md` (definition + rationale) + new `scripts/audit-*.ts` if statically-checkable + this file's pre-commit table. | Always. |
+| New `scripts/audit-*.ts` | This file's pre-commit table (the 10-audit grid). Run order matters — place it correctly. | Always. |
+| Audit exemption / regex tweak | `scripts/audit-*.ts` (canonical source). This file is the cheatsheet. | Always. |
+| Visual token change (color, spacing, typography) | `constants/theme.ts` (canonical source) + `docs/architecture/mobile-premium-design-system.md` if it affects the design system. | Always. |
+| New MobilePremium primitive | `docs/architecture/mobile-premium-design-system.md` (component inventory) + `app/dev/premium.tsx` (add to the showcase — load-bearing, the showcase IS the visual source of truth). | Always. |
+| New animation/utility hook (`hooks/use*.ts`) | `hooks/index.ts` barrel + `app/dev/premium.tsx` (add an interactive demo if the hook has visible output). | Always. |
+| New utility (`utils/*.ts` or `shared/utils/*.ts`) | The folder barrel (`utils/index.ts` / `shared/utils/index.ts`). | Always. |
+| New navigation route / push-replace helper | `navigation/NavigationHelper.tsx` (extend `NavigationPath` enum + `navigationHierarchy` map). | Always. |
+| New PWA-installability change (manifest, service worker, runtime injection, icons) | `docs/architecture/pwa-installability.md`. Runtime injection block in `app/_layout.tsx` and `index.html` (if present) must stay in sync. | Always. |
+| New Zustand store | This file is enough for the cross-cutting stores. Add the 5 `// SECTION:` markers per audit D10. | Always. |
+| Schema migration | Migration file header (always — multi-line "why"). | Always. |
+| Shell-wide architectural decision | `ARCHITECTURE.md` first; cross-link here. | When the decision affects multiple files. |
+
+### Rules
+
+1. **One owner per claim.** If two docs appear to own the same claim, one is canonical and the other cross-links.
+2. **Navigation layers don't restate content.** `README.md` and this file's intro paragraphs are navigation surfaces — they point at canonical content; they don't redefine it.
+3. **Audit scripts are canonical.** If a doc and the scripts disagree, the scripts win — fix the doc.
+
+## Canonical docs
+
+| Claim type | Canonical owner |
+|---|---|
+| Repo operating context (invariants, pre-commit checks, vellum relationship, doc maintenance) | this file |
+| Architecture constitution (47 patterns) | `ARCHITECTURE.md` |
+| Project orientation (what armandotfit is, quickstart) | `README.md` |
+| Claim-type → owner-doc map (cross-cutting) | `docs/OWNERSHIP.md` |
+| MobilePremium design system (four pillars, primitive inventory, atmosphere palettes, 490px test, gating policy) | `docs/architecture/mobile-premium-design-system.md` |
+| PWA installability (manifest, SW, runtime injection, icons) | `docs/architecture/pwa-installability.md` |
