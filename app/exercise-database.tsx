@@ -82,6 +82,13 @@ export default function ExerciseDatabaseScreen() {
 
 const styles = StyleSheet.create({
   shell: { flex: 1 },
-  body: { flex: 1, paddingHorizontal: 20, paddingTop: 12 },
+  body: {
+    flex: 1,
+    maxWidth: 420,
+    alignSelf: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
   listContent: { paddingBottom: 24 },
 });

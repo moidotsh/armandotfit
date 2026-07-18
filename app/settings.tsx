@@ -81,7 +81,7 @@ export default function SettingsScreen() {
     >
       <MobileAtmosphere surface="analytics" />
       <MobileHeader title="Settings" eyebrow="Account" onBack={safeGoBack} />
-      <ScrollView contentContainerStyle={styles.body}>
+      <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
         <MobileSurface padding={0}>
           <MobileSettingsRow label="Email" value={session?.email ?? '—'} />
           <MobileSettingsRow
@@ -175,6 +175,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   body: {
+    flex: 1,
+    maxWidth: 420,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  bodyContent: {
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 60,

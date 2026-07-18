@@ -240,7 +240,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   shell: { flex: 1 },
-  body: { flex: 1 },
+  body: { flex: 1, maxWidth: 420, alignSelf: 'center', width: '100%' },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12 },
   rowBetween: {
     flexDirection: 'row',
