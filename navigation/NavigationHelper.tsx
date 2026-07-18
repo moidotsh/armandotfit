@@ -34,6 +34,14 @@ export enum NavigationPath {
   FORGOT_PASSWORD = 'forgot-password',
   SETTINGS = 'settings',
   DEV_PREMIUM = 'dev/premium',
+  // armandotfit domain routes
+  WORKOUT_DETAIL = 'workout-detail',
+  EXERCISE_DATABASE = 'exercise-database',
+  EXERCISE_DETAIL = 'exercise-detail',
+  PROGRESSION = 'progression',
+  ANALYTICS = 'analytics',
+  WORKOUT_PROGRAMS = 'workout-programs',
+  SPLIT_SELECTION = 'split-selection',
 }
 
 /**
@@ -42,7 +50,8 @@ export enum NavigationPath {
  *
  * Shell routes parent to HOME (the post-auth entry point) except for
  * FORGOT_PASSWORD, which parents to LOGIN (reached from the login screen
- * and meant to return there).
+ * and meant to return there). Domain routes parent to HOME except for
+ * detail/child routes which parent to their list view.
  */
 export const navigationHierarchy: Record<string, NavigationPath> = {
   [NavigationPath.LOGIN]: NavigationPath.HOME,
@@ -50,6 +59,14 @@ export const navigationHierarchy: Record<string, NavigationPath> = {
   [NavigationPath.FORGOT_PASSWORD]: NavigationPath.LOGIN,
   [NavigationPath.SETTINGS]: NavigationPath.HOME,
   [NavigationPath.DEV_PREMIUM]: NavigationPath.HOME,
+  // armandotfit domain routes
+  [NavigationPath.WORKOUT_DETAIL]: NavigationPath.HOME,
+  [NavigationPath.EXERCISE_DATABASE]: NavigationPath.HOME,
+  [NavigationPath.EXERCISE_DETAIL]: NavigationPath.EXERCISE_DATABASE,
+  [NavigationPath.PROGRESSION]: NavigationPath.HOME,
+  [NavigationPath.ANALYTICS]: NavigationPath.HOME,
+  [NavigationPath.WORKOUT_PROGRAMS]: NavigationPath.HOME,
+  [NavigationPath.SPLIT_SELECTION]: NavigationPath.HOME,
 };
 
 // ─── Push helpers (drill in) ────────────────────────────────────────────
@@ -80,6 +97,47 @@ export function navigateToSettings() {
  */
 export function navigateToPremiumShowcase() {
   router.push('/dev/premium');
+}
+
+// ─── armandotfit domain navigation ────────────────────────────────────
+
+/** Open an existing workout session detail, or start a new one (no id). */
+export function navigateToWorkoutDetail(workoutId?: string) {
+  if (workoutId) {
+    router.push({ pathname: '/workout-detail', params: { id: workoutId } });
+  } else {
+    router.push('/workout-detail');
+  }
+}
+
+/** Open the exercise library browse screen. */
+export function navigateToExerciseDatabase() {
+  router.push('/exercise-database');
+}
+
+/** Open a specific exercise's detail card. */
+export function navigateToExerciseDetail(exerciseId: string) {
+  router.push({ pathname: '/exercise-detail', params: { id: exerciseId } });
+}
+
+/** Open the progression dashboard (PR tracking + volume trends). */
+export function navigateToProgression() {
+  router.push('/progression');
+}
+
+/** Open the analytics screen (charts + history). */
+export function navigateToAnalytics() {
+  router.push('/analytics');
+}
+
+/** Open the workout programs/templates browser. */
+export function navigateToWorkoutPrograms() {
+  router.push('/workout-programs');
+}
+
+/** Open the split-selection flow (Full Body vs AM/PM, day-of-week). */
+export function navigateToSplitSelection() {
+  router.push('/split-selection');
 }
 
 // ─── Replace helpers (redirects) ────────────────────────────────────────
