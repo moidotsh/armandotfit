@@ -219,11 +219,13 @@ export function MobileNavDrawer({
           brand + hamburger stay visible. In slideout mode the panel is
           opaque everywhere and the brand lives in the header slot. */}
       <Animated.View
+        pointerEvents={isCutout ? 'box-none' : 'auto'}
         style={[
           styles.panel,
           {
             width: DRAWER_WIDTH,
             backgroundColor: isCutout ? 'transparent' : colors.backgroundDeep,
+            borderRightColor: colors.mobilePremium.hairlineBorder,
             transform: [{ translateX: animatedIn ? 0 : -DRAWER_WIDTH }],
             ...(isWeb
               ? {
@@ -234,22 +236,15 @@ export function MobileNavDrawer({
         ]}
       >
         {isCutout ? (
-          // Cutout cap — a thin frame at the top of the panel. No fill
-          // (the home header brand shows through), just a right hairline
-          // that matches the drawer's right edge so the cutout reads as
-          // part of the panel rather than a missing piece. Slides with
-          // the panel because it's a child of it. pointerEvents: none
-          // so taps reach the hamburger behind it.
+          // Cutout cap — empty frame at the top of the panel. No fill, no
+          // borders of its own; the home header brand shows through and
+          // the panel's own borderRight (below) runs the full height for
+          // visual continuity between cap and body. Slides with the panel
+          // because it's a child of it. pointerEvents: none so taps reach
+          // the hamburger behind it.
           <View
             pointerEvents="none"
-            style={[
-              styles.cutoutCap,
-              {
-                width: DRAWER_WIDTH,
-                height: effectiveCutoutHeight,
-                borderRightColor: colors.mobilePremium.hairlineBorder,
-              },
-            ]}
+            style={[styles.cutoutCap, { width: DRAWER_WIDTH, height: effectiveCutoutHeight }]}
           />
         ) : null}
 
@@ -270,12 +265,14 @@ export function MobileNavDrawer({
           />
         </View>
 
-        <View style={styles.panelContent}>
-          {isCutout ? (
-            // Push real content below the cutout so it doesn't slip
-            // above the cap line.
-            <View style={{ height: effectiveCutoutHeight }} />
-          ) : header ? (
+        <View
+          style={[
+            styles.panelContent,
+            isCutout ? { paddingTop: effectiveCutoutHeight } : null,
+          ]}
+          pointerEvents={isCutout ? 'box-none' : 'auto'}
+        >
+          {isCutout ? null : header ? (
             <View style={[styles.header, { paddingTop: insets.top + 12 }]}>{header}</View>
           ) : (
             <View style={{ height: insets.top + 12 }} />
@@ -364,14 +361,15 @@ const styles = StyleSheet.create({
     left: 0,
     bottom: 0,
     overflow: 'hidden',
+    // Right hairline runs the full panel height. In cutout mode this is
+    // the only edge defining the cutout area; in slideout mode it adds
+    // a subtle separation between the panel and the scrim beside it.
+    borderRightWidth: 1,
   },
   cutoutCap: {
     position: 'absolute',
     top: 0,
     left: 0,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.04)',
   },
   panelBackground: {
     position: 'absolute',

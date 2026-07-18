@@ -23,12 +23,16 @@ export interface HamburgerButtonProps {
 
 export function HamburgerButton({ onPress, isOpen = false }: HamburgerButtonProps) {
   const { colors } = useAppTheme();
-  // Both icons render absolutely stacked; opacity crossfades. On web a
-  // 200ms CSS transition keeps the swap smooth; on native the opacity
-  // still toggles (just without the timed transition). The transition
-  // prop is web-only and not in RN's ViewStyle types, so it goes through
-  // a conditional spread rather than a typed key.
-  const transitionProp = isWeb ? { transition: 'opacity 200ms ease' } : null;
+  // Rotation + opacity crossfade, mirroring qep-tracker's HomeHeader
+  // toggle: Menu rotates 0→90° clockwise as it fades out; X rotates
+  // -90°→0° as it fades in. Both transitions land together over 200ms,
+  // so the swap reads as a mechanical transformation rather than a
+  // fade. The transition props are web-only and not in RN's ViewStyle
+  // types, so they go through a conditional spread rather than typed
+  // keys.
+  const transitionProp = isWeb
+    ? { transition: 'opacity 200ms ease, transform 200ms ease' }
+    : null;
   return (
     <Pressable
       onPress={onPress}
@@ -42,7 +46,11 @@ export function HamburgerButton({ onPress, isOpen = false }: HamburgerButtonProp
           style={[
             StyleSheet.absoluteFill,
             styles.iconLayer,
-            { opacity: isOpen ? 0 : 1, ...transitionProp },
+            {
+              opacity: isOpen ? 0 : 1,
+              transform: `rotate(${isOpen ? 90 : 0}deg)`,
+              ...transitionProp,
+            },
           ]}
         >
           <Menu size={22} color={colors.text} />
@@ -51,7 +59,11 @@ export function HamburgerButton({ onPress, isOpen = false }: HamburgerButtonProp
           style={[
             StyleSheet.absoluteFill,
             styles.iconLayer,
-            { opacity: isOpen ? 1 : 0, ...transitionProp },
+            {
+              opacity: isOpen ? 1 : 0,
+              transform: `rotate(${isOpen ? 0 : -90}deg)`,
+              ...transitionProp,
+            },
           ]}
         >
           <X size={22} color={colors.text} />
