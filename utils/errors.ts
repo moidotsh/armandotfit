@@ -204,6 +204,18 @@ function mapSupabaseCode(code?: string): ErrorCode {
   if (!code) return ErrorCode.UNKNOWN;
 
   const codeMap: Record<string, ErrorCode> = {
+    // undefined_table / undefined_parameter — a migration hasn't been
+    // applied. NOT_FOUND on the AppError side (vs UNKNOWN on the repo
+    // side in classifySupabaseError) — AppError consumers like
+    // handleApiError don't have the same retry interaction; surfacing
+    // the missing-table case as NOT_FOUND is accurate for callers that
+    // don't go through the repository pipeline.
+    '42P01': ErrorCode.NOT_FOUND,
+    '42P02': ErrorCode.NOT_FOUND,
+    // insufficient_privilege — RLS denial.
+    '42501': ErrorCode.UNAUTHORIZED,
+    // PGRST116 — PostgREST .single() returned 0 rows; read as NOT_FOUND.
+    PGRST116: ErrorCode.NOT_FOUND,
     PGRST301: ErrorCode.NOT_FOUND,
     PGRST302: ErrorCode.NOT_FOUND,
     '23505': ErrorCode.DUPLICATE_ENTRY,

@@ -5,14 +5,22 @@
 
 import { QueryClient } from '@tanstack/react-query';
 import { AppError, handleApiError } from '../../utils/errors';
+import { RepositoryError, RepositoryErrorCode } from '../../utils/supabase/repositories';
 import logger from '../../utils/logger';
 
 export const defaultQueryOptions = {
   staleTime: 5 * 60 * 1000,
   gcTime: 30 * 60 * 1000,
+  // Fail fast on non-recoverable errors — no spinner storm on 404 / 401 /
+  // missing-table 42P01 / validation. AppError already classifies
+  // recoverability at construction (see isRecoverableCode in utils/errors);
+  // RepositoryError needs an explicit code check (only NETWORK_ERROR is
+  // worth retrying — anything else will fail identically on the next attempt).
   retry: (failureCount: number, error: unknown) => {
-    if (error instanceof AppError && error.code === 'ERR_AUTH') return false;
-    if (error instanceof AppError && error.code === 'ERR_VALIDATION') return false;
+    if (error instanceof AppError) return error.recoverable && failureCount < 3;
+    if (error instanceof RepositoryError) {
+      return error.code === RepositoryErrorCode.NETWORK_ERROR && failureCount < 3;
+    }
     return failureCount < 3;
   },
   refetchOnWindowFocus: false,

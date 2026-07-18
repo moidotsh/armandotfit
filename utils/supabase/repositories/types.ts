@@ -5,6 +5,7 @@
 // (D5) flags any repository method that doesn't return `RepositoryResult<T>`.
 
 import type { z } from 'zod';
+import { logger } from '../../logger';
 
 /**
  * Result type for repository operations. Discriminated union on
@@ -102,4 +103,109 @@ export function validateWithSchema<T>(
     result.error.issues.map((e) => e.message).join(', '),
     RepositoryErrorCode.VALIDATION_ERROR,
   );
+}
+
+// ── Error classification ──────────────────────────────────────────────
+// Single classification site for repository catch blocks. The qep-tracker
+// anti-pattern (documented in workspace `AUDIT.md` → F6 #1) is duplicating
+// this logic across 200+ catch sites, every one of them classifying as
+// UNKNOWN — which makes the retry predicate unable to tell a missing-table
+// 404 from a transient network blip, producing ~10s spinner storms.
+//
+// `classifySupabaseError` is the pure mapping; `handleRepositoryError` is
+// the catch-block helper that also logs and packs the result.
+
+const SQLSTATE_CODE_MAP: Record<string, RepositoryErrorCode> = {
+  // Table / RPC missing — a migration hasn't been applied. Surfaced to
+  // the user as an UNKNOWN failure (NOT_FOUND would imply "row not found"
+  // semantics); the key property is that it's NOT NETWORK_ERROR, so the
+  // retry predicate fails fast instead of hammering the missing endpoint.
+  '42P01': RepositoryErrorCode.UNKNOWN,
+  '42P02': RepositoryErrorCode.UNKNOWN,
+  // RLS denial / insufficient privilege.
+  '42501': RepositoryErrorCode.UNAUTHORIZED,
+  // Constraint violations.
+  '23505': RepositoryErrorCode.CONFLICT,
+  '23503': RepositoryErrorCode.VALIDATION_ERROR,
+  '23502': RepositoryErrorCode.VALIDATION_ERROR,
+  '22001': RepositoryErrorCode.VALIDATION_ERROR,
+  '22003': RepositoryErrorCode.VALIDATION_ERROR,
+  // Connection / transport (retryable).
+  '08006': RepositoryErrorCode.NETWORK_ERROR,
+  '08001': RepositoryErrorCode.NETWORK_ERROR,
+  '57014': RepositoryErrorCode.NETWORK_ERROR,
+  // PostgREST pseudo-codes (no SQLSTATE equivalent).
+  PGRST116: RepositoryErrorCode.NOT_FOUND, // .single() / .maybeSingle() returned 0 rows
+  PGRST301: RepositoryErrorCode.NOT_FOUND,
+  PGRST302: RepositoryErrorCode.NOT_FOUND,
+};
+
+interface SupabaseLikeError {
+  code?: unknown;
+  status?: unknown;
+  message?: unknown;
+}
+
+/**
+ * Inspect a Supabase/PostgREST error shape and return the matching
+ * RepositoryErrorCode + normalized message. PostgREST errors carry both
+ * `code` (Postgres SQLSTATE or PGRST pseudo-code) and `status` (HTTP).
+ * The SQLSTATE/PGRST code wins when present; HTTP status is the fallback
+ * for transport errors (gateway 5xx, edge-function timeouts) that don't
+ * carry a structured code.
+ *
+ * Permissive on shape — unknown errors return UNKNOWN rather than
+ * throwing. The caller (handleRepositoryError) owns the log + result
+ * packing.
+ */
+export function classifySupabaseError(error: unknown): {
+  code: RepositoryErrorCode;
+  message: string;
+  cause?: Error;
+} {
+  if (error instanceof RepositoryError) {
+    return { code: error.code, message: error.message, cause: error.cause };
+  }
+  const message = error instanceof Error ? error.message : 'Unknown error';
+  const cause = error instanceof Error ? error : undefined;
+
+  if (typeof error === 'object' && error !== null) {
+    const e = error as SupabaseLikeError;
+    // SQLSTATE / PGRST code wins when present.
+    if (typeof e.code === 'string' && e.code in SQLSTATE_CODE_MAP) {
+      return { code: SQLSTATE_CODE_MAP[e.code], message, cause };
+    }
+    // HTTP status fallback for transport / gateway errors.
+    if (typeof e.status === 'number') {
+      if (e.status === 401 || e.status === 403) {
+        return { code: RepositoryErrorCode.UNAUTHORIZED, message, cause };
+      }
+      if (e.status === 404) {
+        return { code: RepositoryErrorCode.NOT_FOUND, message, cause };
+      }
+      if (e.status === 429 || e.status >= 500) {
+        return { code: RepositoryErrorCode.NETWORK_ERROR, message, cause };
+      }
+    }
+  }
+
+  return { code: RepositoryErrorCode.UNKNOWN, message, cause };
+}
+
+/**
+ * Single error-handling site for repository catch blocks. Pass the
+ * operation name (for the log line) and the caught error; get back a
+ * RepositoryResult carrying the classified error. BaseRepository.handleError
+ * delegates here, and the standalone repos (Streak, Progression) call
+ * directly — collapse the qep-tracker anti-pattern of duplicating this
+ * boilerplate across every repository method.
+ */
+export function handleRepositoryError(
+  operation: string,
+  error: unknown,
+): RepositoryResult<never> {
+  if (error instanceof RepositoryError) return { success: false, error };
+  const c = classifySupabaseError(error);
+  logger.warn('repository', `${operation} failed:`, c.message);
+  return err(`${operation} failed: ${c.message}`, c.code, c.cause);
 }

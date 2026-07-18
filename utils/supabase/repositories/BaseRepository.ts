@@ -8,11 +8,8 @@ import {
   type IRepository,
   type RepositoryResult,
   type FindOptions,
-  RepositoryError,
-  RepositoryErrorCode,
-  err,
+  handleRepositoryError,
 } from './types';
-import { logger } from '../../logger';
 
 export abstract class BaseRepository<T, CreateDTO, UpdateDTO>
   implements IRepository<T, CreateDTO, UpdateDTO>
@@ -33,17 +30,13 @@ export abstract class BaseRepository<T, CreateDTO, UpdateDTO>
    *   try { ... } catch (e) {
    *     return this.handleError('findAll', e);
    *   }
+   *
+   * Delegates to the shared `handleRepositoryError` helper in `./types`,
+   * which classifies the error via `classifySupabaseError` (SQLSTATE /
+   * HTTP status) before packing the result. Single classification site
+   * across BaseRepository + the standalone repos.
    */
   protected handleError(operation: string, error: unknown): RepositoryResult<never> {
-    if (error instanceof RepositoryError) {
-      return { success: false, error };
-    }
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    logger.warn('repository', `${operation} failed:`, message);
-    return err(
-      `${operation} failed: ${message}`,
-      RepositoryErrorCode.UNKNOWN,
-      error instanceof Error ? error : undefined,
-    );
+    return handleRepositoryError(operation, error);
   }
 }

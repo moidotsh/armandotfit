@@ -6,7 +6,7 @@
 // shape is a single RPC, not a table CRUD.
 
 import { supabase } from '../client';
-import { type RepositoryResult, RepositoryErrorCode, err, ok } from './types';
+import { type RepositoryResult, ok, handleRepositoryError } from './types';
 import type { StreakInfo, ID } from '../../../shared/types';
 
 /**
@@ -31,11 +31,7 @@ export class StreakRepository {
       }
       return ok({ current: row.current_streak, best: row.best_streak });
     } catch (e) {
-      return err(
-        e instanceof Error ? `getStreaks failed: ${e.message}` : 'getStreaks failed',
-        RepositoryErrorCode.UNKNOWN,
-        e instanceof Error ? e : undefined,
-      );
+      return handleRepositoryError('getStreaks', e);
     }
   }
 }

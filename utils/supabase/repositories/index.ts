@@ -13,6 +13,8 @@ export {
   ok,
   err,
   validateWithSchema,
+  classifySupabaseError,
+  handleRepositoryError,
 } from './types';
 
 export { BaseRepository } from './BaseRepository';

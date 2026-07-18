@@ -8,9 +8,8 @@
 import { supabase } from '../client';
 import {
   type RepositoryResult,
-  RepositoryErrorCode,
-  err,
   ok,
+  handleRepositoryError,
 } from './types';
 import type {
   ID,
@@ -64,11 +63,7 @@ export class ProgressionRepository {
       if (error) throw error;
       return ok((data as UserAnalyticsRow[]).map(toAnalytics));
     } catch (e) {
-      return err(
-        e instanceof Error ? `findByUser failed: ${e.message}` : 'findByUser failed',
-        RepositoryErrorCode.UNKNOWN,
-        e instanceof Error ? e : undefined,
-      );
+      return handleRepositoryError('findByUser', e);
     }
   }
 
@@ -89,11 +84,7 @@ export class ProgressionRepository {
       if (error) throw error;
       return ok(data ? toAnalytics(data as UserAnalyticsRow) : null);
     } catch (e) {
-      return err(
-        e instanceof Error ? `findLatest failed: ${e.message}` : 'findLatest failed',
-        RepositoryErrorCode.UNKNOWN,
-        e instanceof Error ? e : undefined,
-      );
+      return handleRepositoryError('findLatest', e);
     }
   }
 
