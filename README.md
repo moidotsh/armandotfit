@@ -1,12 +1,12 @@
 # armandotfit
 
-> A fitness PWA — workout splits, exercise library, progression, streak, real-time session logging. Built on [vellum](../vellum) (sibling repo): the qep-tracker architecture retuned for PWA-only + email/password auth + light-mode-first.
+> A fitness PWA — workout splits, exercise library, progression, streak, real-time session logging. Built on [vellum](../vellum) (sibling repo): the qep-tracker architecture retuned for PWA-first (native export is consumer extension) + email/password auth + light-mode-first.
 
 ## What armandotfit is
 
 The first consumer of vellum. Vellum absorbed the one-time architectural cost (47-pattern constitution, 10-audit pre-commit gate, repository pattern, MobilePremium design system forked to light, PWA runtime-injection block). Armandotfit owns its domain layer on top — the fitness logic that turns the shell into a shipping app.
 
-- **PWA-only.** Static web export. No iOS, no Android. Installable from the browser.
+- **PWA-first.** Static web export is the supported default; installable from the browser. Native iOS/Android export is an intentional consumer extension — armandotfit ships native scaffolding (`icon`, `ios`, `android`, `expo-splash-screen` plugin in `app.config.ts`) + branded PNGs at `./assets/`. Releasing native would require `eas.json`, EAS Build config, the consumer's own iOS bundle ID + Android application/package ID (replacing the `app.armandotfit` starter value), and platform validation.
 - **Light is the default; dark is opt-in.** Theme palette ships both modes; the active palette resolves at runtime via `useAppTheme()`.
 - **Email/password auth.** Inherited from vellum. No PIN primitives.
 - **Brand color: armandotfit orange (`#FF9500`)** — overridden from vellum's default indigo.

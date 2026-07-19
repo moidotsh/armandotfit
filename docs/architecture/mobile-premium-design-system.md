@@ -24,7 +24,7 @@ cards, headers, or transitions per screen; they drop content into the
 canonical shell (§4) and inherit the design language.
 
 The kit is **not** a generic design system. It is a tightly-scoped set
-of primitives for **light-default, dark-opt-in (both palettes ship), PWA-only, mobile-first** consumer
+of primitives for **light-default, dark-opt-in (both palettes ship), PWA-first (native export is consumer extension), mobile-first** consumer
 apps, with hard constraints documented inline. Adding a primitive is
 fine; relaxing the constraints is not.
 
@@ -645,7 +645,7 @@ Consumers will:
   the `audit-rpc-auth.ts` script back as consumer-side additions.
 
 The kit is **mobile-only**. Vellum does not ship a desktop kit; the
-PWA-only scope means every consumer screen targets a mobile viewport.
+MobilePremium scope means every consumer screen targets a mobile viewport.
 A consumer needing a desktop admin surface builds it separately and
 does not try to force `MobileSurface` / `MobileHeader` to work at
 desktop breakpoints.

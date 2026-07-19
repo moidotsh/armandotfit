@@ -1,10 +1,15 @@
 // app.config.ts
-// armandotfit is PWA-only (inherited from vellum). Static export produces a
-// `dist/` folder that Vercel or any static host can serve; the runtime
-// manifest-injection block in `app/_layout.tsx` restores the
-// `<link rel="manifest">` tag that Expo Web's static-export pipeline strips
-// from dist/index.html (load-bearing for PWA installability — see
-// docs/architecture/pwa-installability.md).
+// Armandotfit is PWA-first; native export is an intentional consumer
+// extension. Static export produces `dist/` (the supported default).
+// The native fields below (`icon`, `ios`, `android`, `expo-splash-screen`
+// plugin) establish configuration-and-asset groundwork for a future
+// consumer native extension; branded PNGs at `./assets/` and the
+// `ios.bundleIdentifier` value `app.armandotfit` are starter
+// scaffolding — the consumer replaces them with their own brand
+// artwork and iOS bundle ID + Android application ID before any native
+// release. Runtime manifest-injection in `app/_layout.tsx` remains
+// load-bearing for PWA installability — see
+// `docs/architecture/pwa-installability.md`.
 import type { ExpoConfig, ConfigContext } from '@expo/config';
 
 const config: ExpoConfig = {
@@ -16,14 +21,44 @@ const config: ExpoConfig = {
   userInterfaceStyle: 'light',
   newArchEnabled: true,
   scheme: 'armandotfit',
+  ios: {
+    supportsTablet: true,
+    newArchEnabled: true,
+    bundleIdentifier: 'app.armandotfit',
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
+  },
+  android: {
+    adaptiveIcon: {
+      foregroundImage: './assets/adaptive-icon.png',
+      // s7-exempt — build-time Expo config; no runtime theme surface available
+      backgroundColor: '#FFFFFF',
+    },
+    edgeToEdgeEnabled: true,
+    newArchEnabled: true,
+  },
   web: {
     output: 'static',
-    favicon: './assets/favicon.png',
     bundler: 'metro',
     buildMode: 'production',
     javascriptEnabled: true,
   },
-  plugins: ['expo-router', '@react-native-community/datetimepicker', 'expo-secure-store'],
+  plugins: [
+    'expo-router',
+    '@react-native-community/datetimepicker',
+    'expo-secure-store',
+    [
+      'expo-splash-screen',
+      {
+        image: './assets/splash-icon.png',
+        // s7-exempt — build-time Expo config; no runtime theme surface available
+        backgroundColor: '#FFFFFF',
+        imageWidth: 200,
+        resizeMode: 'contain',
+      },
+    ],
+  ],
   extra: {
     router: {},
     eas: {

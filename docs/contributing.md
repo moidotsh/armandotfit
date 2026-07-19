@@ -25,7 +25,7 @@ There's no `npm install vellum`. Consumers clone, own the copy, modify freely. T
 | Domain-specific route (e.g. `/workout-detail`) | **No** | Consumer. |
 | Brand-specific token override | **No** | Consumer. Vellum ships the default; the consumer overrides. |
 | PIN-auth primitives | **No** | Consumer-specific extension. Vellum defaults to email/password; the consumer guide documents the re-add path. |
-| Native-target support (iOS/Android build config) | **No** | Vellum is PWA-only by invariant #2. A consumer wanting native re-adds it; that's a fork decision, not a shell change. |
+| Native-target support (iOS/Android build config) | **Yes (placeholder scaffolding)** | Vellum ships native scaffolding in `app.config.ts` (`icon`, `ios`, `android`, `expo-splash-screen` plugin) + neutral PNGs at `./assets/`. A consumer going native adds `eas.json`, EAS Build config, platform validation, brand PNGs, and their own iOS bundle ID + Android application/package ID (replacing the starter value) before release. |
 | Dark mode | **No** | Light is the default and dark is opt-in per invariant #3 (both palettes ship). A consumer wanting a *third* color mode (e.g. `dim`) does the retune work themselves. |
 
 ## The decision rule
@@ -124,5 +124,5 @@ When vellum changes its canonical doc set (new doc, deprecated doc, renamed doc)
 - **Don't add domain code to vellum.** No `Workout` types, no `WorkoutRepository`, no fitness-specific routes. The moment vellum has domain code, every consumer has to delete it.
 - **Don't add a second color slot.** The `brand` slot is the single override point. A second accent slot fragments the surface — every consumer wins from one canonical override.
 - **Don't add an abstraction without a second consumer in mind.** "We might need this someday" is the failure mode. Add abstractions when there are two concrete consumers; not before.
-- **Don't re-add PIN auth, native targets, or dark mode.** These are deliberate omissions. Documented in `CLAUDE.md` → "When to add PIN auth" and the "What vellum isn't" section of `README.md`. A consumer needing them does the work in their fork.
+- **Don't promote native release readiness or PIN auth into shell-level surfaces.** Native is supported as an intentional consumer extension: vellum ships scaffolding (icon/ios/android/splash plugin in `app.config.ts` + placeholder PNGs) per invariant #2, and consumers wanting native complete the path on top — `eas.json`, EAS Build config, brand PNGs, their own iOS bundle ID + Android application/package ID (replacing the starter value), and platform validation. PIN auth has the same shape — vellum defaults to email/password; documented in `CLAUDE.md` → "When to add PIN auth".
 - **Don't re-introduce a circular import via the showcase.** `components/MobilePremium/showcase.tsx` imports each primitive directly (`./MobileSurface`), not via `./index` — the barrel re-exports the showcase, so going via the barrel is a cycle. Audit S5 catches this; just don't do it.

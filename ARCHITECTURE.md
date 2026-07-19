@@ -1,6 +1,6 @@
 # Vellum Architecture Constitution
 
-> Vellum is the qep-tracker architecture, retuned for light-mode + PWA-only + email/password auth. Every pattern below is enforced by a structural audit in `scripts/audit-*.ts`; the audits are the load-bearing mechanism that keeps a consumer's codebase from drifting within 50 commits.
+> Vellum is the qep-tracker architecture, retuned for light-mode + PWA-first (native export is consumer extension) + email/password auth. Every pattern below is enforced by a structural audit in `scripts/audit-*.ts`; the audits are the load-bearing mechanism that keeps a consumer's codebase from drifting within 50 commits.
 
 ## Pattern Index
 
@@ -52,7 +52,7 @@
 | R4b | Listener Cleanup | Runtime |
 | R1 | Async Effect Cancellation | Runtime |
 
-> **Dropped vs qep-tracker:** S15 (platform-specific content system — App Store / Play Store differences, not relevant for PWA-only), C6 (list optimization — domain-specific), C11 (Stories tutorial system — skipped per Open Question 4), D9 (grid-based calculations — domain-specific to qep-tracker), R1-RPC (`verify_session` audit — vellum has no PIN auth by default).
+> **Dropped vs qep-tracker:** S15 (platform-specific content system — App Store / Play Store differences, not relevant at the shell level — consumer-extension territory), C6 (list optimization — domain-specific), C11 (Stories tutorial system — skipped per Open Question 4), D9 (grid-based calculations — domain-specific to qep-tracker), R1-RPC (`verify_session` audit — vellum has no PIN auth by default).
 
 ## Quick Start (Read This First)
 
