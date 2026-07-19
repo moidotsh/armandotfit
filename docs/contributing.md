@@ -26,7 +26,7 @@ There's no `npm install vellum`. Consumers clone, own the copy, modify freely. T
 | Brand-specific token override | **No** | Consumer. Vellum ships the default; the consumer overrides. |
 | PIN-auth primitives | **No** | Consumer-specific extension. Vellum defaults to email/password; the consumer guide documents the re-add path. |
 | Native-target support (iOS/Android build config) | **No** | Vellum is PWA-only by invariant #2. A consumer wanting native re-adds it; that's a fork decision, not a shell change. |
-| Dark mode | **No** | Vellum is light-mode-only by invariant #3. A consumer wanting dark mode does the retune work themselves. |
+| Dark mode | **No** | Light is the default and dark is opt-in per invariant #3 (both palettes ship). A consumer wanting a *third* color mode (e.g. `dim`) does the retune work themselves. |
 
 ## The decision rule
 

@@ -108,10 +108,10 @@
 - **Rule:** Use ternaries or `!!expr && <Component/>` coercion for conditional children.
 - **Prohibited:** `{count && <Component/>}` — renders `0` or `""` as children when the left side is falsy-but-not-boolean.
 
-### S7. Theme Access (light-only)
-- **Rule:** Vellum is light-mode-only. Every color reference in component code resolves to `theme.colors.light.*` (via `useAppTheme()` or a `constants` import).
+### S7. Theme Access
+- **Rule:** Both `theme.colors.light.*` and `theme.colors.dark.*` ship in `constants/theme.ts`. The active palette is resolved at runtime by `useAppTheme()` (per invariant #3 in `CLAUDE.md`); component code reads `colors.*` from the resolved palette and never indexes by mode. Light is the default; dark is opt-in.
 - **Audit:** `audit-ui-theme.ts` blocks hardcoded hex colors and `Dimensions.get('window')` — both are S7 violations.
-- **Prohibited:** `'#4F46E5'` literal in a component. `theme.colors.dark.*` references (there is no dark theme). SVG vectors and `constants/theme.ts` are exempt — they are the source of truth.
+- **Prohibited:** `'#4F46E5'` literal in a component. Direct mode-indexed access (`theme.colors.light.*` or `theme.colors.dark.*`) in component code — read from `useAppTheme()`'s resolved `colors.*` instead. SVG vectors and `constants/theme.ts` are exempt — they are the source of truth.
 
 ### S8. API Client (fetchWithRetry)
 - **Rule:** Use `fetchWithRetry()` from `utils/api-client.ts`. Better: go through the repository layer — repositories should be the only call sites for network I/O outside `api-client.ts` itself.
