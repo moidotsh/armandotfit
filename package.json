@@ -2,7 +2,7 @@
   "name": "armandotfit",
   "main": "expo-router/entry",
   "version": "1.0.0",
-  "description": "Fitness PWA (workout splits, exercise library, progression, streak, session logging) built on vellum.",
+  "description": "Fitness PWA (workout splits, exercise library, progression, streak, session logging) built on arqavellum.",
   "scripts": {
     "start": "expo start",
     "web": "expo start --web",

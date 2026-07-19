@@ -10,7 +10,7 @@
 //   • Surface-tinted background when checked (subtle, no thick accent bar).
 //
 // API compatibility: accepts both `title`/`subtitle` (qep-tracker API) and
-// `label`/`helperText` (vellum legacy API).
+// `label`/`helperText` (arqavellum legacy API).
 
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
@@ -24,9 +24,9 @@ export interface MobileCheckboxItemProps {
   title?: string;
   /** Optional supporting copy under the title. qep-tracker API. */
   subtitle?: string;
-  /** Checkbox label. Vellum legacy alias of `title`. */
+  /** Checkbox label. Arqavellum legacy alias of `title`. */
   label?: string;
-  /** Helper text. Vellum legacy alias of `subtitle`. */
+  /** Helper text. Arqavellum legacy alias of `subtitle`. */
   helperText?: string;
   /** Current checked state. */
   checked: boolean;

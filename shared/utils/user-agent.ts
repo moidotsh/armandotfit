@@ -2,7 +2,7 @@
 // Canonical user-agent parser. Returns a rich object so each call site
 // can project the fields it needs without re-implementing detection.
 //
-// Vellum ships the parser; consumers extend NATIVE_APP_MARKERS below
+// Arqavellum ships the parser; consumers extend NATIVE_APP_MARKERS below
 // with their own app-shell UA identifier (e.g. 'MyApp/') if they ship
 // a native wrapper. Web-only consumers can ignore that field entirely.
 
@@ -53,8 +53,8 @@ export interface UserAgentInfo {
 }
 
 /**
- * Markers that indicate a native app shell. Vellum includes the generic
- * React Native / Expo markers. Consumers extending vellum with their own
+ * Markers that indicate a native app shell. Arqavellum includes the generic
+ * React Native / Expo markers. Consumers extending arqavellum with their own
  * native shell should add their app's identifier here (e.g. 'MyApp/').
  */
 const NATIVE_APP_MARKERS = ['ExpoKit/', 'ReactNative'];

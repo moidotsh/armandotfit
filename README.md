@@ -1,15 +1,15 @@
 # armandotfit
 
-> A fitness PWA — workout splits, exercise library, progression, streak, real-time session logging. Built on [vellum](../vellum) (sibling repo): the qep-tracker architecture retuned for PWA-first (native export is consumer extension) + email/password auth + light-mode-first.
+> A fitness PWA — workout splits, exercise library, progression, streak, real-time session logging. Built on [arqavellum](../arqavellum) (sibling repo): the qep-tracker architecture retuned for PWA-first (native export is consumer extension) + email/password auth + light-mode-first.
 
 ## What armandotfit is
 
-The first consumer of vellum. Vellum absorbed the one-time architectural cost (47-pattern constitution, 10-audit pre-commit gate, repository pattern, MobilePremium design system forked to light, PWA runtime-injection block). Armandotfit owns its domain layer on top — the fitness logic that turns the shell into a shipping app.
+The first consumer of arqavellum. Arqavellum absorbed the one-time architectural cost (47-pattern constitution, 10-audit pre-commit gate, repository pattern, MobilePremium design system forked to light, PWA runtime-injection block). Armandotfit owns its domain layer on top — the fitness logic that turns the shell into a shipping app.
 
 - **PWA-first.** Static web export is the supported default; installable from the browser. Native iOS/Android export is an intentional consumer extension — armandotfit ships native scaffolding (`icon`, `ios`, `android`, `expo-splash-screen` plugin in `app.config.ts`) + branded PNGs at `./assets/`. Releasing native would require `eas.json`, EAS Build config, the consumer's own iOS bundle ID + Android application/package ID (replacing the `app.armandotfit` starter value), and platform validation.
 - **Light is the default; dark is opt-in.** Theme palette ships both modes; the active palette resolves at runtime via `useAppTheme()`.
-- **Email/password auth.** Inherited from vellum. No PIN primitives.
-- **Brand color: armandotfit orange (`#FF9500`)** — overridden from vellum's default indigo.
+- **Email/password auth.** Inherited from arqavellum. No PIN primitives.
+- **Brand color: armandotfit orange (`#FF9500`)** — overridden from arqavellum's default indigo.
 - **Supabase project: `mfeyywnwbjejzzbqzmop`** (created 2026-07-18 for the v2 port).
 
 ## Quickstart
@@ -68,12 +68,12 @@ Routes:
 | `/progression` | Streaks + totals + weekly goal |
 | `/analytics` | Range-selectable weekly bucketed workouts |
 | `/workout-programs` | Curated templates — stub for v2 |
-| `/login`, `/register`, `/forgot-password`, `/settings` | Inherited from vellum |
+| `/login`, `/register`, `/forgot-password`, `/settings` | Inherited from arqavellum |
 | `/dev/premium` | MobilePremium showcase — visual source of truth |
 
 ## Components (3-tier structure)
 
-- **`components/MobilePremium/`** — primitive kit (copied from vellum, brand-overridden). MobileSurface, MobileHeader, MobileInput, MobileActionFooter, etc.
+- **`components/MobilePremium/`** — primitive kit (copied from arqavellum, brand-overridden). MobileSurface, MobileHeader, MobileInput, MobileActionFooter, etc.
 - **`components/primitives/`** — atomic wrappers (LoadingSpinner, Toast, AppLoading).
 - **`components/composed/`** — domain-specific rows/cards composed from primitives (WorkoutSessionItem, ExerciseListItem, SetRow).
 - **Feature components** live inside their route files (`app/workout-detail.tsx` IS the active-session feature component).
@@ -82,7 +82,7 @@ Routes:
 
 | Doc | What it owns |
 |---|---|
-| `CLAUDE.md` | Repo operating context (invariants, pre-commit checks, vellum relationship, doc maintenance). Auto-loads in Claude Code sessions at the armandotfit root. |
+| `CLAUDE.md` | Repo operating context (invariants, pre-commit checks, arqavellum relationship, doc maintenance). Auto-loads in Claude Code sessions at the armandotfit root. |
 | `ARCHITECTURE.md` | The 47-pattern constitution. Every architectural decision is grounded here. |
 | `docs/OWNERSHIP.md` | Claim-type → canonical-owner map. |
 | `docs/architecture/mobile-premium-design-system.md` | The MobilePremium kit (four pillars, primitive inventory, atmosphere palettes, gating policy). |

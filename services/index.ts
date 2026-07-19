@@ -1,5 +1,5 @@
 // services/index.ts
-// Barrel for the services layer. Vellum's infrastructure
+// Barrel for the services layer. Arqavellum's infrastructure
 // (BaseQueueService, OfflineQueueService) + armandotfit's concrete
 // domain services.
 

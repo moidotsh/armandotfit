@@ -1,5 +1,5 @@
 // utils/supabase/repositories/index.ts
-// Barrel for the repository pattern. Vellum's infrastructure (types,
+// Barrel for the repository pattern. Arqavellum's infrastructure (types,
 // BaseRepository) + armandotfit's concrete repositories. The audit gate
 // (S9) treats this folder as the single legitimate home for direct
 // `supabase.*` calls.

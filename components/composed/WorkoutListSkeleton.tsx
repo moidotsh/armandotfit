@@ -4,7 +4,7 @@
 // left-aligned date block + right-aligned meta block. Defaults to 3
 // rows (the count used on the home dashboard); pass `rows` to override.
 //
-// Armandotfit-only — not ported to vellum (no WorkoutSessionItem
+// Armandotfit-only — not ported to arqavellum (no WorkoutSessionItem
 // counterpart in the domain-agnostic shell).
 
 import React from 'react';

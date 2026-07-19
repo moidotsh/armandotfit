@@ -14,7 +14,7 @@
 //     where it was). Use for auth-flow redirects and "you can't go back
 //     to where you were" transitions (post-login, post-logout, post-register).
 //
-// Vellum ships helpers for the shell routes only. Consumers add their
+// Arqavellum ships helpers for the shell routes only. Consumers add their
 // own helpers for domain routes (workout, exercise, dashboard, …) by
 // extending this file or by adding a sibling (e.g. `DomainNavigation.tsx`
 // re-exported from `navigation/index.tsx`).

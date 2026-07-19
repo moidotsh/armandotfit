@@ -7,7 +7,7 @@
 //     qep-tracker pattern that preserves the 490px height budget.
 //
 //   • Page mode (when only title/eyebrow/subtitle provided): a taller page
-//     header with eyebrow + title + subtitle. Backward-compat for vellum's
+//     header with eyebrow + title + subtitle. Backward-compat for arqavellum's
 //     existing screens; new screens should prefer nav mode + a content-area
 //     headline.
 //
@@ -61,7 +61,7 @@ const NAV_TITLE_STYLE = {
 
 /**
  * Mobile header — two modes (see file header). Nav mode is the qep-tracker
- * parity pattern; page mode is preserved for vellum's existing screens.
+ * parity pattern; page mode is preserved for arqavellum's existing screens.
  */
 export function MobileHeader({
   onBack,
@@ -138,7 +138,7 @@ export function MobileHeader({
     );
   }
 
-  // Page mode — vellum's original pattern. Eyebrow + title + subtitle +
+  // Page mode — arqavellum's original pattern. Eyebrow + title + subtitle +
   // optional left/right action slots. The screen root adds the safe-area
   // top inset.
   return (

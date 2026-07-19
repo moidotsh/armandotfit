@@ -5,7 +5,7 @@
 // window size.
 //
 // Fork point: qep-tracker's `useResponsive` is a much heavier wrapper
-// around a ResponsiveContext (pooled ResizeObserver). Vellum is PWA-first
+// around a ResponsiveContext (pooled ResizeObserver). Arqavellum is PWA-first
 // — each screen owns its own container measurement via useContainerQuery,
 // and useResponsive handles the window-level layout question alone.
 
@@ -39,7 +39,7 @@ export interface UseResponsiveReturn {
   shouldUseDesktopStyle: boolean;
   /** Resolved component variant for the live width. */
   componentVariant: ComponentVariant;
-  /** Sidebar layout tokens (mobile-only in vellum; consumers extend). */
+  /** Sidebar layout tokens (mobile-only in arqavellum; consumers extend). */
   layout: typeof LAYOUT;
   /** Resolve a container-size category from an arbitrary width. */
   getContainerSize: (width: number) => ContainerSizeCategory;

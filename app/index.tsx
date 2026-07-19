@@ -1,7 +1,7 @@
 // app/index.tsx
 // Home dashboard. Surfaces the daily-driver summary a returning user
 // needs: streak, weekly goal, quick actions, recent workouts. Replaces
-// vellum's placeholder home.
+// arqavellum's placeholder home.
 
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';

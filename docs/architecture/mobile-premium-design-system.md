@@ -3,9 +3,9 @@
 **Canonical location:** `docs/architecture/mobile-premium-design-system.md`
 **Kit source:** `components/MobilePremium/`
 **Shared layer:** `components/premium/shared/` (motion primitives + atmosphere palettes)
-**Status:** Active. This is the kit vellum ships with; consumers extend it.
+**Status:** Active. This is the kit arqavellum ships with; consumers extend it.
 
-This doc is the operating manual for the vellum mobile UI: what the kit
+This doc is the operating manual for the arqavellum mobile UI: what the kit
 is, why it looks the way it does, and how to extend both. It is detailed
 because the kit is load-bearing — every consumer screen lands on these
 conventions.
@@ -107,7 +107,7 @@ reports `backdrop-filter` support via CSS `@supports` even when
 `saturate()` rendering is poor. The hook
 `hooks/useAndroidChromeBlurFix.ts` mirrors the established regex
 (`/Android/.test(ua) && /Chrome/.test(ua)`) and is SSR-safe via
-`isWeb` + `hasWindow()` from `utils/platform.ts`. Vellum ships a slim
+`isWeb` + `hasWindow()` from `utils/platform.ts`. Arqavellum ships a slim
 detection stub; consumers with significant Android traffic should
 verify the behavior and tune the threshold if needed.
 
@@ -322,7 +322,7 @@ Conventions:
 
 `MobileAtmosphere` takes a `surface` prop. Each surface is a 3-orb
 palette defined in `components/premium/shared/atmospherePalettes.ts`.
-Vellum ships **light variants** of qep-tracker's 7 dark-tuned
+Arqavellum ships **light variants** of qep-tracker's 7 dark-tuned
 palettes — same semantic mappings, retuned for light backgrounds
 (`gray.50` / `gray.100` base) with softer saturation, higher
 luminance, and lower orb opacity (~6–10% instead of 10–15%).
@@ -458,7 +458,7 @@ const displayMode: 'compact' | 'full' = isStandalone ? 'full' : 'compact';
 
 ### 7.3 When to gate
 
-Vellum ships **no gated screens by default** — all skeleton routes
+Arqavellum ships **no gated screens by default** — all skeleton routes
 (login, register, home placeholder, settings) are single-variant. A
 consumer gates a screen only when:
 
@@ -576,7 +576,7 @@ when writing MobilePremium work:
 
 - **S5 barrels** — Same-folder: import from the relative source (`./MobileHeader`). Cross-folder: go via the kit barrel (`@components/MobilePremium`, never `@components/MobilePremium/MobileHeader`). When flagged, `bun run scripts/audit-barrels.ts --fix` rewrites most of them for you.
 - **S7 hex colors** — Never hardcode `'#FFFFFF'` in component code. Pull from `theme.colors.light.*` via a `constants` import (for `StyleSheet.create` static styles) or inline. Atmosphere palette stops and SVG vectors are exempt — see the allowlist in `audit-ui-theme.ts`.
-- **C1 router calls** — Never `router.push/replace/back` directly. Vellum ships no `navigation/NavigationHelper.tsx` by default; the consumer creates one (see `CLAUDE.md` → "How to consume"). The `MobileHeader` `onBack` prop takes a `() => void`; wrap async helpers with `() => { void safeGoBack(); }`.
+- **C1 router calls** — Never `router.push/replace/back` directly. Arqavellum ships no `navigation/NavigationHelper.tsx` by default; the consumer creates one (see `CLAUDE.md` → "How to consume"). The `MobileHeader` `onBack` prop takes a `() => void`; wrap async helpers with `() => { void safeGoBack(); }`.
 - **C4 ActivityIndicator** — Don't use RN's `ActivityIndicator` directly. `MobilePrimaryButton` already owns its inline loading spinner (`c4-exempt` comment in `MobilePrimaryButton.tsx`); reuse it via the `loading` prop. Consumers create `LoadingSpinner` / `LoadingOverlay` / `AppLoading` as separate primitives that wrap `ActivityIndicator`.
 - **C2 RN Modal** — `audit-component-quality.ts` blocks bare react-native `Modal`. **`MobileDialog` is in `C2_EXEMPT_FILES`** because the RN `Modal` IS the load-bearing primitive — `transparent={true}` + `animationType="fade"` is exactly the viewport-centering behavior the kit needs.
 - **S6 conditional JSX** — `{expr && <Component/>}` renders `0`/`""` as children when `expr` is a number/string. Use ternary (`isFull ? <X /> : null`) or boolean coercion (`!!expr && <X />`).
@@ -628,7 +628,7 @@ exemption marker.
 
 ## 12. Future direction
 
-Vellum's MobilePremium kit is the starting point, not the destination.
+Arqavellum's MobilePremium kit is the starting point, not the destination.
 Consumers will:
 
 - **Add domain primitives** — most consumers add 5–15 domain-specific
@@ -644,7 +644,7 @@ Consumers will:
   `MobileFullPagePinEntry`, `MobilePinReauthSheet`, `_PinKeypad`, and
   the `audit-rpc-auth.ts` script back as consumer-side additions.
 
-The kit is **mobile-only**. Vellum does not ship a desktop kit; the
+The kit is **mobile-only**. Arqavellum does not ship a desktop kit; the
 MobilePremium scope means every consumer screen targets a mobile viewport.
 A consumer needing a desktop admin surface builds it separately and
 does not try to force `MobileSurface` / `MobileHeader` to work at

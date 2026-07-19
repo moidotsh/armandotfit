@@ -21,7 +21,7 @@
 // a consistent visual mass even when the glyph itself is light.
 //
 // API compatibility: accepts both `title`/`description`/`icon` (qep-tracker
-// API) and `label`/`value`/`leftIcon` (vellum legacy API).
+// API) and `label`/`value`/`leftIcon` (arqavellum legacy API).
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
@@ -39,11 +39,11 @@ export interface MobileSettingsRowProps {
   description?: string;
   /** Right-aligned element. Defaults to ChevronRight when onPress is set, else null. */
   rightElement?: React.ReactNode;
-  /** Label. Vellum legacy alias of `title`. */
+  /** Label. Arqavellum legacy alias of `title`. */
   label?: string;
-  /** Value text. Vellum legacy alias of `description` (rendered as muted). */
+  /** Value text. Arqavellum legacy alias of `description` (rendered as muted). */
   value?: string;
-  /** Left icon. Vellum legacy alias of `icon` (rendered without the iconBox frame). */
+  /** Left icon. Arqavellum legacy alias of `icon` (rendered without the iconBox frame). */
   leftIcon?: React.ReactNode;
   /** Hide the chevron (when onPress is set but the action is non-navigational). */
   hideChevron?: boolean;

@@ -6,14 +6,14 @@
  * verified:
  *
  *   S19 — no `package-lock.json` or `yarn.lock` committed anywhere in
- *         vellum's tree (Bun is the package manager — `bun.lock` at
+ *         arqavellum's tree (Bun is the package manager — `bun.lock` at
  *         root is the only lockfile). Files inside `node_modules/` are
  *         excluded by the shared walk, so any lockfile found in the
  *         walked source tree is a violation. No suppression — these
- *         files must never exist in vellum's tree.
+ *         files must never exist in arqavellum's tree.
  *
  *   C10 — no imports of deprecated symbols from their legacy shims.
- *         Vellum ships with an empty deprecated-symbols table (a
+ *         Arqavellum ships with an empty deprecated-symbols table (a
  *         consumer populates it as symbols are deprecated during
  *         domain work). The structural check stays in place — it just
  *         never matches until the consumer adds a rule. Suppress with
@@ -139,7 +139,7 @@ const EXEMPT_LOOKBACK_CHARS = 300;
 // ── S19: lockfile hygiene ────────────────────────────────────────────
 //
 // Bun is the package manager; `bun.lock` at root is the only lockfile.
-// Any `package-lock.json` or `yarn.lock` found in vellum's tree
+// Any `package-lock.json` or `yarn.lock` found in arqavellum's tree
 // (outside node_modules, which the shared walk already excludes) is a
 // violation. No suppression — these files must never exist here.
 
@@ -160,7 +160,7 @@ function auditS19(): Violation[] {
 
 // ── C10: deprecated symbol imports ───────────────────────────────────
 //
-// Hardcoded table of deprecated symbols. Vellum ships with an empty
+// Hardcoded table of deprecated symbols. Arqavellum ships with an empty
 // table — a consumer populates it as symbols are deprecated during
 // domain work. Each rule flags any `import … from '…'` (or
 // `export … from '…'`) whose:
@@ -186,7 +186,7 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Vellum ships with no deprecated symbols. Consumers add rules here as
+// Arqavellum ships with no deprecated symbols. Consumers add rules here as
 // symbols are deprecated during domain work. The structural check
 // stays in place — it just never matches until a rule is added.
 const C10_RULES: C10Rule[] = [];

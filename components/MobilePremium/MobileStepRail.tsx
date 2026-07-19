@@ -19,9 +19,9 @@ export interface MobileStepRailProps {
   current?: number;
   /** Total number of steps. qep-tracker API. */
   total?: number;
-  /** Current step (1-indexed). Vellum legacy API. */
+  /** Current step (1-indexed). Arqavellum legacy API. */
   step?: number;
-  /** Total number of steps. Vellum legacy API. */
+  /** Total number of steps. Arqavellum legacy API. */
   totalSteps?: number;
   /** Accent color for the fill (default theme brand). */
   accentColor?: string;
@@ -43,7 +43,7 @@ export interface MobileStepRailProps {
  * (current+1)/total of the width.
  *
  * Accepts both `current/total` (qep-tracker 0-indexed) and `step/totalSteps`
- * (vellum 1-indexed) prop names. The 0-indexed API converts internally.
+ * (arqavellum 1-indexed) prop names. The 0-indexed API converts internally.
  */
 export function MobileStepRail({
   current,

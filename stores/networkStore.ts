@@ -1,6 +1,6 @@
 // stores/networkStore.ts
 // Online/offline detection. Drives the offline queue (mutations queue
-// locally while offline, flush on reconnect). Vellum is PWA-only so
+// locally while offline, flush on reconnect). Arqavellum is PWA-only so
 // this is web-only — window online/offline events. A consumer adding
 // native targets would extend `initializeListeners` with NetInfo.
 
@@ -76,7 +76,7 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
   initializeListeners: () => {
     if (!isWeb) {
       // Native target — consumer extends this. For now, no-op.
-      logger.warn('general', 'networkStore.initializeListeners called on native — PWA-only vellum does not wire NetInfo. Consumer adds this.');
+      logger.warn('general', 'networkStore.initializeListeners called on native — PWA-only arqavellum does not wire NetInfo. Consumer adds this.');
       return () => {};
     }
     const handleOnline = () => get().setOnline();

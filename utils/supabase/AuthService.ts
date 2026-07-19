@@ -1,5 +1,5 @@
 // utils/supabase/AuthService.ts
-// Vellum's default auth surface: Supabase email/password. Wraps the
+// Arqavellum's default auth surface: Supabase email/password. Wraps the
 // supabase-js auth API in a domain-agnostic service so consumers get a
 // working auth flow out of the box (login, register, logout, session
 // restore, password reset). Consumers needing qep-tracker-style

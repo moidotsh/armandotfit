@@ -1,5 +1,5 @@
 // shared/types/env.ts
-// Shared environment + runtime-context types. Vellum's env surface is
+// Shared environment + runtime-context types. Arqavellum's env surface is
 // intentionally small — consumers extend this interface with their own
 // env-typed keys as they add integrations.
 

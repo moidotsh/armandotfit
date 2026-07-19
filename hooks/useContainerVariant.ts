@@ -67,7 +67,7 @@ export const DEFAULT_VARIANT_THRESHOLDS: VariantThresholds = {
  * cover different cases — width-only is for buttons/tiles; aspect+height
  * is for cards whose height can vary independently of width.
  *
- * Vellum ships `default`, `compact`, and `card` presets. Consumers add
+ * Arqavellum ships `default`, `compact`, and `card` presets. Consumers add
  * their own presets in domain code; the shape is stable.
  */
 export const VARIANT_PRESETS = {

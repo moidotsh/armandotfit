@@ -4,8 +4,8 @@
 // themselves stay generic; this file is where the app author flips
 // global behavior without editing the MobilePremium kit.
 //
-// Mirrors vellum/constants/layout.ts verbatim — same constant name, same
-// shape, same default. The two files stay in sync so a future vellum
+// Mirrors arqavellum/constants/layout.ts verbatim — same constant name, same
+// shape, same default. The two files stay in sync so a future arqavellum
 // consumer inherits the switch in the same place.
 
 export type NavDrawerBrandPersistence = 'cutout' | 'slideout';

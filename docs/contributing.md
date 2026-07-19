@@ -1,17 +1,17 @@
-# Contributing to vellum
+# Contributing to arqavellum
 
-> How to evolve vellum itself. The recurring question for a starter repo is: "when something needs to change, does the fix land in vellum or in the consumer?" This doc answers that.
+> How to evolve arqavellum itself. The recurring question for a starter repo is: "when something needs to change, does the fix land in arqavellum or in the consumer?" This doc answers that.
 
-## Vellum is a starter, not a framework
+## Arqavellum is a starter, not a framework
 
-There's no `npm install vellum`. Consumers clone, own the copy, modify freely. This means:
+There's no `npm install arqavellum`. Consumers clone, own the copy, modify freely. This means:
 
-- **There's no "upgrade path" from vellum to a new version.** Once a consumer forks, their copy is its own thing. They cherry-pick fixes from vellum if they want to, manually.
-- **Vellum's job is to be a good starting point.** Bug fixes and improvements that benefit *future* consumers belong here. Domain-specific extensions belong in the consumer.
+- **There's no "upgrade path" from arqavellum to a new version.** Once a consumer forks, their copy is its own thing. They cherry-pick fixes from arqavellum if they want to, manually.
+- **Arqavellum's job is to be a good starting point.** Bug fixes and improvements that benefit *future* consumers belong here. Domain-specific extensions belong in the consumer.
 
-## When to fix in vellum vs. in a consumer
+## When to fix in arqavellum vs. in a consumer
 
-| Change | Lands in vellum? | Why |
+| Change | Lands in arqavellum? | Why |
 |---|---|---|
 | Bug in a MobilePremium primitive | **Yes** | Every current and future consumer inherits the bug. |
 | Audit script false-positive | **Yes** | The next consumer hits the same noise. |
@@ -21,21 +21,21 @@ There's no `npm install vellum`. Consumers clone, own the copy, modify freely. T
 | New cross-cutting store (e.g. `themeStore`) | **Yes** | Most consumers need it. |
 | New audit script for a pattern every consumer benefits from | **Yes** | Add it to `.husky/pre-commit` and `package.json` → `lint:structure` in the same change. |
 | New repository interface (e.g. `ISoftDeletableRepository`) | **Yes** | Pattern-level; consumers extend. |
-| Domain-specific repository (e.g. `WorkoutRepository`) | **No** | That's consumer code. Vellum ships abstractions, not domain implementations. |
+| Domain-specific repository (e.g. `WorkoutRepository`) | **No** | That's consumer code. Arqavellum ships abstractions, not domain implementations. |
 | Domain-specific route (e.g. `/workout-detail`) | **No** | Consumer. |
-| Brand-specific token override | **No** | Consumer. Vellum ships the default; the consumer overrides. |
-| PIN-auth primitives | **No** | Consumer-specific extension. Vellum defaults to email/password; the consumer guide documents the re-add path. |
-| Native-target support (iOS/Android build config) | **Yes (placeholder scaffolding)** | Vellum ships native scaffolding in `app.config.ts` (`icon`, `ios`, `android`, `expo-splash-screen` plugin) + neutral PNGs at `./assets/`. A consumer going native adds `eas.json`, EAS Build config, platform validation, brand PNGs, and their own iOS bundle ID + Android application/package ID (replacing the starter value) before release. |
+| Brand-specific token override | **No** | Consumer. Arqavellum ships the default; the consumer overrides. |
+| PIN-auth primitives | **No** | Consumer-specific extension. Arqavellum defaults to email/password; the consumer guide documents the re-add path. |
+| Native-target support (iOS/Android build config) | **Yes (placeholder scaffolding)** | Arqavellum ships native scaffolding in `app.config.ts` (`icon`, `ios`, `android`, `expo-splash-screen` plugin) + neutral PNGs at `./assets/`. A consumer going native adds `eas.json`, EAS Build config, platform validation, brand PNGs, and their own iOS bundle ID + Android application/package ID (replacing the starter value) before release. |
 | Dark mode | **No** | Light is the default and dark is opt-in per invariant #3 (both palettes ship). A consumer wanting a *third* color mode (e.g. `dim`) does the retune work themselves. |
 
 ## The decision rule
 
 > **Does every future consumer benefit from this change, with no consumer-specific assumption baked in?**
 
-- **Yes** → lands in vellum.
+- **Yes** → lands in arqavellum.
 - **No, or "only my consumer needs it"** → consumer-side change.
 
-When unsure, default to consumer-side. Promoting a consumer-specific change into vellum later is cheap; rolling back a vellum-wide change that turned out to be domain-specific is expensive (every consumer has to react).
+When unsure, default to consumer-side. Promoting a consumer-specific change into arqavellum later is cheap; rolling back a arqavellum-wide change that turned out to be domain-specific is expensive (every consumer has to react).
 
 ## Evolving the audit gate
 
@@ -43,7 +43,7 @@ The 10-audit gate is the load-bearing enforcement of the constitution. Evolve it
 
 1. **New audit script.** Drops into `scripts/audit-*.ts`. Wire into `.husky/pre-commit` (in pre-commit order — read the existing order to find the right slot) AND `package.json` → `lint:structure`. Update `CLAUDE.md` → "The 10 audits" table in the same change. If the audit corresponds to a new S/C/D/SE/T/R code, also update `ARCHITECTURE.md` with the definition.
 
-2. **Tightening an existing audit (regex tweak, removed allowlist entry).** Run the audit on the current vellum tree first. If vellum passes, ship. If vellum doesn't pass, fix the violations in the same change.
+2. **Tightening an existing audit (regex tweak, removed allowlist entry).** Run the audit on the current arqavellum tree first. If arqavellum passes, ship. If arqavellum doesn't pass, fix the violations in the same change.
 
 3. **Loosening an audit (new allowlist entry, broader exemption).** Justify in the script's docstring or a comment next to the allowlist entry. Loosening is the dangerous direction — every future consumer inherits the looser rule. The bar is "the rule as written produces false positives that aren't fixable at the violation site."
 
@@ -75,7 +75,7 @@ The MobilePremium kit is documented in `docs/architecture/mobile-premium-design-
 
 ## Adding desktop support
 
-Vellum ships mobile-first. Every MobilePremium primitive is tuned for mobile constraints — the 490px height-budget test, safe-area insets, touch-target sizing, atmosphere density — and `SCREEN_BODY_STYLE` (in `constants/styles.ts`) bakes in the 420pt centered column that gives every screen the mobile shape on any viewport.
+Arqavellum ships mobile-first. Every MobilePremium primitive is tuned for mobile constraints — the 490px height-budget test, safe-area insets, touch-target sizing, atmosphere density — and `SCREEN_BODY_STYLE` (in `constants/styles.ts`) bakes in the 420pt centered column that gives every screen the mobile shape on any viewport.
 
 A consumer who later wants a *true* tablet or desktop layout (multi-column dashboards, sidebar nav, persistent rails, dense data tables) has two options. The first is almost always the right one.
 
@@ -112,17 +112,17 @@ This works for the narrow case of a tablet-friendly mobile app. It doesn't scale
 
 ## Workspace integration
 
-Vellum lives at `qep/vellum/`. It's a sibling of `qep-tracker/`, `qepler/`, `qep-tracker-insights/`, `landing/`, `shop/`. Workspace docs that mention vellum:
+Arqavellum lives at `qep/arqavellum/`. It's a sibling of `qep-tracker/`, `qepler/`, `qep-tracker-insights/`, `landing/`, `shop/`. Workspace docs that mention arqavellum:
 
 - `qep/CLAUDE.md` — per-repo cheatsheet row + per-repo CLAUDE.md pointers section. Both must stay in sync.
 - `qep/README.md` — repo map.
 
-When vellum changes its canonical doc set (new doc, deprecated doc, renamed doc), update both workspace docs in the same change. The workspace `CLAUDE.md` maintenance contract governs.
+When arqavellum changes its canonical doc set (new doc, deprecated doc, renamed doc), update both workspace docs in the same change. The workspace `CLAUDE.md` maintenance contract governs.
 
 ## What NOT to do
 
-- **Don't add domain code to vellum.** No `Workout` types, no `WorkoutRepository`, no fitness-specific routes. The moment vellum has domain code, every consumer has to delete it.
+- **Don't add domain code to arqavellum.** No `Workout` types, no `WorkoutRepository`, no fitness-specific routes. The moment arqavellum has domain code, every consumer has to delete it.
 - **Don't add a second color slot.** The `brand` slot is the single override point. A second accent slot fragments the surface — every consumer wins from one canonical override.
 - **Don't add an abstraction without a second consumer in mind.** "We might need this someday" is the failure mode. Add abstractions when there are two concrete consumers; not before.
-- **Don't promote native release readiness or PIN auth into shell-level surfaces.** Native is supported as an intentional consumer extension: vellum ships scaffolding (icon/ios/android/splash plugin in `app.config.ts` + placeholder PNGs) per invariant #2, and consumers wanting native complete the path on top — `eas.json`, EAS Build config, brand PNGs, their own iOS bundle ID + Android application/package ID (replacing the starter value), and platform validation. PIN auth has the same shape — vellum defaults to email/password; documented in `CLAUDE.md` → "When to add PIN auth".
+- **Don't promote native release readiness or PIN auth into shell-level surfaces.** Native is supported as an intentional consumer extension: arqavellum ships scaffolding (icon/ios/android/splash plugin in `app.config.ts` + placeholder PNGs) per invariant #2, and consumers wanting native complete the path on top — `eas.json`, EAS Build config, brand PNGs, their own iOS bundle ID + Android application/package ID (replacing the starter value), and platform validation. PIN auth has the same shape — arqavellum defaults to email/password; documented in `CLAUDE.md` → "When to add PIN auth".
 - **Don't re-introduce a circular import via the showcase.** `components/MobilePremium/showcase.tsx` imports each primitive directly (`./MobileSurface`), not via `./index` — the barrel re-exports the showcase, so going via the barrel is a cycle. Audit S5 catches this; just don't do it.

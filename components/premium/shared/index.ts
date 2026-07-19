@@ -1,5 +1,5 @@
 // components/premium/shared/index.ts
-// Barrel for the shared premium layer. Vellum's MobilePremium kit consumes
+// Barrel for the shared premium layer. Arqavellum's MobilePremium kit consumes
 // these primitives — there's no DesktopPremium kit (PWA-only).
 
 export {

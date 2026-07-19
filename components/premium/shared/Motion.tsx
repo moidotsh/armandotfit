@@ -1,6 +1,6 @@
 // components/premium/shared/Motion.tsx
 // Shared motion primitives — the single source of truth for animation
-// across vellum. Ported verbatim from qep-tracker's premium/shared/Motion.tsx;
+// across arqavellum. Ported verbatim from qep-tracker's premium/shared/Motion.tsx;
 // the four-pillar motion language (Enter / Transition / Respond / Shake) is
 // platform-agnostic and carries the calm-air / considered-motion philosophy.
 //

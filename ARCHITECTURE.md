@@ -1,6 +1,6 @@
-# Vellum Architecture Constitution
+# Arqavellum Architecture Constitution
 
-> Vellum is the qep-tracker architecture, retuned for light-mode + PWA-first (native export is consumer extension) + email/password auth. Every pattern below is enforced by a structural audit in `scripts/audit-*.ts`; the audits are the load-bearing mechanism that keeps a consumer's codebase from drifting within 50 commits.
+> Arqavellum is the qep-tracker architecture, retuned for light-mode + PWA-first (native export is consumer extension) + email/password auth. Every pattern below is enforced by a structural audit in `scripts/audit-*.ts`; the audits are the load-bearing mechanism that keeps a consumer's codebase from drifting within 50 commits.
 
 ## Pattern Index
 
@@ -52,7 +52,7 @@
 | R4b | Listener Cleanup | Runtime |
 | R1 | Async Effect Cancellation | Runtime |
 
-> **Dropped vs qep-tracker:** S15 (platform-specific content system — App Store / Play Store differences, not relevant at the shell level — consumer-extension territory), C6 (list optimization — domain-specific), C11 (Stories tutorial system — skipped per Open Question 4), D9 (grid-based calculations — domain-specific to qep-tracker), R1-RPC (`verify_session` audit — vellum has no PIN auth by default).
+> **Dropped vs qep-tracker:** S15 (platform-specific content system — App Store / Play Store differences, not relevant at the shell level — consumer-extension territory), C6 (list optimization — domain-specific), C11 (Stories tutorial system — skipped per Open Question 4), D9 (grid-based calculations — domain-specific to qep-tracker), R1-RPC (`verify_session` audit — arqavellum has no PIN auth by default).
 
 ## Quick Start (Read This First)
 
@@ -143,7 +143,7 @@
 - **Prohibited:** `useQuery({ queryKey: ['workouts', userId], ... })` — add a `queryKeys.workouts.list(userId)` factory instead.
 
 ### S14. Client-side encryption (deliberately absent)
-- **Rule:** Armandotfit ships **no generic client-side encryption module.** The prior `utils/encryption.ts` + `utils/keyManagement.ts` + `utils/cryptoPolyfill.ts` (inherited from vellum) were removed because they provided no meaningful security uplift: any same-origin JS (including XSS payload) can read `localStorage`/`sessionStorage` and encryption keys stored there, so client-side encryption with localStorage-backed keys does not raise the bar against the threat it implies it addresses.
+- **Rule:** Armandotfit ships **no generic client-side encryption module.** The prior `utils/encryption.ts` + `utils/keyManagement.ts` + `utils/cryptoPolyfill.ts` (inherited from arqavellum) were removed because they provided no meaningful security uplift: any same-origin JS (including XSS payload) can read `localStorage`/`sessionStorage` and encryption keys stored there, so client-side encryption with localStorage-backed keys does not raise the bar against the threat it implies it addresses.
 - **Consumer extension:** Apps handling confidential content require **a specific threat model** and either (a) a **server-side encryption and key-management design** or (b) a separately designed **end-to-end-encryption protocol** with keys derived from a user-chosen passphrase and never persisted in browser storage.
 - **Prohibited:** Re-adding a generic "encrypt with a localStorage-backed key" helper. Reach for `expo-secure-store` (native) only behind a concrete threat model.
 
@@ -187,7 +187,7 @@
 - **Prohibited:** `Dimensions.get('window').width` in component code.
 
 ### C4. Loading States (Three-Tier)
-- **Rule:** Three tiers — `LoadingSpinner` (inline), `LoadingOverlay` (full-screen blocking), `AppLoading` (initial app boot). Consumers add the primitives; vellum ships the spec.
+- **Rule:** Three tiers — `LoadingSpinner` (inline), `LoadingOverlay` (full-screen blocking), `AppLoading` (initial app boot). Consumers add the primitives; arqavellum ships the spec.
 - **Audit:** `audit-component-quality.ts` blocks `ActivityIndicator` outside loading primitives.
 - **Prohibited:** `<ActivityIndicator>` directly in a screen.
 
@@ -266,12 +266,12 @@
 ## Security Patterns
 
 ### SE1. Authentication Flow (email/password)
-- **Rule:** Vellum's default auth surface is email/password via Supabase. The `AuthService` in `utils/supabase/AuthService.ts` wraps signUp/signIn/signOut/session-refresh.
+- **Rule:** Arqavellum's default auth surface is email/password via Supabase. The `AuthService` in `utils/supabase/AuthService.ts` wraps signUp/signIn/signOut/session-refresh.
 - **Consumer extension:** A consumer needing PIN+device-UUID auth (qep-tracker parity) re-adds `MobilePinInput`, `MobileFullPagePinEntry`, `MobilePinReauthSheet`, `_PinKeypad` primitives AND the `audit-rpc-auth.ts` script AND a `verify_session` RPC. The decision is per-consumer.
 - **Prohibited:** Storing the user's password or session token in plain AsyncStorage. Sessions are Supabase-managed (JWT in memory + refresh-token cookie); armandotfit does not persist raw credentials.
 
 ### SE2. Client-side secret storage (deliberately minimal)
-- **Rule:** Armandotfit persists only non-secret UI preferences (theme color-scheme via `zustandStorage` at key `vellum:color-scheme`, network-status flags, UI toggles, ephemeral workout draft state). Auth sessions are Supabase-managed. Armandotfit does **not** persist encryption keys, API keys, or any other credential in browser or native storage.
+- **Rule:** Armandotfit persists only non-secret UI preferences (theme color-scheme via `zustandStorage` at key `arqavellum:color-scheme`, network-status flags, UI toggles, ephemeral workout draft state). Auth sessions are Supabase-managed. Armandotfit does **not** persist encryption keys, API keys, or any other credential in browser or native storage.
 - **Audit:** `audit-security.ts` (SE2) blocks `@react-native-async-storage/async-storage` imports outside the `stores/storage.ts` allowlist. Note: SE2 is **narrow** — it covers AsyncStorage imports only, NOT `window.localStorage`, `sessionStorage`, or `document.cookie`. Those are unrestricted today; the "no persisted credentials" policy is enforced by review, not by audit.
 - **Prohibited:** `AsyncStorage.setItem('encryptionKey', ...)` or `localStorage.setItem('apiKey', ...)`. Apps needing client-side credential storage require a specific threat model and a deliberately designed storage primitive.
 
@@ -332,7 +332,7 @@
 
 ## Consumer extension points
 
-Vellum ships with deliberate gaps that consumers fill. The shell doesn't ship:
+Arqavellum ships with deliberate gaps that consumers fill. The shell doesn't ship:
 - Domain types (workouts, products, etc.) — consumers add to `shared/types/`
 - Domain repositories — consumers extend `BaseRepository<T>`
 - Domain stores — consumers add to `stores/`

@@ -1,5 +1,5 @@
 // app/dev/premium.tsx
-// Design-system showcase route. The most important screen in vellum —
+// Design-system showcase route. The most important screen in arqavellum —
 // it's how a consumer sees what they're starting from. Visit
 // /dev/premium in dev to see every MobilePremium primitive against
 // light backgrounds, plus all 7 atmosphere palettes side-by-side.

@@ -18,10 +18,10 @@
  *        `*.test.{ts,tsx}` files; module mocks must be centralized in
  *        `__tests__/setup.ts`. `vi.fn()` / `vi.spyOn()` are allowed
  *        (per-test stubs). Suppress with `// t2-exempt`.
- *        (Part B) no Jest leftovers — vellum runs on Vitest. Flags any
+ *        (Part B) no Jest leftovers — arqavellum runs on Vitest. Flags any
  *        `.test.ts` / `.test.tsx` / `.spec.ts` filename (jest-era
  *        conventions) and bans `jest.{mock,fn,spyOn,…}()` calls plus
- *        a root `jest.config.*` file. Vellum uses vitest; `*.test.ts`
+ *        a root `jest.config.*` file. Arqavellum uses vitest; `*.test.ts`
  *        files are acceptable but should still live under `__tests__/`.
  *        Suppress with `// t2-exempt`.
  *
@@ -257,13 +257,13 @@ function auditT2InlineMock(testFiles: string[]): Violation[] {
 
 // ── T2 Part B: Jest leftovers ────────────────────────────────────────
 //
-// Vellum runs on Vitest. Any `jest.*` method call or root-level
+// Arqavellum runs on Vitest. Any `jest.*` method call or root-level
 // `jest.config.*` file is a leftover from a pre-Vitest era (or an
 // accidental reintroduction) and must be removed. Scanned across all
 // walked source files AND `__tests__/**.test.{ts,tsx}`.
 //
 // Additionally flags `.spec.ts` files anywhere in the walked tree —
-// the `.spec.` naming convention is a Jasmine/Jest artifact; vellum
+// the `.spec.` naming convention is a Jasmine/Jest artifact; arqavellum
 // standardizes on `*.test.ts` (vitest convention). Files named
 // `*.test.ts` / `*.test.tsx` are acceptable in the walked source tree
 // *only* if they live under `__tests__/` (T1 already catches the
@@ -319,7 +319,7 @@ function auditT2Jest(files: string[], testFiles: string[]): Violation[] {
   }
 
   // .spec.ts / .spec.tsx files — Jest/Jasmine naming convention.
-  // Vellum standardizes on *.test.ts (vitest convention).
+  // Arqavellum standardizes on *.test.ts (vitest convention).
   for (const file of all) {
     if (/\.spec\.(ts|tsx)$/.test(basename(file))) {
       violations.push({
@@ -327,7 +327,7 @@ function auditT2Jest(files: string[], testFiles: string[]): Violation[] {
         file: relative(ROOT, file),
         line: 1,
         message:
-          '.spec.{ts,tsx} file — vellum uses the *.test.{ts,tsx} vitest convention; rename (or add // t2-exempt with justification)',
+          '.spec.{ts,tsx} file — arqavellum uses the *.test.{ts,tsx} vitest convention; rename (or add // t2-exempt with justification)',
       });
     }
   }

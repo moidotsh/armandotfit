@@ -3,7 +3,7 @@
 // Complements theme.ts with commonly used layout and visual values.
 //
 // Deliberately omits:
-//   - FOCUS_GLOW (qep-tracker ports this with hardcoded #0A84FF; vellum
+//   - FOCUS_GLOW (qep-tracker ports this with hardcoded #0A84FF; arqavellum
 //     uses useFocusRing from components/premium/shared/Motion.tsx, which
 //     resolves the ring color from theme.brand at runtime).
 //   - SPACING (duplicates theme.spacing; use useAppTheme().spacing).
@@ -85,7 +85,7 @@ export const Z_INDEX = {
  * contentContainerStyle / keyboard handling / ref / onScroll props. A
  * wrapper would need 80% of those props to earn its keep. A constant is
  * the minimum surface that enforces the constraint identically across
- * consumers (vellum + armandotfit share the same file verbatim).
+ * consumers (arqavellum + armandotfit share the same file verbatim).
  *
  * Enforced by scripts/audit-screen-body.ts (SB1) — every app/*.tsx
  * screen must reference SCREEN_BODY_STYLE. The audit exists because the

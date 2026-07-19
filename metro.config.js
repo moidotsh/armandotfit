@@ -3,7 +3,7 @@
 // the ESM `import.meta` issue that breaks web hydration.
 //
 // Zustand v5's `devtools` middleware (re-exported via `zustand/middleware`,
-// which vellum pulls in through `persist`/`createJSONStorage`) references
+// which arqavellum pulls in through `persist`/`createJSONStorage`) references
 // `import.meta.env.MODE`. When Metro resolves packages via the `exports`
 // field in their package.json (the modern ESM-aware default), the ESM
 // build of `zustand/middleware` is selected and the `import.meta` syntax

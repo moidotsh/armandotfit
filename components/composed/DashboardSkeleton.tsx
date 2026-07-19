@@ -5,7 +5,7 @@
 // skeleton reads as "the stats are loading" rather than a generic
 // shimmer block. Pairs with useDashboardSummary's isLoading gate.
 //
-// Armandotfit-only — not ported to vellum (vellum's app/index.tsx is
+// Armandotfit-only — not ported to arqavellum (arqavellum's app/index.tsx is
 // the placeholder home and doesn't render this shape).
 
 import React from 'react';

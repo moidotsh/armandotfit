@@ -2,7 +2,7 @@
 // The design-system showcase. Renders every MobilePremium primitive, plus
 // all 7 atmosphere palettes side-by-side, plus demos of the cross-cutting
 // Tier 1 + Tier 2 surface (Toast, animation hooks, theme switching). This
-// is the most important screen in vellum — it's how a consumer sees what
+// is the most important screen in arqavellum — it's how a consumer sees what
 // they're starting from. Visit /dev/premium to see it.
 //
 // The showcase IS the visual source of truth. If a primitive isn't here,
@@ -394,7 +394,7 @@ export function Showcase() {
           onDismiss={() => {}}
         />
 
-        {/* Page-mode header demo (legacy vellum pattern, preserved). */}
+        {/* Page-mode header demo (legacy arqavellum pattern, preserved). */}
         <View style={styles.pageHeaderDemo}>
           <MobileSectionEyebrow flush={false}>Design System</MobileSectionEyebrow>
           <Text style={[theme.typography.mobileTitle, { color: colors.text }]}>
@@ -406,7 +406,7 @@ export function Showcase() {
               { color: colors.textSecondary, marginTop: 4 },
             ]}
           >
-            Every primitive, every palette, every hook — the visual source of truth for vellum
+            Every primitive, every palette, every hook — the visual source of truth for arqavellum
             consumers.
           </Text>
         </View>

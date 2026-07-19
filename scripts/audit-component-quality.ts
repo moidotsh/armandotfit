@@ -18,7 +18,7 @@
  *        Suppress with `// c2-exempt`.
  *
  *   C4 — no `ActivityIndicator` outside the loading-component
- *        primitives. Vellum ships none of LoadingSpinner / LoadingOverlay /
+ *        primitives. Arqavellum ships none of LoadingSpinner / LoadingOverlay /
  *        AppLoading by default (a consumer creates them). Only
  *        `components/MobilePremium/MobilePrimaryButton.tsx` is exempt
  *        because it owns its inline spinner. Suppress with `// c4-exempt`.
@@ -176,7 +176,7 @@ function auditC1(files: string[]): Violation[] {
 // All modals must use the shared dialog primitive. The canonical
 // dialog primitive is `components/MobilePremium/MobileDialog.tsx` —
 // it deliberately wraps RN Modal to escape host ScrollView / transform /
-// clipping contexts. This is the one place in vellum where RN Modal
+// clipping contexts. This is the one place in arqavellum where RN Modal
 // is the point.
 
 const C2_REGEX = /\bModal\b/g;
@@ -225,14 +225,14 @@ function auditC2(files: string[]): Violation[] {
 //
 // Inline / form / init loading must go through consumer-created loading
 // primitives: `LoadingSpinner` (inline), `LoadingOverlay` (full-screen),
-// `AppLoading` (init). Vellum ships none of these by default — the
+// `AppLoading` (init). Arqavellum ships none of these by default — the
 // exempt list starts empty except for `MobilePrimaryButton.tsx`, which
 // owns its inline spinner.
 
 const C4_REGEX = /\bActivityIndicator\b/g;
 
 const C4_EXEMPT_FILES = new Set([
-  // Vellum ships the three loading primitives — each wraps
+  // Arqavellum ships the three loading primitives — each wraps
   // ActivityIndicator as its core job. Consumers can add their own
   // primitives (or wrap these) without re-touching this list.
   join(ROOT, 'components/primitives/LoadingSpinner.tsx'),

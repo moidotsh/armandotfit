@@ -1,7 +1,7 @@
 // scripts/generate-placeholder-icons.ts
 //
 // One-off utility: generate solid-color placeholder PNG icons for the
-// PWA manifest. Vellum ships indigo (#4F46E5) placeholders matching the
+// PWA manifest. Arqavellum ships indigo (#4F46E5) placeholders matching the
 // default `brand` color slot; consumers replace these with their actual
 // brand icon (see CLAUDE.md → "How to consume").
 //

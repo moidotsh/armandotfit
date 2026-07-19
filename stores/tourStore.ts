@@ -4,7 +4,7 @@
 // counter and visibility flag; the tour content + step metadata lives
 // in a consumer-added `tourConfig.ts` (or wherever the consumer wants).
 //
-// Vellum ships the store but no tour UI. Consumers wanting onboarding
+// Arqavellum ships the store but no tour UI. Consumers wanting onboarding
 // tours read this store from a `<TourOverlay>` component of their own.
 
 // =============================================================================
@@ -107,7 +107,7 @@ export const useTourStore = create<TourState>()(
         }),
     }),
     {
-      name: 'vellum-tour',
+      name: 'arqavellum-tour',
       storage: createJSONStorage(() => zustandStorage),
     },
   ),

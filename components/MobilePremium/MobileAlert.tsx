@@ -11,8 +11,8 @@
 //     left-border bar.
 //
 // API compatibility: accepts both `type` (qep-tracker API) and `variant`
-// (vellum legacy API) for the alert kind, and both `message` (qep-tracker)
-// and `body` (vellum legacy) for the supporting text.
+// (arqavellum legacy API) for the alert kind, and both `message` (qep-tracker)
+// and `body` (arqavellum legacy) for the supporting text.
 
 import React from 'react';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
@@ -25,13 +25,13 @@ export type MobileAlertVariant = 'success' | 'warning' | 'error' | 'info';
 export interface MobileAlertProps {
   /** Alert kind. qep-tracker API. */
   type?: MobileAlertType;
-  /** Alert kind. Vellum legacy API (same values, different name). */
+  /** Alert kind. Arqavellum legacy API (same values, different name). */
   variant?: MobileAlertVariant;
   /** Single-line title. */
   title?: string;
   /** Supporting message (1-2 lines). qep-tracker API. */
   message?: string;
-  /** Supporting message. Vellum legacy alias of `message`. */
+  /** Supporting message. Arqavellum legacy alias of `message`. */
   body?: string;
   /** Test ID. */
   testID?: string;

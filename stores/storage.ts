@@ -1,6 +1,6 @@
 // stores/storage.ts
 // Zustand persistence storage adapter. Web uses localStorage; native
-// (if a consumer chooses to ship native) uses AsyncStorage. Vellum
+// (if a consumer chooses to ship native) uses AsyncStorage. Arqavellum
 // is PWA-only so the web branch is the production path — the AsyncStorage
 // branch exists so a future native-targeting consumer doesn't have to
 // re-plumb this.

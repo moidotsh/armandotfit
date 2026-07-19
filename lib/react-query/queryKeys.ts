@@ -1,5 +1,5 @@
 // lib/react-query/queryKeys.ts
-// Centralized query-key factory. Vellum's cross-cutting keys (auth, user)
+// Centralized query-key factory. Arqavellum's cross-cutting keys (auth, user)
 // + armandotfit's domain keys (profile, exercises, workouts, analytics,
 // streaks, reference). Hooks use these via the `queryKeys` factory —
 // inline `queryKey: [...]` arrays are banned by the S13 audit.

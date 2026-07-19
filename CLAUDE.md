@@ -1,6 +1,6 @@
 # armandotfit
 
-> armandotfit is a fitness PWA (workout splits, exercise library, progression, streak, real-time session logging) built on [vellum](../vellum) — the qep-tracker architecture (47-pattern constitution, 10-audit pre-commit gate, repository pattern, Zustand + React Query, barrel exports) retuned for **PWA-first (native export is consumer extension)** + **email/password auth**. Vellum is the starter; armandotfit is its first consumer.
+> armandotfit is a fitness PWA (workout splits, exercise library, progression, streak, real-time session logging) built on [arqavellum](../arqavellum) — the qep-tracker architecture (47-pattern constitution, 10-audit pre-commit gate, repository pattern, Zustand + React Query, barrel exports) retuned for **PWA-first (native export is consumer extension)** + **email/password auth**. Arqavellum is the starter; armandotfit is its first consumer.
 
 This file is the repo-level operating context for Claude Code sessions at the armandotfit root. It auto-loads. Read the relevant section before landing any armandotfit change.
 
@@ -11,8 +11,8 @@ Load-bearing rules that aren't obvious from the code:
 1. **Bun only.** Never commit `package-lock.json` or `yarn.lock`. `audit-pattern-compliance.ts` (S19) enforces this.
 2. **PWA-first. Web is the supported default; native Expo export is an intentional consumer extension, with native assets and platform validation required before release.** Native scaffolding ships in `app.config.ts` (`icon`, `ios`, `android`, `expo-splash-screen` plugin) + branded PNGs at `./assets/` (icon.png, splash-icon.png, adaptive-icon.png). `app.json` mirrors `app.config.ts` as a synchronized template; `app.config.ts` is the build-authoritative source. `ios.bundleIdentifier: 'app.armandotfit'` is starter scaffolding — replace it with the production iOS bundle ID and add the Android application/package ID before any native release. Runtime manifest-injection in `app/_layout.tsx` remains load-bearing — Expo Web's static export strips `<link rel="manifest">` from `dist/index.html`, and runtime injection restores it. Don't remove that block without reading `docs/architecture/pwa-installability.md` first. Desktop-shaped layouts (multi-column, sidebar nav) are a consumer extension that adds a sibling `DesktopPremium` kit — see `docs/contributing.md` → "Adding desktop support". PWA-first forbids shipping a native build as a supported target without per-consumer asset + platform work; it does NOT forbid desktop browser layouts.
 3. **Light is the default; dark is opt-in.** `constants/theme.ts` ships both `theme.colors.light` and `theme.colors.dark` — structurally identical palettes, retuned for their respective surfaces. The active palette is resolved at runtime by `useAppTheme()` (in `context/ThemeContext.tsx`); components read `colors.*` directly and never index by mode. The user's preference persists across sessions via `zustandStorage` (web localStorage / native AsyncStorage), with `'system'` as the default (defers to OS prefer-color-scheme). `audit-ui-theme.ts` (S7) bans hardcoded hex colors — both modes resolve through `theme.colors[colorScheme].*`.
-4. **Email/password auth.** Armandotfit uses email/password (inherited from vellum). No PIN primitives ship. If the threat model later requires PIN+device-UUID auth (qep-tracker parity), port the 4 PIN primitives + `audit-rpc-auth.ts` + `verify_session` RPC from qep-tracker.
-5. **Brand color is armandotfit orange (`#FF9500`).** Overridden from vellum's default indigo in `constants/theme.ts` → `theme.colors.{light,dark}.{brand, brandHover, brandPress, brandMuted, brandSoft, buttonBackground, buttonBackgroundDisabled}` + the `glass.inputFocusBackground` key in each mode. Two icon surfaces are armandotfit-branded: `public/icons/*` (PWA, always required — 192.png, 512.png, 512-maskable.png) and `assets/*` (native extension — icon.png, splash-icon.png, adaptive-icon.png). Before any native release also replace the `ios.bundleIdentifier: 'app.armandotfit'` starter value in `app.config.ts` + `app.json` with the production iOS bundle ID and add the Android application/package ID — `app.armandotfit` is starter scaffolding, not a release identity.
+4. **Email/password auth.** Armandotfit uses email/password (inherited from arqavellum). No PIN primitives ship. If the threat model later requires PIN+device-UUID auth (qep-tracker parity), port the 4 PIN primitives + `audit-rpc-auth.ts` + `verify_session` RPC from qep-tracker.
+5. **Brand color is armandotfit orange (`#FF9500`).** Overridden from arqavellum's default indigo in `constants/theme.ts` → `theme.colors.{light,dark}.{brand, brandHover, brandPress, brandMuted, brandSoft, buttonBackground, buttonBackgroundDisabled}` + the `glass.inputFocusBackground` key in each mode. Two icon surfaces are armandotfit-branded: `public/icons/*` (PWA, always required — 192.png, 512.png, 512-maskable.png) and `assets/*` (native extension — icon.png, splash-icon.png, adaptive-icon.png). Before any native release also replace the `ios.bundleIdentifier: 'app.armandotfit'` starter value in `app.config.ts` + `app.json` with the production iOS bundle ID and add the Android application/package ID — `app.armandotfit` is starter scaffolding, not a release identity.
 6. **Audit scripts are canonical.** If this file and `scripts/audit-*.ts` disagree, the scripts win. This file is a cheatsheet; the scripts are the load-bearing enforcement.
 7. **The 490px height-budget test** (from qep-tracker's mobile design system) carries over. Any new MobilePremium screen must fit at 490px viewport height (iPhone SE compact) without scrolling for the primary action. See `docs/architecture/mobile-premium-design-system.md`.
 8. **Supabase project: `mfeyywnwbjejzzbqzmop`.** Created 2026-07-18 for the v2 port (separate from qepler `stykxxzhuakniqcvjsev` and qep-tracker `zkqnenhlrunyvhctsxbv`). Migrations live in `supabase/migrations/`. The squashed baseline (`00000000000000_initial_schema.sql`) is the canonical schema reference — the v1's pre-port `database/*.sql` files are no longer in the working tree (preserved in git history at commit `21303ed5c`); they had divergent/overlapping table definitions that the baseline resolves and should not be consulted going forward.
@@ -65,25 +65,25 @@ Structural ESLint (`eslint.structure.config.js`) enforces two more:
 4. **S7 hex colors** — never hardcode `'#FF9500'` in component code. Pull from `theme.colors.light.*` via `useAppTheme()` or a `constants` import. SVG vectors and `constants/theme.ts` are exempt.
 5. **S11 console** — never ship `console.log/error/warn`. Use `logger` from `utils/logger`. (`utils/logger.ts` is the only legitimate `console.*` site.)
 
-## Vellum relationship
+## Arqavellum relationship
 
-Armandotfit is a **direct-copy consumer** of vellum (sibling repo at `../vellum/`). The shell — design system, audit scripts, PWA plumbing, provider stack, skeleton auth routes — was copied from vellum in a-Phase 0. Armandotfit owns its domain layer on top:
+Armandotfit is a **direct-copy consumer** of arqavellum (sibling repo at `../arqavellum/`; public at `github.com/moidotsh/arqavellum`). The shell — design system, audit scripts, PWA plumbing, provider stack, skeleton auth routes — was copied from arqavellum in a-Phase 0. Armandotfit owns its domain layer on top:
 
-- **Domain routes** → `app/` (home dashboard, split-selection, workout-detail, exercise-database, exercise-detail, progression, analytics, workout-programs). Vellum's skeleton routes (login, register, forgot-password, settings, dev/premium) carry over.
-- **Domain stores** → `stores/` (workoutStore — active draft state, exerciseStore — browse filter state; both ephemeral, not persisted). Vellum's cross-cutting stores (authStore, uiStore, networkStore) carry over.
+- **Domain routes** → `app/` (home dashboard, split-selection, workout-detail, exercise-database, exercise-detail, progression, analytics, workout-programs). Arqavellum's skeleton routes (login, register, forgot-password, settings, dev/premium) carry over.
+- **Domain stores** → `stores/` (workoutStore — active draft state, exerciseStore — browse filter state; both ephemeral, not persisted). Arqavellum's cross-cutting stores (authStore, uiStore, networkStore) carry over.
 - **Domain repositories** → `utils/supabase/repositories/` (WorkoutRepository, ExerciseRepository, ProgressionRepository, UserProfileRepository, StreakRepository).
 - **Domain services** → `services/` (workoutService, progressionService, analyticsService).
 - **React Query hooks** → `hooks/queries/`, `hooks/mutations/`. Includes `useSuggestedExercises` which hydrates a split-day's exercise slugs against the DB.
 - **Domain types** → `shared/types/` (workout, exercise, progression, analytics, profile).
 - **Domain data** → `shared/exercises/` (splits.ts — typed day→exercise-key assignments; data.ts — 28-exercise system library with muscles/equipment/instructions).
 - **Components** → three-tier structure:
-  - `components/MobilePremium/` — primitive kit (copied from vellum).
+  - `components/MobilePremium/` — primitive kit (copied from arqavellum).
   - `components/primitives/` — atomic wrappers (LoadingSpinner, Toast, etc.).
   - `components/composed/` — domain-specific rows/cards composed from MobilePremium primitives (WorkoutSessionItem, ExerciseListItem, SetRow, SplitExerciseRow).
   - Feature components live inside their route files (`app/workout-detail.tsx` IS the active-session feature component).
 - **Constants** → `constants/workoutSplits.ts` holds split metadata + day-of-week labels, decoupled from theme for SOC.
 
-When vellum ships an update that armandotfit wants (e.g. a new MobilePremium primitive, an audit-script fix), the workflow is: copy the relevant file(s) from `../vellum/` into armandotfit, re-apply armandotfit's brand overrides if they touch `constants/theme.ts` or icon assets, commit. No submodule, no npm link — direct file copy with per-file ownership at the armandotfit side. Vellum changes that touch `CLAUDE.md` or `ARCHITECTURE.md` may also need to be mirrored here if they affect shared discipline (audit-script behavior, design-system tokens, etc.).
+When arqavellum ships an update that armandotfit wants (e.g. a new MobilePremium primitive, an audit-script fix), the workflow is: copy the relevant file(s) from `../arqavellum/` into armandotfit, re-apply armandotfit's brand overrides if they touch `constants/theme.ts` or icon assets, commit. No submodule, no npm link — direct file copy with per-file ownership at the armandotfit side. Arqavellum changes that touch `CLAUDE.md` or `ARCHITECTURE.md` may also need to be mirrored here if they affect shared discipline (audit-script behavior, design-system tokens, etc.).
 
 ## Documentation maintenance
 
@@ -114,7 +114,7 @@ This is the contract that prevents doc drift. For every change you land in code,
 
 | Claim type | Canonical owner |
 |---|---|
-| Repo operating context (invariants, pre-commit checks, vellum relationship, doc maintenance) | this file |
+| Repo operating context (invariants, pre-commit checks, arqavellum relationship, doc maintenance) | this file |
 | Architecture constitution (47 patterns) | `ARCHITECTURE.md` |
 | Project orientation (what armandotfit is, quickstart) | `README.md` |
 | Claim-type → owner-doc map (cross-cutting) | `docs/OWNERSHIP.md` |

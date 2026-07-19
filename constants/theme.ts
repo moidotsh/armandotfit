@@ -5,12 +5,12 @@
 // `theme.colors[colorScheme].*` via useAppTheme() (or a direct constants
 // import).
 //
-// The `brand` slot is the single override point. Vellum (the starter this
+// The `brand` slot is the single override point. Arqavellum (the starter this
 // repo was cloned from) ships with a neutral indigo default; armandotfit
 // overrides it to its identity orange (`#FF9500`). Everything else (grays,
 // semantic status colors, surface tokens) stays domain-agnostic.
 //
-// Adding dark mode to a consumer's brand slot: vellum's `dark.brand` is
+// Adding dark mode to a consumer's brand slot: arqavellum's `dark.brand` is
 // slightly brighter than `light.brand` so it holds its own against a dark
 // surface. Armandotfit's orange is bright enough on both surfaces, so dark
 // stays at `#FF9500` and uses lighter orange variants for hover/press —
@@ -29,7 +29,7 @@ type TypographyToken = Pick<
 export const theme = {
   colors: {
     // ── Light surface (default) ────────────────────────────────────────
-    // Vellum's default surface. Every MobilePremium primitive defaults
+    // Arqavellum's default surface. Every MobilePremium primitive defaults
     // to this palette unless the consumer flips `colorScheme` to 'dark'.
     light: {
       // UI element colors
@@ -52,7 +52,7 @@ export const theme = {
       // Interactive element colors — the `brand` slot.
       // Armandotfit identity: orange `#FF9500` (ported from v1 theme — see
       // archive-v1/constants/theme.ts). Hover darkens to a richer orange
-      // (vellum convention: hover goes deeper); press darkens further.
+      // (arqavellum convention: hover goes deeper); press darkens further.
       brand: '#FF9500',
       brandHover: '#E67700',
       brandPress: '#B85C00',
@@ -375,7 +375,7 @@ export const theme = {
   },
 };
 
-// The two color schemes vellum supports. `light` is the default. Type-wide
+// The two color schemes arqavellum supports. `light` is the default. Type-wide
 // so consumers can type their own APIs (`onChangeColorScheme(next: ColorScheme)`).
 export type ColorScheme = 'light' | 'dark';
 

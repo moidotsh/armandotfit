@@ -2,9 +2,9 @@
 // Hook to measure actual container dimensions for responsive components.
 // Returns width/height + size category + constrained/short flags.
 //
-// Forked from qep-tracker's hook of the same name. Vellum's version drops
+// Forked from qep-tracker's hook of the same name. Arqavellum's version drops
 // the `useResponsiveContextOptional` dependency (qep-tracker has a
-// ResponsiveContext that pools ResizeObservers; vellum doesn't ship that
+// ResponsiveContext that pools ResizeObservers; arqavellum doesn't ship that
 // by default — consumers adding per-screen ResizeObserver pooling re-add
 // it as a customization). Standalone ResizeObserver here is fine for the
 // typical PWA where each MobilePremium screen owns its container.

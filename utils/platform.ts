@@ -1,6 +1,6 @@
 // utils/platform.ts
 // Centralized platform abstraction to eliminate redundant Platform.OS checks.
-// Vellum is PWA-only but keeps the native branches so consumers adding iOS
+// Arqavellum is PWA-only but keeps the native branches so consumers adding iOS
 // or Android targets inherit correct gating for free.
 
 import { Platform } from 'react-native';

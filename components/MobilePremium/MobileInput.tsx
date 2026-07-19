@@ -14,7 +14,7 @@
 //   • Subtle accent-tinted background — picks up the surface beneath.
 //   • Optional left/right icon slots (e.g. mail icon, eye toggle).
 //
-// Backward-compat: `helperText` and `errorText` from the original vellum
+// Backward-compat: `helperText` and `errorText` from the original arqavellum
 // API are preserved — `errorText` maps to the new `error` slot, `helperText`
 // renders below the input when no error is present.
 
@@ -91,7 +91,7 @@ const FIELD_LABEL_STYLE: TextStyle = {
 /**
  * Refined text input for the mobile premium kit.
  *
- * Same 54px height as the legacy vellum input. Same children-style API for
+ * Same 54px height as the legacy arqavellum input. Same children-style API for
  * easy swap-in, plus the new icon / focus-ring / dedicated-error features.
  */
 export function MobileInput({

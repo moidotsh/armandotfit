@@ -49,7 +49,7 @@ const config = createTamagui({
   settings: {
     defaultFont: 'body',
   },
-  // Vellum ships both `light` (default) and `dark` themes. The
+  // Arqavellum ships both `light` (default) and `dark` themes. The
   // ThemeProvider in context/ThemeContext.tsx switches the active theme
   // via TamaguiProvider's `defaultTheme` prop; both stay registered here
   // so the swap is instant.

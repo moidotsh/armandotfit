@@ -9,7 +9,7 @@
 // R4a-compliant timer cleanup (setTimeout paired with clearTimeout,
 // setInterval paired with clearInterval, both torn down on unmount).
 //
-// Backward-compat: the original vellum API (onIncrement/onDecrement +
+// Backward-compat: the original arqavellum API (onIncrement/onDecrement +
 // decrementDisabled/incrementDisabled + suffix) is preserved by mapping
 // to the new min/max/step/onChange/decimalPlaces API when those props
 // are provided instead.

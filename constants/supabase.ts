@@ -27,7 +27,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 function requiredEnv(key: string, value: string | undefined): string {
   if (value) return value;
 
-  const message = `Missing required env var: ${key}. Vellum needs EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY set in .env.local (or your host's env). See utils/envValidation.ts.`;
+  const message = `Missing required env var: ${key}. Arqavellum needs EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY set in .env.local (or your host's env). See utils/envValidation.ts.`;
 
   if (isProduction) {
     // s10-exempt: production bundle-time fail-fast. AppError's domain

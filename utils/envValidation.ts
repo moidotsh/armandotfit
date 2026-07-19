@@ -2,7 +2,7 @@
  * @fileoverview Environment variable validation utility.
  *
  * Validates required environment variables on app startup. Logs warnings for
- * missing optional vars and throws for required ones. Vellum ships with the
+ * missing optional vars and throws for required ones. Arqavellum ships with the
  * Supabase URL + anon key pair as the required minimum — consumers adding
  * bridge secrets, analytics keys, etc. extend ENV_CONFIG.
  *

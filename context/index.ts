@@ -1,5 +1,5 @@
 // context/index.ts
-// Barrel for React Context providers. Vellum ships AuthProvider (auth) +
+// Barrel for React Context providers. Arqavellum ships AuthProvider (auth) +
 // ThemeProvider (light/dark switching) + ToastProvider (non-blocking
 // toasts); consumers add domain providers as needed.
 

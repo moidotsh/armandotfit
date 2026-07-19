@@ -25,8 +25,8 @@
  *         active / ...), it is flagged. The window is approximate — regex
  *         can't brace-match — so triage handles misfires.
  *
- * Vellum does not ship the qep-tracker R1 RPC `verify_session` audit
- * (that's a separate `audit-rpc-auth.ts` for PIN-based auth — vellum
+ * Arqavellum does not ship the qep-tracker R1 RPC `verify_session` audit
+ * (that's a separate `audit-rpc-auth.ts` for PIN-based auth — arqavellum
  * uses email/password by default; a consumer re-adds it if they switch
  * to PIN auth).
  *
@@ -164,7 +164,7 @@ const R4B_ADD_REGEX = /\baddEventListener\s*\(/g;
 
 // File-level allowlist: intentional app-lifetime / global listeners that
 // live for the entire app session and are never torn down per-effect.
-// Vellum allowlists the service worker — its fetch/install/activate
+// Arqavellum allowlists the service worker — its fetch/install/activate
 // listeners ARE the SW's reason to exist and live for the SW lifetime.
 // Consumers add entries here when they introduce their own legitimate
 // app-lifetime listeners (global error handler, singleton store, etc.).

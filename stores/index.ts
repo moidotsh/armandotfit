@@ -1,5 +1,5 @@
 // stores/index.ts
-// Barrel for Zustand stores. Vellum's cross-cutting stores (auth, UI,
+// Barrel for Zustand stores. Arqavellum's cross-cutting stores (auth, UI,
 // network, tour) + armandotfit's domain stores (workout, exercise).
 
 export { useAuthStore, type AuthStatus } from './authStore';

@@ -22,7 +22,7 @@
 --     exercises JSONB column dropped in favor of the normalized relational
 --     tables (workout_session_exercises + exercise_sets) for set-level
 --     tracking. Sharing columns (is_shared, shared_with) dropped (v2).
---     synced_at dropped — vellum's offline queue pattern is service-level
+--     synced_at dropped — arqavellum's offline queue pattern is service-level
 --     (services/offlineQueueService.ts), not table-based.
 --
 --   • Schema-only, no seed data — mirrors qep-tracker's 2026-06-21 squash
@@ -44,7 +44,7 @@
 --     uuid_generate_v4() (uuid-ossp extension). One less extension dep.
 --
 -- Project: mfeyywnwbjejzzbqzmop (created 2026-07-18).
--- Created during a-Phase 1 of the vellum → armandotfit port.
+-- Created during a-Phase 1 of the arqavellum → armandotfit port.
 
 -- ──────────────────────────────────────────────────────────────────────
 -- Profiles (user account extension on auth.users)

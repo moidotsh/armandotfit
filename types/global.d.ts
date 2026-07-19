@@ -1,5 +1,5 @@
 // types/global.d.ts
-// Ambient declarations for vellum. Bun-types + expo types cover most of the
+// Ambient declarations for arqavellum. Bun-types + expo types cover most of the
 // surface; this file fills the gaps.
 
 declare const __DEV__: boolean;

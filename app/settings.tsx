@@ -1,5 +1,5 @@
 // app/settings.tsx
-// Settings list. Vellum ships the cross-cutting settings rows every
+// Settings list. Arqavellum ships the cross-cutting settings rows every
 // consumer needs (account identity, theme toggle, sign-out). Domain
 // settings (e.g. notification preferences, training config) land in
 // consumer-extended surfaces.

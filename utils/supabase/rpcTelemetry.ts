@@ -18,7 +18,7 @@
 //   - S8: uses fetchWithRetry rather than raw fetch, so the structural lint
 //     rule stays clean.
 //
-// Vellum ships the wrapper but no consumer is wired by default — consumers
+// Arqavellum ships the wrapper but no consumer is wired by default — consumers
 // add the matching edge function + table and start wrapping repository calls.
 
 import { fetchWithRetry } from '../api-client';
@@ -54,7 +54,7 @@ const PLATFORM = detectPlatform();
  *      unaffected.
  *
  * `actorId` is intentionally generic — qep-tracker calls this `deviceUuid`
- * because its analytics identifier is the device UUID. Vellum leaves the
+ * because its analytics identifier is the device UUID. Arqavellum leaves the
  * identifier name open so consumers can pass whatever stable id they use.
  *
  * Note on `PromiseLike<R>`: supabase's `.rpc()` returns a

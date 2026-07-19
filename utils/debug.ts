@@ -3,7 +3,7 @@
 // drop all `debugLog` call sites as dead code, so shipping a `debugLog`
 // in a hot path has zero runtime cost.
 //
-// Unlike qep-tracker's version, vellum's debug.ts does NOT ship a
+// Unlike qep-tracker's version, arqavellum's debug.ts does NOT ship a
 // module whitelist — instead, every consumer can pick the gating rule
 // (env var, build flag, per-module toggle) that fits their needs. The
 // default is "off in production, on in dev, no module filter".

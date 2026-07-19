@@ -1,9 +1,9 @@
 # PWA Installability
 
 **Canonical location:** `docs/architecture/pwa-installability.md`
-**Status:** Active. Vellum ships manifest + SW + runtime meta-tag injection + placeholder icons. Consumers override the icons and brand colors.
+**Status:** Active. Arqavellum ships manifest + SW + runtime meta-tag injection + placeholder icons. Consumers override the icons and brand colors.
 
-This doc is the single source of truth for **what makes a vellum-derived
+This doc is the single source of truth for **what makes a arqavellum-derived
 app installable** as a PWA. It covers the installability criteria, the
 build-pipeline gotcha that motivates the runtime injection block, and
 the procedure for changing the home-screen icon.
@@ -117,12 +117,12 @@ ensureLink('icon', '/icons/192.png', 'image/png');
 ensureMeta('apple-mobile-web-app-capable', 'yes');
 ensureMeta('mobile-web-app-capable', 'yes');
 ensureMeta('apple-mobile-web-app-status-bar-style', 'default');
-ensureMeta('apple-mobile-web-app-title', 'Vellum');
+ensureMeta('apple-mobile-web-app-title', 'Arqavellum');
 ensureMeta('theme-color', theme.colors.light.background, '(min-width: 701px)');
 ensureMeta('theme-color', theme.colors.light.brand, '(max-width: 700px)');
 ```
 
-Vellum's status-bar style is `default` (light surface). iOS Safari will
+Arqavellum's status-bar style is `default` (light surface). iOS Safari will
 use the page background for the status bar area. Consumers wanting a
 different status bar treatment override this in their `_layout.tsx`.
 
@@ -237,12 +237,12 @@ The fastest verification path post-deploy:
 
 - **Override brand colors in manifest.** Edit `public/manifest.json`
   → `theme_color` and `background_color` to match the consumer's
-  brand. Vellum defaults to indigo `#4F46E5` and white `#FFFFFF`.
+  brand. Arqavellum defaults to indigo `#4F46E5` and white `#FFFFFF`.
 - **Override status-bar style.** Edit the `apple-mobile-web-app-status-bar-style`
-  meta in the runtime injection block. Vellum defaults to `default`
+  meta in the runtime injection block. Arqavellum defaults to `default`
   (light surface treatment).
 - **Override theme-color split.** Edit the two `theme-color` meta
-  injections in `app/_layout.tsx`. Vellum splits desktop/mobile; a
+  injections in `app/_layout.tsx`. Arqavellum splits desktop/mobile; a
   consumer can collapse to one or use different brand tints.
 - **Add offline caching.** Replace `public/sw.js` with a cache-aware
   service worker (Workbox, etc.). Don't extend the passthrough in

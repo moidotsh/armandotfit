@@ -1,6 +1,6 @@
 // hooks/usePlatformAnimation.ts
 // Centralized platform-aware animation config. Eliminates the repetitive
-// `useNativeDriver: !isWeb` pattern. Vellum's motion primitives import this
+// `useNativeDriver: !isWeb` pattern. Arqavellum's motion primitives import this
 // so they don't have to know about web vs native.
 
 import { useMemo } from 'react';

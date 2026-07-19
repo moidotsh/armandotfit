@@ -1,7 +1,7 @@
 // hooks/useAndroidChromeBlurFix.ts
 // Detects Android Chrome so MobileSurface can swap to a near-solid
 // background + milder blur (Android Chrome falsely reports backdrop-filter
-// support while rendering saturate() poorly). Vellum ships a conservative
+// support while rendering saturate() poorly). Arqavellum ships a conservative
 // stub — consumers with significant Android traffic should port the full
 // detection logic from qep-tracker.
 
@@ -12,7 +12,7 @@ import { isWeb, hasWindow } from '../utils';
 export interface UseAndroidChromeBlurFixReturn {
   isAndroidChrome: boolean;
   /**
-   * Whether the standard backdrop-filter path is safe to use. Vellum
+   * Whether the standard backdrop-filter path is safe to use. Arqavellum
    * returns true for everything except detected Android Chrome (which
    * would otherwise render the blur illegibly).
    */

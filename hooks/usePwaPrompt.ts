@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { isWeb } from '../utils';
 
-const STORAGE_KEY = 'vellum:pwa-prompt-dismissed';
+const STORAGE_KEY = 'arqavellum:pwa-prompt-dismissed';
 const COOLDOWN_DAYS = 14;
 
 export type PwaPlatform = 'ios' | 'android' | 'other-mobile';

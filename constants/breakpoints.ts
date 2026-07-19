@@ -1,5 +1,5 @@
 // constants/breakpoints.ts
-// Responsive breakpoint definitions. Vellum is PWA-first so the desktop
+// Responsive breakpoint definitions. Arqavellum is PWA-first so the desktop
 // breakpoints are slimmer than qep-tracker's (no sidebar collapse, no right
 // panel threshold). Container queries are preserved verbatim — they're the
 // load-bearing size-detection mechanism for MobilePremium components.
@@ -107,7 +107,7 @@ export function canFitMultipleColumns(width: number): boolean {
   return width >= CONTAINER_THRESHOLDS.COMFORTABLE;
 }
 
-// Layout tokens — mobile-only sidebar/nav drawer. Vellum doesn't ship a
+// Layout tokens — mobile-only sidebar/nav drawer. Arqavellum doesn't ship a
 // desktop sidebar; consumers adding one extend this block.
 export const LAYOUT = {
   SIDEBAR: {

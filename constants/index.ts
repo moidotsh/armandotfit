@@ -1,5 +1,5 @@
 // constants/index.ts
-// Barrel export for the constants module. Vellum's barrel is intentionally
+// Barrel export for the constants module. Arqavellum's barrel is intentionally
 // slimmer than qep-tracker's — domain constants (bundles, grids, tips, etc.)
 // land in consumer repos, not the shell.
 
@@ -33,7 +33,7 @@ export type {
 } from './breakpoints';
 
 // Re-export the supabase project coordinates (defined here, not in a separate
-// supabase.ts, because vellum has only the two canonical env vars). Throws
+// supabase.ts, because arqavellum has only the two canonical env vars). Throws
 // at startup if the env vars are missing — see utils/envValidation.ts.
 export {
   SUPABASE_URL,

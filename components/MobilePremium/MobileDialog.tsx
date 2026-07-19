@@ -25,7 +25,7 @@
 // backdrop tap closes by default, X button in the header closes.
 //
 // API compatibility: accepts both `open`/`onOpenChange` (qep-tracker API)
-// and `visible`/`onClose` (vellum legacy API).
+// and `visible`/`onClose` (arqavellum legacy API).
 
 import React, { useEffect } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
@@ -41,9 +41,9 @@ export interface MobileDialogProps {
   open?: boolean;
   /** Open-change handler (qep-tracker API). Called with `false` on any close gesture. */
   onOpenChange?: (open: boolean) => void;
-  /** Whether the dialog is visible. Vellum legacy alias of `open`. */
+  /** Whether the dialog is visible. Arqavellum legacy alias of `open`. */
   visible?: boolean;
-  /** Close handler. Vellum legacy alias — wraps onOpenChange(false). */
+  /** Close handler. Arqavellum legacy alias — wraps onOpenChange(false). */
   onClose?: () => void;
   /** Compact header title. */
   title?: string;

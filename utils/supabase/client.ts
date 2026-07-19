@@ -1,5 +1,5 @@
 // utils/supabase/client.ts
-// Singleton Supabase client. Vellum's only direct `@supabase/supabase-js`
+// Singleton Supabase client. Arqavellum's only direct `@supabase/supabase-js`
 // import site — every other consumer goes through this module or via
 // repositories (S9). Wraps `fetch` with a 15s AbortController timeout so
 // a cold-start DNS/TLS stall or network blip can't hang the UI forever.
