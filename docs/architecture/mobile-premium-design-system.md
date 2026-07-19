@@ -24,7 +24,7 @@ cards, headers, or transitions per screen; they drop content into the
 canonical shell (§4) and inherit the design language.
 
 The kit is **not** a generic design system. It is a tightly-scoped set
-of primitives for **light-mode-only, PWA-only, mobile-only** consumer
+of primitives for **light-default, dark-opt-in (both palettes ship), PWA-only, mobile-first** consumer
 apps, with hard constraints documented inline. Adding a primitive is
 fine; relaxing the constraints is not.
 
