@@ -1,11 +1,7 @@
 // utils/cache.ts
 // Generic TTL + LRU cache for any data the consumer wants to memoize.
-// Domain-agnostic — vellum doesn't ship a default cache key namespace;
-// consumers define their own (`cacheKeys` factory in their domain code).
-//
-// Originally forked from qep-tracker's `utils/encryptionCache.ts`, minus
-// the encryption-specific framing and the qep-tracker-flavored cacheKeys.
-// Vellum is the shell; cache key namespaces are consumer-owned.
+// Domain-agnostic — armandotfit defines its own cache key namespace via
+// a `cacheKeys` factory in domain code (e.g. `cacheKeys.workoutDetail(id)`).
 
 import { logger } from './logger';
 

@@ -142,9 +142,10 @@
 - **Audit:** `audit-data-layer.ts` blocks inline `queryKey: [...]` literals.
 - **Prohibited:** `useQuery({ queryKey: ['workouts', userId], ... })` — add a `queryKeys.workouts.list(userId)` factory instead.
 
-### S14. Encryption (generic AES)
-- **Rule:** Encrypt via `encryptDataWithKey(data, derivedKey)` from `utils/encryption.ts`. Consumers compose their own key-derivation step (PIN, password, server-issued secret) — vellum doesn't ship a policy.
-- **Prohibited:** Calling `crypto-js` directly in component or service code.
+### S14. Client-side encryption (deliberately absent)
+- **Rule:** Armandotfit ships **no generic client-side encryption module.** The prior `utils/encryption.ts` + `utils/keyManagement.ts` + `utils/cryptoPolyfill.ts` (inherited from vellum) were removed because they provided no meaningful security uplift: any same-origin JS (including XSS payload) can read `localStorage`/`sessionStorage` and encryption keys stored there, so client-side encryption with localStorage-backed keys does not raise the bar against the threat it implies it addresses.
+- **Consumer extension:** Apps handling confidential content require **a specific threat model** and either (a) a **server-side encryption and key-management design** or (b) a separately designed **end-to-end-encryption protocol** with keys derived from a user-chosen passphrase and never persisted in browser storage.
+- **Prohibited:** Re-adding a generic "encrypt with a localStorage-backed key" helper. Reach for `expo-secure-store` (native) only behind a concrete threat model.
 
 ### S16. Composite UI State Hook
 - **Rule:** Multi-source UI state (loading + error + value + derived flag) gets a `useXxxState` hook that returns the composite shape.
@@ -267,12 +268,12 @@
 ### SE1. Authentication Flow (email/password)
 - **Rule:** Vellum's default auth surface is email/password via Supabase. The `AuthService` in `utils/supabase/AuthService.ts` wraps signUp/signIn/signOut/session-refresh.
 - **Consumer extension:** A consumer needing PIN+device-UUID auth (qep-tracker parity) re-adds `MobilePinInput`, `MobileFullPagePinEntry`, `MobilePinReauthSheet`, `_PinKeypad` primitives AND the `audit-rpc-auth.ts` script AND a `verify_session` RPC. The decision is per-consumer.
-- **Prohibited:** Storing the user's password or session token in plain AsyncStorage. Use `expo-secure-store` (via `utils/keyManagement.ts`).
+- **Prohibited:** Storing the user's password or session token in plain AsyncStorage. Sessions are Supabase-managed (JWT in memory + refresh-token cookie); armandotfit does not persist raw credentials.
 
-### SE2. Key Management
-- **Rule:** Encryption keys live in `expo-secure-store` (native) or `sessionStorage` / `localStorage` (web, gated by a sessionOnly flag). All reads/writes go through `utils/keyManagement.ts`.
-- **Audit:** `audit-security.ts` blocks AsyncStorage imports outside the 10-file allowlist.
-- **Prohibited:** `AsyncStorage.setItem('encryptionKey', ...)`.
+### SE2. Client-side secret storage (deliberately minimal)
+- **Rule:** Armandotfit persists only non-secret UI preferences (theme color-scheme via `zustandStorage` at key `vellum:color-scheme`, network-status flags, UI toggles, ephemeral workout draft state). Auth sessions are Supabase-managed. Armandotfit does **not** persist encryption keys, API keys, or any other credential in browser or native storage.
+- **Audit:** `audit-security.ts` (SE2) blocks `@react-native-async-storage/async-storage` imports outside the `stores/storage.ts` allowlist. Note: SE2 is **narrow** — it covers AsyncStorage imports only, NOT `window.localStorage`, `sessionStorage`, or `document.cookie`. Those are unrestricted today; the "no persisted credentials" policy is enforced by review, not by audit.
+- **Prohibited:** `AsyncStorage.setItem('encryptionKey', ...)` or `localStorage.setItem('apiKey', ...)`. Apps needing client-side credential storage require a specific threat model and a deliberately designed storage primitive.
 
 ### SE3. Environment Validation
 - **Rule:** `utils/envValidation.ts` runs at app startup. Required env vars (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`) throw on missing.

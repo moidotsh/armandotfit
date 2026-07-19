@@ -207,50 +207,6 @@ vi.mock('@tamagui/lucide-icons-2', () => ({
   Monitor: 'Monitor',
 }));
 
-// Mock crypto-js.
-vi.mock('crypto-js', () => ({
-  default: {
-    AES: {
-      encrypt: vi.fn((data: string) => ({ toString: () => `encrypted:${data}` })),
-      decrypt: vi.fn((data: string) => ({
-        toString: vi.fn(() => data.replace('encrypted:', '')),
-      })),
-    },
-    PBKDF2: vi.fn(() => ({
-      toString: vi.fn(() => 'derived-key'),
-    })),
-    enc: {
-      Utf8: 'Utf8',
-      Base64: 'Base64',
-      Hex: 'Hex',
-    },
-    lib: {
-      WordArray: {
-        random: vi.fn(() => 'random-word-array'),
-      },
-    },
-  },
-  AES: {
-    encrypt: vi.fn((data: string) => ({ toString: () => `encrypted:${data}` })),
-    decrypt: vi.fn((data: string) => ({
-      toString: vi.fn(() => data.replace('encrypted:', '')),
-    })),
-  },
-  PBKDF2: vi.fn(() => ({
-    toString: vi.fn(() => 'derived-key'),
-  })),
-  enc: {
-    Utf8: 'Utf8',
-    Base64: 'Base64',
-    Hex: 'Hex',
-  },
-  lib: {
-    WordArray: {
-      random: vi.fn(() => 'random-word-array'),
-    },
-  },
-}));
-
 // Mock @supabase/supabase-js.
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => ({

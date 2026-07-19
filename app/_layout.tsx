@@ -23,8 +23,6 @@
 //      only, gated on `isWeb` + `'serviceWorker' in navigator`. See
 //      docs/architecture/pwa-installability.md §4.
 
-import '../utils/cryptoPolyfill';
-
 import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { TamaguiProvider } from 'tamagui';
