@@ -3,11 +3,11 @@ import { vi } from 'vitest';
 // Import jest-dom with vitest setup - must come after vi import.
 import '@testing-library/jest-dom/vitest';
 
-// Define React Native globals expected by utils/logger.ts, utils/envValidation.ts,
-// and several hooks/contexts. Vitest's jsdom env does not define __DEV__, so any
-// module that references it bare would throw `ReferenceError: __DEV__ is not
-// defined` at import time — failing every test that transitively pulls in
-// utils/, services/, context/, or stores. `false` mirrors the production code path.
+// Define React Native globals expected by utils/logger.ts and several
+// hooks/contexts. Vitest's jsdom env does not define __DEV__, so any module
+// that references it bare would throw `ReferenceError: __DEV__ is not defined`
+// at import time — failing every test that transitively pulls in utils/,
+// services/, context/, or stores. `false` mirrors the production code path.
 (globalThis as any).__DEV__ = false;
 
 // Mock AsyncStorage.

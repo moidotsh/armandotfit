@@ -276,7 +276,7 @@
 - **Prohibited:** `AsyncStorage.setItem('encryptionKey', ...)` or `localStorage.setItem('apiKey', ...)`. Apps needing client-side credential storage require a specific threat model and a deliberately designed storage primitive.
 
 ### SE3. Environment Validation
-- **Rule:** `utils/envValidation.ts` runs at app startup. Required env vars (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`) throw on missing.
+- **Rule:** `constants/supabase.ts` resolves `EXPO_PUBLIC_SUPABASE_URL` + `EXPO_PUBLIC_SUPABASE_ANON_KEY` at module load via the `requiredEnv()` helper. Production throws on missing; dev warns + falls back to `''` so the design-system showcase can render before Supabase is configured. Static `process.env.EXPO_PUBLIC_*` access at the call site is load-bearing — Expo's bundler only inlines statically-analyzable member access, so a dynamic `process.env[key]` lookup would ship as a runtime no-op.
 - **Prohibited:** Hardcoded Supabase URLs or anon keys in source.
 
 ---

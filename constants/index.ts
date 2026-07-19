@@ -33,8 +33,10 @@ export type {
 } from './breakpoints';
 
 // Re-export the supabase project coordinates (defined here, not in a separate
-// supabase.ts, because arqavellum has only the two canonical env vars). Throws
-// at startup if the env vars are missing — see utils/envValidation.ts.
+// supabase.ts, because arqavellum has only the two canonical env vars). The
+// `requiredEnv` helper in ./supabase.ts throws at module load in production
+// if either env var is missing; in dev it warns + falls back to '' so the
+// design-system showcase at /dev/premium can render before Supabase is set up.
 export {
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
