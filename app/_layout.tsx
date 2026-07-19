@@ -33,7 +33,7 @@ import { isWeb, hasDocument, hasWindow } from '../utils/platform';
 import { logger } from '../utils';
 import { initializeNetworkListeners } from '../stores';
 import { AuthProvider, ToastProvider, ThemeProvider, useAppTheme } from '../context';
-import { AuthGuard, ToastContainer } from '../components/primitives';
+import { AuthGuard, ToastContainer, AppErrorBoundary } from '../components/primitives';
 import { QueryProvider } from '../lib/react-query';
 
 function RootShell() {
@@ -149,8 +149,10 @@ function RootShell() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <RootShell />
-    </ThemeProvider>
+    <AppErrorBoundary>
+      <ThemeProvider>
+        <RootShell />
+      </ThemeProvider>
+    </AppErrorBoundary>
   );
 }
