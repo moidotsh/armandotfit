@@ -2,14 +2,14 @@
 // Day→exercise assignments for the two split archetypes armandotfit ships
 // with. Ported from archive-v1/data/workoutDataRefactored.ts. The exercise
 // keys here (e.g. 'barbell-press-incline') match the `key` column in the
-// seed migration (supabase/migrations/20260718000001_seed_system_exercises.sql)
+// seed migration (supabase/migrations/20260718000002_seed_system_exercises.sql)
 // — both sides of this contract must stay in sync. A key present in this
 // file but missing from the DB will resolve to undefined at lookup time,
 // and the suggested-exercises helper drops it.
 //
-// The v1 data structure (4 days each for oneADay + twoADay) is preserved
-// verbatim. Days 5–7 are rest days in both splits — the user logs those
-// ad-hoc via the active-session UI.
+// The v2 data structure (4 days each for oneADay + twoADay) is preserved.
+// Days 5–7 are rest days in both splits — the user logs those ad-hoc via
+// the active-session UI.
 
 // ──────────────────────────────────────────────────────────────────────
 // Exercise keys (union type for compile-time safety)
@@ -24,32 +24,30 @@
 export type ExerciseKey =
   // Chest
   | 'barbell-press-incline'
-  | 'dumbbell-press-incline'
   | 'dumbbell-fly-incline'
   | 'chest-fly-machine'
+  | 'incline-machine-press'
   // Arms
   | 'overhead-tricep-extension-cable'
-  | 'tricep-kickback-cable'
   | 'tricep-dip-machine'
-  | 'reverse-plus-hammer-curl-superset'
   | 'dumbbell-curl-seated-incline'
+  | 'cable-rope-curl'
   // Shoulders
-  | 'lateral-raise-cable'
-  | 'dumbbell-lateral-raise-standing'
-  | 'reverse-flyes-cable'
+  | 'egyptian-cable-lateral-raise'
   | 'face-pull-cable-rope-grip'
+  | 'shoulder-press-machine-or-dumbbell'
+  | 'dumbbell-overhead-press'
   // Back
   | 'lower-back-extension-calisthenic'
   | 'seated-cable-row-v-grip'
   | 'lat-pulldown-reverse-grip'
-  | 'dumbbell-pullover-bridge-position'
-  | 'lever-row-chest-supported'
+  | 'straight-arm-cable-pulldown'
+  | 'machine-shrug-plate-loaded'
+  | 'dumbbell-shrug'
   // Upper leg
   | 'leg-press-machine'
   | 'bulgarian-split-squat-dumbbell'
   | 'machine-leg-curl-seated'
-  | 'leg-extension-machine'
-  | 'hip-adduction-machine'
   // Lower leg
   | 'tibia-raise-machine-or-band'
   | 'calf-raise-leg-press-machine'
@@ -73,52 +71,52 @@ export const ONE_A_DAY_SPLITS: OneADayDay[] = [
     day: 1,
     title: 'Full Body Day 1',
     exercises: [
-      'barbell-press-incline',
       'leg-press-machine',
-      'overhead-tricep-extension-cable',
-      'lower-back-extension-calisthenic',
-      'lateral-raise-cable',
-      'tibia-raise-machine-or-band',
+      'calf-raise-leg-press-machine',
       'leg-raise-captains-chair',
+      'barbell-press-incline',
+      'overhead-tricep-extension-cable',
+      'shoulder-press-machine-or-dumbbell',
+      'egyptian-cable-lateral-raise',
     ],
   },
   {
     day: 2,
     title: 'Full Body Day 2',
     exercises: [
-      'lat-pulldown-reverse-grip',
-      'machine-leg-curl-seated',
+      'machine-shrug-plate-loaded',
       'chest-fly-machine',
-      'machine-calf-raise-standing',
+      'tibia-raise-machine-or-band',
+      'machine-leg-curl-seated',
+      'lat-pulldown-reverse-grip',
       'dumbbell-curl-seated-incline',
-      'reverse-flyes-cable',
-      'machine-ab-crunch-eccentric-emphasized',
+      'face-pull-cable-rope-grip',
     ],
   },
   {
     day: 3,
     title: 'Full Body Day 3',
     exercises: [
-      'dumbbell-press-incline',
       'bulgarian-split-squat-dumbbell',
-      'dumbbell-pullover-bridge-position',
-      'tibia-raise-machine-or-band',
+      'machine-calf-raise-standing',
+      'straight-arm-cable-pulldown',
+      'incline-machine-press',
       'tricep-dip-machine',
-      'dumbbell-lateral-raise-standing',
-      'leg-raise-captains-chair',
+      'dumbbell-overhead-press',
+      'egyptian-cable-lateral-raise',
     ],
   },
   {
     day: 4,
     title: 'Full Body Day 4',
     exercises: [
-      'lever-row-chest-supported',
-      'leg-extension-machine',
       'dumbbell-fly-incline',
-      'calf-raise-leg-press-machine',
-      'reverse-plus-hammer-curl-superset',
-      'face-pull-cable-rope-grip',
+      'tibia-raise-machine-or-band',
+      'machine-leg-curl-seated',
+      'seated-cable-row-v-grip',
       'machine-ab-crunch-eccentric-emphasized',
+      'cable-rope-curl',
+      'face-pull-cable-rope-grip',
     ],
   },
 ];
@@ -139,64 +137,64 @@ export const TWO_A_DAY_SPLITS: TwoADayDay[] = [
     day: 1,
     title: 'Workout Day 1',
     am: [
-      'barbell-press-incline',
       'leg-press-machine',
-      'overhead-tricep-extension-cable',
-      'lateral-raise-cable',
-    ],
-    pm: [
-      'tibia-raise-machine-or-band',
+      'calf-raise-leg-press-machine',
       'lower-back-extension-calisthenic',
       'leg-raise-captains-chair',
-      'tricep-kickback-cable',
+    ],
+    pm: [
+      'barbell-press-incline',
+      'overhead-tricep-extension-cable',
+      'shoulder-press-machine-or-dumbbell',
+      'egyptian-cable-lateral-raise',
     ],
   },
   {
     day: 2,
     title: 'Workout Day 2',
     am: [
-      'seated-cable-row-v-grip',
-      'dumbbell-curl-seated-incline',
+      'machine-shrug-plate-loaded',
       'chest-fly-machine',
+      'tibia-raise-machine-or-band',
       'machine-leg-curl-seated',
     ],
     pm: [
-      'reverse-flyes-cable',
-      'machine-calf-raise-standing',
-      'face-pull-cable-rope-grip',
+      'lat-pulldown-reverse-grip',
       'machine-ab-crunch-eccentric-emphasized',
+      'dumbbell-curl-seated-incline',
+      'face-pull-cable-rope-grip',
     ],
   },
   {
     day: 3,
     title: 'Workout Day 3',
     am: [
-      'dumbbell-press-incline',
-      'tricep-dip-machine',
-      'dumbbell-lateral-raise-standing',
       'bulgarian-split-squat-dumbbell',
+      'machine-calf-raise-standing',
+      'straight-arm-cable-pulldown',
+      'leg-raise-captains-chair',
     ],
     pm: [
-      'tibia-raise-machine-or-band',
-      'dumbbell-pullover-bridge-position',
-      'leg-raise-captains-chair',
-      'hip-adduction-machine',
+      'incline-machine-press',
+      'tricep-dip-machine',
+      'dumbbell-overhead-press',
+      'egyptian-cable-lateral-raise',
     ],
   },
   {
     day: 4,
     title: 'Workout Day 4',
     am: [
-      'lat-pulldown-reverse-grip',
-      'leg-extension-machine',
+      'dumbbell-shrug',
       'dumbbell-fly-incline',
-      'reverse-plus-hammer-curl-superset',
+      'tibia-raise-machine-or-band',
+      'machine-leg-curl-seated',
     ],
     pm: [
-      'face-pull-cable-rope-grip',
-      'calf-raise-leg-press-machine',
+      'seated-cable-row-v-grip',
       'machine-ab-crunch-eccentric-emphasized',
-      'lever-row-chest-supported',
+      'cable-rope-curl',
+      'face-pull-cable-rope-grip',
     ],
   },
 ];

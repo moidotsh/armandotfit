@@ -1,12 +1,12 @@
 // shared/exercises/data.ts
-// Canonical exercise library data (28 system exercises). Ported from
+// Canonical exercise library data (26 system exercises). Ported from
 // archive-v1/data/{workoutDataRefactored,exercise-detail-enhanced}.ts.
 // This file is the TS-side source of truth; the SQL seed migration
-// (supabase/migrations/20260718000001_seed_system_exercises.sql) mirrors
+// (supabase/migrations/20260718000002_seed_system_exercises.sql) mirrors
 // it into the DB so ExerciseRepository.findAll returns the same set.
 //
 // The 7 exercises with detailed v1 metadata (muscles/equipment/instructions)
-// carry the full treatment. The remaining 21 have name + category + type +
+// carry the full treatment. The remaining 19 have name + category + type +
 // default sets/reps/difficulty, with empty muscle/equipment arrays — those
 // get filled in over time via admin tooling or user-contributed detail.
 //
@@ -68,6 +68,7 @@ export const EquipmentSlug = {
   CABLE_LAT_BAR: 'cable-lat-bar',
   LEG_PRESS_MACHINE: 'leg-press-machine',
   CHEST_FLY_MACHINE: 'chest-fly-machine',
+  CHEST_PRESS_MACHINE: 'chest-press-machine',
   LAT_PULLDOWN_MACHINE: 'lat-pulldown-machine',
   SEATED_ROW_MACHINE: 'seated-row-machine',
   LEG_EXTENSION_MACHINE: 'leg-extension-machine',
@@ -81,6 +82,8 @@ export const EquipmentSlug = {
   CAPTAINS_CHAIR: 'captains-chair',
   RESISTANCE_BAND: 'resistance-band',
   TIBIA_RAISE_MACHINE: 'tibia-raise-machine',
+  SHOULDER_PRESS_MACHINE: 'shoulder-press-machine',
+  SHRUG_MACHINE: 'shrug-machine',
 } as const;
 
 export type EquipmentSlug = (typeof EquipmentSlug)[keyof typeof EquipmentSlug];
@@ -134,6 +137,7 @@ export const EQUIPMENT_DISPLAY_NAMES: Record<EquipmentSlug, string> = {
   [EquipmentSlug.CABLE_LAT_BAR]: 'Cable Lat Bar',
   [EquipmentSlug.LEG_PRESS_MACHINE]: 'Leg Press Machine',
   [EquipmentSlug.CHEST_FLY_MACHINE]: 'Chest Fly Machine',
+  [EquipmentSlug.CHEST_PRESS_MACHINE]: 'Chest Press Machine',
   [EquipmentSlug.LAT_PULLDOWN_MACHINE]: 'Lat Pulldown Machine',
   [EquipmentSlug.SEATED_ROW_MACHINE]: 'Seated Row Machine',
   [EquipmentSlug.LEG_EXTENSION_MACHINE]: 'Leg Extension Machine',
@@ -147,6 +151,8 @@ export const EQUIPMENT_DISPLAY_NAMES: Record<EquipmentSlug, string> = {
   [EquipmentSlug.CAPTAINS_CHAIR]: "Captain's Chair",
   [EquipmentSlug.RESISTANCE_BAND]: 'Resistance Band',
   [EquipmentSlug.TIBIA_RAISE_MACHINE]: 'Tibia Raise Machine',
+  [EquipmentSlug.SHOULDER_PRESS_MACHINE]: 'Shoulder Press Machine',
+  [EquipmentSlug.SHRUG_MACHINE]: 'Shrug Machine',
 };
 
 // ──────────────────────────────────────────────────────────────────────
@@ -183,7 +189,7 @@ export interface SystemExerciseData {
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// The 28 system exercises
+// The 26 system exercises
 // ──────────────────────────────────────────────────────────────────────
 
 export const SYSTEM_EXERCISES: SystemExerciseData[] = [
@@ -204,25 +210,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     secondaryMuscles: [MuscleSlug.TRICEPS, MuscleSlug.CHEST],
     equipment: [EquipmentSlug.BARBELL, EquipmentSlug.INCLINE_BENCH],
     defaultSets: 3,
-    defaultReps: [8, 10],
-  },
-  {
-    slug: 'dumbbell-press-incline',
-    name: 'Dumbbell Press',
-    variation: 'Incline',
-    category: 'Chest',
-    exerciseType: 'free_weight',
-    difficultyLevel: 'advanced',
-    description:
-      'Perform a pressing movement with dumbbells while lying on an incline bench to target the upper chest.',
-    instructions:
-      'Set the incline to 30–45°. Press the dumbbells from shoulder-level to overhead in a controlled arc.',
-    tips: 'Allow for a deeper stretch at the bottom compared to barbell; control the dumbbells throughout the movement; keep your elbows at a 45-degree angle from your torso.',
-    primaryMuscles: [MuscleSlug.UPPER_CHEST, MuscleSlug.FRONT_DELTS],
-    secondaryMuscles: [MuscleSlug.TRICEPS, MuscleSlug.CHEST],
-    equipment: [EquipmentSlug.DUMBBELL, EquipmentSlug.INCLINE_BENCH],
-    defaultSets: 3,
-    defaultReps: [8, 10],
+    defaultReps: [6, 8],
   },
   {
     slug: 'dumbbell-fly-incline',
@@ -239,7 +227,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     primaryMuscles: [MuscleSlug.UPPER_CHEST, MuscleSlug.CHEST],
     secondaryMuscles: [MuscleSlug.FRONT_DELTS],
     equipment: [EquipmentSlug.DUMBBELL, EquipmentSlug.INCLINE_BENCH],
-    defaultSets: 3,
+    defaultSets: 2,
     defaultReps: [12, 15],
   },
   {
@@ -257,8 +245,26 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     primaryMuscles: [MuscleSlug.CHEST],
     secondaryMuscles: [MuscleSlug.FRONT_DELTS],
     equipment: [EquipmentSlug.CHEST_FLY_MACHINE],
-    defaultSets: 3,
+    defaultSets: 2,
     defaultReps: [12, 15],
+  },
+  {
+    slug: 'incline-machine-press',
+    name: 'Machine Press',
+    variation: 'Incline',
+    category: 'Chest',
+    exerciseType: 'machine',
+    difficultyLevel: 'intermediate',
+    description:
+      'Incline chest press machine targeting the upper chest with a controlled path.',
+    instructions:
+      'Set the seat to incline. Press the handles up to full extension, then lower under control.',
+    tips: 'Keep the shoulder blades retracted; control the negative; full range of motion at the bottom.',
+    primaryMuscles: [MuscleSlug.UPPER_CHEST, MuscleSlug.FRONT_DELTS],
+    secondaryMuscles: [MuscleSlug.TRICEPS],
+    equipment: [EquipmentSlug.CHEST_PRESS_MACHINE],
+    defaultSets: 3,
+    defaultReps: [8, 10],
   },
 
   // ── Arms ───────────────────────────────────────────────────────────
@@ -278,25 +284,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     secondaryMuscles: [],
     equipment: [EquipmentSlug.CABLE_ROPE],
     defaultSets: 3,
-    defaultReps: [8, 10],
-  },
-  {
-    slug: 'tricep-kickback-cable',
-    name: 'Tricep Kickback',
-    variation: 'Cable',
-    category: 'Arms',
-    exerciseType: 'cable',
-    difficultyLevel: 'intermediate',
-    description:
-      'Using a cable machine with a single handle, extend your arm backward while keeping the upper arm parallel to the floor.',
-    instructions:
-      'With a single-handle attachment, hinge at the hips and extend the elbow back to full straightening.',
-    tips: 'Keep your upper arm stationary and parallel to the floor; fully extend the elbow at the end of the movement; maintain a neutral spine position.',
-    primaryMuscles: [MuscleSlug.TRICEPS],
-    secondaryMuscles: [],
-    equipment: [EquipmentSlug.CABLE_HANDLE],
-    defaultSets: 3,
-    defaultReps: [8, 10],
+    defaultReps: [10, 12],
   },
   {
     slug: 'tricep-dip-machine',
@@ -313,26 +301,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     primaryMuscles: [MuscleSlug.TRICEPS],
     secondaryMuscles: [MuscleSlug.CHEST, MuscleSlug.FRONT_DELTS],
     equipment: [EquipmentSlug.TRICEP_EXTENSION_MACHINE],
-    defaultSets: 3,
+    defaultSets: 2,
     defaultReps: [8, 10],
-  },
-  {
-    slug: 'reverse-plus-hammer-curl-superset',
-    name: 'Reverse + Hammer',
-    variation: 'Curl Superset',
-    category: 'Arms',
-    exerciseType: 'free_weight',
-    difficultyLevel: 'intermediate',
-    description:
-      'Superset of reverse-grip curls and hammer curls for bicep and forearm development.',
-    instructions:
-      'Perform reverse curls to failure, immediately followed by hammer curls with the same dumbbells.',
-    tips: 'Keep wrists neutral; avoid swinging; superset means no rest between the two movements.',
-    primaryMuscles: [MuscleSlug.BICEPS, MuscleSlug.FOREARMS],
-    secondaryMuscles: [],
-    equipment: [EquipmentSlug.DUMBBELL],
-    defaultSets: 3,
-    defaultReps: [8, 12],
   },
   {
     slug: 'dumbbell-curl-seated-incline',
@@ -352,61 +322,43 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultSets: 3,
     defaultReps: [8, 10],
   },
+  {
+    slug: 'cable-rope-curl',
+    name: 'Cable Curl',
+    variation: 'Rope Grip',
+    category: 'Arms',
+    exerciseType: 'cable',
+    difficultyLevel: 'beginner',
+    description:
+      'Cable curl with a rope attachment for continuous tension on the biceps.',
+    instructions:
+      'Attach a rope to a low pulley. Curl the rope toward your shoulders, squeezing at the top.',
+    tips: 'Keep the elbows pinned to your sides; control the negative; avoid swinging.',
+    primaryMuscles: [MuscleSlug.BICEPS],
+    secondaryMuscles: [MuscleSlug.FOREARMS],
+    equipment: [EquipmentSlug.CABLE_ROPE],
+    defaultSets: 3,
+    defaultReps: [10, 12],
+  },
 
   // ── Shoulders ──────────────────────────────────────────────────────
   {
-    slug: 'lateral-raise-cable',
+    slug: 'egyptian-cable-lateral-raise',
     name: 'Lateral Raise',
-    variation: 'Cable',
+    variation: 'Egyptian Cable',
     category: 'Shoulders',
     exerciseType: 'cable',
     difficultyLevel: 'intermediate',
     description:
-      'Using a cable machine with a single handle attachment, raise your arm out to the side to target the lateral deltoid.',
+      'Cable lateral raise leaning away from the stack (Egyptian style) for constant tension on the side delt.',
     instructions:
-      'Stand side-on to a low pulley. Raise the handle out to the side to shoulder height.',
-    tips: 'Keep a slight bend in the elbow; lead with the elbow, not the hand; maintain an upright posture throughout.',
+      'Set a low pulley. Stand side-on, lean away from the stack, and raise the handle out to shoulder height.',
+    tips: 'Lead with the elbow; keep a slight bend; maintain the lean throughout for continuous tension.',
     primaryMuscles: [MuscleSlug.SIDE_DELTS],
     secondaryMuscles: [MuscleSlug.FRONT_DELTS, MuscleSlug.TRAPS],
     equipment: [EquipmentSlug.CABLE_HANDLE],
     defaultSets: 3,
-    defaultReps: [12, 15],
-  },
-  {
-    slug: 'dumbbell-lateral-raise-standing',
-    name: 'Lateral Raise',
-    variation: 'Standing Dumbbell',
-    category: 'Shoulders',
-    exerciseType: 'free_weight',
-    difficultyLevel: 'beginner',
-    description:
-      'Standing dumbbell lateral raise to target the side deltoid.',
-    instructions:
-      'With dumbbells at your sides, raise them out to shoulder height with a slight elbow bend.',
-    tips: 'Avoid shrugging; lead with elbows; lower slowly.',
-    primaryMuscles: [MuscleSlug.SIDE_DELTS],
-    secondaryMuscles: [MuscleSlug.FRONT_DELTS],
-    equipment: [EquipmentSlug.DUMBBELL],
-    defaultSets: 3,
     defaultReps: [15, 20],
-  },
-  {
-    slug: 'reverse-flyes-cable',
-    name: 'Reverse Flyes',
-    variation: 'Cable',
-    category: 'Shoulders',
-    exerciseType: 'cable',
-    difficultyLevel: 'intermediate',
-    description:
-      'Cable reverse fly to target the rear deltoids and upper back.',
-    instructions:
-      'Using two crossed cables at shoulder height, pull the handles backward in a hugging-reverse motion.',
-    tips: 'Squeeze the shoulder blades together; keep a slight elbow bend; avoid using the lower back.',
-    primaryMuscles: [MuscleSlug.REAR_DELTS],
-    secondaryMuscles: [MuscleSlug.UPPER_BACK, MuscleSlug.RHOMBOIDS],
-    equipment: [EquipmentSlug.CABLE_HANDLE],
-    defaultSets: 3,
-    defaultReps: [12, 15],
   },
   {
     slug: 'face-pull-cable-rope-grip',
@@ -424,7 +376,46 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     secondaryMuscles: [MuscleSlug.TRAPS, MuscleSlug.RHOMBOIDS],
     equipment: [EquipmentSlug.CABLE_ROPE],
     defaultSets: 3,
-    defaultReps: [12, 15],
+    defaultReps: [15, 20],
+  },
+  {
+    slug: 'shoulder-press-machine-or-dumbbell',
+    name: 'Shoulder Press',
+    variation: 'Machine or Dumbbell',
+    category: 'Shoulders',
+    exerciseType: 'machine',
+    difficultyLevel: 'intermediate',
+    description:
+      'Overhead shoulder press using either a machine or dumbbells, targeting the front and side delts.',
+    instructions:
+      'Sit upright (machine) or sit/stand with dumbbells at shoulder height. Press upward to full overhead extension, then lower under control.',
+    tips: 'Don\u2019t lock out the elbows at the top; keep the core braced; avoid excessive lower-back arch.',
+    primaryMuscles: [MuscleSlug.FRONT_DELTS, MuscleSlug.SIDE_DELTS],
+    secondaryMuscles: [MuscleSlug.TRICEPS],
+    equipment: [
+      { slug: EquipmentSlug.SHOULDER_PRESS_MACHINE, isRequired: false },
+      { slug: EquipmentSlug.DUMBBELL, isRequired: false },
+    ],
+    defaultSets: 2,
+    defaultReps: [8, 10],
+  },
+  {
+    slug: 'dumbbell-overhead-press',
+    name: 'Overhead Press',
+    variation: 'Dumbbell',
+    category: 'Shoulders',
+    exerciseType: 'free_weight',
+    difficultyLevel: 'intermediate',
+    description:
+      'Standing or seated dumbbell overhead press for the front and side delts.',
+    instructions:
+      'Hold dumbbells at shoulder height. Press overhead to full extension, then lower under control.',
+    tips: 'Brace the core; avoid excessive back arch; don\u2019t lock out the elbows at the top.',
+    primaryMuscles: [MuscleSlug.FRONT_DELTS, MuscleSlug.SIDE_DELTS],
+    secondaryMuscles: [MuscleSlug.TRICEPS],
+    equipment: [EquipmentSlug.DUMBBELL],
+    defaultSets: 2,
+    defaultReps: [8, 10],
   },
 
   // ── Back ───────────────────────────────────────────────────────────
@@ -443,8 +434,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     primaryMuscles: [MuscleSlug.LOWER_BACK],
     secondaryMuscles: [MuscleSlug.GLUTES, MuscleSlug.HAMSTRINGS],
     equipment: [EquipmentSlug.BACK_EXTENSION_STATION],
-    defaultSets: 3,
-    defaultReps: [15, 20],
+    defaultSets: 2,
+    defaultReps: [10, 12],
   },
   {
     slug: 'seated-cable-row-v-grip',
@@ -483,38 +474,55 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [8, 10],
   },
   {
-    slug: 'dumbbell-pullover-bridge-position',
-    name: 'Dumbbell Pullover',
-    variation: 'Bridge Position',
+    slug: 'straight-arm-cable-pulldown',
+    name: 'Straight-Arm Pulldown',
+    variation: 'Cable',
     category: 'Back',
-    exerciseType: 'free_weight',
+    exerciseType: 'cable',
     difficultyLevel: 'intermediate',
     description:
-      'Dumbbell pullover performed across a flat bench in a bridge position to target the lats.',
+      'Cable pulldown with straight arms to isolate the lats without biceps involvement.',
     instructions:
-      'Lie upper-back across a flat bench, hips up in a bridge. Lower a single dumbbell overhead, then pull back over the chest.',
-    tips: 'Keep a slight elbow bend; focus on the lat stretch at the bottom; avoid letting the hips sag.',
+      'Attach a rope to a high pulley. With arms straight, press the rope down toward your thighs.',
+    tips: 'Keep arms straight throughout; lead with the lats, not the triceps; avoid leaning forward.',
     primaryMuscles: [MuscleSlug.LATS],
-    secondaryMuscles: [MuscleSlug.CHEST, MuscleSlug.TRICEPS],
-    equipment: [EquipmentSlug.DUMBBELL, EquipmentSlug.FLAT_BENCH],
+    secondaryMuscles: [MuscleSlug.CHEST],
+    equipment: [EquipmentSlug.CABLE_ROPE],
+    defaultSets: 3,
+    defaultReps: [12, 15],
+  },
+  {
+    slug: 'machine-shrug-plate-loaded',
+    name: 'Machine Shrug',
+    variation: 'Plate-Loaded',
+    category: 'Back',
+    exerciseType: 'machine',
+    difficultyLevel: 'beginner',
+    description:
+      'Plate-loaded shrug machine for targeted trap development with minimal lower-back involvement.',
+    instructions:
+      'Sit or stand in the shrug machine. Shrug the shoulders straight up toward the ears, then lower under control.',
+    tips: 'Don\u2019t roll the shoulders; pause at peak contraction; avoid jerking the weight up.',
+    primaryMuscles: [MuscleSlug.TRAPS],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.SHRUG_MACHINE],
     defaultSets: 3,
     defaultReps: [8, 10],
   },
   {
-    slug: 'lever-row-chest-supported',
-    name: 'Lever Row',
-    variation: 'Chest Supported',
+    slug: 'dumbbell-shrug',
+    name: 'Dumbbell Shrug',
+    variation: 'Standing',
     category: 'Back',
-    exerciseType: 'machine',
-    difficultyLevel: 'advanced',
-    description:
-      'Chest-supported lever row machine targeting the lats and upper back without lower-back load.',
+    exerciseType: 'free_weight',
+    difficultyLevel: 'beginner',
+    description: 'Standing dumbbell shrug for targeted trap development.',
     instructions:
-      'Lie chest-down on the support pad. Pull both handles to your sides, squeezing the shoulder blades.',
-    tips: 'Lead with the elbows; keep the chest against the pad; pause at the peak for a one-count.',
-    primaryMuscles: [MuscleSlug.LATS, MuscleSlug.UPPER_BACK],
-    secondaryMuscles: [MuscleSlug.BICEPS],
-    equipment: [{ slug: EquipmentSlug.SEATED_ROW_MACHINE, isRequired: true }],
+      'Hold dumbbells at your sides. Shrug the shoulders straight up toward the ears, then lower under control.',
+    tips: 'Don\u2019t roll the shoulders; pause at peak contraction; avoid jerking the weight up.',
+    primaryMuscles: [MuscleSlug.TRAPS],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.DUMBBELL],
     defaultSets: 3,
     defaultReps: [8, 10],
   },
@@ -552,7 +560,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     primaryMuscles: [MuscleSlug.QUADS, MuscleSlug.GLUTES],
     secondaryMuscles: [MuscleSlug.HAMSTRINGS],
     equipment: [EquipmentSlug.DUMBBELL, EquipmentSlug.FLAT_BENCH],
-    defaultSets: 3,
+    defaultSets: 2,
     defaultReps: [8, 10],
   },
   {
@@ -570,41 +578,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     secondaryMuscles: [],
     equipment: [EquipmentSlug.LEG_CURL_MACHINE],
     defaultSets: 3,
-    defaultReps: [10, 12],
-  },
-  {
-    slug: 'leg-extension-machine',
-    name: 'Leg Extension',
-    variation: 'Machine',
-    category: 'UpperLeg',
-    exerciseType: 'machine',
-    difficultyLevel: 'beginner',
-    description: 'Leg extension machine isolating the quadriceps.',
-    instructions:
-      'Sit in the leg extension. Hook the pad at the shins. Extend the knees to full straightening.',
-    tips: 'Pause at the top; avoid kicking the weight up; control the descent.',
-    primaryMuscles: [MuscleSlug.QUADS],
-    secondaryMuscles: [],
-    equipment: [EquipmentSlug.LEG_EXTENSION_MACHINE],
-    defaultSets: 3,
-    defaultReps: [10, 12],
-  },
-  {
-    slug: 'hip-adduction-machine',
-    name: 'Hip Adduction',
-    variation: 'Machine',
-    category: 'UpperLeg',
-    exerciseType: 'machine',
-    difficultyLevel: 'beginner',
-    description: 'Seated hip adduction machine targeting the inner thigh (adductors).',
-    instructions:
-      'Sit on the adduction machine. Press the pads inward by squeezing the inner thighs.',
-    tips: 'Keep the spine neutral; pause at peak contraction; control the return.',
-    primaryMuscles: [MuscleSlug.GLUTES],
-    secondaryMuscles: [],
-    equipment: [EquipmentSlug.HIP_ADDUCTION_MACHINE],
-    defaultSets: 3,
-    defaultReps: [12, 15],
+    defaultReps: [8, 10],
   },
 
   // ── Lower leg ──────────────────────────────────────────────────────
