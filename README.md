@@ -48,7 +48,8 @@ The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 12-audit pre-co
 | Concern | Where it lives |
 |---|---|
 | Workout splits (Full Body / AM-PM) | `constants/workoutSplits.ts` + `shared/exercises/splits.ts` (4-day oneADay + 4-day twoADay assignments) |
-| Exercise library (28 system exercises) | `shared/exercises/data.ts` (TS-side) + `supabase/migrations/20260718000002_seed_system_exercises.sql` (DB seed) |
+| Exercise library (43 system exercises: 26 split + 17 substitution pool) | `shared/exercises/data.ts` (TS-side) + `supabase/migrations/20260718000002_seed_system_exercises.sql` (26 split DB seed) + `supabase/migrations/20260721000002_seed_catalog_and_programs.sql` (17 substitution pool DB seed + alternatives graph) |
+| Program templates (5-table hierarchy: template → variant → day → session → slot) | `supabase/migrations/20260721000001_program_templates.sql` (schema) + `20260721000002_seed_catalog_and_programs.sql` (one seeded template, two variants, 60 slots) + `utils/supabase/repositories/ProgramRepository.ts` (read surface) |
 | Active session state | `stores/workoutStore.ts` (ephemeral draft) + `hooks/mutations/useLogWorkout.ts` (optimistic flush) |
 | Exercise browse filter state | `stores/exerciseStore.ts` |
 | Workout history | `hooks/queries/useWorkouts.ts` + `WorkoutRepository` |
@@ -63,11 +64,11 @@ Routes:
 | `/` | Home dashboard — streak, weekly goal, recent workouts, quick actions |
 | `/split-selection` | Pick split (1-a-day / AM-PM) + day of week → start session |
 | `/workout-detail` | Active session (live draft) OR read-only detail (with `?id=`) |
-| `/exercise-database` | Browse 28 system exercises + user custom |
+| `/exercise-database` | Browse 43 system exercises + user custom |
 | `/exercise-detail` | Single exercise with instructions/tips/muscles/equipment |
 | `/progression` | Streaks + totals + weekly goal |
 | `/analytics` | Range-selectable weekly bucketed workouts |
-| `/workout-programs` | Curated templates — stub for v2 |
+| `/workout-programs` | Curated templates — relational model landed (one seeded template + two variants); UI still stubbed for a later phase |
 | `/login`, `/register`, `/forgot-password`, `/settings` | Inherited from arqavellum |
 | `/dev/premium` | MobilePremium showcase — visual source of truth |
 
