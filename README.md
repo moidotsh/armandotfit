@@ -50,6 +50,7 @@ The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 12-audit pre-co
 | Workout splits (Full Body / AM-PM) | `constants/workoutSplits.ts` + `shared/exercises/splits.ts` (4-day oneADay + 4-day twoADay assignments) |
 | Exercise library (43 system exercises: 26 split + 17 substitution pool) | `shared/exercises/data.ts` (TS-side) + `supabase/migrations/20260718000002_seed_system_exercises.sql` (26 split DB seed) + `supabase/migrations/20260721000002_seed_catalog_and_programs.sql` (17 substitution pool DB seed + alternatives graph) |
 | Program templates (5-table hierarchy: template → variant → day → session → slot) | `supabase/migrations/20260721000001_program_templates.sql` (schema) + `20260721000002_seed_catalog_and_programs.sql` (one seeded template, two variants, 60 slots) + `utils/supabase/repositories/ProgramRepository.ts` (read surface) |
+| Equipment capability inventory (Phase 2 onboarding model) | `constants/equipmentCapabilities.ts` (27-slug catalog + resolver) + `supabase/migrations/20260722000000_user_equipment_capabilities.sql` (advisory sibling table) + `app/equipment-inventory.tsx` (wizard) + `hooks/{queries,mutations}/use*EquipmentCapabilities.ts` |
 | Active session state | `stores/workoutStore.ts` (ephemeral draft) + `hooks/mutations/useLogWorkout.ts` (optimistic flush) |
 | Exercise browse filter state | `stores/exerciseStore.ts` |
 | Workout history | `hooks/queries/useWorkouts.ts` + `WorkoutRepository` |
@@ -63,6 +64,7 @@ Routes:
 |---|---|
 | `/` | Home dashboard — streak, weekly goal, recent workouts, quick actions |
 | `/split-selection` | Pick split (1-a-day / AM-PM) + day of week → start session |
+| `/equipment-inventory` | Phase 2 capability-onboarding wizard (broad selection → detail config → review/save) |
 | `/workout-detail` | Active session (live draft) OR read-only detail (with `?id=`) |
 | `/exercise-database` | Browse 43 system exercises + user custom |
 | `/exercise-detail` | Single exercise with instructions/tips/muscles/equipment |
