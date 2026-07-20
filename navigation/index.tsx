@@ -20,6 +20,8 @@ export {
   navigateToWorkoutPrograms,
   navigateToSplitSelection,
   navigateToEquipmentInventory,
+  navigateToPlanPreview,
+  navigateToPlanReplacement,
   replaceWithHome,
   replaceWithLogin,
   replaceWithRegister,

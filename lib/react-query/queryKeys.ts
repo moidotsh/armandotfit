@@ -4,6 +4,8 @@
 // streaks, reference). Hooks use these via the `queryKeys` factory —
 // inline `queryKey: [...]` arrays are banned by the S13 audit.
 
+import type { ID } from '../../shared/types';
+
 export const queryKeys = {
   // Authentication
   auth: {
@@ -49,6 +51,24 @@ export const queryKeys = {
     list: () => [...queryKeys.userEquipment.all, 'list'] as const,
     /** Phase 2 capability selections (user_equipment_capabilities rows). */
     capabilities: () => [...queryKeys.userEquipment.all, 'capabilities'] as const,
+  },
+
+  /** User-owned program plans (Phase 3). */
+  userPlans: {
+    all: ['userPlans'] as const,
+    /** All active plans for the current user, with slots + overrides. */
+    activeList: () => [...queryKeys.userPlans.all, 'activeList'] as const,
+    /** A specific plan by id, with slots + overrides. */
+    detail: (planId: string) => [...queryKeys.userPlans.all, 'detail', planId] as const,
+    /** The active plan for a specific variant, or null if not adopted yet. */
+    activeForVariant: (variantId: ID | 'pending') =>
+      [...queryKeys.userPlans.all, 'activeForVariant', variantId] as const,
+    /** In-memory generated-plan preview for a variant (pre-save). */
+    preview: (variantSlug: string) =>
+      [...queryKeys.userPlans.all, 'preview', variantSlug] as const,
+    /** Replacement candidates for a single slot's template exercise. */
+    candidates: (templateExerciseId: ID | 'pending') =>
+      [...queryKeys.userPlans.all, 'candidates', templateExerciseId] as const,
   },
 
   /** Workout sessions: header list + per-session detail. */

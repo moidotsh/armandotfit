@@ -51,6 +51,7 @@ The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 12-audit pre-co
 | Exercise library (43 system exercises: 26 split + 17 substitution pool) | `shared/exercises/data.ts` (TS-side) + `supabase/migrations/20260718000002_seed_system_exercises.sql` (26 split DB seed) + `supabase/migrations/20260721000002_seed_catalog_and_programs.sql` (17 substitution pool DB seed + alternatives graph) |
 | Program templates (5-table hierarchy: template → variant → day → session → slot) | `supabase/migrations/20260721000001_program_templates.sql` (schema) + `20260721000002_seed_catalog_and_programs.sql` (one seeded template, two variants, 60 slots) + `utils/supabase/repositories/ProgramRepository.ts` (read surface) |
 | Equipment capability inventory (Phase 2 onboarding model) | `constants/equipmentCapabilities.ts` (27-slug catalog + resolver) + `supabase/migrations/20260722000000_user_equipment_capabilities.sql` (advisory sibling table) + `app/equipment-inventory.tsx` (wizard) + `hooks/{queries,mutations}/use*EquipmentCapabilities.ts` |
+| User-owned plans (Phase 3 equipment-aware generation) | `services/{eligibilityService,planGenerationService}.ts` (pure engine + orchestrator) + `utils/supabase/repositories/UserPlanRepository.ts` (persistence) + `supabase/migrations/20260723000000_user_program_plans.sql` (3 RLS-enforced tables: plan / plan_slot / plan_slot_override) + `shared/types/userPlan.ts` (SlotResolution + GeneratedPlan) + `hooks/{queries,mutations}/use*UserPlan*.ts` + `app/{plan-preview,plan-replacement}.tsx` |
 | Active session state | `stores/workoutStore.ts` (ephemeral draft) + `hooks/mutations/useLogWorkout.ts` (optimistic flush) |
 | Exercise browse filter state | `stores/exerciseStore.ts` |
 | Workout history | `hooks/queries/useWorkouts.ts` + `WorkoutRepository` |
@@ -70,7 +71,9 @@ Routes:
 | `/exercise-detail` | Single exercise with instructions/tips/muscles/equipment |
 | `/progression` | Streaks + totals + weekly goal |
 | `/analytics` | Range-selectable weekly bucketed workouts |
-| `/workout-programs` | Curated templates — relational model landed (one seeded template + two variants); UI still stubbed for a later phase |
+| `/workout-programs` | Browse the seeded program template + variants (one-a-day / two-a-day); tap → `/plan-preview` |
+| `/plan-preview` | Equipment-aware plan preview (Phase 3): generates a plan for the variant using the user's inventory, shows the day/session/slot tree with resolution chips (template / direct / close / fallback / missing), and lets the user adopt the plan |
+| `/plan-replacement` | Manual slot-replacement picker (Phase 3): lists template + alternatives in tier + priority order with eligibility flags; tap → save override |
 | `/login`, `/register`, `/forgot-password`, `/settings` | Inherited from arqavellum |
 | `/dev/premium` | MobilePremium showcase — visual source of truth |
 

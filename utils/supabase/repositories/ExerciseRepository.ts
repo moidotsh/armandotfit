@@ -39,6 +39,9 @@ import type {
   UserAvailableEquipment,
   UserEquipmentCapability,
   UserFavoriteExercise,
+  ExerciseEquipmentRequirement,
+  ExerciseEquipmentRequirementPath,
+  ExerciseAlternative,
   ID,
 } from '../../../shared/types';
 
@@ -138,6 +141,32 @@ interface UserEquipmentCapabilityRow {
   updated_at: string;
 }
 
+interface RequirementPathRow {
+  id: string;
+  exercise_id: string;
+  path_index: number;
+  rationale: string | null;
+  created_at: string;
+}
+
+interface RequirementRow {
+  id: string;
+  requirement_path_id: string;
+  equipment_type_id: string;
+  min_quantity: number;
+  created_at: string;
+}
+
+interface AlternativeRow {
+  id: string;
+  source_exercise_id: string;
+  alt_exercise_id: string;
+  alt_type: 'direct' | 'close' | 'fallback';
+  priority: number;
+  intent_note: string | null;
+  created_at: string;
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // Repository
 // ──────────────────────────────────────────────────────────────────────
@@ -162,6 +191,9 @@ export class ExerciseRepository
   private static USER_FAVORITES = 'user_favorite_exercises';
   private static USER_EQUIPMENT = 'user_available_equipment';
   private static USER_CAPABILITIES = 'user_equipment_capabilities';
+  private static REQUIREMENT_PATHS = 'exercise_equipment_requirement_paths';
+  private static REQUIREMENTS = 'exercise_equipment_requirements';
+  private static ALTERNATIVES = 'exercise_alternatives';
 
   /** List exercises with optional filters. Always returns camelCased rows. */
   async findAll(options?: FindOptions & ExerciseFilter): Promise<RepositoryResult<Exercise[]>> {
@@ -693,6 +725,92 @@ export class ExerciseRepository
   }
 
   // ────────────────────────────────────────────────────────────────────
+  // Catalog extension reads (Phase 3)
+  //
+  // Three batched reads over the Phase 1 catalog-extension tables:
+  //   • exercise_equipment_requirement_paths — one row per (exercise, path)
+  //   • exercise_equipment_requirements — one row per (path, equipment_type)
+  //   • exercise_alternatives — directional substitution edges
+  //
+  // The plan generation service calls these with the variant's exercise
+  // set in one batch, then groups the flat row lists into the engine's
+  // ExerciseRequirementGraph / AlternativeEdge shapes. Keeping these as
+  // flat list returns (rather than grouped maps) lets the service layer
+  // do the grouping in one place — the repository stays a thin data
+  // accessor.
+  // ────────────────────────────────────────────────────────────────────
+
+  /**
+   * Load all requirement paths for a set of exercises. Returns a flat
+   * list — group by exercise_id at the call site. Empty array when
+   * exerciseIds is empty (no query fires).
+   */
+  async listRequirementPathsForExercises(
+    exerciseIds: ID[],
+  ): Promise<RepositoryResult<ExerciseEquipmentRequirementPath[]>> {
+    try {
+      if (exerciseIds.length === 0) return ok([]);
+      const { data, error } = await supabase
+        .from(ExerciseRepository.REQUIREMENT_PATHS)
+        .select('*')
+        .in('exercise_id', exerciseIds)
+        .order('exercise_id', { ascending: true })
+        .order('path_index', { ascending: true });
+      if (error) throw error;
+      return ok((data as RequirementPathRow[]).map(toRequirementPath));
+    } catch (e) {
+      return this.handleError('listRequirementPathsForExercises', e);
+    }
+  }
+
+  /**
+   * Load all requirement nodes for a set of paths. Returns a flat list
+   * — group by requirement_path_id at the call site. Empty array when
+   * pathIds is empty.
+   */
+  async listRequirementsForPaths(
+    pathIds: ID[],
+  ): Promise<RepositoryResult<ExerciseEquipmentRequirement[]>> {
+    try {
+      if (pathIds.length === 0) return ok([]);
+      const { data, error } = await supabase
+        .from(ExerciseRepository.REQUIREMENTS)
+        .select('*')
+        .in('requirement_path_id', pathIds);
+      if (error) throw error;
+      return ok((data as RequirementRow[]).map(toRequirement));
+    } catch (e) {
+      return this.handleError('listRequirementsForPaths', e);
+    }
+  }
+
+  /**
+   * Load all alternatives where source_exercise_id is in the given set.
+   * Directional — only loads edges originating from the given sources.
+   * The plan generation service uses this to find substitutes for the
+   * variant's template exercises. Empty array when sourceExerciseIds
+   * is empty.
+   */
+  async listAlternativesForExercises(
+    sourceExerciseIds: ID[],
+  ): Promise<RepositoryResult<ExerciseAlternative[]>> {
+    try {
+      if (sourceExerciseIds.length === 0) return ok([]);
+      const { data, error } = await supabase
+        .from(ExerciseRepository.ALTERNATIVES)
+        .select('*')
+        .in('source_exercise_id', sourceExerciseIds)
+        .order('source_exercise_id', { ascending: true })
+        .order('alt_type', { ascending: true })
+        .order('priority', { ascending: true });
+      if (error) throw error;
+      return ok((data as AlternativeRow[]).map(toAlternative));
+    } catch (e) {
+      return this.handleError('listAlternativesForExercises', e);
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────
   // Junction helpers (private)
   // ────────────────────────────────────────────────────────────────────
 
@@ -901,6 +1019,38 @@ function toUserEquipmentCapability(row: UserEquipmentCapabilityRow): UserEquipme
     details: row.details ?? {},
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+function toRequirementPath(row: RequirementPathRow): ExerciseEquipmentRequirementPath {
+  return {
+    id: row.id,
+    exerciseId: row.exercise_id,
+    pathIndex: row.path_index,
+    rationale: row.rationale,
+    createdAt: row.created_at,
+  };
+}
+
+function toRequirement(row: RequirementRow): ExerciseEquipmentRequirement {
+  return {
+    id: row.id,
+    requirementPathId: row.requirement_path_id,
+    equipmentTypeId: row.equipment_type_id,
+    minQuantity: row.min_quantity,
+    createdAt: row.created_at,
+  };
+}
+
+function toAlternative(row: AlternativeRow): ExerciseAlternative {
+  return {
+    id: row.id,
+    sourceExerciseId: row.source_exercise_id,
+    altExerciseId: row.alt_exercise_id,
+    altType: row.alt_type,
+    priority: row.priority,
+    intentNote: row.intent_note,
+    createdAt: row.created_at,
   };
 }
 

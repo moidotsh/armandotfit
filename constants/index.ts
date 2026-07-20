@@ -84,3 +84,12 @@ export type {
   UpcomingDay,
   UpcomingWorkoutSlot,
 } from './workoutSplits';
+
+// Program template + variant slugs. Phase 3 ships the seeded template
+// (arman-fit-commercial-gym-v1) with two variants; the constants are a
+// first-paint fallback for the browse UI.
+export {
+  KNOWN_PROGRAM_TEMPLATE_SLUG,
+  KNOWN_PROGRAM_VARIANTS,
+} from './programTemplates';
+export type { KnownProgramVariant } from './programTemplates';

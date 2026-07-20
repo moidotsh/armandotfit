@@ -15,3 +15,16 @@ export {
 export { WorkoutService } from './workoutService';
 export { ProgressionService } from './progressionService';
 export { AnalyticsService } from './analyticsService';
+export {
+  generatePlanForVariant,
+  buildUserEquipmentInventory,
+  snapshotPrescription,
+  flattenGeneratedPlan,
+  isExerciseEligible,
+  resolveSlot,
+  listReplacementCandidates,
+  type ExerciseRequirementGraph,
+  type AlternativeEdge,
+  type ReplacementCandidate,
+  type SlotResolutionResult,
+} from './planGenerationService';

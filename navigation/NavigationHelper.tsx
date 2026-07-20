@@ -43,6 +43,8 @@ export enum NavigationPath {
   WORKOUT_PROGRAMS = 'workout-programs',
   SPLIT_SELECTION = 'split-selection',
   EQUIPMENT_INVENTORY = 'equipment-inventory',
+  PLAN_PREVIEW = 'plan-preview',
+  PLAN_REPLACEMENT = 'plan-replacement',
 }
 
 /**
@@ -69,6 +71,8 @@ export const navigationHierarchy: Record<string, NavigationPath> = {
   [NavigationPath.WORKOUT_PROGRAMS]: NavigationPath.HOME,
   [NavigationPath.SPLIT_SELECTION]: NavigationPath.HOME,
   [NavigationPath.EQUIPMENT_INVENTORY]: NavigationPath.SETTINGS,
+  [NavigationPath.PLAN_PREVIEW]: NavigationPath.WORKOUT_PROGRAMS,
+  [NavigationPath.PLAN_REPLACEMENT]: NavigationPath.PLAN_PREVIEW,
 };
 
 // ─── Push helpers (drill in) ────────────────────────────────────────────
@@ -145,6 +149,34 @@ export function navigateToSplitSelection() {
 /** Open the equipment capability inventory (Phase 2 onboarding wizard). */
 export function navigateToEquipmentInventory() {
   router.push('/equipment-inventory');
+}
+
+/**
+ * Open the Phase 3 plan preview for a variant. Generates the plan
+ * in-memory from the user's equipment inventory + the variant's
+ * catalog data. Carries the variant slug as a query param.
+ */
+export function navigateToPlanPreview(variantSlug: string) {
+  router.push({ pathname: '/plan-preview', params: { variant: variantSlug } });
+}
+
+/**
+ * Open the Phase 3 plan replacement screen for a single slot. Carries
+ * the slot + plan identifiers + the template exercise id as query params.
+ */
+export function navigateToPlanReplacement(params: {
+  planId: string;
+  planSlotId: string;
+  templateExerciseId: string;
+}) {
+  router.push({
+    pathname: '/plan-replacement',
+    params: {
+      planId: params.planId,
+      planSlotId: params.planSlotId,
+      templateExerciseId: params.templateExerciseId,
+    },
+  });
 }
 
 // ─── Replace helpers (redirects) ────────────────────────────────────────

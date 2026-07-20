@@ -24,3 +24,10 @@ export {
 } from './useProgression';
 export { useProfile } from './useProfile';
 export { useEquipmentCapabilities } from './useEquipmentCapabilities';
+export {
+  useUserPlans,
+  useUserPlan,
+  useActivePlanForVariant,
+  useGeneratedPlanPreview,
+  useReplacementCandidates,
+} from './useUserPlans';
