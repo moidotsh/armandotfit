@@ -49,6 +49,7 @@ vi.mock('expo-router', () => ({
     replace: vi.fn(),
     back: vi.fn(),
     navigate: vi.fn(),
+    canGoBack: vi.fn(() => false),
   })),
   useLocalSearchParams: vi.fn(() => ({})),
   useGlobalSearchParams: vi.fn(() => ({})),
@@ -59,6 +60,7 @@ vi.mock('expo-router', () => ({
     replace: vi.fn(),
     back: vi.fn(),
     navigate: vi.fn(),
+    canGoBack: vi.fn(() => false),
   },
   Stack: {
     Screen: 'Screen',
@@ -176,6 +178,8 @@ vi.mock('@tamagui/lucide-icons-2', () => ({
   Clock: 'Clock',
   Info: 'Info',
   AlertCircle: 'AlertCircle',
+  AlertTriangle: 'AlertTriangle',
+  CheckCircle2: 'CheckCircle2',
   HelpCircle: 'HelpCircle',
   Trash: 'Trash',
   Edit: 'Edit',
@@ -265,3 +269,120 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Suppress console errors in tests unless explicitly asserted.
 vi.spyOn(console, 'error').mockImplementation(() => {});
+
+// ── Screen-test hook stubs ────────────────────────────────────────────
+//
+// Phase 4 resilience follow-up: integration tests for app/split-selection
+// and app/workout-detail need to control the React Query state of the
+// plan-launch hooks (useActivePlanForVariant, usePlanLaunchHydration) to
+// reproduce the lookup-error and hydration-error UI branches. T2 Part A
+// requires module-level vi.mock() calls to live in this file (not in the
+// test files), so the mocks are centralized here.
+//
+// The stubs are vi.hoisted so the vi.mock factory — which is itself
+// hoisted by Vitest — can safely reference them. Each stub defaults to
+// the "happy empty" shape so tests that don't care about a hook still
+// get a sane return value. Screen integration tests override the stubs
+// per-test via `screenHookStubs.X.mockReturnValue(...)`.
+//
+// Scope: only the hooks the two screens actually import from `../hooks`.
+// Other hook exports are not stubbed; tests that need them must add
+// their own stub here.
+
+const screenHookStubs = vi.hoisted(() => ({
+  useProfile: vi.fn(
+    (..._a: unknown[]): { data: unknown; isLoading: boolean } => ({
+      data: undefined,
+      isLoading: false,
+    }),
+  ),
+  useRecentWorkouts: vi.fn(
+    (..._a: unknown[]): { data: unknown[] } => ({ data: [] }),
+  ),
+  useVariantTree: vi.fn(
+    (..._a: unknown[]): { data: unknown; isLoading: boolean } => ({
+      data: undefined,
+      isLoading: false,
+    }),
+  ),
+  useActivePlanForVariant: vi.fn(
+    (..._a: unknown[]): {
+      data: unknown;
+      isError: boolean;
+      isLoading: boolean;
+      refetch: () => Promise<unknown>;
+    } => ({
+      data: null,
+      isError: false,
+      isLoading: false,
+      refetch: () => Promise.resolve({}),
+    }),
+  ),
+  usePlanLaunchHydration: vi.fn(
+    (..._a: unknown[]): {
+      data: unknown;
+      isError: boolean;
+      isLoading: boolean;
+      refetch: () => Promise<unknown>;
+    } => ({
+      data: null,
+      isError: false,
+      isLoading: false,
+      refetch: () => Promise.resolve({}),
+    }),
+  ),
+  useSuggestedExercises: vi.fn(
+    (..._a: unknown[]): { data: unknown[]; isLoading: boolean } => ({
+      data: [],
+      isLoading: false,
+    }),
+  ),
+  useWorkoutDetail: vi.fn(
+    (..._a: unknown[]): { data: unknown; isLoading: boolean } => ({
+      data: undefined,
+      isLoading: false,
+    }),
+  ),
+  useLogWorkout: vi.fn(
+    (..._a: unknown[]): {
+      mutate: (dto: unknown) => void;
+      isPending: boolean;
+      isSuccess: boolean;
+      isError: boolean;
+      error: unknown;
+    } => ({
+      mutate: () => {},
+      isPending: false,
+      isSuccess: false,
+      isError: false,
+      error: null,
+    }),
+  ),
+  useAiPayload: vi.fn((..._a: unknown[]): string => ''),
+}));
+
+vi.mock('../hooks', async (importOriginal) => {
+  // Pull in the real barrel so non-stubbed exports (useReducedMotion,
+  // usePlatformAnimation, usePressedStyle, useFadeIn, …) keep working
+  // for every other test. The 9 stubs below override only the hooks the
+  // Phase 4 resilience screen tests need to control; everything else
+  // passes through untouched.
+  const actual = await importOriginal<typeof import('../hooks')>();
+  return {
+    ...actual,
+    useProfile: (...a: unknown[]) => screenHookStubs.useProfile(...a),
+    useRecentWorkouts: (...a: unknown[]) => screenHookStubs.useRecentWorkouts(...a),
+    useVariantTree: (...a: unknown[]) => screenHookStubs.useVariantTree(...a),
+    useActivePlanForVariant: (...a: unknown[]) =>
+      screenHookStubs.useActivePlanForVariant(...a),
+    usePlanLaunchHydration: (...a: unknown[]) =>
+      screenHookStubs.usePlanLaunchHydration(...a),
+    useSuggestedExercises: (...a: unknown[]) =>
+      screenHookStubs.useSuggestedExercises(...a),
+    useWorkoutDetail: (...a: unknown[]) => screenHookStubs.useWorkoutDetail(...a),
+    useLogWorkout: (...a: unknown[]) => screenHookStubs.useLogWorkout(...a),
+    useAiPayload: (...a: unknown[]) => screenHookStubs.useAiPayload(...a),
+  };
+});
+
+export { screenHookStubs };

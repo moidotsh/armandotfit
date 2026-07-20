@@ -28,3 +28,12 @@ export type { WorkoutListSkeletonProps } from './WorkoutListSkeleton';
 
 export { TrainingConsistencyGrid } from './TrainingConsistencyGrid';
 export type { TrainingConsistencyGridProps } from './TrainingConsistencyGrid';
+
+export {
+  PlanLookupErrorAlert,
+  HydrationErrorState,
+} from './PlanLaunchErrors';
+export type {
+  PlanLookupErrorAlertProps,
+  HydrationErrorStateProps,
+} from './PlanLaunchErrors';

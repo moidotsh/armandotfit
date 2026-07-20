@@ -27,7 +27,7 @@ import {
   CopyForAiButton,
   type MobileSelectionOption,
 } from '../components/MobilePremium';
-import { SplitExerciseRow } from '../components/composed';
+import { SplitExerciseRow, PlanLookupErrorAlert } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, safeGoBack } from '../navigation';
 import {
@@ -108,12 +108,20 @@ export default function SplitSelectionScreen() {
   // the session will hydrate from the saved plan; otherwise the static
   // suggested-split path remains the source. The lookups are cached so
   // toggling between splits is cheap after first resolution.
+  //
+  // Phase 4 resilience: activePlanQuery.isError is tracked separately
+  // from `data == null`. A failed lookup is NOT the same as "no saved
+  // plan" — the user may have an active plan that the request couldn't
+  // reach. The error surfaces as an inline warning + a static-labeled
+  // launch button so the user can still begin a workout but does so
+  // knowingly (vs. silently mistaking the error for plan absence).
   const variantSlug = SPLIT_TO_VARIANT_SLUG[split];
   const variantTreeQuery = useVariantTree(variantSlug);
   const variantId = variantTreeQuery.data?.variant.id ?? null;
   const activePlanQuery = useActivePlanForVariant(variantId);
   const activePlan = activePlanQuery.data ?? null;
   const launchFromPlan = isPlanComplete(activePlan);
+  const planLookupFailed = activePlanQuery.isError && !launchFromPlan;
 
   const aiPayload = useAiPayload({
     visibleContent: [
@@ -322,6 +330,21 @@ export default function SplitSelectionScreen() {
           </View>
         ) : null}
 
+        {/* Phase 4 resilience — plan-lookup failure surfaces here. NOT
+            the same as "no saved plan" (which renders no badge and falls
+            through to the normal static path silently). The warning makes
+            the failed lookup visible + exposes the React Query refetch as
+            the retry path. The static launch remains available via the
+            footer's explicitly-labeled "Start static workout" button. */}
+        {planLookupFailed ? (
+          <PlanLookupErrorAlert
+            onRetry={() => {
+              void activePlanQuery.refetch();
+            }}
+            testID="split-selection-plan-lookup-error"
+          />
+        ) : null}
+
         {previewExercises.length === 0 ? (
           <MobileSurface padding={20}>
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
@@ -341,8 +364,15 @@ export default function SplitSelectionScreen() {
         <MobilePrimaryButton variant="ghost" onPress={safeGoBack}>
           Cancel
         </MobilePrimaryButton>
-        <MobilePrimaryButton onPress={handleStart}>
-          Start session
+        <MobilePrimaryButton
+          onPress={handleStart}
+          testID="split-selection-start-session"
+        >
+          {/* Phase 4 resilience — when the plan lookup failed the user
+              can still begin a workout, but the label makes the fallback
+              intent explicit so they don't mistake the session for a
+              plan-backed launch. */}
+          {planLookupFailed ? 'Start static workout' : 'Start session'}
         </MobilePrimaryButton>
       </MobileActionFooter>
     </SafeAreaView>

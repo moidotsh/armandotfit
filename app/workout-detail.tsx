@@ -25,7 +25,7 @@ import {
   CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { SetRow, EditableSetRow } from '../components/composed';
+import { SetRow, EditableSetRow, HydrationErrorState } from '../components/composed';
 import { useToast } from '../context';
 import { useAppTheme } from '../context';
 import {
@@ -218,6 +218,17 @@ export default function WorkoutDetailScreen() {
     }
   };
 
+  // Phase 4 resilience — the canonical discard path, shared by the
+  // footer's Discard button and the plan-hydration error state. Clears
+  // the draft (and therefore any partially-hydrated state) and returns
+  // the user toward split-selection via safeGoBack. The redirect effect
+  // at the top of the screen will also bounce to split-selection if
+  // isSessionActive collapses, so this is idempotent.
+  const handleDiscard = () => {
+    resetSession();
+    safeGoBack();
+  };
+
   // ── Read-only mode (existing session) ──────────────────────────────
   if (id) {
     const session = existingQuery.data;
@@ -348,19 +359,37 @@ export default function WorkoutDetailScreen() {
         ) : null}
 
         {draft.exercises.length === 0 ? (
-          (draft.launchSource === 'plan'
-            ? planHydrationQuery.isLoading || planHydrationQuery.data == null
-            : suggestedQuery.isLoading ||
-              (suggestedQuery.data != null && suggestedQuery.data.length > 0)) ? (
-            <MobileSurface padding={20}>
-              <LoadingSpinner />
-            </MobileSurface>
+          draft.launchSource === 'plan' && planHydrationQuery.isError ? (
+            // Phase 4 resilience — plan-hydration query failed. Render an
+            // explicit error state instead of an indefinite spinner. The
+            // draft's exercises stay empty (the mount effect early-returns
+            // on error) so no stale partially-hydrated state is shown.
+            // Retry re-invokes the React Query refetch; Discard uses the
+            // existing resetSession + safeGoBack path so the user returns
+            // to split-selection to make the explicit plan-vs-static
+            // decision there (no silent in-screen static substitution).
+            <HydrationErrorState
+              onRetry={() => {
+                void planHydrationQuery.refetch();
+              }}
+              onDiscard={handleDiscard}
+              testID="workout-detail-hydration-error"
+            />
           ) : (
-            <MobileSurface padding={20}>
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                No exercises planned for this day. Tap below to add your own.
-              </Text>
-            </MobileSurface>
+            (draft.launchSource === 'plan'
+              ? planHydrationQuery.isLoading || planHydrationQuery.data == null
+              : suggestedQuery.isLoading ||
+                (suggestedQuery.data != null && suggestedQuery.data.length > 0)) ? (
+              <MobileSurface padding={20}>
+                <LoadingSpinner />
+              </MobileSurface>
+            ) : (
+              <MobileSurface padding={20}>
+                <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                  No exercises planned for this day. Tap below to add your own.
+                </Text>
+              </MobileSurface>
+            )
           )
         ) : (
           draft.exercises.map((ex) => (
@@ -462,13 +491,7 @@ export default function WorkoutDetailScreen() {
         ) : null}
       </ScrollView>
       <MobileActionFooter>
-        <MobilePrimaryButton
-          variant="ghost"
-          onPress={() => {
-            resetSession();
-            safeGoBack();
-          }}
-        >
+        <MobilePrimaryButton variant="ghost" onPress={handleDiscard}>
           Discard
         </MobilePrimaryButton>
         <MobilePrimaryButton
