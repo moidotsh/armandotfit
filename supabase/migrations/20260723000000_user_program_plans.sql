@@ -177,13 +177,13 @@ CREATE POLICY "Users can manage own program plan slots"
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_program_plan_slots TO authenticated;
 
 COMMENT ON TABLE public.user_program_plan_slots IS
-  'Per-slot resolved choice in a user plan (Phase 3). FK to user_program_plans (CASCADE on plan delete) + FK to program_slots (RESTRICT — template edits can't strip user plans). chosen_exercise_id is NULL when resolution = missing. prescription_snapshot freezes the slot prescription at adoption time.';
+  'Per-slot resolved choice in a user plan (Phase 3). FK to user_program_plans (CASCADE on plan delete) + FK to program_slots (RESTRICT — template edits can''t strip user plans). chosen_exercise_id is NULL when resolution = missing. prescription_snapshot freezes the slot prescription at adoption time.';
 
 COMMENT ON COLUMN public.user_program_plan_slots.resolution IS
   'How chosen_exercise_id was picked: template (the slot exercise is itself eligible), direct / close / fallback (first eligible alternative in that tier), manual (user override via slot_overrides), missing (no eligible exercise found; chosen_exercise_id is NULL).';
 
 COMMENT ON COLUMN public.user_program_plan_slots.prescription_snapshot IS
-  'JSONB snapshot of program_slots prescription (sets_min, sets_max, reps_min, reps_max, per_side, slot_notes) at adoption time. Frozen so template edits can't silently change a saved plan.';
+  'JSONB snapshot of program_slots prescription (sets_min, sets_max, reps_min, reps_max, per_side, slot_notes) at adoption time. Frozen so template edits can''t silently change a saved plan.';
 
 -- ──────────────────────────────────────────────────────────────────────
 -- Step 3: user_program_plan_slot_overrides
