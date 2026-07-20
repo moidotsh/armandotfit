@@ -215,6 +215,7 @@ via the path alias, or `../MobilePremium` relatively).
 |---|---|
 | `MobileAlert` | Inline alert with a 24px icon circle. `variant: 'success' \| 'warning' \| 'error' \| 'info'`. |
 | `SkeletonBlock` | Loading placeholder. Reads `colors.cardAlt` and pulses opacity via `useShimmer` (1.0 → 0.5 → 1.0, 1200ms; collapses to flat under `prefers-reduced-motion: reduce`). Uses `Animated.View`, not `ActivityIndicator`, so the C4 audit doesn't apply by construction. Consumer composes per-screen skeletons (e.g. armandotfit's `DashboardSkeleton`, `WorkoutListSkeleton`) from this primitive. |
+| `ActivityGrid` | Calendar heatmap (GitHub-contribution-style). Two layout modes: `calendar` (fixed 7 columns, weekday-aligned, default) and `responsive-matrix` (column-doubling for dev preview only). Level 0 reads `colors.cardAlt`; levels 1–4 use `colors.brand` at fixed alphas `[0.18, 0.36, 0.6, 1.0]`. Measures its own container via `useContainerQuery`; compact mode below the 7·cellMinSize + 6·gap threshold reduces gap then cell size. Date cells carry semantic activity; leading/trailing padding cells are layout-only with no a11y. Pure helpers in `utils/activityGrid.ts`; pure layout in `hooks/useActivityGridLayout.ts`. |
 
 ### Forms
 

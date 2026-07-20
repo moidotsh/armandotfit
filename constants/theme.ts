@@ -81,6 +81,12 @@ export const theme = {
       // default brand shade is dark enough that white reads cleanly.
       textOnBrand: '#FFFFFF',
 
+      // Secondary text on brand surfaces (uppercase eyebrows, helper lines,
+      // chip sublabels). White at 0.85 alpha — preserves hierarchy against
+      // `textOnBrand` while clearing WCAG AA on the brand hue. The
+      // equivalent of `textSecondary` for brand-tinted surfaces.
+      textOnBrandMuted: 'rgba(255, 255, 255, 0.85)',
+
       // Deeper background for full-bleed screens (auth, onboarding).
       // Light-mode interpretation: a faintly-cooler off-white that lets a
       // central card pop without losing the light feel.
@@ -229,6 +235,9 @@ export const theme = {
       // that white reads cleanly. Consumers with a very pale brand may
       // want to override this to '#0B0F19'.
       textOnBrand: '#FFFFFF',
+
+      // Secondary text on brand — same alpha treatment as `light.textOnBrandMuted`.
+      textOnBrandMuted: 'rgba(255, 255, 255, 0.85)',
 
       // Deeper background for full-bleed screens (auth, onboarding) —
       // darker still so a central card pops.

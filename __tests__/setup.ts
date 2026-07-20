@@ -66,6 +66,17 @@ vi.mock('react-native', () => ({
   useColorScheme: vi.fn(() => ({ colorScheme: 'light' })),
 }));
 
+// Mock react-native-safe-area-context. Required the moment any test pulls
+// in the MobilePremium barrel: MobileNavDrawer imports useSafeAreaInsets,
+// and the real package's JS distribution pulls in react-native's Flow-
+// syntax index.js, which vitest's transform can't parse. Mock must
+// register before the first indirect import resolves.
+vi.mock('react-native-safe-area-context', () => ({
+  SafeAreaView: 'SafeAreaView',
+  useSafeAreaInsets: vi.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0 })),
+  useSafeAreaFrame: vi.fn(() => ({ x: 0, y: 0, width: 1024, height: 768 })),
+}));
+
 // Mock expo modules.
 vi.mock('expo-router', () => ({
   useRouter: vi.fn(() => ({
@@ -247,11 +258,14 @@ vi.mock('@supabase/supabase-js', () => ({
 }));
 
 // Global test utilities.
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+// Class form (not vi.fn().mockImplementation) so `new ResizeObserver(...)` is
+// a real constructor call — required by hooks/useContainerQuery.ts. Vitest's
+// mock-implementation fn is not constructable in newer V8 under jsdom.
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+} as unknown as typeof ResizeObserver;
 
 // Mock window.matchMedia.
 Object.defineProperty(window, 'matchMedia', {

@@ -16,7 +16,7 @@ import React, { useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Sun, Moon, Monitor, Mail, Lock, Eye, EyeOff, Settings, Bell, Info, ChevronRight, Home, Dumbbell, TrendingUp, Menu } from '@tamagui/lucide-icons-2';
-import { theme } from '../../constants';
+import { theme, APP_LAYOUT, SCREEN_BODY_STYLE } from '../../constants';
 import { useAppTheme, useToast, type ColorSchemePreference } from '../../context';
 import {
   useFadeIn,
@@ -50,6 +50,7 @@ import { MobileSelect } from './MobileSelect';
 import { MobileNavDrawer } from './MobileNavDrawer';
 import type { MobileNavDrawerItem } from './MobileNavDrawer';
 import { SkeletonBlock } from './SkeletonBlock';
+import { ActivityGridPreview } from './ActivityGridPreview';
 import { PALETTES, type AtmosphereSurface } from '../premium/shared';
 
 const SURFACES: AtmosphereSurface[] = [
@@ -137,7 +138,7 @@ function ToastDemo() {
             accessibilityRole="button"
             accessibilityLabel={`Show ${label} toast`}
           >
-            <Text style={[styles.toastChipLabel, { color: colors.text }]}>{label}</Text>
+            <Text style={[styles.toastChipLabel, { color: colors.textOnBrand }]}>{label}</Text>
           </Pressable>
         ))}
       </View>
@@ -186,22 +187,22 @@ function AnimationDemo() {
       <MobileSurface>
         <View style={styles.animGrid}>
           <Animated.View style={[styles.animCard, { backgroundColor: colors.buttonBackground }, fadeIn.style]}>
-            <Text style={[styles.animLabel, { color: colors.textSecondary }]}>useFadeIn</Text>
-            <Text style={[styles.animValue, { color: colors.text }]}>opacity → 1</Text>
+            <Text style={[styles.animLabel, { color: colors.textOnBrandMuted }]}>useFadeIn</Text>
+            <Text style={[styles.animValue, { color: colors.textOnBrand }]}>opacity → 1</Text>
           </Animated.View>
           <Animated.View style={[styles.animCard, { backgroundColor: colors.buttonBackground }, scaleIn.style]}>
-            <Text style={[styles.animLabel, { color: colors.textSecondary }]}>useScaleIn</Text>
-            <Text style={[styles.animValue, { color: colors.text }]}>spring → 1</Text>
+            <Text style={[styles.animLabel, { color: colors.textOnBrandMuted }]}>useScaleIn</Text>
+            <Text style={[styles.animValue, { color: colors.textOnBrand }]}>spring → 1</Text>
           </Animated.View>
           <Animated.View style={[styles.animCard, { backgroundColor: colors.buttonBackground }, popIn.style]}>
-            <Text style={[styles.animLabel, { color: colors.textSecondary }]}>usePopIn</Text>
-            <Text style={[styles.animValue, { color: colors.text }]}>overshoot</Text>
+            <Text style={[styles.animLabel, { color: colors.textOnBrandMuted }]}>usePopIn</Text>
+            <Text style={[styles.animValue, { color: colors.textOnBrand }]}>overshoot</Text>
           </Animated.View>
           <Animated.View
             style={[styles.animCard, { backgroundColor: colors.buttonBackground }, translateY.style]}
           >
-            <Text style={[styles.animLabel, { color: colors.textSecondary }]}>useTranslateY</Text>
-            <Text style={[styles.animValue, { color: colors.text }]}>slide ↑</Text>
+            <Text style={[styles.animLabel, { color: colors.textOnBrandMuted }]}>useTranslateY</Text>
+            <Text style={[styles.animValue, { color: colors.textOnBrand }]}>slide ↑</Text>
           </Animated.View>
         </View>
       </MobileSurface>
@@ -216,8 +217,8 @@ function AnimationDemo() {
       <View style={styles.spacer} />
       <MobileSurface>
         <Animated.View style={[styles.shakeCard, { backgroundColor: colors.buttonBackground }, shake.style]}>
-          <Text style={[styles.animLabel, { color: colors.textSecondary }]}>useShake</Text>
-          <Text style={[styles.animValue, { color: colors.text }]}>imperative — call shake() from any handler</Text>
+          <Text style={[styles.animLabel, { color: colors.textOnBrandMuted }]}>useShake</Text>
+          <Text style={[styles.animValue, { color: colors.textOnBrand }]}>imperative — call shake() from any handler</Text>
         </Animated.View>
       </MobileSurface>
       <View style={styles.spacer} />
@@ -385,7 +386,10 @@ export function Showcase() {
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface="analytics" />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={SCREEN_BODY_STYLE}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Nav-mode header demo (qep-tracker compact 44px pattern). */}
         <MobileHeader
           title="Showcase"
@@ -675,6 +679,11 @@ export function Showcase() {
         </View>
 
         <View style={styles.section}>
+          <MobileSectionEyebrow>Activity Grid (calendar + matrix)</MobileSectionEyebrow>
+          <ActivityGridPreview />
+        </View>
+
+        <View style={styles.section}>
           <MobileSectionEyebrow>Nav Drawer (left-side hamburger)</MobileSectionEyebrow>
           <MobileSurface>
             <Text style={[styles.bodyText, { color: colors.text }]}>
@@ -720,6 +729,8 @@ export function Showcase() {
         items={drawerItems}
         activePathname="/exercises"
         atmosphere="analytics"
+        anchor={APP_LAYOUT.navDrawerAnchor}
+        brandPersistence={APP_LAYOUT.navDrawerBrandPersistence}
         header={
           <View>
             <Text style={[theme.typography.mobileEyebrow, { color: colors.textMuted }]}>

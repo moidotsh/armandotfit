@@ -70,6 +70,12 @@ export type {
 export { useAuthNavigation } from './useAuthNavigation';
 export { useShimmer } from './useShimmer';
 export type { UseShimmerOptions } from './useShimmer';
+export { useActivityGridLayout, computeActivityGridLayout } from './useActivityGridLayout';
+export type {
+  ActivityGridLayout,
+  ActivityGridLayoutInput,
+  ActivityGridLayoutMode,
+} from './useActivityGridLayout';
 
 // armandotfit domain queries + mutations
 export * from './queries';

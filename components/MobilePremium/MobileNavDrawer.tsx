@@ -120,6 +120,28 @@ export interface MobileNavDrawerProps {
 
 const DRAWER_WIDTH = 304;
 
+// Overlay base. On web the overlay uses `position: fixed` so the drawer
+// escapes any centered-column constraint applied to its parent (e.g. the
+// root Stack's contentStyle spreading SCREEN_BODY_STYLE — maxWidth: 420,
+// alignSelf: 'center'). With `absolute`, the overlay would inherit the
+// 420pt column and the panel's `translateX(columnLeft)` would land past
+// the column's right edge. `fixed` ties the overlay to the viewport so
+// the column-anchor math resolves against the real window width.
+// Native keeps `absolute` because the screen root is already full-bleed
+// there and RN Modal semantics differ. The cast is required because RN's
+// TS type for `position` narrows to 'static' | 'absolute' | 'relative';
+// RN Web's runtime accepts 'fixed' (mirrors CSS) but its type augment
+// isn't picked up here.
+const overlayBase: ViewStyle = isWeb
+  ? ({
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    } as unknown as ViewStyle)
+  : { ...StyleSheet.absoluteFillObject };
+
 /**
  * Mobile navigation drawer. Slides in from the left with a glass scrim.
  * Shell-level mechanism only — branding, items, and footer are all
@@ -382,7 +404,7 @@ export function MobileNavDrawer({
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...overlayBase,
     zIndex: 100,
   },
   scrim: {

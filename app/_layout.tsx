@@ -35,6 +35,7 @@ import { initializeNetworkListeners } from '../stores';
 import { AuthProvider, ToastProvider, ThemeProvider, useAppTheme } from '../context';
 import { AuthGuard, ToastContainer, AppErrorBoundary } from '../components/primitives';
 import { QueryProvider } from '../lib/react-query';
+import { SCREEN_BODY_STYLE } from '../constants';
 
 function RootShell() {
   const { colorScheme, colors } = useAppTheme();
@@ -91,6 +92,24 @@ function RootShell() {
     ensureMeta('theme-color', colors.background, '(min-width: 701px)');
     ensureMeta('theme-color', colors.brand, '(max-width: 700px)');
 
+    // Inject the global scrollbar-hiding CSS at runtime. The same Expo
+    // Web export/dev-server strip that removes PWA tags also drops the
+    // inline <style> block from index.html — without this injection the
+    // desktop scrollbar is always visible on the centered 420pt column.
+    // Idempotent: keyed on id="global-scrollbar-css" so React StrictMode
+    // double-mount doesn't duplicate.
+    const ensureStyle = (id: string, css: string) => {
+      if (document.getElementById(id)) return;
+      const el = document.createElement('style');
+      el.id = id;
+      el.textContent = css;
+      document.head.appendChild(el);
+    };
+    ensureStyle(
+      'global-scrollbar-css',
+      '*::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}',
+    );
+
     // Register the installability-enabling service worker (passthrough,
     // no caching). Android Chrome's PWA installability criteria require
     // a registered SW with a fetch handler; without it, "Add to Home
@@ -133,7 +152,10 @@ function RootShell() {
                   <Stack
                     screenOptions={{
                       headerShown: false,
-                      contentStyle: { backgroundColor: colors.backgroundDeep },
+                      contentStyle: {
+                        ...SCREEN_BODY_STYLE,
+                        backgroundColor: colors.backgroundDeep,
+                      },
                     }}
                   />
                   <ToastContainer />

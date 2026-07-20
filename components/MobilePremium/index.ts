@@ -63,6 +63,16 @@ export type {
 export { SkeletonBlock } from './SkeletonBlock';
 export type { SkeletonBlockProps } from './SkeletonBlock';
 
+export { ActivityGrid } from './ActivityGrid';
+export type {
+  ActivityGridProps,
+  ActivityGridDatum,
+  ActivityGridLevel,
+  ActivityGridCell,
+  ActivityGridLayoutMode,
+} from './ActivityGrid';
+export { ActivityGridPreview } from './ActivityGridPreview';
+
 // Motion re-export (alias of components/premium/shared).
 export * from './MobileMotion';
 

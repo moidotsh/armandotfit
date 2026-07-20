@@ -17,3 +17,4 @@ export * from './crossPlatformAlert';
 export * from './cache';
 export * from './retry';
 export * from './date-helpers';
+export * from './activityGrid';
