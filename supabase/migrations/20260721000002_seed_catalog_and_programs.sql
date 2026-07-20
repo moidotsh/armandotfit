@@ -58,6 +58,26 @@
 -- ──────────────────────────────────────────────────────────────────────
 
 -- ──────────────────────────────────────────────────────────────────────
+-- Step 0: drop the over-broad program_sessions singleton constraint
+-- ──────────────────────────────────────────────────────────────────────
+-- The companion schema migration 20260721000001 created an over-broad
+-- UNIQUE constraint `program_sessions_single_window_singleton` on
+-- `(program_day_id)` WITHOUT the intended `WHERE session_window =
+-- 'single'` predicate. The matching partial unique INDEX
+-- (`idx_program_sessions_single_window`) was added a few statements
+-- later in the same migration, but the over-broad CONSTRAINT was never
+-- dropped — so AM/PM days (legitimately two rows per program_day_id)
+-- fail at insert with SQLSTATE 23505.
+--
+-- Drop the over-broad constraint before any program_sessions inserts
+-- run. This DROP is idempotent (`IF EXISTS`) and a no-op on DBs where
+-- the constraint was never created or already dropped. The partial
+-- index remains as the load-bearing single-window guard.
+
+ALTER TABLE public.program_sessions
+  DROP CONSTRAINT IF EXISTS program_sessions_single_window_singleton;
+
+-- ──────────────────────────────────────────────────────────────────────
 -- Step 1: exercise_families (20 movement patterns)
 -- ──────────────────────────────────────────────────────────────────────
 
