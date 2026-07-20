@@ -27,10 +27,12 @@ import {
   useTranslateY,
   useContainerVariant,
 } from '../../hooks';
-// Direct imports from each primitive file (not the barrel) to avoid
-// the circular dependency: ./index re-exports `showcase` from this
-// file, so importing primitives through the barrel pulls this module
-// back in transitively. Audit S5 catches the barrel cycle.
+// Direct imports from each primitive file (not the barrel). The
+// showcase is intentionally NOT re-exported by the MobilePremium
+// barrel (see that file's note + docs/contributing.md), so going
+// through the barrel here is no longer a cycle — these direct
+// imports remain preferable for tree-shaking and to keep the
+// showcase's dependency surface explicit.
 import { MobileAtmosphere } from './MobileAtmosphere';
 import { MobileSurface } from './MobileSurface';
 import { MobileHeader } from './MobileHeader';

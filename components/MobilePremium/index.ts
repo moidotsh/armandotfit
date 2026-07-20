@@ -132,5 +132,9 @@ export { ActivityGridPreview } from './ActivityGridPreview';
 // Motion re-export (alias of components/premium/shared).
 export * from './MobileMotion';
 
-// The showcase is exported separately so consumers can embed it.
-export { default as showcase } from './showcase';
+// NOTE: `showcase` is deliberately NOT re-exported from this barrel.
+// It's a dev visualization, not a primitive, and re-exporting it here
+// closes a four-step require cycle (primitives barrel → LoadingOverlay
+// → this barrel → showcase → primitives barrel). The single consumer
+// (`app/dev/premium.tsx`) imports showcase directly from
+// `./components/MobilePremium/showcase`. See docs/contributing.md.

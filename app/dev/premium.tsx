@@ -8,4 +8,4 @@
 // internal reference or remove it. Keeping it pays off as a regression
 // check when porting domain UI.
 
-export { showcase as default } from '../../components/MobilePremium';
+export { default } from '../../components/MobilePremium/showcase';
