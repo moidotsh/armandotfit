@@ -101,9 +101,14 @@ export interface ProgramSessionWithSlots {
  * Composite read shape: a variant with its full day/session/slot tree.
  * The repository's findVariant method returns this when callers need
  * the whole structure (e.g. split-preview surface).
+ *
+ * Phase 4 adds the parent `template` so launch-time consumers can build
+ * the immutable template snapshot without a second query. The template
+ * is the row referenced by `variant.programTemplateId`.
  */
 export interface ProgramVariantTree {
   variant: ProgramScheduleVariant;
+  template: ProgramTemplate;
   days: Array<{
     day: ProgramDay;
     sessions: ProgramSessionWithSlots[];

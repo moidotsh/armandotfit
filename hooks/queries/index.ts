@@ -31,3 +31,8 @@ export {
   useGeneratedPlanPreview,
   useReplacementCandidates,
 } from './useUserPlans';
+export { useVariantTree } from './useProgramVariant';
+export {
+  usePlanLaunchHydration,
+  type PlanLaunchDraftSlice,
+} from './usePlanLaunchHydration';

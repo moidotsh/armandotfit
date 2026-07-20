@@ -34,6 +34,9 @@ import type {
   WorkoutSessionExerciseWithSets,
   WorkoutSessionUpdateDTO,
   WorkoutSessionWithDetails,
+  WorkoutTemplateSnapshot,
+  WorkoutVariantSnapshot,
+  WorkoutExerciseSource,
 } from '../../../shared/types';
 
 // ──────────────────────────────────────────────────────────────────────
@@ -48,6 +51,13 @@ interface WorkoutSessionRow {
   day: number;
   duration: number;
   notes: string | null;
+  // Phase 4 provenance — nullable, backward-compatible
+  session_window: WorkoutSession['sessionWindow'];
+  started_at: string | null;
+  completed_at: string | null;
+  plan_id: string | null;
+  plan_template_snapshot: WorkoutTemplateSnapshot | null;
+  plan_variant_snapshot: WorkoutVariantSnapshot | null;
   created_at: string;
   updated_at: string;
 }
@@ -62,6 +72,12 @@ interface WorkoutSessionExerciseRow {
   target_rep_range: string | null;
   rest_timer_seconds: number;
   notes: string | null;
+  // Phase 4 provenance — nullable, backward-compatible
+  plan_slot_id: string | null;
+  template_slot_id: string | null;
+  per_side: boolean | null;
+  slot_notes: string | null;
+  source: WorkoutExerciseSource | null;
   created_at: string;
 }
 
@@ -214,6 +230,7 @@ export class WorkoutRepository
       const userId = userData.user.id;
 
       // 1. Insert session header.
+      const completedAt = data.completedAt ?? new Date().toISOString();
       const { data: sessionRow, error: sessionErr } = await supabase
         .from(WorkoutRepository.SESSIONS)
         .insert({
@@ -223,6 +240,13 @@ export class WorkoutRepository
           day: data.day,
           duration: data.duration,
           notes: data.notes ?? null,
+          // Phase 4 provenance — all nullable; omitted keys default to NULL.
+          session_window: data.sessionWindow ?? null,
+          started_at: data.startedAt ?? null,
+          completed_at: completedAt,
+          plan_id: data.planId ?? null,
+          plan_template_snapshot: data.planTemplateSnapshot ?? null,
+          plan_variant_snapshot: data.planVariantSnapshot ?? null,
         })
         .select('*')
         .single();
@@ -245,6 +269,14 @@ export class WorkoutRepository
               target_rep_range: input.targetRepRange ?? null,
               rest_timer_seconds: input.restTimerSeconds ?? 60,
               notes: input.notes ?? null,
+              // Phase 4 provenance — nullable; source defaults to 'static'
+              // for the legacy path so historical rows become
+              // distinguishable from pre-Phase-4 history on first save.
+              plan_slot_id: input.planSlotId ?? null,
+              template_slot_id: input.templateSlotId ?? null,
+              per_side: input.perSide ?? null,
+              slot_notes: input.slotNotes ?? null,
+              source: input.source ?? null,
             })
             .select('*')
             .single();
@@ -457,6 +489,13 @@ function toSession(row: WorkoutSessionRow): WorkoutSession {
     day: row.day,
     duration: row.duration,
     notes: row.notes,
+    // Phase 4 provenance — nullable; pre-Phase-4 rows read as null.
+    sessionWindow: row.session_window,
+    startedAt: row.started_at,
+    completedAt: row.completed_at,
+    planId: row.plan_id,
+    planTemplateSnapshot: row.plan_template_snapshot,
+    planVariantSnapshot: row.plan_variant_snapshot,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -473,6 +512,12 @@ function toSessionExercise(row: WorkoutSessionExerciseRow): WorkoutSessionExerci
     targetRepRange: row.target_rep_range,
     restTimerSeconds: row.rest_timer_seconds,
     notes: row.notes,
+    // Phase 4 provenance — nullable; pre-Phase-4 rows + ad-hoc adds read as null.
+    planSlotId: row.plan_slot_id,
+    templateSlotId: row.template_slot_id,
+    perSide: row.per_side,
+    slotNotes: row.slot_notes,
+    source: row.source,
     createdAt: row.created_at,
   };
 }

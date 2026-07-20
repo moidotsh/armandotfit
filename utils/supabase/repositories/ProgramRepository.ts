@@ -203,7 +203,9 @@ export class ProgramRepository {
    * Find a variant by its globally-unique slug (e.g.
    * 'arman-fit-commercial-gym-v1__one-a-day') and return its full
    * day/session/slot tree. Slots carry the resolved exercise slug so
-   * the hydration path doesn't need a second lookup.
+   * the hydration path doesn't need a second lookup. Phase 4 also
+   * returns the parent template row so launch-time callers can build
+   * the immutable snapshot without a follow-up query.
    */
   async findVariantTree(slug: string): Promise<RepositoryResult<ProgramVariantTree | null>> {
     try {
@@ -215,6 +217,17 @@ export class ProgramRepository {
       if (variantError) throw variantError;
       if (!variantRow) return ok(null);
       const variant = mapVariant(variantRow as ProgramVariantRow);
+
+      // Phase 4 — pull the parent template so the launch path can build
+      // the immutable snapshot without a second query.
+      const { data: templateRow, error: templateError } = await supabase
+        .from('program_templates')
+        .select('*')
+        .eq('id', variant.programTemplateId)
+        .maybeSingle();
+      if (templateError) throw templateError;
+      if (!templateRow) return ok(null);
+      const template = mapTemplate(templateRow as ProgramTemplateRow);
 
       const { data: dayRows, error: dayError } = await supabase
         .from('program_days')
@@ -264,6 +277,7 @@ export class ProgramRepository {
 
       const tree: ProgramVariantTree = {
         variant,
+        template,
         days: days.map((day) => ({
           day,
           sessions: (sessionsByDay.get(day.id) ?? []).map((session) => ({

@@ -37,6 +37,7 @@ import {
   useWorkoutDetail,
   useLogWorkout,
   useSuggestedExercises,
+  usePlanLaunchHydration,
   useAiPayload,
 } from '../hooks';
 import { useWorkoutStore } from '../stores';
@@ -66,6 +67,7 @@ export default function WorkoutDetailScreen() {
   const hydrateSuggestedExercises = useWorkoutStore(
     (s) => s.hydrateSuggestedExercises,
   );
+  const hydrateFromPlan = useWorkoutStore((s) => s.hydrateFromPlan);
   const addSetToDraft = useWorkoutStore((s) => s.addSetToDraft);
   const updateSetInDraft = useWorkoutStore((s) => s.updateSetInDraft);
   const removeSetFromDraft = useWorkoutStore((s) => s.removeSetFromDraft);
@@ -84,6 +86,9 @@ export default function WorkoutDetailScreen() {
             `- Day: ${draft.day}${draft.splitType === 'twoADay' ? ` (${draft.sessionMode})` : ''}`,
             `- Exercises: ${draft.exercises.length}`,
             `- Duration: ${draft.duration}m`,
+            draft.launchSource === 'plan'
+              ? '- Launch source: saved plan'
+              : '- Launch source: static split',
           ].join('\n'),
         }
       : undefined,
@@ -94,11 +99,30 @@ export default function WorkoutDetailScreen() {
   // user who discards all exercises and re-adds manually won't get
   // re-seeded. The session mode (AM/PM) is threaded through from the
   // draft so twoADay sessions hydrate the correct exercise list.
+  //
+  // Phase 4 adds a sibling path: when draft.launchSource === 'plan',
+  // the draft hydrates from the saved plan's session slots via
+  // hydrateFromPlan (prescription snapshot + provenance carried through).
+  // The two paths share the same idempotency guard — only one runs per
+  // session.
   const suggestedQuery = useSuggestedExercises(
     draft?.splitType ?? 'oneADay',
     draft?.day ?? 1,
     draft?.sessionMode ?? 'am',
-    Boolean(draft),
+    // Skip the suggested-exercises query entirely when launching from a
+    // plan — its data isn't needed and would just consume a round-trip.
+    !!draft && draft.launchSource !== 'plan',
+  );
+  const planHydrationQuery = usePlanLaunchHydration(
+    draft && draft.launchSource === 'plan'
+      ? {
+          launchSource: draft.launchSource,
+          planId: draft.planId,
+          splitType: draft.splitType,
+          day: draft.day,
+          sessionMode: draft.sessionMode,
+        }
+      : null,
   );
   const hydratedRef = useRef(false);
   useEffect(() => {
@@ -108,6 +132,17 @@ export default function WorkoutDetailScreen() {
     }
     if (hydratedRef.current) return;
     if (draft.exercises.length > 0) return;
+
+    // Phase 4 — plan path.
+    if (draft.launchSource === 'plan') {
+      const slots = planHydrationQuery.data;
+      if (!slots || slots.length === 0) return;
+      hydratedRef.current = true;
+      hydrateFromPlan(slots);
+      return;
+    }
+
+    // Static-suggested path.
     const suggested = suggestedQuery.data;
     if (!suggested || suggested.length === 0) return;
     const payload = suggested.flatMap((ex) => {
@@ -124,7 +159,13 @@ export default function WorkoutDetailScreen() {
     if (payload.length === 0) return;
     hydratedRef.current = true;
     hydrateSuggestedExercises(payload);
-  }, [draft, suggestedQuery.data, hydrateSuggestedExercises]);
+  }, [
+    draft,
+    suggestedQuery.data,
+    planHydrationQuery.data,
+    hydrateSuggestedExercises,
+    hydrateFromPlan,
+  ]);
 
   // If no id and no active draft, redirect to split-selection once.
   useEffect(() => {
@@ -293,9 +334,24 @@ export default function WorkoutDetailScreen() {
           {draft.exercises.length} exercise{draft.exercises.length === 1 ? '' : 's'}
         </MobileSectionEyebrow>
 
+        {/* Phase 4 — "Saved plan" indicator. Surfaces the launch source
+            on the active-session header so the user knows their session
+            is hydrating from the resolved plan vs the static split. */}
+        {draft.launchSource === 'plan' ? (
+          <View style={styles.planBadgeWrap}>
+            <View style={[styles.planBadge, { backgroundColor: `${colors.brand}14`, borderColor: `${colors.brand}55` }]}>
+              <Text style={[styles.planBadgeText, { color: colors.brand }]}>
+                From your saved plan
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
         {draft.exercises.length === 0 ? (
-          suggestedQuery.isLoading ||
-          (suggestedQuery.data != null && suggestedQuery.data.length > 0) ? (
+          (draft.launchSource === 'plan'
+            ? planHydrationQuery.isLoading || planHydrationQuery.data == null
+            : suggestedQuery.isLoading ||
+              (suggestedQuery.data != null && suggestedQuery.data.length > 0)) ? (
             <MobileSurface padding={20}>
               <LoadingSpinner />
             </MobileSurface>
@@ -444,4 +500,13 @@ const styles = StyleSheet.create({
   addSetCta: { marginTop: 8, alignSelf: 'flex-start' },
   addCta: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
   errorText: { fontSize: 12, lineHeight: 16 },
+  planBadgeWrap: { marginBottom: 8 },
+  planBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
+  planBadgeText: { fontSize: 11, fontWeight: '600' },
 });

@@ -57,6 +57,14 @@ export function useLogWorkout() {
           day: dto.day,
           duration: dto.duration,
           notes: dto.notes ?? null,
+          // Phase 4 — provenance threaded through so the optimistic row
+          // matches the persisted shape. Null on static-fallback saves.
+          sessionWindow: dto.sessionWindow ?? null,
+          startedAt: dto.startedAt ?? null,
+          completedAt: dto.completedAt ?? null,
+          planId: dto.planId ?? null,
+          planTemplateSnapshot: dto.planTemplateSnapshot ?? null,
+          planVariantSnapshot: dto.planVariantSnapshot ?? null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };

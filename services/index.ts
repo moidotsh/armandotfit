@@ -28,3 +28,16 @@ export {
   type ReplacementCandidate,
   type SlotResolutionResult,
 } from './planGenerationService';
+export {
+  SPLIT_TO_VARIANT_SLUG,
+  VARIANT_SLUG_TO_SPLIT,
+  sessionWindowForLaunch,
+  isPlanComplete,
+  selectTemplateSlotsForSession,
+  selectPlanSlotsForSession,
+  buildHydrationPayloadFromResolved,
+  buildTemplateSnapshot,
+  buildVariantSnapshot,
+  type PlanHydrationSlot,
+  type ResolvedPlanSlot,
+} from './planLaunchService';

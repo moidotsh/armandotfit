@@ -30,7 +30,13 @@ import {
 import { SplitExerciseRow } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, safeGoBack } from '../navigation';
-import { useProfile, useRecentWorkouts, useAiPayload } from '../hooks';
+import {
+  useProfile,
+  useRecentWorkouts,
+  useAiPayload,
+  useVariantTree,
+  useActivePlanForVariant,
+} from '../hooks';
 import { useWorkoutStore } from '../stores';
 import {
   WORKOUT_SPLIT_LIST,
@@ -47,6 +53,13 @@ import {
   getExercisesForDay,
   type SystemExerciseData,
 } from '../shared/exercises';
+import {
+  SPLIT_TO_VARIANT_SLUG,
+  sessionWindowForLaunch,
+  isPlanComplete,
+  buildTemplateSnapshot,
+  buildVariantSnapshot,
+} from '../services';
 import type { PreferredSplit } from '../shared/types';
 
 const SPLIT_OPTIONS: MobileSelectionOption[] = WORKOUT_SPLIT_LIST.map((s) => ({
@@ -90,11 +103,24 @@ export default function SplitSelectionScreen() {
   const session = sessionChoice as SessionMode;
   const isTwoADay = split === 'twoADay';
 
+  // Phase 4 — plan-backed launch resolver. Look up the variant tree +
+  // the user's active plan for that variant. If the plan is complete,
+  // the session will hydrate from the saved plan; otherwise the static
+  // suggested-split path remains the source. The lookups are cached so
+  // toggling between splits is cheap after first resolution.
+  const variantSlug = SPLIT_TO_VARIANT_SLUG[split];
+  const variantTreeQuery = useVariantTree(variantSlug);
+  const variantId = variantTreeQuery.data?.variant.id ?? null;
+  const activePlanQuery = useActivePlanForVariant(variantId);
+  const activePlan = activePlanQuery.data ?? null;
+  const launchFromPlan = isPlanComplete(activePlan);
+
   const aiPayload = useAiPayload({
     visibleContent: [
       `- Split: ${splitChoice === 'oneADay' ? '1-a-day' : 'AM/PM'}`,
       `- Next day-of-split: ${getNextSplitDay(lastCompletedDay)}`,
       `- Rest days configured: ${restDays.length}`,
+      launchFromPlan ? '- Launch source: saved plan' : '- Launch source: static split',
     ].join('\n'),
   });
 
@@ -131,11 +157,26 @@ export default function SplitSelectionScreen() {
   );
 
   const handleStart = () => {
+    // Phase 4 — when an active complete plan exists for the chosen
+    // variant, thread its identity into the draft so workout-detail can
+    // hydrate from the plan slot prescription snapshot. The sessionWindow
+    // is derived from the split + chosen AM/PM mode. Static fallback
+    // omits the plan arg entirely.
+    const plan =
+      launchFromPlan && activePlan && variantTreeQuery.data
+        ? {
+            planId: activePlan.id,
+            sessionWindow: sessionWindowForLaunch(split, session),
+            templateSnapshot: buildTemplateSnapshot(variantTreeQuery.data.template),
+            variantSnapshot: buildVariantSnapshot(variantTreeQuery.data.variant),
+          }
+        : undefined;
     startSession({
       splitType: split,
       day: draftDay,
       sessionMode: session,
       date: selectedSlot?.date.toISOString(),
+      plan,
     });
     navigateToWorkoutDetail();
   };
@@ -267,6 +308,20 @@ export default function SplitSelectionScreen() {
                 }`}
         </MobileSectionEyebrow>
 
+        {/* Phase 4 — saved-plan indicator. The preview list still renders
+            the day's template exercises; the indicator surfaces that the
+            active session will hydrate from the user's resolved plan
+            (which may differ in equipment-specific alternatives). */}
+        {launchFromPlan ? (
+          <View style={styles.planBadgeWrap}>
+            <View style={[styles.planBadge, { backgroundColor: `${colors.brand}14`, borderColor: `${colors.brand}55` }]}>
+              <Text style={[styles.planBadgeText, { color: colors.brand }]}>
+                Using your saved plan · resolves alternatives at session start
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
         {previewExercises.length === 0 ? (
           <MobileSurface padding={20}>
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
@@ -344,4 +399,12 @@ const styles = StyleSheet.create({
   },
   emptyText: { fontSize: 13, lineHeight: 18 },
   listStack: { gap: 8 },
+  planBadgeWrap: { marginTop: 8, marginBottom: 4 },
+  planBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  planBadgeText: { fontSize: 11, fontWeight: '600', lineHeight: 14 },
 });

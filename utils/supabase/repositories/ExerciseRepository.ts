@@ -256,6 +256,26 @@ export class ExerciseRepository
   }
 
   /**
+   * Batch lookup by ids — header fields only. Returns the matching rows
+   * in arbitrary order; callers index by id. Empty input returns []. Used
+   * by the Phase 4 launch path to resolve plan-slot chosen_exercise_ids
+   * to display data (slug, name) in one round-trip.
+   */
+  async findByIds(ids: ID[]): Promise<RepositoryResult<Exercise[]>> {
+    try {
+      if (ids.length === 0) return ok([]);
+      const { data, error } = await supabase
+        .from(ExerciseRepository.EXERCISES)
+        .select('*')
+        .in('id', ids);
+      if (error) throw error;
+      return ok((data as ExerciseRow[]).map(toExercise));
+    } catch (e) {
+      return this.handleError('findByIds', e);
+    }
+  }
+
+  /**
    * Find a system exercise by its stable slug. Used by the suggested-
    * exercises hydration path (slug → full exercise row → repository cache).
    * Returns null for unknown slugs rather than erroring.

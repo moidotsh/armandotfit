@@ -44,8 +44,13 @@ import type {
   ID,
   LogWorkoutDTO,
   PreferredSplit,
+  SessionWindow,
+  WorkoutExerciseSource,
   WorkoutSessionExerciseInputDTO,
+  WorkoutTemplateSnapshot,
+  WorkoutVariantSnapshot,
 } from '../shared/types';
+import type { PlanHydrationSlot } from '../services/planLaunchService';
 
 /** Client-only draft set (no server id yet). */
 export interface DraftSet {
@@ -72,6 +77,14 @@ export interface DraftExercise {
   restTimerSeconds: number;
   notes: string | null;
   sets: DraftSet[];
+  // Phase 4 provenance — nullable; present on plan-hydrated drafts, null on
+  // static-fallback + ad-hoc adds. Threaded into WorkoutSessionExerciseInputDTO
+  // at save time so the persisted row carries its plan/template origin.
+  planSlotId: ID | null;
+  templateSlotId: ID | null;
+  perSide: boolean | null;
+  slotNotes: string | null;
+  source: WorkoutExerciseSource | null;
 }
 
 /** Client-only draft session (no server id yet). */
@@ -90,6 +103,24 @@ export interface DraftSession {
   duration: number;
   notes: string | null;
   exercises: DraftExercise[];
+  // Phase 4 provenance — nullable; present on plan-backed launches, null
+  // on static-fallback. Threaded into LogWorkoutDTO at save time so the
+  // persisted row carries durable plan identity (no FK — history survives
+  // plan deletion via the JSONB snapshots).
+  sessionWindow: SessionWindow | null;
+  startedAt: string | null;
+  planId: ID | null;
+  planTemplateSnapshot: WorkoutTemplateSnapshot | null;
+  planVariantSnapshot: WorkoutVariantSnapshot | null;
+  /**
+   * Discriminator for the active-session screen: 'plan' = hydrated from a
+   * saved user_program_plan via hydrateFromPlan; 'static' = hydrated from
+   * the legacy suggested-split path via hydrateSuggestedExercises. Null
+   * before hydration runs (rare — the screen calls one of the two on
+   * mount). Not threaded into the DTO — derived from per-exercise source
+   * at save time, but stored on the session for UI indicators.
+   */
+  launchSource: WorkoutExerciseSource | null;
 }
 
 interface WorkoutState {
@@ -117,6 +148,18 @@ interface WorkoutState {
     splitType: PreferredSplit;
     day: number;
     sessionMode?: SessionMode;
+    /**
+     * Phase 4 plan context. When present, the draft is marked as a
+     * plan-backed launch — sessionWindow, planId, and the immutable
+     * template/variant snapshots are threaded into the LogWorkoutDTO at
+     * save time. Omit for the static-split fallback path.
+     */
+    plan?: {
+      planId: ID;
+      sessionWindow: SessionWindow;
+      templateSnapshot: WorkoutTemplateSnapshot | null;
+      variantSnapshot: WorkoutVariantSnapshot | null;
+    };
   }) => void;
   addExerciseToDraft: (exercise: {
     exerciseId: ID;
@@ -140,6 +183,16 @@ interface WorkoutState {
     defaultReps: [number, number];
     restTimerSeconds?: number;
   }>) => void;
+  /**
+   * Phase 4 — bulk-populate the draft from a saved plan's hydration
+   * payload. Mirrors hydrateSuggestedExercises but pulls prescription
+   * from the plan slot snapshot (setsMin/Max, repsMin/Max, perSide,
+   * slotNotes) and threads provenance (planSlotId, templateSlotId,
+   * source='plan') into each draft row. Same overwrite-semantics caveat
+   * as hydrateSuggestedExercises: caller MUST guard with
+   * `draft.exercises.length === 0`.
+   */
+  hydrateFromPlan: (slots: PlanHydrationSlot[]) => void;
   removeExerciseFromDraft: (localId: string) => void;
   addSetToDraft: (
     exerciseLocalId: string,
@@ -183,19 +236,29 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
   sessionStartedAt: null,
   isSessionActive: false,
 
-  startSession: ({ date, splitType, day, sessionMode = 'am' }) => {
+  startSession: ({ date, splitType, day, sessionMode = 'am', plan }) => {
+    const startedAt = new Date().toISOString();
     const draft: DraftSession = {
-      date: date ?? new Date().toISOString(),
+      date: date ?? startedAt,
       splitType,
       day,
       sessionMode,
       duration: 0,
       notes: null,
       exercises: [],
+      // Phase 4 — provenance defaults. The plan path fills these in; the
+      // static-fallback path leaves them null so the persisted row reads
+      // as a static session (source null on the header + per-exercise).
+      sessionWindow: plan?.sessionWindow ?? null,
+      startedAt,
+      planId: plan?.planId ?? null,
+      planTemplateSnapshot: plan?.templateSnapshot ?? null,
+      planVariantSnapshot: plan?.variantSnapshot ?? null,
+      launchSource: plan ? 'plan' : null,
     };
     set({
       draft,
-      sessionStartedAt: new Date().toISOString(),
+      sessionStartedAt: startedAt,
       isSessionActive: true,
       selectedExerciseLocalId: null,
       sessionError: null,
@@ -217,6 +280,12 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       restTimerSeconds: exercise.restTimerSeconds ?? 60,
       notes: null,
       sets: [],
+      // Ad-hoc adds are never plan-backed — null provenance + null source.
+      planSlotId: null,
+      templateSlotId: null,
+      perSide: null,
+      slotNotes: null,
+      source: null,
     };
     set({
       draft: { ...draft, exercises: [...draft.exercises, next] },
@@ -270,11 +339,77 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
         restTimerSeconds: s.restTimerSeconds ?? 60,
         notes: null,
         sets,
+        // Static-fallback path — provenance null, source 'static'.
+        planSlotId: null,
+        templateSlotId: null,
+        perSide: null,
+        slotNotes: null,
+        source: 'static',
       };
       return next;
     });
     set({
-      draft: { ...draft, exercises },
+      draft: {
+        ...draft,
+        exercises,
+        // Mark the session as the static-fallback launch source so the
+        // active-session indicator matches the per-exercise 'static' source.
+        launchSource: draft.launchSource ?? 'static',
+      },
+      selectedExerciseLocalId: exercises[0]?.localId ?? null,
+    });
+  },
+
+  hydrateFromPlan: (slots) => {
+    const draft = get().draft;
+    if (!draft) return;
+    const exercises: DraftExercise[] = slots.map((slot, i) => {
+      const exerciseLocalId = newLocalId();
+      const repRange = `${slot.repsMin}-${slot.repsMax}`;
+      // Plan prescription snapshot freezes setsMin/Max at adoption time.
+      // Use setsMax as the count — the user trims down (vs. suggested
+      // which uses a single defaultSets). If setsMax is 0 (shouldn't
+      // happen — adoption validator rejects), fall back to setsMin.
+      const setCount = slot.setsMax > 0 ? slot.setsMax : slot.setsMin;
+      const sets: DraftSet[] = Array.from({ length: setCount }, (_, idx) => ({
+        localId: newLocalId(),
+        setNumber: idx + 1,
+        targetReps: null,
+        actualReps: null,
+        weight: null,
+        repRange,
+        restDurationSeconds: null,
+        notes: null,
+        completed: false,
+      }));
+      const next: DraftExercise = {
+        localId: exerciseLocalId,
+        exerciseId: slot.exerciseId,
+        exerciseName: slot.variation
+          ? `${slot.exerciseName} · ${slot.variation}`
+          : slot.exerciseName,
+        orderInWorkout: i + 1,
+        userGrip: null,
+        userEquipmentNotes: null,
+        targetRepRange: repRange,
+        restTimerSeconds: 60,
+        notes: null,
+        sets,
+        // Plan-backed — provenance + source frozen from the plan slot.
+        planSlotId: slot.planSlotId,
+        templateSlotId: slot.templateSlotId,
+        perSide: slot.perSide,
+        slotNotes: slot.slotNotes,
+        source: 'plan',
+      };
+      return next;
+    });
+    set({
+      draft: {
+        ...draft,
+        exercises,
+        launchSource: 'plan',
+      },
       selectedExerciseLocalId: exercises[0]?.localId ?? null,
     });
   },
@@ -372,6 +507,14 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       targetRepRange: e.targetRepRange,
       restTimerSeconds: e.restTimerSeconds,
       notes: e.notes,
+      // Phase 4 — per-exercise provenance threaded through to the DTO so
+      // the persisted row carries plan/template identity. Null on ad-hoc
+      // adds; 'static' on static-fallback hydration; 'plan' on plan-backed.
+      planSlotId: e.planSlotId,
+      templateSlotId: e.templateSlotId,
+      perSide: e.perSide,
+      slotNotes: e.slotNotes,
+      source: e.source,
       sets: e.sets.map((s): ExerciseSetInputDTO => ({
         setNumber: s.setNumber,
         targetReps: s.targetReps,
@@ -388,6 +531,14 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       day: draft.day,
       duration: draft.duration,
       notes: draft.notes,
+      // Phase 4 — session provenance threaded through. Nullable; null on
+      // static-fallback saves so historical rows read cleanly.
+      sessionWindow: draft.sessionWindow,
+      startedAt: draft.startedAt,
+      completedAt: new Date().toISOString(),
+      planId: draft.planId,
+      planTemplateSnapshot: draft.planTemplateSnapshot,
+      planVariantSnapshot: draft.planVariantSnapshot,
       exercises,
     };
   },

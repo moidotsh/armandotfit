@@ -69,6 +69,31 @@ export const queryKeys = {
     /** Replacement candidates for a single slot's template exercise. */
     candidates: (templateExerciseId: ID | 'pending') =>
       [...queryKeys.userPlans.all, 'candidates', templateExerciseId] as const,
+    /** Phase 4 launch-time hydration payload (plan slots → DraftExercise
+     *  shape) for a (planId, split, day, session) tuple. staleTime=0. */
+    launchHydration: (
+      planId: ID | 'pending',
+      split: string,
+      day: number,
+      session: string,
+    ) =>
+      [
+        ...queryKeys.userPlans.all,
+        'launchHydration',
+        planId,
+        split,
+        day,
+        session,
+      ] as const,
+  },
+
+  /** Program catalog: variant tree read path (Phase 4 launch surface). */
+  programVariants: {
+    all: ['programVariants'] as const,
+    /** Full day/session/slot tree for a variant slug. Used by the launch
+     *  path to resolve which plan slots belong to the requested session. */
+    tree: (variantSlug: string | 'pending') =>
+      [...queryKeys.programVariants.all, 'tree', variantSlug] as const,
   },
 
   /** Workout sessions: header list + per-session detail. */
