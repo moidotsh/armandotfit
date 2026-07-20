@@ -167,6 +167,30 @@ export interface UserAvailableEquipment {
   createdAt: string;
 }
 
+/**
+ * User capability row: a Phase 2 sibling of UserAvailableEquipment that
+ * stores the user-facing capability selection (e.g. "cable-station")
+ * plus a JSONB details payload for the detail-bearing capabilities
+ * (attachments/heights, bench positions, calf/leg-curl variants). The
+ * slug vocabulary is owned by constants/equipmentCapabilities.ts on the
+ * TS side; the DB stores TEXT so vocabulary can extend without a
+ * migration. Mirrors user_equipment_capabilities.
+ */
+export interface UserEquipmentCapability {
+  id: ID;
+  userId: ID;
+  /**
+   * Free-form slug matching EquipmentCapabilitySlug on the TS side.
+   * Typed as string here to avoid a shared/types → constants import;
+   * the repository narrows at the boundary.
+   */
+  capabilitySlug: string;
+  /** Variable-shape details. Empty object for non-detail-bearing capabilities. */
+  details: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // DTOs (create / update)
 // ──────────────────────────────────────────────────────────────────────
@@ -223,4 +247,15 @@ export interface AvailableEquipmentCreateDTO {
   equipmentTypeId: ID;
   quantity?: number;
   notes?: string | null;
+}
+
+/**
+ * Payload for a single capability selection in a save operation. The
+ * slug vocabulary + details shape validation lives in
+ * constants/equipmentCapabilities.ts (validateSelections). The
+ * repository calls that validator before persisting.
+ */
+export interface EquipmentCapabilitySelectionDTO {
+  slug: string;
+  details?: Record<string, unknown>;
 }

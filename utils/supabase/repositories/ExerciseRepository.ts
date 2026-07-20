@@ -14,6 +14,11 @@ import {
   err,
   ok,
 } from './types';
+import {
+  validateSelections,
+  resolveCapabilitiesToEquipmentSlugs,
+  type SelectedCapability,
+} from '../../../constants/equipmentCapabilities';
 import type {
   Exercise,
   ExerciseCreateDTO,
@@ -28,9 +33,11 @@ import type {
   EquipmentType,
   FavoriteCreateDTO,
   AvailableEquipmentCreateDTO,
+  EquipmentCapabilitySelectionDTO,
   Muscle,
   MuscleCategory,
   UserAvailableEquipment,
+  UserEquipmentCapability,
   UserFavoriteExercise,
   ID,
 } from '../../../shared/types';
@@ -122,6 +129,15 @@ interface UserAvailableEquipmentRow {
   created_at: string;
 }
 
+interface UserEquipmentCapabilityRow {
+  id: string;
+  user_id: string;
+  capability_slug: string;
+  details: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // Repository
 // ──────────────────────────────────────────────────────────────────────
@@ -145,6 +161,7 @@ export class ExerciseRepository
   private static EXERCISE_VARIATIONS = 'exercise_variations';
   private static USER_FAVORITES = 'user_favorite_exercises';
   private static USER_EQUIPMENT = 'user_available_equipment';
+  private static USER_CAPABILITIES = 'user_equipment_capabilities';
 
   /** List exercises with optional filters. Always returns camelCased rows. */
   async findAll(options?: FindOptions & ExerciseFilter): Promise<RepositoryResult<Exercise[]>> {
@@ -515,6 +532,167 @@ export class ExerciseRepository
   }
 
   // ────────────────────────────────────────────────────────────────────
+  // Equipment capability inventory (Phase 2)
+  //
+  // The capability layer is advisory: it captures the user's
+  // capability selections + structured details that the
+  // user_available_equipment schema can't express. On save the
+  // resolver maps selections to concrete equipment slugs, looks up
+  // the matching equipment_type IDs, and ADDITIVELY upserts rows in
+  // user_available_equipment (ON CONFLICT DO NOTHING). Existing
+  // user-managed rows (with notes or non-default quantity) are never
+  // deleted or overwritten — see CLAUDE.md invariant #13.
+  // ────────────────────────────────────────────────────────────────────
+
+  async listEquipmentCapabilities(
+    userId: ID,
+  ): Promise<RepositoryResult<UserEquipmentCapability[]>> {
+    try {
+      const { data, error } = await supabase
+        .from(ExerciseRepository.USER_CAPABILITIES)
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return ok(
+        (data as UserEquipmentCapabilityRow[]).map(toUserEquipmentCapability),
+      );
+    } catch (e) {
+      return this.handleError('listEquipmentCapabilities', e);
+    }
+  }
+
+  /**
+   * Idempotently replace the user's capability inventory. Validates the
+   * selection list (unknown slugs / duplicate slugs / detail-shape
+   * violations abort the save), then in sequence:
+   *
+   *   1. DELETE existing capability rows for this user.
+   *   2. INSERT the new capability rows.
+   *   3. Resolve selections → EquipmentSlug set → equipment_type IDs.
+   *   4. Upsert (ON CONFLICT DO NOTHING) a row in user_available_equipment
+   *      for each resolved equipment_type with default quantity=1 and
+   *      null notes. Existing user-managed rows are preserved.
+   *
+   * The three supabase calls are not wrapped in a DB transaction
+   * (supabase-js doesn't expose one over the REST API), but the
+   * sequence is safe: step 1 only deletes capability rows (advisory
+   * layer); step 4 only inserts user_available_equipment rows that
+   * don't exist yet. A mid-sequence failure surfaces as a
+   * RepositoryError; the caller can retry the whole save.
+   *
+   * Returns the freshly-inserted capability rows on success.
+   */
+  async replaceAllEquipmentCapabilities(
+    userId: ID,
+    selections: EquipmentCapabilitySelectionDTO[],
+  ): Promise<RepositoryResult<UserEquipmentCapability[]>> {
+    try {
+      // Validate up front so we never write a partial state.
+      const validated = validateSelections(selections as SelectedCapability[]);
+      if (!validated.ok) {
+        return err(validated.error, RepositoryErrorCode.VALIDATION_ERROR);
+      }
+
+      // Step 1: delete existing capability rows.
+      const { error: deleteError } = await supabase
+        .from(ExerciseRepository.USER_CAPABILITIES)
+        .delete()
+        .eq('user_id', userId);
+      if (deleteError) throw deleteError;
+
+      // Step 2: insert the new capability rows (skip the network round
+      // trip entirely when the selection list is empty — the delete
+      // above already produced the desired empty state).
+      let newRows: UserEquipmentCapability[] = [];
+      if (validated.selections.length > 0) {
+        const insertRows = validated.selections.map((sel) => ({
+          user_id: userId,
+          capability_slug: sel.slug,
+          details: sel.details ?? {},
+        }));
+        const { data: inserted, error: insertError } = await supabase
+          .from(ExerciseRepository.USER_CAPABILITIES)
+          .insert(insertRows)
+          .select('*');
+        if (insertError) throw insertError;
+        newRows = (inserted as UserEquipmentCapabilityRow[]).map(
+          toUserEquipmentCapability,
+        );
+      }
+
+      // Step 3 + 4: resolve selections → equipment slugs → IDs →
+      // additive upsert into user_available_equipment. Failures here
+      // are logged but non-fatal — the capability rows are the source
+      // of truth, and the eligibility relation is rebuildable from
+      // them. Phase 3 will tighten this coupling.
+      const reconcileRes = await this.reconcileAvailableEquipmentFromCapabilities(
+        userId,
+        validated.selections,
+      );
+      if (!reconcileRes.success) {
+        // Don't fail the whole save — capability rows landed. The
+        // eligibility relation will rebuild on the next save.
+      }
+
+      return ok(newRows);
+    } catch (e) {
+      return this.handleError('replaceAllEquipmentCapabilities', e);
+    }
+  }
+
+  /**
+   * For each resolved equipment slug, look up its equipment_type ID and
+   * upsert (ON CONFLICT DO NOTHING) a default row in
+   * user_available_equipment. Existing rows (with user-managed
+   * quantity or notes) are never modified.
+   */
+  private async reconcileAvailableEquipmentFromCapabilities(
+    userId: ID,
+    selections: SelectedCapability[],
+  ): Promise<RepositoryResult<void>> {
+    try {
+      const slugs = resolveCapabilitiesToEquipmentSlugs(selections);
+      if (slugs.length === 0) return ok(undefined);
+
+      const idsRes = await this.findEquipmentTypeIdsBySlug(slugs);
+      if (!idsRes.success) return idsRes;
+      const equipmentTypeIds = idsRes.data;
+      if (equipmentTypeIds.length === 0) return ok(undefined);
+
+      const rows = equipmentTypeIds.map((equipment_type_id) => ({
+        user_id: userId,
+        equipment_type_id,
+        quantity: 1,
+        notes: null,
+      }));
+      const { error } = await supabase
+        .from(ExerciseRepository.USER_EQUIPMENT)
+        .upsert(rows, { onConflict: 'user_id,equipment_type_id', ignoreDuplicates: true });
+      if (error) throw error;
+      return ok(undefined);
+    } catch (e) {
+      return this.handleError('reconcileAvailableEquipmentFromCapabilities', e);
+    }
+  }
+
+  private async findEquipmentTypeIdsBySlug(
+    slugs: string[],
+  ): Promise<RepositoryResult<ID[]>> {
+    try {
+      const { data, error } = await supabase
+        .from(ExerciseRepository.EQUIPMENT)
+        .select('id')
+        .in('slug', slugs);
+      if (error) throw error;
+      const rows = data as Array<{ id: string }>;
+      return ok(rows.map((r) => r.id));
+    } catch (e) {
+      return this.handleError('findEquipmentTypeIdsBySlug', e);
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────
   // Junction helpers (private)
   // ────────────────────────────────────────────────────────────────────
 
@@ -712,6 +890,17 @@ function toAvailableEquipment(row: UserAvailableEquipmentRow): UserAvailableEqui
     quantity: row.quantity,
     notes: row.notes,
     createdAt: row.created_at,
+  };
+}
+
+function toUserEquipmentCapability(row: UserEquipmentCapabilityRow): UserEquipmentCapability {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    capabilitySlug: row.capability_slug,
+    details: row.details ?? {},
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }
 

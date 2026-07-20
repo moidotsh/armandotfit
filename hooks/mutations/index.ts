@@ -12,3 +12,4 @@ export {
   useDeleteSet,
 } from './useUpdateSession';
 export { useUpdateProfile } from './useUpdateProfile';
+export { useSaveEquipmentCapabilities } from './useSaveEquipmentCapabilities';

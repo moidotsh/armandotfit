@@ -19,6 +19,7 @@ export {
   navigateToAnalytics,
   navigateToWorkoutPrograms,
   navigateToSplitSelection,
+  navigateToEquipmentInventory,
   replaceWithHome,
   replaceWithLogin,
   replaceWithRegister,

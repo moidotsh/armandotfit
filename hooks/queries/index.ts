@@ -23,3 +23,4 @@ export {
   useAnalyticsHistory,
 } from './useProgression';
 export { useProfile } from './useProfile';
+export { useEquipmentCapabilities } from './useEquipmentCapabilities';

@@ -47,6 +47,8 @@ export const queryKeys = {
   userEquipment: {
     all: ['userEquipment'] as const,
     list: () => [...queryKeys.userEquipment.all, 'list'] as const,
+    /** Phase 2 capability selections (user_equipment_capabilities rows). */
+    capabilities: () => [...queryKeys.userEquipment.all, 'capabilities'] as const,
   },
 
   /** Workout sessions: header list + per-session detail. */

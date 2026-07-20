@@ -19,7 +19,7 @@ import {
   MobileSelectionList,
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
-import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
+import { navigateToPremiumShowcase, navigateToEquipmentInventory, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile } from '../hooks';
 import { DAY_OF_WEEK_LABELS, SCREEN_BODY_STYLE } from '../constants';
 import { logger } from '../utils/logger';
@@ -151,6 +151,21 @@ export default function SettingsScreen() {
         <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
           Rest days are visually deactivated in the workout-day picker. The
           cycle counter ignores them — it only advances when you log a workout.
+        </Text>
+
+        <MobileSectionEyebrow flush={false}>Equipment</MobileSectionEyebrow>
+        <MobileSurface padding={0}>
+          <MobileSettingsRow
+            label="Equipment Inventory"
+            value="Edit"
+            onPress={navigateToEquipmentInventory}
+            isLast
+          />
+        </MobileSurface>
+        <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
+          Tell us what equipment you have access to. Your selections power
+          exercise eligibility (Phase 3) without touching your manual
+          equipment entries.
         </Text>
 
         <MobileSectionEyebrow flush={false}>Reference</MobileSectionEyebrow>

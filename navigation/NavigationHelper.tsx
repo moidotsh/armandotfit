@@ -42,6 +42,7 @@ export enum NavigationPath {
   ANALYTICS = 'analytics',
   WORKOUT_PROGRAMS = 'workout-programs',
   SPLIT_SELECTION = 'split-selection',
+  EQUIPMENT_INVENTORY = 'equipment-inventory',
 }
 
 /**
@@ -67,6 +68,7 @@ export const navigationHierarchy: Record<string, NavigationPath> = {
   [NavigationPath.ANALYTICS]: NavigationPath.HOME,
   [NavigationPath.WORKOUT_PROGRAMS]: NavigationPath.HOME,
   [NavigationPath.SPLIT_SELECTION]: NavigationPath.HOME,
+  [NavigationPath.EQUIPMENT_INVENTORY]: NavigationPath.SETTINGS,
 };
 
 // ─── Push helpers (drill in) ────────────────────────────────────────────
@@ -138,6 +140,11 @@ export function navigateToWorkoutPrograms() {
 /** Open the split-selection flow (Full Body vs AM/PM, day-of-week). */
 export function navigateToSplitSelection() {
   router.push('/split-selection');
+}
+
+/** Open the equipment capability inventory (Phase 2 onboarding wizard). */
+export function navigateToEquipmentInventory() {
+  router.push('/equipment-inventory');
 }
 
 // ─── Replace helpers (redirects) ────────────────────────────────────────
