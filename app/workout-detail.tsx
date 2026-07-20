@@ -22,6 +22,7 @@ import {
   MobileActionFooter,
   MobileSectionEyebrow,
   MobileInput,
+  CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { SetRow, EditableSetRow } from '../components/composed';
@@ -36,6 +37,7 @@ import {
   useWorkoutDetail,
   useLogWorkout,
   useSuggestedExercises,
+  useAiPayload,
 } from '../hooks';
 import { useWorkoutStore } from '../stores';
 import { getSystemExercise, getDayTitle } from '../shared/exercises';
@@ -72,6 +74,20 @@ export default function WorkoutDetailScreen() {
   );
 
   const logMutation = useLogWorkout();
+
+  const draftAiPayload = useAiPayload(
+    draft
+      ? {
+          title: 'Active session',
+          visibleContent: [
+            `- Split: ${draft.splitType === 'oneADay' ? '1-a-day' : 'AM/PM'}`,
+            `- Day: ${draft.day}${draft.splitType === 'twoADay' ? ` (${draft.sessionMode})` : ''}`,
+            `- Exercises: ${draft.exercises.length}`,
+            `- Duration: ${draft.duration}m`,
+          ].join('\n'),
+        }
+      : undefined,
+  );
 
   // Pre-hydrate the draft from the day's suggested exercises once per
   // session. Idempotent via hydratedRef + the empty-draft check, so a
@@ -181,6 +197,7 @@ export default function WorkoutDetailScreen() {
           }
           eyebrow={session ? `${session.duration}m · day ${session.day}` : ''}
           onBack={safeGoBack}
+          navRightAction={<CopyForAiButton payload={draftAiPayload} testID="workout-detail-readonly-copy-for-ai" />}
         />
         <ScrollView
           style={styles.body}
@@ -265,6 +282,7 @@ export default function WorkoutDetailScreen() {
         title="Active session"
         eyebrow={eyebrow}
         onBack={safeGoBack}
+        navRightAction={<CopyForAiButton payload={draftAiPayload} testID="workout-detail-active-copy-for-ai" />}
       />
       <ScrollView
         style={styles.body}

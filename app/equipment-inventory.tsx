@@ -30,12 +30,13 @@ import {
   MobileSectionEyebrow,
   MobileSelectionList,
   Wizard,
+  CopyForAiButton,
   type WizardStep,
   type MobileSelectionOption,
 } from '../components/MobilePremium';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
-import { useEquipmentCapabilities, useSaveEquipmentCapabilities } from '../hooks';
+import { useEquipmentCapabilities, useSaveEquipmentCapabilities, useAiPayload } from '../hooks';
 import { logger } from '../utils/logger';
 import { SCREEN_BODY_STYLE } from '../constants';
 import {
@@ -107,6 +108,13 @@ export default function EquipmentInventoryScreen() {
   const detailBearerSelected = selectedSlugs.filter((s) => DETAIL_BEARING.has(s));
   const hasDetailStep = detailBearerSelected.length > 0;
   const totalSteps = hasDetailStep ? 3 : 2;
+
+  const aiPayload = useAiPayload({
+    visibleContent: [
+      `- Capabilities selected: ${selectedSlugs.length}`,
+      `- Wizard step: ${step + 1} of ${totalSteps}`,
+    ].join('\n'),
+  });
 
   // ─── Step handlers ───────────────────────────────────────────────────
 
@@ -238,6 +246,9 @@ export default function EquipmentInventoryScreen() {
         title="Equipment Inventory"
         eyebrow="Training"
         onBack={safeGoBack}
+        navRightAction={
+          <CopyForAiButton payload={aiPayload} testID="equipment-inventory-copy-for-ai" />
+        }
       />
       <ScrollView
         style={styles.body}

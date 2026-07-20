@@ -11,12 +11,13 @@ import {
   MobileHeader,
   MobileInput,
   MobileSectionEyebrow,
+  CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { ExerciseListItem } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToExerciseDetail, safeGoBack } from '../navigation';
-import { useExercises } from '../hooks';
+import { useExercises, useAiPayload } from '../hooks';
 import { useExerciseStore } from '../stores';
 import { SCREEN_BODY_STYLE } from '../constants';
 import type { Exercise } from '../shared/types';
@@ -46,13 +47,26 @@ export default function ExerciseDatabaseScreen() {
     />
   );
 
+  const resultCount = query.data?.length ?? 0;
+  const aiPayload = useAiPayload({
+    visibleContent: [
+      `- Search: "${filter.search ?? ''}"`,
+      `- Results: ${resultCount}`,
+    ].join('\n'),
+  });
+
   return (
     <SafeAreaView
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface="training" />
-      <MobileHeader title="Exercises" eyebrow="Library" onBack={safeGoBack} />
+      <MobileHeader
+        title="Exercises"
+        eyebrow="Library"
+        onBack={safeGoBack}
+        navRightAction={<CopyForAiButton payload={aiPayload} testID="exercise-database-copy-for-ai" />}
+      />
       <View style={styles.body}>
         <MobileInput
           label="Search"

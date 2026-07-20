@@ -18,11 +18,12 @@ import {
   MobileSurface,
   MobileHeader,
   MobileSectionEyebrow,
+  CopyForAiButton,
 } from '../components/MobilePremium';
 import { useAppTheme } from '../context';
 import { safeGoBack, navigateToPlanPreview } from '../navigation';
 import { SCREEN_BODY_STYLE, KNOWN_PROGRAM_VARIANTS } from '../constants';
-import { useUserPlans } from '../hooks';
+import { useUserPlans, useAiPayload } from '../hooks';
 
 export default function WorkoutProgramsScreen() {
   const { colors } = useAppTheme();
@@ -34,13 +35,26 @@ export default function WorkoutProgramsScreen() {
       .map((p) => p.variantId),
   );
 
+  const aiPayload = useAiPayload({
+    visibleContent: [
+      '- Template: Arman Fit Commercial Gym v1',
+      `- Variants available: ${KNOWN_PROGRAM_VARIANTS.length}`,
+      `- Active plans: ${activeVariantSlugs.size}`,
+    ].join('\n'),
+  });
+
   return (
     <SafeAreaView
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface="setup" />
-      <MobileHeader title="Programs" eyebrow="Training" onBack={safeGoBack} />
+      <MobileHeader
+        title="Programs"
+        eyebrow="Training"
+        onBack={safeGoBack}
+        navRightAction={<CopyForAiButton payload={aiPayload} testID="workout-programs-copy-for-ai" />}
+      />
       <View style={styles.body}>
         <MobileSurface padding={16}>
           <Text style={[styles.templateName, { color: colors.text }]}>

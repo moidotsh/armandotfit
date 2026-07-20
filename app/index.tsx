@@ -24,6 +24,7 @@ import {
   MobilePrimaryButton,
   MobileSectionEyebrow,
   MobileNavDrawer,
+  CopyForAiButton,
   type MobileNavDrawerItem,
 } from '../components/MobilePremium';
 import {
@@ -47,6 +48,7 @@ import {
 import {
   useDashboardSummary,
   useRecentWorkouts,
+  useAiPayload,
 } from '../hooks';
 
 export default function HomeScreen() {
@@ -60,6 +62,20 @@ export default function HomeScreen() {
   const summary = summaryQuery.data;
   const streak = summary?.streak;
   const recent = recentQuery.data ?? [];
+
+  const aiPayload = useAiPayload(
+    summary
+      ? {
+          visibleContent: [
+            `- Current streak: ${streak?.current ?? 0} days`,
+            `- Best streak: ${streak?.best ?? 0} days`,
+            `- Weekly goal: ${summary.weeklyGoal.completed}/${summary.weeklyGoal.target}`,
+            `- Total workouts: ${summary.totalWorkouts ?? 0}`,
+            `- Recent sessions: ${recent.length}`,
+          ].join('\n'),
+        }
+      : undefined,
+  );
 
   const navItems: MobileNavDrawerItem[] = [
     {
@@ -123,6 +139,7 @@ export default function HomeScreen() {
             onPress={() => setDrawerOpen((prev) => !prev)}
           />
         }
+        rightAction={<CopyForAiButton variant="subtle" payload={aiPayload} testID="dashboard-copy-for-ai" />}
       />
       <ScrollView
         style={styles.body}

@@ -13,7 +13,13 @@
 //
 // Layout (nav mode, left → right):
 //
-//   [back chevron]   [accent dot]   [title]   ...   [dismiss X]
+//   [back chevron]   [accent dot]   [title]   ...   [navRightAction?]   [dismiss X]
+//
+// `navRightAction` is the slot for the shell-level "Copy for AI" dev helper
+// and similar small, header-resident actions. It renders BEFORE the dismiss
+// X so the dismiss corner stays stable; pass it via the new prop rather
+// than reaching for `onDismiss` semantics. Both are optional and
+// independent — `navRightAction` works whether or not `onDismiss` is set.
 //
 // The accent mark is a small dot. The nav-mode title uses a compact 15/600
 // rhythm — distinct from the page headline (typography.mobileTitle, 22/600),
@@ -46,6 +52,13 @@ export interface MobileHeaderProps {
   leftAction?: React.ReactNode;
   /** Optional right action slot (page mode only). Use onDismiss for nav mode. */
   rightAction?: React.ReactNode;
+  /**
+   * Optional action slot rendered in nav mode, immediately before the
+   * dismiss X (or alone when onDismiss is absent). Use this for the
+   * shell-level "Copy for AI" dev helper and similar small header
+   * actions. Independent of `onDismiss`.
+   */
+  navRightAction?: React.ReactNode;
   /** Test ID. */
   testID?: string;
   /** Outer style pass-through. */
@@ -74,6 +87,7 @@ export function MobileHeader({
   hideAccentDot = false,
   leftAction,
   rightAction,
+  navRightAction,
   testID,
   style,
 }: MobileHeaderProps) {
@@ -119,6 +133,7 @@ export function MobileHeader({
           </View>
 
           <View style={styles.navRight}>
+            {navRightAction ? <View style={styles.navRightAction}>{navRightAction}</View> : null}
             {onDismiss ? (
               <Pressable
                 onPress={onDismiss}
@@ -201,6 +216,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   navRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  navRightAction: {
     flexDirection: 'row',
     alignItems: 'center',
   },

@@ -14,11 +14,12 @@ import {
   MobileSectionEyebrow,
   MobilePrimaryButton,
   MobileActionFooter,
+  CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { useAppTheme } from '../context';
 import { safeGoBack, navigateToAnalytics } from '../navigation';
-import { useDashboardSummary } from '../hooks';
+import { useDashboardSummary, useAiPayload } from '../hooks';
 import { SCREEN_BODY_STYLE } from '../constants';
 
 export default function ProgressionScreen() {
@@ -26,13 +27,32 @@ export default function ProgressionScreen() {
   const summaryQuery = useDashboardSummary();
   const summary = summaryQuery.data;
 
+  const aiPayload = useAiPayload(
+    summary
+      ? {
+          visibleContent: [
+            `- Current streak: ${summary.streak.current} days`,
+            `- Best streak: ${summary.streak.best} days`,
+            `- Workouts logged: ${summary.totalWorkouts}`,
+            `- Total training time: ${summary.totalDurationMinutes} min`,
+            `- Weekly goal: ${summary.weeklyGoal.completed}/${summary.weeklyGoal.target}`,
+          ].join('\n'),
+        }
+      : undefined,
+  );
+
   return (
     <SafeAreaView
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface="goal" />
-      <MobileHeader title="Progression" eyebrow="Lifetime" onBack={safeGoBack} />
+      <MobileHeader
+        title="Progression"
+        eyebrow="Lifetime"
+        onBack={safeGoBack}
+        navRightAction={<CopyForAiButton payload={aiPayload} testID="progression-copy-for-ai" />}
+      />
       <ScrollView
         style={styles.body}
         contentContainerStyle={styles.bodyContent}

@@ -17,10 +17,11 @@ import {
   MobileActionFooter,
   MobilePrimaryButton,
   MobileSelectionList,
+  CopyForAiButton,
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, navigateToEquipmentInventory, safeGoBack } from '../navigation';
-import { useProfile, useUpdateProfile } from '../hooks';
+import { useProfile, useUpdateProfile, useAiPayload } from '../hooks';
 import { DAY_OF_WEEK_LABELS, SCREEN_BODY_STYLE } from '../constants';
 import { logger } from '../utils/logger';
 
@@ -74,13 +75,26 @@ export default function SettingsScreen() {
 
   const restDayIds = restDays.map(String);
 
+  const aiPayload = useAiPayload({
+    visibleContent: [
+      `- Email: ${session?.email ?? '—'}`,
+      `- Theme: ${colorScheme}${preference !== colorScheme ? ` (preference: ${preference})` : ''}`,
+      `- Rest days: ${restDays.length}`,
+    ].join('\n'),
+  });
+
   return (
     <SafeAreaView
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface="analytics" />
-      <MobileHeader title="Settings" eyebrow="Account" onBack={safeGoBack} />
+      <MobileHeader
+        title="Settings"
+        eyebrow="Account"
+        onBack={safeGoBack}
+        navRightAction={<CopyForAiButton payload={aiPayload} testID="settings-copy-for-ai" />}
+      />
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
         <MobileSurface padding={0}>
           <MobileSettingsRow label="Email" value={session?.email ?? '—'} />

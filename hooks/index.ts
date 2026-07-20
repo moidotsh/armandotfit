@@ -76,6 +76,10 @@ export type {
   ActivityGridLayoutInput,
   ActivityGridLayoutMode,
 } from './useActivityGridLayout';
+export { useCopyForAi } from './useCopyForAi';
+export type { UseCopyForAiResult } from './useCopyForAi';
+export { useAiPayload } from './useAiPayload';
+export type { UseAiPayloadOptions } from './useAiPayload';
 
 // armandotfit domain queries + mutations
 export * from './queries';

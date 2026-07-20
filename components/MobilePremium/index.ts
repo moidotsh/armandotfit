@@ -129,6 +129,9 @@ export type {
 } from './ActivityGrid';
 export { ActivityGridPreview } from './ActivityGridPreview';
 
+export { CopyForAiButton } from './CopyForAiButton';
+export type { CopyForAiButtonProps } from './CopyForAiButton';
+
 // Motion re-export (alias of components/premium/shared).
 export * from './MobileMotion';
 

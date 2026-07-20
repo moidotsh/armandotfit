@@ -24,11 +24,13 @@ import {
   MobileActionFooter,
   MobileSectionEyebrow,
   MobileSelectionList,
+  CopyForAiButton,
   type MobileSelectionOption,
 } from '../components/MobilePremium';
 import { SplitExerciseRow } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, safeGoBack } from '../navigation';
+import { useProfile, useRecentWorkouts, useAiPayload } from '../hooks';
 import { useWorkoutStore } from '../stores';
 import {
   WORKOUT_SPLIT_LIST,
@@ -45,7 +47,6 @@ import {
   getExercisesForDay,
   type SystemExerciseData,
 } from '../shared/exercises';
-import { useProfile, useRecentWorkouts } from '../hooks';
 import type { PreferredSplit } from '../shared/types';
 
 const SPLIT_OPTIONS: MobileSelectionOption[] = WORKOUT_SPLIT_LIST.map((s) => ({
@@ -88,6 +89,14 @@ export default function SplitSelectionScreen() {
   const split = splitChoice as PreferredSplit;
   const session = sessionChoice as SessionMode;
   const isTwoADay = split === 'twoADay';
+
+  const aiPayload = useAiPayload({
+    visibleContent: [
+      `- Split: ${splitChoice === 'oneADay' ? '1-a-day' : 'AM/PM'}`,
+      `- Next day-of-split: ${getNextSplitDay(lastCompletedDay)}`,
+      `- Rest days configured: ${restDays.length}`,
+    ].join('\n'),
+  });
 
   const slots = useMemo(
     () => getUpcomingWorkoutSlots(7, restDays, lastCompletedDay),
@@ -145,6 +154,7 @@ export default function SplitSelectionScreen() {
             : 'Pick your split'
         }
         onBack={safeGoBack}
+        navRightAction={<CopyForAiButton payload={aiPayload} testID="split-selection-copy-for-ai" />}
       />
       <ScrollView
         style={styles.body}

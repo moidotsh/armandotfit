@@ -13,12 +13,13 @@ import {
   MobileSurface,
   MobileHeader,
   MobileSectionEyebrow,
+  CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { TrainingConsistencyGrid } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
-import { useAnalyticsHistory } from '../hooks';
+import { useAnalyticsHistory, useAiPayload } from '../hooks';
 import { AnalyticsService } from '../services';
 import { addDays } from '../utils';
 import { SCREEN_BODY_STYLE } from '../constants';
@@ -46,6 +47,15 @@ export default function AnalyticsScreen() {
 
   const maxWorkouts = Math.max(1, ...weekly.map((w) => w.totalWorkouts));
 
+  const totalWorkoutsInRange = weekly.reduce((sum, w) => sum + w.totalWorkouts, 0);
+  const aiPayload = useAiPayload({
+    visibleContent: [
+      `- Range: ${range} days`,
+      `- Workouts in range: ${totalWorkoutsInRange}`,
+      `- Weeks bucketed: ${weekly.length}`,
+    ].join('\n'),
+  });
+
   // Grid range: today + range days back (matches the repository's
   // `gte(date, today - daysBack)` filter so every row returned by the
   // hook lands on a visible cell).
@@ -61,7 +71,12 @@ export default function AnalyticsScreen() {
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface="analytics" />
-      <MobileHeader title="Analytics" eyebrow="History" onBack={safeGoBack} />
+      <MobileHeader
+        title="Analytics"
+        eyebrow="History"
+        onBack={safeGoBack}
+        navRightAction={<CopyForAiButton payload={aiPayload} testID="analytics-copy-for-ai" />}
+      />
       <ScrollView
         style={styles.body}
         contentContainerStyle={styles.bodyContent}

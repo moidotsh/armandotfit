@@ -108,6 +108,15 @@ vi.mock('expo-secure-store', () => ({
   deleteItemAsync: vi.fn(() => Promise.resolve()),
 }));
 
+// Mock expo-clipboard. Required because the hooks barrel re-exports
+// useCopyForAi, which imports expo-clipboard. Without this mock, any
+// test that pulls in @hooks/ would try to load expo-modules-core's
+// EventEmitter, which vitest's jsdom env can't resolve.
+vi.mock('expo-clipboard', () => ({
+  setStringAsync: vi.fn(() => Promise.resolve(true)),
+  getStringAsync: vi.fn(() => Promise.resolve('')),
+}));
+
 // Mock tamagui.
 vi.mock('tamagui', () => ({
   View: 'View',
@@ -181,6 +190,13 @@ vi.mock('@tamagui/lucide-icons-2', () => ({
   Sun: 'Sun',
   Moon: 'Moon',
   Monitor: 'Monitor',
+  ClipboardCopy: 'ClipboardCopy',
+  Menu: 'Menu',
+  Bell: 'Bell',
+  Mail: 'Mail',
+  Search: 'Search',
+  Package: 'Package',
+  TrendingUp: 'TrendingUp',
 }));
 
 // Mock @supabase/supabase-js.

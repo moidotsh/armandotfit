@@ -21,6 +21,7 @@ import {
   MobileSurface,
   MobileHeader,
   MobileSectionEyebrow,
+  CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { useAppTheme, useToast } from '../context';
@@ -28,7 +29,7 @@ import { safeGoBack } from '../navigation';
 import { SCREEN_BODY_STYLE } from '../constants';
 import { exerciseRepository } from '../utils/supabase/repositories';
 import { logger } from '../utils/logger';
-import { useReplacementCandidates, useReplacePlanSlot } from '../hooks';
+import { useReplacementCandidates, useReplacePlanSlot, useAiPayload } from '../hooks';
 import type { AlternativeType, Exercise, ID } from '../shared/types';
 import type { ReplacementCandidate } from '../services/planGenerationService';
 
@@ -85,6 +86,15 @@ export default function PlanReplacementScreen() {
     return { candidate, exercise, tier };
   });
 
+  const eligibleCount = rows.filter((r) => r.candidate.eligible).length;
+  const aiPayload = useAiPayload({
+    visibleContent: [
+      `- Template exercise id: ${templateExerciseId ?? '—'}`,
+      `- Candidates: ${rows.length}`,
+      `- Eligible: ${eligibleCount}`,
+    ].join('\n'),
+  });
+
   const handlePick = (candidate: ReplacementCandidate) => {
     if (!candidate.eligible) return;
     if (!planId || !planSlotId) return;
@@ -111,7 +121,12 @@ export default function PlanReplacementScreen() {
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface="setup" />
-      <MobileHeader title="Replace exercise" eyebrow="Your plan" onBack={safeGoBack} />
+      <MobileHeader
+        title="Replace exercise"
+        eyebrow="Your plan"
+        onBack={safeGoBack}
+        navRightAction={<CopyForAiButton payload={aiPayload} testID="plan-replacement-copy-for-ai" />}
+      />
       <ScrollView
         style={styles.body}
         contentContainerStyle={styles.bodyContent}

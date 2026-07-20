@@ -14,11 +14,12 @@ import {
   MobileSectionEyebrow,
   MobilePrimaryButton,
   MobileActionFooter,
+  CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
-import { useExerciseDetail } from '../hooks';
+import { useExerciseDetail, useAiPayload } from '../hooks';
 import { useWorkoutStore } from '../stores';
 import { SCREEN_BODY_STYLE } from '../constants';
 import type { ID } from '../shared/types';
@@ -33,6 +34,21 @@ export default function ExerciseDetailScreen() {
 
   const exercise = query.data;
 
+  const aiPayload = useAiPayload(
+    exercise
+      ? {
+          title: exercise.name,
+          contextLabel: exercise.exerciseType ?? 'Exercise',
+          visibleContent: [
+            `- Type: ${exercise.exerciseType ?? '—'}`,
+            `- Muscles: ${exercise.muscles.map((m) => m.muscle.displayName).join(', ') || '—'}`,
+            `- Equipment: ${exercise.equipment.map((e) => e.equipmentType.displayName).join(', ') || '—'}`,
+            `- Variations: ${exercise.variations.length}`,
+          ].join('\n'),
+        }
+      : undefined,
+  );
+
   return (
     <SafeAreaView
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
@@ -43,6 +59,7 @@ export default function ExerciseDetailScreen() {
         title={exercise?.name ?? 'Exercise'}
         eyebrow={exercise?.exerciseType ?? ''}
         onBack={safeGoBack}
+        navRightAction={<CopyForAiButton payload={aiPayload} testID="exercise-detail-copy-for-ai" />}
       />
       <ScrollView
         style={styles.body}
