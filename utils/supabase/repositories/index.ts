@@ -25,3 +25,4 @@ export { ExerciseRepository, exerciseRepository } from './ExerciseRepository';
 export { WorkoutRepository, workoutRepository } from './WorkoutRepository';
 export { StreakRepository, streakRepository } from './StreakRepository';
 export { ProgressionRepository, progressionRepository } from './ProgressionRepository';
+export { ProgramRepository, programRepository } from './ProgramRepository';

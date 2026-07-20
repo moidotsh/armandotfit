@@ -1,15 +1,22 @@
 // shared/exercises/splits.ts
 // Day→exercise assignments for the two split archetypes armandotfit ships
 // with. Ported from archive-v1/data/workoutDataRefactored.ts. The exercise
-// keys here (e.g. 'barbell-press-incline') match the `key` column in the
-// seed migration (supabase/migrations/20260718000002_seed_system_exercises.sql)
-// — both sides of this contract must stay in sync. A key present in this
-// file but missing from the DB will resolve to undefined at lookup time,
-// and the suggested-exercises helper drops it.
+// keys here (e.g. 'barbell-press-incline') match the `slug` column in the
+// seed migration (supabase/migrations/20260718000002_seed_system_exercises.sql
+// + 20260721000002_seed_catalog_and_programs.sql) — both sides of this
+// contract must stay in sync. A key present in this file but missing from
+// the DB will resolve to undefined at lookup time, and the
+// suggested-exercises helper drops it.
 //
 // The v2 data structure (4 days each for oneADay + twoADay) is preserved.
 // Days 5–7 are rest days in both splits — the user logs those ad-hoc via
 // the active-session UI.
+//
+// The catalog extension migration (20260721000002) adds 17 substitution
+// pool exercises that are NOT placed on a split day. They live in the
+// ExerciseKey union so the browse UI, alternatives graph, and
+// program-template slots can reference them — but the day-assignment
+// arrays below intentionally do not include them.
 
 // ──────────────────────────────────────────────────────────────────────
 // Exercise keys (union type for compile-time safety)
@@ -17,9 +24,13 @@
 
 /**
  * String-keyed identifier for each system exercise. Mirrors the seed
- * migration's exercises.key column. The union is intentionally closed —
+ * migration's exercises.slug column. The union is intentionally closed —
  * adding a new system exercise means landing it here AND in the seed SQL
  * in the same change.
+ *
+ * The 17 pool slugs (substitutes referenced by the alternatives graph and
+ * the program-template slot seed) are listed separately. They are not
+ * placed on a split day.
  */
 export type ExerciseKey =
   // Chest
@@ -54,7 +65,27 @@ export type ExerciseKey =
   | 'machine-calf-raise-standing'
   // Abs
   | 'leg-raise-captains-chair'
-  | 'machine-ab-crunch-eccentric-emphasized';
+  | 'machine-ab-crunch-eccentric-emphasized'
+  // Substitution pool — catalog extension (migration 20260721000002).
+  // Referenced by exercise_alternatives and program-template slots; not
+  // placed on a oneADay/twoADay split day.
+  | 'hack-squat-machine'
+  | 'seated-calf-raise-machine'
+  | 'romanian-deadlift-barbell'
+  | 'floor-leg-raise'
+  | 'incline-dumbbell-press'
+  | 'overhead-dumbbell-tricep-extension'
+  | 'barbell-overhead-press'
+  | 'dumbbell-lateral-raise'
+  | 'lying-leg-curl-machine'
+  | 'pull-up-bar'
+  | 'cable-rope-crunch'
+  | 'dumbbell-curl-standing'
+  | 'reverse-pec-deck'
+  | 'walking-lunge-dumbbell'
+  | 'dumbbell-pullover'
+  | 'bench-dip'
+  | 'barbell-row';
 
 // ──────────────────────────────────────────────────────────────────────
 // 1-a-day splits (4 days)

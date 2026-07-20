@@ -11,3 +11,4 @@ export * from './profile';
 export * from './exercise';
 export * from './workout';
 export * from './analytics';
+export * from './program';

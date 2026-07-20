@@ -1,14 +1,15 @@
 // shared/exercises/data.ts
-// Canonical exercise library data (26 system exercises). Ported from
+// Canonical exercise library data (43 system exercises). Ported from
 // archive-v1/data/{workoutDataRefactored,exercise-detail-enhanced}.ts.
 // This file is the TS-side source of truth; the SQL seed migration
-// (supabase/migrations/20260718000002_seed_system_exercises.sql) mirrors
-// it into the DB so ExerciseRepository.findAll returns the same set.
+// (supabase/migrations/20260718000002_seed_system_exercises.sql +
+// 20260721000002_seed_catalog_and_programs.sql) mirrors it into the DB
+// so ExerciseRepository.findAll returns the same set.
 //
-// The 7 exercises with detailed v1 metadata (muscles/equipment/instructions)
-// carry the full treatment. The remaining 19 have name + category + type +
-// default sets/reps/difficulty, with empty muscle/equipment arrays — those
-// get filled in over time via admin tooling or user-contributed detail.
+// The original 26 ship in 20260718000002; the 17-exercise substitution
+// pool (migration 20260721000002) is referenced by the alternatives graph
+// and the program-template slots but is NOT placed on a oneADay/twoADay
+// split day — see splits.ts.
 //
 // Adding a new system exercise means landing it here AND in the seed SQL
 // in the same change. The splits.ts ExerciseKey union must also extend.
@@ -84,6 +85,12 @@ export const EquipmentSlug = {
   TIBIA_RAISE_MACHINE: 'tibia-raise-machine',
   SHOULDER_PRESS_MACHINE: 'shoulder-press-machine',
   SHRUG_MACHINE: 'shrug-machine',
+  // Added by migration 20260721000002 (catalog extension).
+  HACK_SQUAT_MACHINE: 'hack-squat-machine',
+  SEATED_CALF_RAISE_MACHINE: 'seated-calf-raise-machine',
+  LYING_LEG_CURL_MACHINE: 'lying-leg-curl-machine',
+  PEC_DECK_MACHINE: 'pec-deck-machine',
+  FLOOR_SPACE: 'floor-space',
 } as const;
 
 export type EquipmentSlug = (typeof EquipmentSlug)[keyof typeof EquipmentSlug];
@@ -153,6 +160,11 @@ export const EQUIPMENT_DISPLAY_NAMES: Record<EquipmentSlug, string> = {
   [EquipmentSlug.TIBIA_RAISE_MACHINE]: 'Tibia Raise Machine',
   [EquipmentSlug.SHOULDER_PRESS_MACHINE]: 'Shoulder Press Machine',
   [EquipmentSlug.SHRUG_MACHINE]: 'Shrug Machine',
+  [EquipmentSlug.HACK_SQUAT_MACHINE]: 'Hack Squat Machine',
+  [EquipmentSlug.SEATED_CALF_RAISE_MACHINE]: 'Seated Calf Raise Machine',
+  [EquipmentSlug.LYING_LEG_CURL_MACHINE]: 'Lying Leg Curl Machine',
+  [EquipmentSlug.PEC_DECK_MACHINE]: 'Pec Deck Machine',
+  [EquipmentSlug.FLOOR_SPACE]: 'Floor Space',
 };
 
 // ──────────────────────────────────────────────────────────────────────
@@ -189,7 +201,7 @@ export interface SystemExerciseData {
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// The 26 system exercises
+// The 43 system exercises
 // ──────────────────────────────────────────────────────────────────────
 
 export const SYSTEM_EXERCISES: SystemExerciseData[] = [
@@ -671,6 +683,319 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     equipment: [EquipmentSlug.ABDOMINAL_MACHINE],
     defaultSets: 3,
     defaultReps: [15, 20],
+  },
+
+  // ── Substitution pool ──────────────────────────────────────────────
+  // Added by migration 20260721000002. These 17 exercises are referenced
+  // by the exercise_alternatives graph and by program-template slots in
+  // the seed; they are NOT placed on a oneADay/twoADay split day. The
+  // defaultSets/defaultReps here mirror the slot prescriptions seeded in
+  // 20260721000002 Step 14 where the exercise appears in the
+  // two-a-day template, and fall back to conventional defaults elsewhere.
+  {
+    slug: 'hack-squat-machine',
+    name: 'Hack Squat',
+    variation: 'Machine',
+    category: 'UpperLeg',
+    exerciseType: 'machine',
+    difficultyLevel: 'intermediate',
+    description:
+      'Machine hack squat targeting the quads through a controlled vertical-path squat with the shoulders stabilized.',
+    instructions:
+      'Place shoulders under the pads, feet shoulder-width on the platform. Lower until thighs reach ~90°, then press through the heels.',
+    tips: 'Keep the lower back flat against the pad; don\u2019t lock the knees at the top; control the negative.',
+    primaryMuscles: [MuscleSlug.QUADS, MuscleSlug.GLUTES],
+    secondaryMuscles: [MuscleSlug.HAMSTRINGS, MuscleSlug.CALVES],
+    equipment: [EquipmentSlug.HACK_SQUAT_MACHINE],
+    defaultSets: 3,
+    defaultReps: [8, 10],
+  },
+  {
+    slug: 'seated-calf-raise-machine',
+    name: 'Seated Calf Raise',
+    variation: 'Machine',
+    category: 'LowerLeg',
+    exerciseType: 'machine',
+    difficultyLevel: 'beginner',
+    description:
+      'Seated calf raise machine biases the soleus and biases gastrocnemius less than the standing variant due to the bent-knee position.',
+    instructions:
+      'Sit with the balls of the feet on the platform and the pad across the thighs. Lower the heels, then press up to full plantar-flexion.',
+    tips: 'Pause at the top; control the negative; full range of motion at the bottom.',
+    primaryMuscles: [MuscleSlug.CALVES],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.SEATED_CALF_RAISE_MACHINE],
+    defaultSets: 3,
+    defaultReps: [15, 20],
+  },
+  {
+    slug: 'romanian-deadlift-barbell',
+    name: 'Romanian Deadlift',
+    variation: 'Barbell',
+    category: 'UpperLeg',
+    exerciseType: 'free_weight',
+    difficultyLevel: 'advanced',
+    description:
+      'Barbell Romanian deadlift — a hip-hinge with mostly-straight knees targeting the hamstrings and lower back.',
+    instructions:
+      'Grip the bar shoulder-width. Hinge at the hips with soft knees, lowering the bar along the thighs until you feel a hamstring stretch.',
+    tips: 'Keep the bar close to the legs; maintain a neutral spine; don\u2019t turn it into a squat by bending the knees too much.',
+    primaryMuscles: [MuscleSlug.HAMSTRINGS, MuscleSlug.LOWER_BACK],
+    secondaryMuscles: [MuscleSlug.GLUTES, MuscleSlug.TRAPS],
+    equipment: [EquipmentSlug.BARBELL],
+    defaultSets: 3,
+    defaultReps: [8, 10],
+  },
+  {
+    slug: 'floor-leg-raise',
+    name: 'Floor Leg Raise',
+    variation: 'Lying',
+    category: 'Abs',
+    exerciseType: 'calisthenic',
+    difficultyLevel: 'beginner',
+    description:
+      'Bodyweight leg raise performed lying on the floor, targeting the lower abs through hip flexion.',
+    instructions:
+      'Lie flat on the floor, legs straight. Raise both legs to vertical, then lower under control without touching the floor.',
+    tips: 'Keep the lower back pressed to the floor; avoid swinging; bend the knees to reduce difficulty.',
+    primaryMuscles: [MuscleSlug.LOWER_ABS, MuscleSlug.ABS],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.FLOOR_SPACE],
+    defaultSets: 3,
+    defaultReps: [15, 20],
+  },
+  {
+    slug: 'incline-dumbbell-press',
+    name: 'Incline Dumbbell Press',
+    variation: 'Incline',
+    category: 'Chest',
+    exerciseType: 'free_weight',
+    difficultyLevel: 'intermediate',
+    description:
+      'Incline dumbbell press for the upper chest, allowing a deeper stretch and independent arm path than the barbell variant.',
+    instructions:
+      'Set the incline to 30–45°. Press the dumbbells from shoulder-level overhead in a controlled arc.',
+    tips: 'Keep a 45° elbow angle from the torso; control the negative; full range of motion at the bottom.',
+    primaryMuscles: [MuscleSlug.UPPER_CHEST, MuscleSlug.FRONT_DELTS],
+    secondaryMuscles: [MuscleSlug.TRICEPS, MuscleSlug.CHEST],
+    equipment: [EquipmentSlug.DUMBBELL, EquipmentSlug.INCLINE_BENCH],
+    defaultSets: 3,
+    defaultReps: [8, 10],
+  },
+  {
+    slug: 'overhead-dumbbell-tricep-extension',
+    name: 'Overhead Tricep Extension',
+    variation: 'Dumbbell',
+    category: 'Arms',
+    exerciseType: 'free_weight',
+    difficultyLevel: 'intermediate',
+    description:
+      'Overhead dumbbell triceps extension, typically performed one arm at a time with a single dumbbell.',
+    instructions:
+      'Hold a single dumbbell overhead with both hands (or one). Lower behind the head, then press back to full extension.',
+    tips: 'Keep the upper arms stationary; don\u2019t flare the elbows; control the negative.',
+    primaryMuscles: [MuscleSlug.TRICEPS],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.DUMBBELL],
+    defaultSets: 3,
+    defaultReps: [10, 12],
+  },
+  {
+    slug: 'barbell-overhead-press',
+    name: 'Overhead Press',
+    variation: 'Barbell',
+    category: 'Shoulders',
+    exerciseType: 'free_weight',
+    difficultyLevel: 'advanced',
+    description:
+      'Standing barbell overhead press for the front and side delts, with substantial core and upper-back stability demand.',
+    instructions:
+      'Grip the bar shoulder-width. Press from the front-rack position overhead to full extension, then lower under control.',
+    tips: 'Brace the core; avoid excessive lower-back arch; don\u2019t bounce at the bottom.',
+    primaryMuscles: [MuscleSlug.FRONT_DELTS, MuscleSlug.SIDE_DELTS],
+    secondaryMuscles: [MuscleSlug.TRICEPS],
+    equipment: [EquipmentSlug.BARBELL],
+    defaultSets: 3,
+    defaultReps: [6, 8],
+  },
+  {
+    slug: 'dumbbell-lateral-raise',
+    name: 'Lateral Raise',
+    variation: 'Dumbbell',
+    category: 'Shoulders',
+    exerciseType: 'free_weight',
+    difficultyLevel: 'beginner',
+    description:
+      'Standing dumbbell lateral raise to target the side deltoids through shoulder abduction.',
+    instructions:
+      'Hold dumbbells at your sides. Raise out to shoulder height with a slight elbow bend, then lower under control.',
+    tips: 'Lead with the elbows; avoid shrugging; don\u2019t swing.',
+    primaryMuscles: [MuscleSlug.SIDE_DELTS],
+    secondaryMuscles: [MuscleSlug.FRONT_DELTS],
+    equipment: [EquipmentSlug.DUMBBELL],
+    defaultSets: 3,
+    defaultReps: [15, 20],
+  },
+  {
+    slug: 'lying-leg-curl-machine',
+    name: 'Lying Leg Curl',
+    variation: 'Machine',
+    category: 'UpperLeg',
+    exerciseType: 'machine',
+    difficultyLevel: 'intermediate',
+    description:
+      'Lying leg curl machine targeting the hamstrings through knee flexion, performed prone.',
+    instructions:
+      'Lie prone on the machine with the pad against the lower calves. Curl the pad toward the hips, then lower under control.',
+    tips: 'Keep the hips pressed to the pad; don\u2019t hyperextend the lower back; pause at peak contraction.',
+    primaryMuscles: [MuscleSlug.HAMSTRINGS],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.LYING_LEG_CURL_MACHINE],
+    defaultSets: 3,
+    defaultReps: [8, 10],
+  },
+  {
+    slug: 'pull-up-bar',
+    name: 'Pull-up',
+    variation: 'Bar',
+    category: 'Back',
+    exerciseType: 'calisthenic',
+    difficultyLevel: 'advanced',
+    description:
+      'Bodyweight pull-up on a bar for vertical-pull strength, primarily targeting the lats and biceps.',
+    instructions:
+      'Hang from the bar with overhand grip. Pull until the chin clears the bar, then lower under control.',
+    tips: 'Lead with the chest; full hang at the bottom; avoid kipping.',
+    primaryMuscles: [MuscleSlug.LATS, MuscleSlug.BICEPS],
+    secondaryMuscles: [MuscleSlug.UPPER_BACK],
+    equipment: [EquipmentSlug.PULL_UP_BAR],
+    defaultSets: 3,
+    defaultReps: [8, 10],
+  },
+  {
+    slug: 'cable-rope-crunch',
+    name: 'Cable Crunch',
+    variation: 'Rope',
+    category: 'Abs',
+    exerciseType: 'cable',
+    difficultyLevel: 'intermediate',
+    description:
+      'Cable crunch with a rope attachment on a high pulley, loading spinal flexion for the abs.',
+    instructions:
+      'Kneel below a high pulley with the rope behind the head. Crunch down by flexing the spine, then return under control.',
+    tips: 'Curl the spine; don\u2019t hinge at the hips; pause at peak contraction.',
+    primaryMuscles: [MuscleSlug.ABS],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.CABLE_ROPE],
+    defaultSets: 3,
+    defaultReps: [15, 20],
+  },
+  {
+    slug: 'dumbbell-curl-standing',
+    name: 'Dumbbell Curl',
+    variation: 'Standing',
+    category: 'Arms',
+    exerciseType: 'free_weight',
+    difficultyLevel: 'beginner',
+    description: 'Standing dumbbell curl for the biceps, optionally with supination.',
+    instructions:
+      'Stand with dumbbells at your sides. Curl up toward the shoulders, then lower under control.',
+    tips: 'Pin the elbows to your sides; avoid swinging; full extension at the bottom.',
+    primaryMuscles: [MuscleSlug.BICEPS],
+    secondaryMuscles: [MuscleSlug.FOREARMS],
+    equipment: [EquipmentSlug.DUMBBELL],
+    defaultSets: 3,
+    defaultReps: [8, 10],
+  },
+  {
+    slug: 'reverse-pec-deck',
+    name: 'Reverse Pec Deck',
+    variation: 'Machine',
+    category: 'Shoulders',
+    exerciseType: 'machine',
+    difficultyLevel: 'beginner',
+    description:
+      'Reverse pec deck machine for the rear delts through transverse shoulder abduction.',
+    instructions:
+      'Sit facing the pad. Grip the handles and pull the arms backward in a wide arc, squeezing the rear delts.',
+    tips: 'Keep a slight elbow bend; lead with the elbows; pause at peak contraction.',
+    primaryMuscles: [MuscleSlug.REAR_DELTS],
+    secondaryMuscles: [MuscleSlug.UPPER_BACK, MuscleSlug.RHOMBOIDS],
+    equipment: [EquipmentSlug.PEC_DECK_MACHINE],
+    defaultSets: 3,
+    defaultReps: [15, 20],
+  },
+  {
+    slug: 'walking-lunge-dumbbell',
+    name: 'Walking Lunge',
+    variation: 'Dumbbell',
+    category: 'UpperLeg',
+    exerciseType: 'free_weight',
+    difficultyLevel: 'intermediate',
+    description:
+      'Dumbbell walking lunge for unilateral quad and glute development with dynamic balance demand.',
+    instructions:
+      'Hold dumbbells at your sides. Step forward, lower until the back knee nearly touches the floor, then push through to step into the next rep.',
+    tips: 'Keep the torso upright; don\u2019t let the front knee cave inward; full hip extension between steps.',
+    primaryMuscles: [MuscleSlug.QUADS, MuscleSlug.GLUTES],
+    secondaryMuscles: [MuscleSlug.HAMSTRINGS, MuscleSlug.CALVES],
+    equipment: [EquipmentSlug.DUMBBELL],
+    defaultSets: 2,
+    defaultReps: [8, 10],
+  },
+  {
+    slug: 'dumbbell-pullover',
+    name: 'Dumbbell Pullover',
+    variation: 'Flat Bench',
+    category: 'Back',
+    exerciseType: 'free_weight',
+    difficultyLevel: 'intermediate',
+    description:
+      'Dumbbell pullover across a flat bench, targeting the lats through shoulder extension with some chest involvement.',
+    instructions:
+      'Lie upper-back across a flat bench. Lower a single dumbbell overhead behind you, then pull back over the chest.',
+    tips: 'Keep a slight elbow bend; focus on the lat stretch; avoid letting the hips sag.',
+    primaryMuscles: [MuscleSlug.LATS, MuscleSlug.UPPER_CHEST],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.DUMBBELL, EquipmentSlug.FLAT_BENCH],
+    defaultSets: 3,
+    defaultReps: [12, 15],
+  },
+  {
+    slug: 'bench-dip',
+    name: 'Bench Dip',
+    variation: 'Bodyweight',
+    category: 'Arms',
+    exerciseType: 'calisthenic',
+    difficultyLevel: 'beginner',
+    description:
+      'Bodyweight triceps dip off a flat bench, with the feet on the floor or elevated.',
+    instructions:
+      'Sit on the edge of a bench, hands beside the hips. Slide off and lower by bending the elbows, then press back up.',
+    tips: 'Keep the elbows pointing back, not out; control the descent; don\u2019t shrug the shoulders.',
+    primaryMuscles: [MuscleSlug.TRICEPS],
+    secondaryMuscles: [MuscleSlug.FRONT_DELTS],
+    equipment: [EquipmentSlug.FLAT_BENCH],
+    defaultSets: 3,
+    defaultReps: [12, 15],
+  },
+  {
+    slug: 'barbell-row',
+    name: 'Barbell Row',
+    variation: 'Bent-Over',
+    category: 'Back',
+    exerciseType: 'free_weight',
+    difficultyLevel: 'advanced',
+    description:
+      'Hinge-supported barbell row for the lats and upper back, loaded through the posterior chain.',
+    instructions:
+      'Hinge at the hips with a flat back. Pull the bar to the lower chest, squeezing the shoulder blades, then lower under control.',
+    tips: 'Keep the back flat; lead with the elbows; avoid using the lower back to row the weight.',
+    primaryMuscles: [MuscleSlug.LATS, MuscleSlug.UPPER_BACK],
+    secondaryMuscles: [MuscleSlug.BICEPS, MuscleSlug.REAR_DELTS],
+    equipment: [EquipmentSlug.BARBELL],
+    defaultSets: 3,
+    defaultReps: [8, 10],
   },
 ];
 
