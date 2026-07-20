@@ -1,7 +1,7 @@
 // components/MobilePremium/MobileSectionEyebrow.tsx
 // Small tracked-out caps label that leads a section inside a MobileSurface.
 // The canonical mobile pattern: every surface opens with one of these —
-// "CONSISTENCY", "PRIVACY", "WORKOUTS THIS WEEK" — so the eyebrow replaces
+// "ACCOUNT", "PRIVACY", "RECENT ACTIVITY" — so the eyebrow replaces
 // a full title row without spending vertical budget.
 //
 // Default `flush={true}` matches the common case — the eyebrow sits flush

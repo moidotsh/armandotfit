@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────
-# vellum local quality gate. 10 structural audits + tsc + structural eslint.
+# armandotfit local quality gate. 12 structural audits + tsc + structural eslint.
 # Fast checks only — test suite is deferred to CI. Runs in a few seconds.
 # ─────────────────────────────────────────────────────────────────────
 
@@ -108,6 +108,16 @@ echo "→ Running screen-body audit…" >&2
 bun run scripts/audit-screen-body.ts || {
   echo "" >&2
   echo "  ERROR: Screen-body violations found. See above." >&2
+  echo "  (skip with --no-verify if you genuinely need to.)" >&2
+  echo "" >&2
+  exit 1
+}
+
+# Portal content-width audit (SB2): hard fail.
+echo "→ Running portal-content-width audit…" >&2
+bun run scripts/audit-mobile-content-width.ts || {
+  echo "" >&2
+  echo "  ERROR: Portal content-width violations found. See above." >&2
   echo "  (skip with --no-verify if you genuinely need to.)" >&2
   echo "" >&2
   exit 1

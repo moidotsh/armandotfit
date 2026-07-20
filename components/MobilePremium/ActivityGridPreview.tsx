@@ -92,7 +92,7 @@ function ColumnSelector({
               },
             ]}
             accessibilityRole="radio"
-            accessibilityState={{ selected: active }}
+            accessibilityState={{ checked: active }}
             accessibilityLabel={`${c} columns`}
           >
             <Text

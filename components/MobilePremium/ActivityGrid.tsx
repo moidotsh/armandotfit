@@ -1,8 +1,8 @@
 // components/MobilePremium/ActivityGrid.tsx
 // Generic responsive activity grid / heatmap. Domain-neutral: takes normalized
 // ActivityGridDatum[] + start/end dates, renders a calendar of intensity-
-// colored cells. Reusable for habits, training, language practice, reading
-// logs, or any "did I do X today" visualization.
+// colored cells. Reusable for habits, journaling, language practice,
+// reading logs, or any "did I do X today" visualization.
 //
 // Two layout modes:
 //   layout="calendar" (default)

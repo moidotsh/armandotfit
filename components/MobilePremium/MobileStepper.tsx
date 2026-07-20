@@ -2,12 +2,11 @@
 // Premium large-value stepper for mobile wizard steps.
 //
 // Big-number treatment always on — fontSize 48 / weight 800 /
-// letterSpacing -2, matching the log-session hero rhythm.
+// letterSpacing -2, matching the value-input hero rhythm.
 //
-// The long-press + debounce + fast-interval interaction logic is ported
-// verbatim from qep-tracker's LongPressStepper.tsx, including the
-// R4a-compliant timer cleanup (setTimeout paired with clearTimeout,
-// setInterval paired with clearInterval, both torn down on unmount).
+// Long-press + debounce + fast-interval interaction. R4a-compliant timer
+// cleanup: setTimeout paired with clearTimeout, setInterval paired with
+// clearInterval, both torn down on unmount.
 //
 // Backward-compat: the original arqavellum API (onIncrement/onDecrement +
 // decrementDisabled/incrementDisabled + suffix) is preserved by mapping
@@ -36,7 +35,7 @@ export interface MobileStepperProps {
   accentColor?: string;
   /** Optional unit label rendered under the value (e.g. 'cm', 'in', 'degrees'). */
   unitLabel?: string;
-  /** Suffix appended to the value (e.g. ' reps'). Legacy alias of unitLabel. */
+  /** Suffix appended to the value (e.g. '×', ' units'). Legacy alias of unitLabel. */
   suffix?: string;
   /** Decimal places to display (default 0). */
   decimalPlaces?: number;

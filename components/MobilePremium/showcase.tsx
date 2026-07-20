@@ -12,10 +12,10 @@
 // light/dark/system preferences. Use the Theme selector at the top to
 // flip the whole surface.
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Sun, Moon, Monitor, Mail, Lock, Eye, EyeOff, Settings, Bell, Info, ChevronRight, Home, Dumbbell, TrendingUp, Menu } from '@tamagui/lucide-icons-2';
+import { Sun, Moon, Monitor, Mail, Lock, Eye, EyeOff, Settings, Bell, Info, ChevronRight, Home, Package, TrendingUp, Menu, Search } from '@tamagui/lucide-icons-2';
 import { theme, APP_LAYOUT, SCREEN_BODY_STYLE } from '../../constants';
 import { useAppTheme, useToast, type ColorSchemePreference } from '../../context';
 import {
@@ -50,6 +50,22 @@ import { MobileSelect } from './MobileSelect';
 import { MobileNavDrawer } from './MobileNavDrawer';
 import type { MobileNavDrawerItem } from './MobileNavDrawer';
 import { SkeletonBlock } from './SkeletonBlock';
+import { SegmentedControl } from './SegmentedControl';
+import { FilterChip } from './FilterChip';
+import { FilterChipGroup } from './FilterChipGroup';
+import { DisclosureRow } from './DisclosureRow';
+import { EmptyState } from './EmptyState';
+import { StatCard } from './StatCard';
+import { Avatar } from './Avatar';
+import { SegmentedProgress } from './SegmentedProgress';
+import { OfflineBanner } from './OfflineBanner';
+import { CarouselTutorial } from './CarouselTutorial';
+import { Wizard } from './Wizard';
+import { ProgressRing } from './ProgressRing';
+import { MobileSheet } from './MobileSheet';
+import { DatePickerField } from './DatePickerField';
+import { RevealMask } from './RevealMask';
+import { LoadingOverlay } from '../primitives';
 import { ActivityGridPreview } from './ActivityGridPreview';
 import { PALETTES, type AtmosphereSurface } from '../premium/shared';
 
@@ -351,6 +367,28 @@ export function Showcase() {
   const [inputValue, setInputValue] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [selectValue, setSelectValue] = useState('monthly');
+  const [segSelection, setSegSelection] = useState<'7d' | '30d' | '90d'>('30d');
+  const [segTab, setSegTab] = useState<'summary' | 'details' | 'activity'>('summary');
+  const [segDensity, setSegDensity] = useState<'low' | 'med' | 'high'>('med');
+  const [radioChip, setRadioChip] = useState<string>('all');
+  const [multiChip, setMultiChip] = useState<string[]>(['alpha']);
+  const [toggleChip, setToggleChip] = useState<boolean>(true);
+  const [disclosureA, setDisclosureA] = useState<boolean>(true);
+  const [disclosureB, setDisclosureB] = useState<boolean>(false);
+  const [disclosureC, setDisclosureC] = useState<boolean>(false);
+  const [wizardStep, setWizardStep] = useState<number>(0);
+  const [sheetOpen, setSheetOpen] = useState<boolean>(false);
+  const [dateValue, setDateValue] = useState<string | null>('2026-07-19');
+  const [revealMasked, setRevealMasked] = useState<boolean>(true);
+  const [showLoading, setShowLoading] = useState<boolean>(false);
+
+  // Auto-dismiss the loading overlay demo so visitors can see it mount
+  // and dismiss without getting stuck.
+  useEffect(() => {
+    if (!showLoading) return;
+    const t = setTimeout(() => setShowLoading(false), 2200);
+    return () => clearTimeout(t);
+  }, [showLoading]);
 
   const drawerItems: MobileNavDrawerItem[] = [
     {
@@ -360,9 +398,9 @@ export function Showcase() {
       onPress: () => {},
     },
     {
-      id: '/exercises',
-      label: 'Exercises',
-      icon: <Dumbbell size={18} color={colors.text} />,
+      id: '/items',
+      label: 'Items',
+      icon: <Package size={18} color={colors.text} />,
       onPress: () => {},
     },
     {
@@ -390,7 +428,7 @@ export function Showcase() {
         style={SCREEN_BODY_STYLE}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Nav-mode header demo (qep-tracker compact 44px pattern). */}
+        {/* Nav-mode header demo (compact 44px pattern). */}
         <MobileHeader
           title="Showcase"
           accentColor={colors.brand}
@@ -398,7 +436,7 @@ export function Showcase() {
           onDismiss={() => {}}
         />
 
-        {/* Page-mode header demo (legacy arqavellum pattern, preserved). */}
+        {/* Page-mode header demo (preserved for screens that need a taller headline). */}
         <View style={styles.pageHeaderDemo}>
           <MobileSectionEyebrow flush={false}>Design System</MobileSectionEyebrow>
           <Text style={[theme.typography.mobileTitle, { color: colors.text }]}>
@@ -560,9 +598,9 @@ export function Showcase() {
 
         <View style={styles.section}>
           <MobileSectionEyebrow>Alerts</MobileSectionEyebrow>
-          <MobileAlert type="success" title="Workout saved" message="3 sets logged." />
+          <MobileAlert type="success" title="Saved" message="3 entries recorded." />
           <View style={styles.spacer} />
-          <MobileAlert type="warning" title="Almost there" message="One more set to go." />
+          <MobileAlert type="warning" title="Almost there" message="One more field to complete." />
           <View style={styles.spacer} />
           <MobileAlert type="error" title="Network error" message="Couldn&rsquo;t reach the server." />
           <View style={styles.spacer} />
@@ -578,7 +616,7 @@ export function Showcase() {
               max={100}
               step={1}
               fastStep={5}
-              unitLabel="reps"
+              unitLabel="units"
               onChange={setStepperValue}
             />
           </MobileSurface>
@@ -589,7 +627,7 @@ export function Showcase() {
           <MobileSurface>
             <MobileCheckboxItem
               title="Enable notifications"
-              subtitle="Get reminded when it&rsquo;s time to work out."
+              subtitle="Get reminded when something needs your attention."
               checked={checked}
               onToggle={() => setChecked((c) => !c)}
             />
@@ -698,6 +736,510 @@ export function Showcase() {
           </MobilePrimaryButton>
         </View>
 
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Selection — segmented control</MobileSectionEyebrow>
+          <MobileSurface>
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
+              variant: &quot;selection&quot; — radiogroup/radio, mutually exclusive value pick
+            </Text>
+            <SegmentedControl
+              variant="selection"
+              segments={[
+                { label: '7D', value: '7d' },
+                { label: '30D', value: '30d' },
+                { label: '90D', value: '90d' },
+              ]}
+              value={segSelection}
+              onChange={setSegSelection}
+              accessibilityLabel="Analytics period"
+            />
+            <View style={styles.spacer} />
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
+              variant: &quot;tabs&quot; — tablist/tab, switches a content region below
+            </Text>
+            <SegmentedControl
+              variant="tabs"
+              segments={[
+                { label: 'Summary', value: 'summary' },
+                { label: 'Details', value: 'details' },
+                { label: 'Activity', value: 'activity' },
+              ]}
+              value={segTab}
+              onChange={setSegTab}
+              accessibilityLabel="Detail tabs"
+            />
+            <View style={styles.spacer} />
+            {/* Consumer-owned panel composition. The shell ships tablist/tab
+                semantics only — consumer renders the matching panel and
+                wires platform-appropriate panel association. RN's
+                AccessibilityRole enum does not include `tabpanel`; consumers
+                that want explicit panel semantics on web can layer
+                aria-role="tabpanel" via a host-level attribute. */}
+            <View
+              accessibilityLabel={`${segTab} panel`}
+              style={[styles.tabPanel, { backgroundColor: colors.cardAlt }]}
+            >
+              <Text style={[styles.bodyText, { color: colors.text }]}>
+                {segTab === 'summary'
+                  ? 'Summary panel: 3 entries logged today.'
+                  : segTab === 'details'
+                    ? 'Details panel: notes recorded against each entry.'
+                    : 'Activity panel: last completed 5 days ago.'}
+              </Text>
+            </View>
+            <View style={styles.spacer} />
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
+              chromeless variant — no track fill, inline affordance
+            </Text>
+            <SegmentedControl
+              variant="selection"
+              chromeless
+              segments={[
+                { label: 'Low', value: 'low' },
+                { label: 'Med', value: 'med' },
+                { label: 'High', value: 'high' },
+              ]}
+              value={segDensity}
+              onChange={setSegDensity}
+              accessibilityLabel="Density (chromeless)"
+            />
+            <Text style={[styles.bodyText, { color: colors.textMuted, marginTop: 8, fontSize: 12 }]}>
+              Selected density: {segDensity}
+            </Text>
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Selection — filter chips</MobileSectionEyebrow>
+          <MobileSurface>
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
+              Single-select cluster — radio role, checked state
+            </Text>
+            <FilterChipGroup>
+              {['all', 'active', 'archived'].map((c) => (
+                <FilterChip
+                  key={c}
+                  label={c.charAt(0).toUpperCase() + c.slice(1)}
+                  selected={radioChip === c}
+                  onPress={() => setRadioChip(c)}
+                  accessibilityRole="radio"
+                  accessibilityLabel={`Filter: ${c}`}
+                />
+              ))}
+            </FilterChipGroup>
+            <View style={styles.spacer} />
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
+              Multi-select cluster — checkbox role, checked state
+            </Text>
+            <FilterChipGroup>
+              {['alpha', 'beta', 'gamma'].map((c) => (
+                <FilterChip
+                  key={c}
+                  label={c.charAt(0).toUpperCase() + c.slice(1)}
+                  selected={multiChip.includes(c)}
+                  onPress={() =>
+                    setMultiChip((prev) =>
+                      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c],
+                    )
+                  }
+                  accessibilityRole="checkbox"
+                  accessibilityLabel={`Toggle ${c}`}
+                />
+              ))}
+            </FilterChipGroup>
+            <View style={styles.spacer} />
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
+              Standalone toggle — button role, selected state
+            </Text>
+            <FilterChipGroup>
+              <FilterChip
+                label={toggleChip ? 'On' : 'Off'}
+                selected={toggleChip}
+                onPress={() => setToggleChip((v) => !v)}
+              />
+            </FilterChipGroup>
+            <View style={styles.spacer} />
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
+              wrap: false inside a consumer-supplied horizontal ScrollView
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <FilterChipGroup wrap={false}>
+                {['tag-a', 'tag-b', 'tag-c', 'tag-d', 'tag-e', 'tag-f'].map((t) => (
+                  <FilterChip
+                    key={t}
+                    label={t}
+                    selected={false}
+                    onPress={() => {}}
+                  />
+                ))}
+              </FilterChipGroup>
+            </ScrollView>
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Disclosure (expand/collapse rows)</MobileSectionEyebrow>
+          <MobileSurface padding={0}>
+            <DisclosureRow
+              open={disclosureA}
+              onOpenChange={setDisclosureA}
+              accessibilityLabel="What is the 490px height budget?"
+              header={
+                <View>
+                  <Text style={[styles.disclosureHeader, { color: colors.text }]}>
+                    What is the 490px height budget?
+                  </Text>
+                </View>
+              }
+            >
+              <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+                A load-bearing height constraint for iPhone SE (375×667). The primary
+                action of every MobilePremium screen must fit at 490px viewport height
+                without scrolling.
+              </Text>
+            </DisclosureRow>
+            <DisclosureRow
+              open={disclosureB}
+              onOpenChange={setDisclosureB}
+              accessibilityLabel="Does the kit ship desktop components?"
+              header={
+                <View>
+                  <Text style={[styles.disclosureHeader, { color: colors.text }]}>
+                    Does the kit ship desktop components?
+                  </Text>
+                </View>
+              }
+            >
+              <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+                No. Arqavellum is mobile-only by design. A consumer needing a desktop
+                admin surface builds it separately.
+              </Text>
+            </DisclosureRow>
+            <DisclosureRow
+              open={disclosureC}
+              onOpenChange={setDisclosureC}
+              accessibilityLabel="Reduced motion contract"
+              header={
+                <View>
+                  <Text style={[styles.disclosureHeader, { color: colors.text }]}>
+                    Reduced motion contract
+                  </Text>
+                </View>
+              }
+            >
+              <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+                v1 ships instant content + chevron rotation. Under prefers-reduced-motion
+                the chevron snaps instead of rotating. Height animation is a Batch B
+                concern, gated on a Reanimated adoption decision.
+              </Text>
+            </DisclosureRow>
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Empty state</MobileSectionEyebrow>
+          <MobileSurface>
+            <EmptyState
+              title="No items match your filter"
+              message="Try clearing some filters or add a new item to your catalog."
+              icon={<Search size={36} color={colors.textSecondary} />}
+              action={{
+                label: 'Clear filters',
+                onPress: () => {},
+                variant: 'primary',
+              }}
+            />
+          </MobileSurface>
+          <View style={styles.spacer} />
+          <MobileSurface>
+            <EmptyState title="Nothing here yet" />
+          </MobileSurface>
+          <View style={styles.spacer} />
+          <MobileSurface>
+            <EmptyState
+              title="No results"
+              message="Compact variant for nested card interiors."
+              compact
+              accessibilityLabel="Compact empty state"
+            />
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Stat cards</MobileSectionEyebrow>
+          <View style={styles.statRow}>
+            <StatCard
+              label="Activity"
+              value="14"
+              subtitle="days"
+              variant="accent"
+              style={styles.statRowCell}
+              accessibilityLabel="Activity: 14 days"
+            />
+            <StatCard
+              label="Entries"
+              value="8.2k"
+              subtitle="this month"
+              style={styles.statRowCell}
+              accessibilityLabel="Entries: 8.2k this month"
+            />
+          </View>
+          <View style={styles.spacer} />
+          <StatCard
+            label="Engagement"
+            value="142"
+            subtitle="peak score"
+            icon={<TrendingUp size={18} color={colors.brand} />}
+            variant="outline"
+            onPress={() => {}}
+            accessibilityLabel="Engagement, 142 peak score, tap for details"
+          />
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Avatar (image or initials)</MobileSectionEyebrow>
+          <MobileSurface>
+            <View style={styles.avatarRow}>
+              <Avatar name="Ada Lovelace" presence="online" />
+              <Avatar name="Grace Hopper" presence="away" size="lg" />
+              <Avatar name="Alan Turing" size="xl" />
+              <Avatar name="Bookend" shape="square" />
+            </View>
+            <View style={styles.spacer} />
+            <View style={styles.avatarRow}>
+              <Avatar name="Single" size="xs" />
+              <Avatar name="Two Word" size="sm" />
+              <Avatar name="Lower case" size="md" presence="online" />
+              <Avatar name="No Space" size="md" ringColor={colors.status.success} />
+            </View>
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Segmented progress</MobileSectionEyebrow>
+          <MobileSurface>
+            <SegmentedProgress
+              segments={[
+                { value: 6, max: 8, accessibilityLabel: 'Water' },
+                { value: 9.4, max: 10, accessibilityLabel: 'Steps' },
+                { value: 3, max: 8, accessibilityLabel: 'Sleep' },
+              ]}
+              showLabels
+            />
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Offline / sync banner</MobileSectionEyebrow>
+          <OfflineBanner variant="offline" pendingCount={4} />
+          <View style={styles.spacer} />
+          <OfflineBanner variant="syncing" />
+          <View style={styles.spacer} />
+          <OfflineBanner
+            variant="sync-failed"
+            actionLabel="Retry"
+            onAction={() => {}}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Carousel tutorial (NOT stories)</MobileSectionEyebrow>
+          <MobileSurface padding={0}>
+            <CarouselTutorial
+              slides={[
+                {
+                  id: 'slide-1',
+                  content: (
+                    <View style={styles.tutorialSlide}>
+                      <Text style={[styles.bodyText, { color: colors.text }]}>
+                        Slide one — generic step-through carousel. No autoplay,
+                        no tap-zones, no per-slide progress bars.
+                      </Text>
+                    </View>
+                  ),
+                  accessibilityLabel: 'Welcome slide',
+                },
+                {
+                  id: 'slide-2',
+                  content: (
+                    <View style={styles.tutorialSlide}>
+                      <Text style={[styles.bodyText, { color: colors.text }]}>
+                        Slide two — Crossfade transitions infer direction from
+                        the previous index.
+                      </Text>
+                    </View>
+                  ),
+                  accessibilityLabel: 'Transition behavior slide',
+                },
+                {
+                  id: 'slide-3',
+                  content: (
+                    <View style={styles.tutorialSlide}>
+                      <Text style={[styles.bodyText, { color: colors.text }]}>
+                        Slide three — Done completes the flow. Back is hidden
+                        on the first slide.
+                      </Text>
+                    </View>
+                  ),
+                  accessibilityLabel: 'Completion slide',
+                },
+              ]}
+              onComplete={() => {}}
+            />
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Wizard (thin composition)</MobileSectionEyebrow>
+          <MobileSurface padding={0}>
+            <Wizard
+              currentStep={wizardStep}
+              onBack={() => setWizardStep((s) => Math.max(0, s - 1))}
+              onContinue={() => setWizardStep((s) => Math.min(2, s + 1))}
+              steps={[
+                {
+                  id: 'wiz-1',
+                  eyebrow: 'Step one',
+                  title: 'Welcome',
+                  content: (
+                    <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+                      Composed from MobileStepRail + Crossfade + MobileActionFooter.
+                      No internal state machine — currentStep is controlled by the caller.
+                    </Text>
+                  ),
+                },
+                {
+                  id: 'wiz-2',
+                  eyebrow: 'Step two',
+                  title: 'Configure',
+                  content: (
+                    <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+                      Step content is consumer-owned. Direction is inferred from
+                      the previous step index.
+                    </Text>
+                  ),
+                },
+                {
+                  id: 'wiz-3',
+                  eyebrow: 'Step three',
+                  title: 'Finish',
+                  content: (
+                    <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+                      On the last step, Continue becomes Finish — the caller
+                      decides what Finish actually does.
+                    </Text>
+                  ),
+                },
+              ]}
+            />
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Progress ring (static v1)</MobileSectionEyebrow>
+          <MobileSurface>
+            <View style={styles.ringRow}>
+              <View style={styles.ringCell}>
+                <ProgressRing
+                  progress={0.25}
+                  size="sm"
+                  label={
+                    <Text style={[styles.ringLabel, { color: colors.text }]}>25%</Text>
+                  }
+                />
+              </View>
+              <View style={styles.ringCell}>
+                <ProgressRing
+                  progress={0.5}
+                  size="md"
+                  label={
+                    <Text style={[styles.ringLabel, { color: colors.text }]}>50%</Text>
+                  }
+                />
+              </View>
+              <View style={styles.ringCell}>
+                <ProgressRing
+                  progress={0.75}
+                  size="lg"
+                  label={
+                    <Text style={[styles.ringLabelLg, { color: colors.text }]}>75%</Text>
+                  }
+                />
+              </View>
+            </View>
+            <View style={styles.spacer} />
+            <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+              First source use of react-native-svg in arqavellum. No animation in v1 —
+              static arc against a cardAlt track.
+            </Text>
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Date picker (YYYY-MM-DD in/out)</MobileSectionEyebrow>
+          <MobileSurface>
+            <DatePickerField
+              label="Start date"
+              value={dateValue}
+              onChange={setDateValue}
+              min="2026-01-01"
+              max="2026-12-31"
+              helperText="Local-date semantics — no UTC drift."
+            />
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Reveal mask (visual privacy only)</MobileSectionEyebrow>
+          <MobileSurface>
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
+              Tap the mask to reveal. NOT encryption, NOT secure — defeats only casual
+              over-the-shoulder viewing.
+            </Text>
+            <View style={styles.revealWrap}>
+              <RevealMask
+                masked={revealMasked}
+                onReveal={() => setRevealMasked(false)}
+                accessibilityLabel="Reveal private notes"
+              >
+                <Text style={[styles.revealText, { color: colors.text }]}>
+                  Private: account reference AC-1234. Keep between you and your accountant.
+                </Text>
+              </RevealMask>
+            </View>
+            <View style={styles.spacer} />
+            <MobilePrimaryButton onPress={() => setRevealMasked(true)} variant="secondary">
+              Re-mask
+            </MobilePrimaryButton>
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Sheet (bottom or top anchored)</MobileSectionEyebrow>
+          <MobileSurface>
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
+              Generic sheet — escapes host clipping via the shell portal. Consumer
+              supplies children; backdrop, handle, and close affordances ship with the shell.
+            </Text>
+            <MobilePrimaryButton onPress={() => setSheetOpen(true)}>
+              Open bottom sheet
+            </MobilePrimaryButton>
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Loading overlay (MobileDialog-composed)</MobileSectionEyebrow>
+          <MobileSurface>
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
+              Non-dismissable blocking load. Refactored to compose MobileDialog so it
+              escapes host clipping and respects the C2/C4 audit boundaries.
+            </Text>
+            <MobilePrimaryButton onPress={() => setShowLoading(true)}>
+              Show overlay
+            </MobilePrimaryButton>
+          </MobileSurface>
+        </View>
+
         <MobileActionFooter
           primary={{
             onPress: () => setDialogOpen(true),
@@ -721,13 +1263,43 @@ export function Showcase() {
           MobileHeader, optional body, and a primary/secondary action pair. Escape-to-close on web,
           backdrop-tap-to-close everywhere.
         </Text>
+        <Text
+          style={[
+            styles.bodyText,
+            { color: colors.textMuted, fontSize: 12, marginTop: 8 },
+          ]}
+        >
+          Width contract: card fills the available width (minus the host's
+          16px horizontal padding) up to 380pt, centered. On narrow phones
+          (iPhone SE @ 320pt) the card spans the full viewport — no extra
+          10% gutter — by design.
+        </Text>
       </MobileDialog>
+
+      <MobileSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title="Sheet demo"
+        accentColor={colors.brand}
+      >
+        <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+          The MobileSheet primitive. Generic bottom-anchored sheet hosting arbitrary children.
+          Escapes host clipping via the shell portal — the same load-bearing reason as MobileDialog
+          and MobileSelect.
+        </Text>
+      </MobileSheet>
+
+      <LoadingOverlay
+        visible={showLoading}
+        message="Saving changes"
+        subMessage="Indexing entries and updating history."
+      />
 
       <MobileNavDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         items={drawerItems}
-        activePathname="/exercises"
+        activePathname="/items"
         atmosphere="analytics"
         anchor={APP_LAYOUT.navDrawerAnchor}
         brandPersistence={APP_LAYOUT.navDrawerBrandPersistence}
@@ -887,6 +1459,64 @@ const styles = StyleSheet.create({
   },
   variantMeta: {
     marginTop: 6,
+  },
+  tabPanel: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+  disclosureHeader: {
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
+  },
+  statRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  statRowCell: {
+    flex: 1,
+  },
+  avatarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  tutorialSlide: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    minHeight: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    gap: 12,
+  },
+  ringCell: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  ringLabelLg: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  revealWrap: {
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+  revealText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
   },
 });
 

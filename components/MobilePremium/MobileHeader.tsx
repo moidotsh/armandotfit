@@ -3,8 +3,8 @@
 //
 //   • Nav mode (default when onBack/onDismiss is provided): a compact 44px
 //     top navigation bar — back chevron, accent dot, inline title, dismiss X.
-//     The page headline lives in the content area, NOT here. This is the
-//     qep-tracker pattern that preserves the 490px height budget.
+//     The page headline lives in the content area, NOT here. This pattern
+//     preserves the 490px height budget.
 //
 //   • Page mode (when only title/eyebrow/subtitle provided): a taller page
 //     header with eyebrow + title + subtitle. Backward-compat for arqavellum's
@@ -22,7 +22,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { ChevronLeft, X } from '@tamagui/lucide-icons-2';
-import { theme } from '../../constants';
+import { theme, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePressedStyle } from '../premium/shared';
@@ -60,8 +60,9 @@ const NAV_TITLE_STYLE = {
 } as const;
 
 /**
- * Mobile header — two modes (see file header). Nav mode is the qep-tracker
- * parity pattern; page mode is preserved for arqavellum's existing screens.
+ * Mobile header — two modes (see file header). Nav mode is the recommended
+ * compact pattern; page mode is preserved for screens that need a taller
+ * headline treatment.
  */
 export function MobileHeader({
   onBack,
@@ -138,9 +139,8 @@ export function MobileHeader({
     );
   }
 
-  // Page mode — arqavellum's original pattern. Eyebrow + title + subtitle +
-  // optional left/right action slots. The screen root adds the safe-area
-  // top inset.
+  // Page mode — eyebrow + title + subtitle + optional left/right action
+  // slots. The screen root adds the safe-area top inset.
   return (
     <View testID={testID} style={[styles.pageContainer, { paddingTop: insets.top + 8 }, style]}>
       {leftAction != null || rightAction != null ? (
@@ -185,9 +185,7 @@ export function MobileHeader({
 const styles = StyleSheet.create({
   // ── Nav mode ─────────────────────────────────────────────────────────
   navContainer: {
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
     paddingHorizontal: 8,
   },
   navRow: {
@@ -222,9 +220,7 @@ const styles = StyleSheet.create({
 
   // ── Page mode ────────────────────────────────────────────────────────
   pageContainer: {
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
     paddingHorizontal: 20,
     paddingBottom: 8,
   },

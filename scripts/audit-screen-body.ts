@@ -4,8 +4,8 @@
  *
  * SB1 — every full-screen route in app/ (excluding _layout.tsx,
  * +not-found.tsx, and the dev/ subtree) must apply SCREEN_BODY_STYLE.
- * The constant is the single source of truth for the centered 420pt
- * column constraint; without it, screen bodies drift to the left edge
+ * The constant is the single source of truth for the centered mobile
+ * content column; without it, screen bodies drift to the left edge
  * on wide viewports (the bug that motivated this audit — five screens
  * silently lost the constraint between QA1 and QA2).
  *
@@ -15,16 +15,32 @@
  * a StyleSheet entry, inline in style={[...]}, etc.); it only verifies
  * the screen author acknowledged the constraint by importing the name.
  *
+ * ── Policy mode ──────────────────────────────────────────────────────
+ *
+ * SB1 reads `CONTENT_WIDTH_MODE` from constants/styles.ts at module
+ * load — the same source runtime styles consume. This is load-bearing:
+ * a single constant governs both the runtime shape and the pre-commit
+ * enforcement, so flipping the mode actually changes both in lockstep.
+ *
+ *   'constrained' (default) — SB1 actively enforces the centered
+ *                              mobile column on every app/*.tsx screen
+ *                              body.
+ *
+ *   'fluid'                  — The consumer owns width behavior. SB1
+ *                              prints an informational skip message
+ *                              and exits 0. The mode does NOT relax
+ *                              any non-width audit.
+ *
  * Suppress with `// sb1-exempt`. Reserve for genuinely-different screen
  * shapes (full-bleed camera, AR overlay). Auth screens with the standard
  * SafeAreaView → MobileAtmosphere → MobileHeader → body shape are NOT
  * exempt.
  *
- * When a consumer adds a DesktopPremium sibling kit, do NOT sprinkle
- * `// sb1-exempt` across the desktop routes. Scope this audit's walk
- * to mobile-only directories instead (add the desktop routes' directory
- * to the early-return in walk()). See docs/contributing.md →
- * "Adding desktop support" for the evolution path.
+ * When a consumer adopts a real tablet/desktop layout strategy, the
+ * right move is to flip CONTENT_WIDTH_MODE to 'fluid' (single source
+ * of truth) rather than sprinkle `// sb1-exempt` across desktop-shaped
+ * routes. See docs/contributing.md → "Adding desktop support" for the
+ * evolution path.
  *
  * Mirrors the structure of scripts/audit-component-quality.ts.
  *
@@ -34,6 +50,7 @@
 
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { join, relative, sep } from 'path';
+import { CONTENT_WIDTH_MODE } from '../constants/styles';
 
 const ROOT = process.cwd();
 const APP_DIR = join(ROOT, 'app');
@@ -56,7 +73,7 @@ function walk(dir: string, out: string[] = []): string[] {
       continue;
     }
     if (st.isDirectory()) {
-      // The dev/ subtree holds the showcase + visual review tools, not
+      // The dev/ subtree holds the showcase & visual review tools, not
       // shipping screens. Skip the whole branch.
       if (entry === 'dev') continue;
       walk(full, out);
@@ -65,6 +82,16 @@ function walk(dir: string, out: string[] = []): string[] {
     }
   }
   return out;
+}
+
+// Fluid-mode skip: same source as runtime styles. Print an
+// informational message but DO NOT warn or fail. Every non-width
+// audit remains active; only the SB1 screen-body finding is skipped.
+if (CONTENT_WIDTH_MODE === 'fluid') {
+  console.log(
+    'ℹ SKIP: CONTENT_WIDTH_MODE is fluid — SB1 screen-body finding is skipped. All other audits remain active.',
+  );
+  process.exit(0);
 }
 
 const files = walk(APP_DIR);

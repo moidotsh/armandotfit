@@ -20,30 +20,33 @@
 // background, 18px Lucide centered. The iconBox frame gives every glyph
 // a consistent visual mass even when the glyph itself is light.
 //
-// API compatibility: accepts both `title`/`description`/`icon` (qep-tracker
-// API) and `label`/`value`/`leftIcon` (arqavellum legacy API).
+// API compatibility: accepts both `title`/`description`/`icon` and
+// `label`/`value`/`leftIcon` prop triples (same semantics, different prop
+// names). Consumers can use whichever triple fits their calling convention;
+// the component resolves `title ?? label`, `description ?? value`, and
+// `icon ?? leftIcon`.
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { ChevronRight } from '@tamagui/lucide-icons-2';
 import { usePressedStyle } from '../premium/shared';
-import { theme } from '../../constants';
+import { theme, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
 
 export interface MobileSettingsRowProps {
   /** Icon node centered in the 36×36 iconBox. */
   icon?: React.ReactNode;
-  /** Title. qep-tracker API. */
+  /** Title. `title` is the primary prop name. */
   title?: string;
   /** Optional supporting description under the title. */
   description?: string;
   /** Right-aligned element. Defaults to ChevronRight when onPress is set, else null. */
   rightElement?: React.ReactNode;
-  /** Label. Arqavellum legacy alias of `title`. */
+  /** Label. Alternative alias for `title`. */
   label?: string;
-  /** Value text. Arqavellum legacy alias of `description` (rendered as muted). */
+  /** Value text. Alternative alias for `description` (rendered as muted). */
   value?: string;
-  /** Left icon. Arqavellum legacy alias of `icon` (rendered without the iconBox frame). */
+  /** Left icon. Alternative alias for `icon` (rendered without the iconBox frame). */
   leftIcon?: React.ReactNode;
   /** Hide the chevron (when onPress is set but the action is non-navigational). */
   hideChevron?: boolean;
@@ -175,15 +178,21 @@ export function MobileSettingsRow({
 }
 
 const styles = StyleSheet.create({
+  // Defensive standalone cap. Rows LIVE inside the column rather than
+  // defining its boundary — MobileSurface is the canonical column site
+  // for a settings group — but MobileSettingsRow is also used directly
+  // on standalone surfaces. Preserving the cap on the row itself
+  // (carried over from the pre-policy `maxWidth: 420` literal) keeps
+  // standalone usage mobile-shaped without relying on every caller
+  // wrapping the row. In fluid mode the cap collapses; the row fills
+  // whatever width its container provides.
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
     minHeight: 56,
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
   },
   iconBox: {
     width: 36,

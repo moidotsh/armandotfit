@@ -1,7 +1,7 @@
 // constants/index.ts
-// Barrel export for the constants module. Arqavellum's barrel is intentionally
-// slimmer than qep-tracker's — domain constants (bundles, grids, tips, etc.)
-// land in consumer repos, not the shell.
+// Barrel export for the constants module. The shell barrel is intentionally
+// slim — domain constants (records, items, tips, etc.) land in consumer
+// repos, not the shell.
 
 export { theme } from './theme';
 export type { ColorScheme, ColorPalette } from './theme';
@@ -32,11 +32,8 @@ export type {
   ComponentVariant,
 } from './breakpoints';
 
-// Re-export the supabase project coordinates (defined here, not in a separate
-// supabase.ts, because arqavellum has only the two canonical env vars). The
-// `requiredEnv` helper in ./supabase.ts throws at module load in production
-// if either env var is missing; in dev it warns + falls back to '' so the
-// design-system showcase at /dev/premium can render before Supabase is set up.
+// Re-export the supabase project coordinates. Throws at module load in
+// production if the env vars are missing — see ./supabase.ts:requiredEnv().
 export {
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
@@ -46,7 +43,19 @@ export {
 // Centralized style constants. Complement theme.ts with layout/visual
 // values that don't belong in the theme hook (border radius, input dims,
 // card padding, z-index layers).
-export { BORDER_RADIUS, INPUT, CARD, Z_INDEX, SCREEN_BODY_STYLE } from './styles';
+export {
+  BORDER_RADIUS,
+  INPUT,
+  CARD,
+  Z_INDEX,
+  SCREEN_BODY_STYLE,
+  CONTENT_WIDTH_MODE,
+  MOBILE_CONTENT_MAX_WIDTH,
+  MOBILE_DIALOG_MAX_WIDTH,
+  MOBILE_CONTENT_WIDTH_STYLE,
+  MOBILE_DIALOG_WIDTH_STYLE,
+} from './styles';
+export type { ContentWidthMode } from './styles';
 
 // App-level layout config (cross-cutting switches for screen composition).
 export { APP_LAYOUT } from './layout';

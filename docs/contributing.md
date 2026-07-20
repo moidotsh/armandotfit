@@ -21,11 +21,11 @@ There's no `npm install arqavellum`. Consumers clone, own the copy, modify freel
 | New cross-cutting store (e.g. `themeStore`) | **Yes** | Most consumers need it. |
 | New audit script for a pattern every consumer benefits from | **Yes** | Add it to `.husky/pre-commit` and `package.json` → `lint:structure` in the same change. |
 | New repository interface (e.g. `ISoftDeletableRepository`) | **Yes** | Pattern-level; consumers extend. |
-| Domain-specific repository (e.g. `WorkoutRepository`) | **No** | That's consumer code. Arqavellum ships abstractions, not domain implementations. |
-| Domain-specific route (e.g. `/workout-detail`) | **No** | Consumer. |
+| Domain-specific repository (e.g. `RecordRepository`) | **No** | That's consumer code. Arqavellum ships abstractions, not domain implementations. |
+| Domain-specific route (e.g. `/record-detail`) | **No** | Consumer. |
 | Brand-specific token override | **No** | Consumer. Arqavellum ships the default; the consumer overrides. |
 | PIN-auth primitives | **No** | Consumer-specific extension. Arqavellum defaults to email/password; the consumer guide documents the re-add path. |
-| Native-target support (iOS/Android build config) | **Yes (placeholder scaffolding)** | Arqavellum ships native scaffolding in `app.config.ts` (`icon`, `ios`, `android`, `expo-splash-screen` plugin) + neutral PNGs at `./assets/`. A consumer going native adds `eas.json`, EAS Build config, platform validation, brand PNGs, and their own iOS bundle ID + Android application/package ID (replacing the starter value) before release. |
+| Native-target support (iOS/Android build config) | **Yes (placeholder scaffolding)** | Arqavellum ships native scaffolding in `app.config.ts` (`icon`, `ios`, `android`, `expo-splash-screen` plugin) + 3 neutral PNGs at `./assets/`. A consumer going native adds `eas.json`, EAS Build config, platform validation, brand PNGs, and their own iOS bundle ID + Android application/package ID (replacing the `app.arqavellum` starter value) before release. |
 | Dark mode | **No** | Light is the default and dark is opt-in per invariant #3 (both palettes ship). A consumer wanting a *third* color mode (e.g. `dim`) does the retune work themselves. |
 
 ## The decision rule
@@ -35,13 +35,13 @@ There's no `npm install arqavellum`. Consumers clone, own the copy, modify freel
 - **Yes** → lands in arqavellum.
 - **No, or "only my consumer needs it"** → consumer-side change.
 
-When unsure, default to consumer-side. Promoting a consumer-specific change into arqavellum later is cheap; rolling back a arqavellum-wide change that turned out to be domain-specific is expensive (every consumer has to react).
+When unsure, default to consumer-side. Promoting a consumer-specific change into arqavellum later is cheap; rolling back an arqavellum-wide change that turned out to be domain-specific is expensive (every consumer has to react).
 
 ## Evolving the audit gate
 
-The 10-audit gate is the load-bearing enforcement of the constitution. Evolve it deliberately:
+The 12-audit gate is the load-bearing enforcement of the constitution. Evolve it deliberately:
 
-1. **New audit script.** Drops into `scripts/audit-*.ts`. Wire into `.husky/pre-commit` (in pre-commit order — read the existing order to find the right slot) AND `package.json` → `lint:structure`. Update `CLAUDE.md` → "The 10 audits" table in the same change. If the audit corresponds to a new S/C/D/SE/T/R code, also update `ARCHITECTURE.md` with the definition.
+1. **New audit script.** Drops into `scripts/audit-*.ts`. Wire into `.husky/pre-commit` (in pre-commit order — read the existing order to find the right slot) AND `package.json` → `lint:structure`. Update `CLAUDE.md` → "The 12 audits" table in the same change. If the audit corresponds to a new S/C/D/SE/T/R code, also update `ARCHITECTURE.md` with the definition.
 
 2. **Tightening an existing audit (regex tweak, removed allowlist entry).** Run the audit on the current arqavellum tree first. If arqavellum passes, ship. If arqavellum doesn't pass, fix the violations in the same change.
 
@@ -81,7 +81,7 @@ A consumer who later wants a *true* tablet or desktop layout (multi-column dashb
 
 ### Option A — add a sibling `DesktopPremium` kit (recommended)
 
-Port the qep-tracker pattern: build a sibling kit at `components/DesktopPremium/` with its own layout primitives, its own body constant, its own constraint set. The MobilePremium kit stays mobile-only.
+Build a sibling kit at `components/DesktopPremium/` with its own layout primitives, its own body constant, its own constraint set. The MobilePremium kit stays mobile-only.
 
 Why a sibling kit and not a parameterized MobilePremium:
 
@@ -110,19 +110,10 @@ This works for the narrow case of a tablet-friendly mobile app. It doesn't scale
 - **Don't reuse `MobileSurface` / `MobileHeader` / `MobileActionFooter` on desktop screens.** The MobilePremium kit is mobile-shaped by design; reusing it at desktop widths requires retuning each primitive. Build desktop equivalents.
 - **Don't drop the SB1 audit when adding desktop routes.** Scope it; don't delete it. The mobile body contract still applies to mobile screens.
 
-## Workspace integration
-
-Arqavellum lives at `qep/arqavellum/`. It's a sibling of `qep-tracker/`, `qepler/`, `qep-tracker-insights/`, `landing/`, `shop/`. Workspace docs that mention arqavellum:
-
-- `qep/CLAUDE.md` — per-repo cheatsheet row + per-repo CLAUDE.md pointers section. Both must stay in sync.
-- `qep/README.md` — repo map.
-
-When arqavellum changes its canonical doc set (new doc, deprecated doc, renamed doc), update both workspace docs in the same change. The workspace `CLAUDE.md` maintenance contract governs.
-
 ## What NOT to do
 
-- **Don't add domain code to arqavellum.** No `Workout` types, no `WorkoutRepository`, no fitness-specific routes. The moment arqavellum has domain code, every consumer has to delete it.
+- **Don't add domain code to arqavellum.** No domain types, no domain repositories, no domain-specific routes. The moment arqavellum has domain code, every consumer has to delete it.
 - **Don't add a second color slot.** The `brand` slot is the single override point. A second accent slot fragments the surface — every consumer wins from one canonical override.
 - **Don't add an abstraction without a second consumer in mind.** "We might need this someday" is the failure mode. Add abstractions when there are two concrete consumers; not before.
-- **Don't promote native release readiness or PIN auth into shell-level surfaces.** Native is supported as an intentional consumer extension: arqavellum ships scaffolding (icon/ios/android/splash plugin in `app.config.ts` + placeholder PNGs) per invariant #2, and consumers wanting native complete the path on top — `eas.json`, EAS Build config, brand PNGs, their own iOS bundle ID + Android application/package ID (replacing the starter value), and platform validation. PIN auth has the same shape — arqavellum defaults to email/password; documented in `CLAUDE.md` → "When to add PIN auth".
+- **Don't promote native release readiness or PIN auth into shell-level surfaces.** Native is supported as an intentional consumer extension: arqavellum ships scaffolding (icon/ios/android/splash plugin in `app.config.ts` + placeholder PNGs at `./assets/`) per invariant #2, and consumers wanting native complete the path on top — `eas.json`, EAS Build config, brand PNGs, their own iOS bundle ID + Android application/package ID (replacing `app.arqavellum`), and platform validation. PIN auth has the same shape — arqavellum defaults to email/password; documented in `CLAUDE.md` → "When to add PIN auth".
 - **Don't re-introduce a circular import via the showcase.** `components/MobilePremium/showcase.tsx` imports each primitive directly (`./MobileSurface`), not via `./index` — the barrel re-exports the showcase, so going via the barrel is a cycle. Audit S5 catches this; just don't do it.

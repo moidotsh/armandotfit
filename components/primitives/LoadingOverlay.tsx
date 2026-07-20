@@ -1,14 +1,19 @@
 // components/primitives/LoadingOverlay.tsx
-// Full-screen loading overlay with optional message, subMessage, and
-// progress bar. Audit C4 requires every ActivityIndicator usage to
-// live inside one of the three loading primitives — this is the
-// modal/blocking-load primitive (during multi-step operations,
-// navigation transitions, etc.).
+// Full-screen blocking load. Renders inside MobileDialog (which portals via
+// RN Modal) so the overlay escapes any host ScrollView / transform / clipping
+// ancestry and always centers on the visible viewport. Non-dismissable by
+// design: the consumer controls visibility with `visible` — backdrop taps,
+// the X button, and Escape are all disabled.
+//
+// Audit C4: this file remains the canonical ActivityIndicator site for a
+// blocking load (see `scripts/audit-component-quality.ts` C4_EXEMPT_FILES).
+// c4-exempt: this primitive IS the ActivityIndicator wrapper.
 
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View, Text } from 'react-native';
 import { useAppTheme } from '../../context';
 import { theme } from '../../constants';
+import { MobileDialog } from '../MobilePremium';
 
 interface LoadingOverlayProps {
   visible: boolean;
@@ -29,20 +34,21 @@ export function LoadingOverlay({
   const { colors } = useAppTheme();
   const accent = accentColor ?? colors.brand;
 
-  if (!visible) return null;
-
+  // MobileDialog handles its own mounting. Pass `open` so it returns null
+  // internally when invisible. The remaining props disable every dismiss
+  // affordance — this is a blocking load the consumer controls.
   return (
-    <View style={styles.scrim}>
-      <View
-        style={[
-          styles.card,
-          {
-            backgroundColor: colors.card,
-            borderColor: colors.cardBorder,
-          },
-        ]}
-      >
-        <View style={[styles.accentBar, { backgroundColor: accent }]} />
+    <MobileDialog
+      open={visible}
+      onOpenChange={() => {
+        // Intentionally a no-op. Blocking loads are non-dismissable; the
+        // consumer flips `visible` to false when the operation completes.
+      }}
+      closeOnBackdropTap={false}
+      showCloseButton={false}
+      accentColor={accent}
+    >
+      <View style={styles.body}>
         {/* c4-exempt: this primitive IS the ActivityIndicator wrapper. */}
         <ActivityIndicator size="large" color={accent} />
         {message ? (
@@ -67,40 +73,16 @@ export function LoadingOverlay({
           </View>
         ) : null}
       </View>
-    </View>
+    </MobileDialog>
   );
 }
 
 const styles = StyleSheet.create({
-  scrim: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  body: {
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 9999,
-    // Translucent dark scrim — the standard modal/blocking overlay
-    // identity. Same value in light and dark mode (a dimmed overlay
-    // works the same way against either surface).
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  card: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-    borderRadius: 16,
-    minWidth: 300,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
   },
   message: {
     ...theme.typography.mobileAction,

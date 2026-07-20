@@ -189,7 +189,7 @@ via the path alias, or `../MobilePremium` relatively).
 | Component | Purpose |
 |---|---|
 | `MobileInput` | Text input with label, optional helper / error slot, and focus ring. |
-| `MobileSelect` | Bottom-sheet selector with a 54px trigger. Takes a `sheetRenderer` slot for the sheet content. |
+| `MobileSelect` | Bottom-sheet selector with a 54px trigger. Takes a `sheetRenderer` slot for the sheet content. Both the trigger (`group` style) and the portal sheet panel spread `...MOBILE_CONTENT_WIDTH_STYLE` so the sheet stays in the 420pt centered column on any viewport — SB2-portal enforces the spread on the panel by naming convention. |
 
 ### Buttons
 
@@ -202,8 +202,8 @@ via the path alias, or `../MobilePremium` relatively).
 | Component | Purpose |
 |---|---|
 | `MobileHeader` | 44px header (36–48 total with safe-area top). Back chevron, optional dismiss, compact title, accent dot. Optional `eyebrow` for context labels above the title. |
-| `MobileHomeHeader` | Home-screen header that puts the brand on the same row as the menu trigger. 36px brand row (brand text + optional `menuButton` + optional `rightAction`) + optional normal-case `subtitle` below. `paddingHorizontal: 20`, `maxWidth: 420`, `alignSelf: 'center'`. Pairs with `MobileNavDrawer` in cutout mode — when the drawer opens, the transparent cap at the top of the drawer panel lets this header's brand + menu button show through at the same position. The `menuButton` slot is a `React.ReactNode` so the primitive stays shell-level; the composed trigger (`HamburgerButton`) lives in `components/composed/`. |
-| `MobileNavDrawer` | Left-side hamburger drawer. Shell-level mechanism (slide / scrim / items / active-highlight / badge) — branding, items, and footer are consumer-supplied. Two brand-persistence modes via the `brandPersistence` prop: **`'slideout'`** (default) — panel covers full screen height; brand lives in the `header` slot. **`'cutout'`** — panel + scrim start below the home header so the brand + hamburger (which the consumer swaps to X) stay visible at the same position (qep-tracker pattern). In cutout mode the panel is transparent in the brand area (the "cap"), with a right hairline that runs the full panel height; the opaque surface starts below the cap so the subtitle (which lives below the brand row on the home header) is covered while the brand stays visible. Two anchor modes via the `anchor` prop: **`'window'`** (default) — panel slides from x=0 of the window. **`'column'`** — panel slides from the left edge of the centered 420pt column (computed from `useWindowDimensions`), so the drawer stays attached to centered content on any viewport. Defaults are picked by `APP_LAYOUT.navDrawerBrandPersistence` and `APP_LAYOUT.navDrawerAnchor` in `constants/layout.ts`. Slides with an iOS-sheet curve (`cubic-bezier(0.32, 0.72, 0, 1)`). Active row gets a 3px brand strip on the left edge + brand-tinted background + bolder label. `prefers-reduced-motion` collapses the slide to instant. |
+| `MobileHomeHeader` | Home-screen header that puts the brand on the same row as the menu trigger. 36px brand row (brand text + optional `menuButton` + optional `rightAction`) + optional normal-case `subtitle` below. `paddingHorizontal: 20`, `maxWidth: 420`, `alignSelf: 'center'`. Pairs with `MobileNavDrawer` in cutout mode — when the drawer opens, the transparent cap at the top of the drawer panel lets this header's brand + menu button show through at the same position. The `menuButton` slot is a `React.ReactNode` so the primitive stays shell-level; the composed trigger (e.g. `HamburgerButton`) lives in the consumer's `components/composed/`. |
+| `MobileNavDrawer` | Left-side hamburger drawer. Shell-level mechanism (slide / scrim / items / active-highlight / badge) — branding, items, and footer are consumer-supplied. Two brand-persistence modes via the `brandPersistence` prop: **`'slideout'`** (default) — panel covers full screen height; brand lives in the `header` slot. **`'cutout'`** — panel + scrim start below the home header so the brand + hamburger (which the consumer swaps to X) stay visible at the same position. In cutout mode the panel is transparent in the brand area (the "cap"), with a right hairline that runs the full panel height; the opaque surface starts below the cap so the subtitle (which lives below the brand row on the home header) is covered while the brand stays visible. Two anchor modes via the `anchor` prop: **`'window'`** (default) — panel slides from x=0 of the window. **`'column'`** — panel slides from the left edge of the centered 420pt column (computed from `useWindowDimensions`), so the drawer stays attached to centered content on any viewport. Defaults are picked by `APP_LAYOUT.navDrawerBrandPersistence` and `APP_LAYOUT.navDrawerAnchor` in `constants/layout.ts`. Slides with an iOS-sheet curve (`cubic-bezier(0.32, 0.72, 0, 1)`). Active row gets a 3px brand strip on the left edge + brand-tinted background + bolder label. `prefers-reduced-motion` collapses the slide to instant. |
 | `MobileActionFooter` | Sticky bottom action area. Holds the primary + optional secondary. 76–92px total with safe-area bottom. |
 | `MobileStepRail` | 2px horizontal progress rail for multi-step flows. Sits between header and content. |
 | `MobileSectionEyebrow` | Small uppercase label that leads a section inside a `MobileSurface`. Replaces a card-title row without spending vertical budget on a full title chrome. |
@@ -214,8 +214,24 @@ via the path alias, or `../MobilePremium` relatively).
 | Component | Purpose |
 |---|---|
 | `MobileAlert` | Inline alert with a 24px icon circle. `variant: 'success' \| 'warning' \| 'error' \| 'info'`. |
-| `SkeletonBlock` | Loading placeholder. Reads `colors.cardAlt` and pulses opacity via `useShimmer` (1.0 → 0.5 → 1.0, 1200ms; collapses to flat under `prefers-reduced-motion: reduce`). Uses `Animated.View`, not `ActivityIndicator`, so the C4 audit doesn't apply by construction. Consumer composes per-screen skeletons (e.g. armandotfit's `DashboardSkeleton`, `WorkoutListSkeleton`) from this primitive. |
-| `ActivityGrid` | Calendar heatmap (GitHub-contribution-style). Two layout modes: `calendar` (fixed 7 columns, weekday-aligned, default) and `responsive-matrix` (column-doubling for dev preview only). Level 0 reads `colors.cardAlt`; levels 1–4 use `colors.brand` at fixed alphas `[0.18, 0.36, 0.6, 1.0]`. Measures its own container via `useContainerQuery`; compact mode below the 7·cellMinSize + 6·gap threshold reduces gap then cell size. Date cells carry semantic activity; leading/trailing padding cells are layout-only with no a11y. Pure helpers in `utils/activityGrid.ts`; pure layout in `hooks/useActivityGridLayout.ts`. |
+| `EmptyState` | The canonical empty-state primitive. Domain-neutral: consumer supplies title, optional message, optional icon, and optional action. The action renders through `MobilePrimaryButton` so the tap target + variant language (primary/secondary/ghost) match the rest of the kit — pick the variant by context (primary when EmptyState is the screen's main content, secondary/ghost when nested). Compact mode trims the vertical rhythm for nested use. No preset copy, no icon library, no variant codes — those stay consumer-side. |
+| `OfflineBanner` | Pinned connectivity / sync banner. Three variants carry distinct semantics: `'offline'` (error red — device is offline; optional pending count), `'syncing'` (brand — online and flushing pending work), `'sync-failed'` (warning amber — a sync attempt failed; pair with `actionLabel="Retry"` + `onAction`). Purely presentational: the consumer owns network state, queue state, and mount/unmount. No store subscription, no polling, no auto-hide. Respects its parent's layout — does not pin itself to the screen. Uses `accessibilityLiveRegion="polite"` so screen readers announce state changes; the `status` role is omitted because RN's `AccessibilityRole` enum does not include it. |
+| `StatCard` | Small card showing one labeled metric — `label`, large `value`, optional `subtitle`, optional `icon`, optional `accentColor`. Three variants: `'plain'` (default card surface), `'accent'` (brand-tinted background), `'outline'` (hairline border). Three sizes: `'sm'`, `'md'`, `'lg'` (control padding + value font size). Optional `onPress` turns the card into a Pressable with `role="button"`; without `onPress` it is a non-interactive View with `role="text"`. Press feedback via `usePressedStyle` (scale + opacity; opacity-only under reduced motion). |
+| `SkeletonBlock` | Loading placeholder. Reads `colors.cardAlt` and pulses opacity via `useShimmer` (1.0 → 0.5 → 1.0, 1200ms; collapses to flat under `prefers-reduced-motion: reduce`). Uses `Animated.View`, not `ActivityIndicator`, so the C4 audit doesn't apply by construction. Consumer composes per-screen skeletons from this primitive. |
+| `ActivityGrid` | Generic responsive activity-grid / heatmap. Domain-neutral: takes normalized `ActivityGridDatum[]` + `startDate`/`endDate` and renders a calendar of intensity-colored cells (level 0 = empty `colors.cardAlt`, levels 1–4 = brand color at increasing alpha). Two layout modes: **`calendar`** (default) — fixed 7-column grid, one week per row, with weekday alignment via `weekStartsOn`; **`responsive-matrix`** — dev-preview mode that adapts column count to width. The component measures its own container via `useContainerQuery`, so the responsive width is the in-grid width after parent-surface padding. Levels are derived from `value / maxValue` by default; consumers can supply a `getLevel` callback (called only on date cells after aggregation; return clamped to 0..4). Empty `data` with a valid range renders the full zero-level calendar — the invalid-range empty state fires only when `start > end` or endpoints are malformed. Calendar mode is compact-aware: below the feasible threshold (7·cellMinSize + 6·preferredGap) it first reduces gap toward `minGap`, then reduces cell size below `cellMinSize` while keeping `totalWidth ≤ availableWidth`, `gap ≥ 0`, and cells square; the `compact` flag on the layout output signals this state. No persistence, no Supabase, no domain store, no new dependency. |
+
+### Progress
+
+| Component | Purpose |
+|---|---|
+| `SegmentedProgress` | Multi-segment horizontal progress bar. Each segment is `{ value, max, color?, accessibilityLabel? }` and fills independently toward its own ceiling — distinct from `MobileStepRail` (single linear sequence position). The container is one `progressbar` with aggregated `min=0, max=sum-of-maxes, now=sum-of-values`; per-segment labels are optional via `showLabels`. Domain-neutral: the consumer supplies goal semantics (cups of water, steps, hours of sleep — whatever). Static v1: no width animation (height animation infra not in the shell today; reduced-motion-safe width transitions would need Reanimated or LayoutAnimation — gated as a Batch C enhancement). |
+| `ProgressRing` | Static circular progress ring. First source use of `react-native-svg` (15.12.1, auto-linked by Expo SDK 54 — no babel plugin or app.config entry needed). Optional `label` node renders centered inside the ring; the container carries `role="progressbar"` with `accessibilityValue` exposing `{min:0, max:100, now, text}`. Domain-neutral: caller supplies a 0..1 `progress` value (clamped; non-finite values render as 0). Static v1: no mount animation, no arc animation, no glow — adopting Reanimated or CSS `stroke-dashoffset` transitions for animation is a separate stack decision (see `Progress.tsx` swipe-row gating for precedent). |
+
+### People
+
+| Component | Purpose |
+|---|---|
+| `Avatar` | Circular or rounded-square avatar with image-or-initials rendering, size presets (`'xs'|'sm'|'md'|'lg'|'xl'` or numeric pixel diameter), and an optional presence ring (`'online'|'away'|'offline'`). Domain-neutral: the consumer supplies the image URL (or omits it for initials), the name (used for initials + a11y label), and an optional presence value. Avatar does not fetch profiles, manage presence state, or compose groups — `AvatarGroup` is a Batch C concern. Uses RN `Image` (expo-image is not installed). `accessibilityRole="image"` with a composed label (`"<name>, <presence>"` when presence is set); override via `accessibilityLabel`. Presence ring shows when `presence !== 'offline'` or when `ringColor` is explicitly provided. |
 
 ### Forms
 
@@ -224,12 +240,32 @@ via the path alias, or `../MobilePremium` relatively).
 | `MobileCheckboxItem` | Premium checkbox row with animated check. |
 | `MobileSelectionList` | Radio / multi-select row list for wizard steps. Accent tint on selection, hairline border, 44px min tap target. |
 | `MobileStepper` | Large-value +/- stepper. |
+| `SegmentedControl` | Pill-track segmented control with two explicit a11y variants. `variant="selection"` — radiogroup/radio for mutually-exclusive value pickers (period, scope, density). `variant="tabs"` — tablist/tab for content-region switching. The two variants share visual treatment but carry distinct a11y contracts — pick by content semantics, not by visual preference. The `tabs` variant does NOT wire `aria-controls` via a shell-managed id; the consumer owns matching panel composition and platform-specific panel association end-to-end (the shell ships the tablist + tab semantics only). `chromeless` drops the track fill for inline affordances inside a hero surface. No slide animation in v1 — the active state changes instantly. |
+| `FilterChip` | Interactive pill primitive — one chip with label, optional icon, selected state, tap handler. Accessibility state MUST match the chosen role: `accessibilityRole="button"` (default) → `accessibilityState.selected`; `"radio"` or `"checkbox"` → `accessibilityState.checked`. The component maps the role to the correct state key; the consumer picks the role by the semantic use case (single-select cluster → radio; multi-select cluster → checkbox; standalone toggle → button). Never set both `selected` and `checked`. |
+| `FilterChipGroup` | Purely presentational flex container for FilterChip children. Does NOT render a ScrollView, does NOT own horizontal scroll when `wrap: false`, does NOT own sticky placement, does NOT carry an a11y role of its own. Consumers that need horizontal overflow wrap the group in their own `<ScrollView horizontal>`; consumers that need sticky placement use `stickyHeaderIndices` on native or `position: sticky` on web. Strict scope: a shared primitive that tried to own any of these would either lie about its contract or grow an unbounded surface. |
+| `DisclosureRow` | Expand/collapse row with consumer-supplied header + content. v1 motion contract: **instant content + rotating chevron** — content appears/disappears with no height animation; chevron rotates 180° on open over 200ms via `Animated.timing`, snapping under `prefers-reduced-motion`. Height animation is a Batch B concern gated on a Reanimated adoption decision plus a measurement helper that doesn't exist today. Header wrapper carries `role="button"` + `accessibilityState={{ expanded }}`; chevron is decorative (`accessibilityElementsHidden`). Supports controlled (`open` + `onOpenChange`) and uncontrolled (`defaultOpen`) usage. |
+| `DatePickerField` | Single-date picker. Public API carries dates as **YYYY-MM-DD strings end-to-end** — no `Date` object crosses the boundary (constructing `new Date('YYYY-MM-DD')` lands at midnight UTC, which shifts backward one day for users in negative UTC offsets; local-component extraction is used whenever a Date is produced transiently for the calendar grid or the native spinner). Every platform renders the same styled Pressable trigger; pressing it opens `MobileSheet` hosting the platform-appropriate picker: **web** renders `<CalendarGrid>` (a domain-neutral month grid with min/max enforcement, a today affordance, and a clear highlight on the current value); **native** renders `@react-native-community/datetimepicker` (8.4.4, first source consumer) in `display="spinner"` mode — the only mode that renders consistently across iOS and Android without further platform branching. Web sheet has Cancel + Done actions that commit / discard the user's in-flight selection. Supports `min` / `max` (YYYY-MM-DD); `helperText` / `errorText` slots mirror `MobileInput`. |
+| `CalendarGrid` | Month-grid calendar used by DatePickerField on web (and available as a standalone primitive). Renders a 7-column grid with month navigation (Previous / Next), day-of-week headers, the current value highlighted in the accent color, a Today affordance, and min/max enforcement that disables out-of-range day cells. Dates cross the boundary as YYYY-MM-DD strings; internally a transient local Date is constructed via `new Date(y, m-1, d)` so negative-UTC-offset users never see their selection shift backward. Accessibility contract: container `accessibilityRole="list"` (RN's `AccessibilityRole` enum does not include `grid` / `row` — "list" is the closest cross-platform role; consumers wanting strict WAI-ARIA grid semantics on web can layer host-level `aria-role="grid"` / `aria-role="row"` attributes themselves, same pattern documented for `tabpanel` in the showcase's SegmentedControl `variant="tabs"` demo), each day cell `role="button"` with `accessibilityState={{ selected, disabled }}` and a "Weekday, Month D, YYYY" label for screen-reader users. No animation in v1 — the MobileSheet that hosts the grid owns the enter/exit motion. |
 
 ### Dialogs
 
 | Component | Purpose |
 |---|---|
-| `MobileDialog` | Canonical general-purpose dialog. Renders inside a react-native `Modal` with `transparent={true}` + `animationType="fade"` — the Modal breaks out of the host's scroll/transform context so the dialog centers on the **visible viewport**, not the full document height. Sits as a **sibling** of the host's `MobileSurface`, never nested (`MobileSurface` has `overflow: 'hidden'` and would clip it). Backdrop tap closes by default. Optional `primaryActionLabel` + `onPrimaryAction`; `destructive` renders the primary action in error color. **Audit note:** the file is in `C2_EXEMPT_FILES` in `audit-component-quality.ts` because the RN `Modal` is the load-bearing primitive, not a violation — see §11. |
+| `MobileDialog` | Canonical general-purpose dialog. Renders inside a react-native `Modal` with `transparent={true}` + `animationType="fade"` — the Modal breaks out of the host's scroll/transform context so the dialog centers on the **visible viewport**, not the full document height. Sits as a **sibling** of the host's `MobileSurface`, never nested (`MobileSurface` has `overflow: 'hidden'` and would clip it). The `cardWrapper` style spreads `...MOBILE_DIALOG_WIDTH_STYLE` (380pt cap) — SB2-portal enforces the spread on this panel by naming convention. Backdrop tap closes by default. Optional `primaryActionLabel` + `onPrimaryAction`; `destructive` renders the primary action in error color. **Audit note:** the file is in `C2_EXEMPT_FILES` in `audit-component-quality.ts` because the RN `Modal` is the load-bearing primitive, not a violation — see §11. |
+| `MobileSheet` | Generic bottom- or top-anchored sheet hosting arbitrary children. Same RN Modal portal pattern as MobileDialog (load-bearing for the same clipping-escape reason) — `C2_EXEMPT_FILES` lists this file alongside MobileDialog. The `sheet` style spreads `...MOBILE_CONTENT_WIDTH_STYLE` (420pt cap) — SB2-portal enforces the spread on this panel by naming convention. `anchor: 'bottom' \| 'top'` (default bottom); `title` (when set) renders a compact header with a 3px accent bar + close button; `showHandle` toggles the drag handle (default true, decorative for screen readers); `closeOnBackdropTap` and `showCloseButton` are independently configurable. Touch routing: backdrop sits below the sheet panel; the sheet captures its own taps (stopPropagation) so in-sheet interactions never bubble out to close the sheet. |
+
+### Sensitive content
+
+| Component | Purpose |
+|---|---|
+| `RevealMask` | Visual-privacy wrapper. Default state hides the wrapped content behind a mask; tapping the mask reveals it. Two visual variants: `'cover'` (solid mask in `maskColor` or `colors.cardAlt`) and `'blur'` (web-only backdrop-filter blur; native falls back to the cover variant because backdrop-filter is not available without a screenshot-based approach). A11y contract: masked state exposes a Pressable with `role="button"` + default label `"Tap to reveal"`; children get `accessibilityElementsHidden` so screen readers do not announce the protected text while masked. **NON-SECURITY DISCLAIMER — load-bearing:** RevealMask is purely visual. It defeats casual over-the-shoulder viewing ONLY. It does NOT defeat screenshots, screen recording, accessibility-tree inspection, or memory inspection. NOT encryption. NOT authentication. NOT a secure data handling boundary. Any consumer relying on RevealMask for real secrecy is misusing the primitive. |
+
+### Composed flows
+
+| Component | Purpose |
+|---|---|
+| `CarouselTutorial` | Generic step-through slide carousel for onboarding-style flows. Explicitly **not** a Stories system: no per-slide progress bars, no autoplay, no tap-zone left/right to advance, no portrait-orientation lock, no slide-level background colors (the consumer wraps slide content in a surface). Composes `Crossfade` (direction inferred from previous index) + a dot-indicator row (tap-to-jump is OFF in v1) + `MobileActionFooter` with Back + Next (Next becomes Done on the last slide; Back is hidden on the first slide). Internal state is allowed (current index); the consumer supplies `onSlideChange` for analytics and `onComplete` to learn when the user finished. Does NOT persist position — re-mounting always starts at `initialIndex`. Swipe gestures are deferred to a Batch C enhancement; v1 is button-only, which is fully accessible on web (keyboard) and mobile (large tap targets). |
+| `Wizard` | Thin composition helper for multi-step forms / flows. Assembles `MobileStepRail` (progress), an optional eyebrow + title header, a `Crossfade`-wrapped content slot (direction inferred from previous step), and `MobileActionFooter` (Back + Continue; Continue becomes Finish on the last step). **CONTROLLED** — the caller owns `currentStep`. No internal state machine, no routing, no persistence, no onboarding domain model. The consumer decides what `onBack` / `onContinue` do (typically state updates + conditional navigation). Embeds no `MobileHeader` because the consumer's screen typically wraps the wizard in its own header (with `onBack` being a screen-level nav back, distinct from the wizard's Back which goes to the previous step); embedding a header here would force a double header. |
 
 ### Dev tooling
 
@@ -323,8 +359,8 @@ Conventions:
 
 `MobileAtmosphere` takes a `surface` prop. Each surface is a 3-orb
 palette defined in `components/premium/shared/atmospherePalettes.ts`.
-Arqavellum ships **light variants** of qep-tracker's 7 dark-tuned
-palettes — same semantic mappings, retuned for light backgrounds
+Arqavellum ships 7 light-tuned palettes — each a semantic mapping,
+retuned for light backgrounds
 (`gray.50` / `gray.100` base) with softer saturation, higher
 luminance, and lower orb opacity (~6–10% instead of 10–15%).
 
@@ -358,8 +394,8 @@ Under reduced motion, it snaps.
 ### 5.1 Customizing palettes as a consumer
 
 The 7 semantics are domain-agnostic, but the hues are not binding. A
-consumer whose brand is warm-toned (e.g. armandotfit's orange) may
-prefer warmer orb hues for `training` and `goal`. Edit
+consumer whose brand is warm-toned may prefer warmer orb hues for
+`training` and `goal`. Edit
 `components/premium/shared/atmospherePalettes.ts` directly — the file
 is the source of truth, no override mechanism needed (copy-then-customize
 model).
@@ -570,9 +606,9 @@ Surface that forms the logical announce unit), not at every leaf.
 
 ## 10. Audit compliance notes
 
-The pre-commit gate enforces 10 structural audits + `tsc --noEmit` +
+The pre-commit gate enforces 12 structural audits + `tsc --noEmit` +
 two structural eslint rules (`S6`, `S8`). Full reference in
-`CLAUDE.md` → "Pre-commit checks." The five that bite most often
+`CLAUDE.md` → "Pre-commit checks." The audits that bite most often
 when writing MobilePremium work:
 
 - **S5 barrels** — Same-folder: import from the relative source (`./MobileHeader`). Cross-folder: go via the kit barrel (`@components/MobilePremium`, never `@components/MobilePremium/MobileHeader`). When flagged, `bun run scripts/audit-barrels.ts --fix` rewrites most of them for you.
@@ -581,6 +617,14 @@ when writing MobilePremium work:
 - **C4 ActivityIndicator** — Don't use RN's `ActivityIndicator` directly. `MobilePrimaryButton` already owns its inline loading spinner (`c4-exempt` comment in `MobilePrimaryButton.tsx`); reuse it via the `loading` prop. Consumers create `LoadingSpinner` / `LoadingOverlay` / `AppLoading` as separate primitives that wrap `ActivityIndicator`.
 - **C2 RN Modal** — `audit-component-quality.ts` blocks bare react-native `Modal`. **`MobileDialog` is in `C2_EXEMPT_FILES`** because the RN `Modal` IS the load-bearing primitive — `transparent={true}` + `animationType="fade"` is exactly the viewport-centering behavior the kit needs.
 - **S6 conditional JSX** — `{expr && <Component/>}` renders `0`/`""` as children when `expr` is a number/string. Use ternary (`isFull ? <X /> : null`) or boolean coercion (`!!expr && <X />`).
+- **SB1 screen body** — `audit-screen-body.ts` requires every full-screen `app/*.tsx` route (excluding `_layout.tsx`, `+not-found.tsx`, `dev/`) to reference `SCREEN_BODY_STYLE`. The constraint is the centered 420pt mobile column; the audit exists because per-screen inline approaches silently drifted between QA passes. Suppress with `// sb1-exempt` for genuinely full-bleed screens (camera, AR overlay).
+- **SB2 portal content width** — `audit-mobile-content-width.ts` requires every `components/*.tsx` that imports RN `Modal` to spread `...MOBILE_CONTENT_WIDTH_STYLE` (420pt cap) or `...MOBILE_DIALOG_WIDTH_STYLE` (380pt cap) inside a panel-named StyleSheet entry (`sheet` / `card` / `cardWrapper` / `dialog` / `panel`). Importing the constant is NOT sufficient — the spread must land on the visible portal panel. The companion magic-number check bans literal `maxWidth: <digits>` under `components/` (use the spread instead). Suppress with `// sb2-exempt`. Both checks are skipped when `CONTENT_WIDTH_MODE = 'fluid'`.
+
+### 10.1 Content-width policy
+
+The constrained mobile content column is Arqavellum's current default layout policy, not a universal permanent rule. `CONTENT_WIDTH_MODE = 'constrained'` (the default, set in `constants/styles.ts`) enables a shared screen-body and portal-panel width system enforced by SB1 and SB2. `CONTENT_WIDTH_MODE = 'fluid'` makes the consumer responsible for its responsive width strategy and intentionally skips only SB1/SB2 width checks.
+
+The two canonical spread styles — `MOBILE_CONTENT_WIDTH_STYLE` and `MOBILE_DIALOG_WIDTH_STYLE` — are policy-derived: in constrained mode they carry `width: '100%', maxWidth: <cap>, alignSelf: 'center'`; in fluid mode they collapse to `{}`. Components spread these into StyleSheet entries; never re-assemble `width + maxWidth + alignSelf` from the scalar constants. The narrower dialog cap (380pt vs 420pt for content) is intentional UX — a centered modal reads as a focused interruptive surface, not a full-width sheet.
 
 For the template-literal color pattern (`${accents.red}26` for
 hex+alpha), the S7 regex does **not** flag template literals — only
@@ -633,14 +677,14 @@ Arqavellum's MobilePremium kit is the starting point, not the destination.
 Consumers will:
 
 - **Add domain primitives** — most consumers add 5–15 domain-specific
-  primitives on top of the kit (e.g. armandotfit adds `WorkoutCard`,
-  `ExerciseRow`, `ProgressChart` as composed primitives). Composed
-  primitives compose kit primitives; they don't bypass them.
+  primitives on top of the kit (e.g. `ItemCard`, `DetailRow`,
+  `ProgressChart` as composed primitives). Composed primitives
+  compose kit primitives; they don't bypass them.
 - **Override the brand color slot** — single change in
   `constants/theme.ts`.
 - **Possibly customize atmosphere palettes** — hues only; the 7
   semantics stay.
-- **Add PIN auth primitives** (qep-tracker parity) — see `CLAUDE.md`
+- **Add PIN auth primitives** — see `CLAUDE.md`
   → "When to add PIN auth." This brings `MobilePinInput`,
   `MobileFullPagePinEntry`, `MobilePinReauthSheet`, `_PinKeypad`, and
   the `audit-rpc-auth.ts` script back as consumer-side additions.

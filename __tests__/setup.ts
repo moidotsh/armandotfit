@@ -4,10 +4,10 @@ import { vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 // Define React Native globals expected by utils/logger.ts and several
-// hooks/contexts. Vitest's jsdom env does not define __DEV__, so any module
-// that references it bare would throw `ReferenceError: __DEV__ is not defined`
-// at import time — failing every test that transitively pulls in utils/,
-// services/, context/, or stores. `false` mirrors the production code path.
+// hooks/contexts. Vitest's jsdom env does not define __DEV__, so any
+// module that references it bare would throw `ReferenceError: __DEV__ is not
+// defined` at import time — failing every test that transitively pulls in
+// utils/, services/, context/, or stores. `false` mirrors the production code path.
 (globalThis as any).__DEV__ = false;
 
 // Mock AsyncStorage.
@@ -24,47 +24,12 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
   },
 }));
 
-// Mock React Native core modules.
-vi.mock('react-native', () => ({
-  Platform: {
-    OS: 'web',
-    select: vi.fn((obj: Record<string, unknown>) => obj.web || obj.default),
-  },
-  StyleSheet: {
-    create: (styles: Record<string, unknown>) => styles,
-    flatten: (style: unknown) => style,
-  },
-  Dimensions: {
-    get: vi.fn(() => ({ width: 1024, height: 768 })),
-    addEventListener: vi.fn(() => ({ remove: vi.fn() })),
-  },
-  Alert: {
-    alert: vi.fn(),
-  },
-  Keyboard: {
-    dismiss: vi.fn(),
-    addListener: vi.fn(() => ({ remove: vi.fn() })),
-  },
-  View: 'View',
-  Text: 'Text',
-  TextInput: 'TextInput',
-  ScrollView: 'ScrollView',
-  TouchableOpacity: 'TouchableOpacity',
-  TouchableHighlight: 'TouchableHighlight',
-  TouchableWithoutFeedback: 'TouchableWithoutFeedback',
-  Image: 'Image',
-  ActivityIndicator: 'ActivityIndicator',
-  Switch: 'Switch',
-  Modal: 'Modal',
-  FlatList: 'FlatList',
-  SafeAreaView: 'SafeAreaView',
-  Pressable: 'Pressable',
-  Appearance: {
-    getColorScheme: vi.fn(() => 'light'),
-    addChangeListener: vi.fn(() => ({ remove: vi.fn() })),
-  },
-  useColorScheme: vi.fn(() => ({ colorScheme: 'light' })),
-}));
+// React Native is mocked via resolve.alias → __mocks__/react-native.ts in
+// vitest.config.ts. Do NOT add a vi.mock('react-native', ...) here: the two
+// would race and the inline factory would shadow the alias-resolved file,
+// which is where the host-component forwardRef mocks live (the ones that
+// resolve function-style `style` props and stringify accessibilityState).
+// Keep this file for the modules that don't have a dedicated __mocks__ file.
 
 // Mock react-native-safe-area-context. Required the moment any test pulls
 // in the MobilePremium barrel: MobileNavDrawer imports useSafeAreaInsets,

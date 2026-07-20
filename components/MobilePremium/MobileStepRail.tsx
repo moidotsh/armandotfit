@@ -13,15 +13,16 @@ import { Animated, StyleSheet, View, type StyleProp, type ViewStyle } from 'reac
 import { isWeb } from '../../utils';
 import { usePlatformAnimation, useReducedMotion } from '../../hooks';
 import { useAppTheme } from '../../context';
+import { MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 
 export interface MobileStepRailProps {
-  /** Current step (0-indexed). qep-tracker API. */
+  /** Current step (0-indexed). `current` is the primary prop name. */
   current?: number;
-  /** Total number of steps. qep-tracker API. */
+  /** Total number of steps. `total` is the primary prop name. */
   total?: number;
-  /** Current step (1-indexed). Arqavellum legacy API. */
+  /** Current step (1-indexed). Alternative alias — converted internally to 0-indexed. */
   step?: number;
-  /** Total number of steps. Arqavellum legacy API. */
+  /** Total number of steps. Alternative alias for `total`. */
   totalSteps?: number;
   /** Accent color for the fill (default theme brand). */
   accentColor?: string;
@@ -42,8 +43,9 @@ export interface MobileStepRailProps {
  * a full-width track (2px tall) with a fill that animates from 0% to
  * (current+1)/total of the width.
  *
- * Accepts both `current/total` (qep-tracker 0-indexed) and `step/totalSteps`
- * (arqavellum 1-indexed) prop names. The 0-indexed API converts internally.
+ * Accepts both `current/total` (0-indexed) and `step/totalSteps` (1-indexed)
+ * prop pairs. The 0-indexed pair is the primary API; the 1-indexed pair is
+ * converted internally.
  */
 export function MobileStepRail({
   current,
@@ -113,9 +115,7 @@ export function MobileStepRail({
 
 const styles = StyleSheet.create({
   outer: {
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
     paddingHorizontal: 20,
     paddingVertical: 8,
   },

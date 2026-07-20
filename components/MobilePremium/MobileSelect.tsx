@@ -19,7 +19,7 @@ import { Animated, Modal, Pressable, ScrollView, StyleSheet, Text, View, type St
 import { Check, ChevronDown, X } from '@tamagui/lucide-icons-2';
 import { isWeb } from '../../utils';
 import { useFocusRing, usePressedStyle } from '../premium/shared';
-import { theme } from '../../constants';
+import { theme, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
 
 export interface MobileSelectOption {
@@ -237,9 +237,7 @@ export function MobileSelect({
 const styles = StyleSheet.create({
   group: {
     gap: 6,
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
     marginBottom: 16,
   },
   triggerWrap: {
@@ -268,12 +266,17 @@ const styles = StyleSheet.create({
   // Light-mode sheet — picks up the surface treatment from the theme.
   // Background color is applied inline (from useAppTheme) so it tracks
   // colorScheme. Not pure white — a touch of warmth so it reads as a
-  // surface, not a popup.
+  // surface, not a popup. The policy spread lands on this sheet panel
+  // (the visible portal content) — NOT on the Modal root or scrim —
+  // because the panel portals via RN Modal and would otherwise take
+  // the full viewport width, breaking the mobile column at wide
+  // viewports. This is the load-bearing SB2 case.
   sheet: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 16,
     maxHeight: '70%',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
   },
   handleBar: {
     width: 40,

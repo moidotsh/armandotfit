@@ -31,7 +31,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useFocusRing } from '../premium/shared';
-import { theme } from '../../constants';
+import { theme, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
 
 export interface MobileInputProps {
@@ -221,9 +221,7 @@ export function MobileInput({
 const styles = StyleSheet.create({
   group: {
     gap: 6,
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
     marginBottom: 16,
   },
   inputContainer: {

@@ -28,7 +28,7 @@ import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Pressable, usePressedStyle } from '../premium/shared';
 import { isWeb } from '../../utils';
-import { theme } from '../../constants';
+import { theme, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
 
 export interface MobilePrimaryButtonProps {
@@ -168,10 +168,18 @@ export function MobilePrimaryButton({
 }
 
 const styles = StyleSheet.create({
+  // Defensive standalone cap. Buttons LIVE inside the column rather
+  // than defining its boundary — MobileActionFooter is the canonical
+  // column site for a primary action — but MobilePrimaryButton is also
+  // used directly in auth screens (login, register, forgot-password)
+  // and on standalone app/index + app/settings surfaces. Preserving
+  // the cap on the button itself (carried over from the pre-policy
+  // `maxWidth: 420` literal) keeps standalone usage mobile-shaped
+  // without relying on every caller wrapping the button. In fluid
+  // mode the cap collapses; the button fills whatever width its
+  // container provides.
   button: {
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
     minHeight: 54,
     borderRadius: 14,
     alignItems: 'center',

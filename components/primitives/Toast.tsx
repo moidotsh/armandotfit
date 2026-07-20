@@ -13,6 +13,7 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { createPortal } from 'react-dom';
 import { CheckCircle2, XCircle, AlertTriangle, Info, X } from '@tamagui/lucide-icons-2';
 import { useToast, type Toast as ToastType, useAppTheme } from '../../context';
+import { MOBILE_DIALOG_WIDTH_STYLE } from '../../constants';
 
 const ToastIcon = ({ type }: { type: ToastType['type'] }) => {
   const { colors } = useAppTheme();
@@ -141,8 +142,15 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
     paddingRight: 8,
     paddingVertical: 10,
-    maxWidth: 380,
-    width: '100%',
+    // Visual-policy alignment, NOT SB2 compliance. Toast renders via
+    // web `createPortal` (not RN Modal), so it is outside SB2-portal's
+    // direct scope. The 380pt dialog cap is applied here because toast
+    // is intentionally a compact, centered, dialog-like overlay — using
+    // the canonical spread keeps the width contract in one place and
+    // tracks CONTENT_WIDTH_MODE. If a future consumer wants wider
+    // toasts, the right move is to override this style locally, not to
+    // redefine the policy.
+    ...MOBILE_DIALOG_WIDTH_STYLE,
   },
   message: {
     flex: 1,

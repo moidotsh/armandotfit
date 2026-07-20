@@ -86,7 +86,7 @@ export interface ClassifiedError {
 
 /**
  * Classify an error and return a user-facing message. `operation` is
- * inserted into the message (e.g. "save workout", "update profile").
+ * inserted into the message (e.g. "save entry", "update profile").
  */
 export function classifyMutationError(error: unknown, operation: string): ClassifiedError {
   if (error instanceof Error) {

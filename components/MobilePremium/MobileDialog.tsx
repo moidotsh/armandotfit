@@ -24,26 +24,29 @@
 // Web niceties: Escape-to-close (web only, gated by closeOnBackdropTap),
 // backdrop tap closes by default, X button in the header closes.
 //
-// API compatibility: accepts both `open`/`onOpenChange` (qep-tracker API)
-// and `visible`/`onClose` (arqavellum legacy API).
+// API compatibility: accepts both `open`/`onOpenChange` and `visible`/`onClose`
+// prop pairs (same semantics, different prop names). Consumers can use whichever
+// pair fits their calling convention; the component resolves
+// `open ?? visible` and prefers `onOpenChange(false)` else falls back to `onClose()`.
 
 import React, { useEffect } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { isWeb } from '../../utils';
 import { FadeIn } from '../premium/shared';
+import { MOBILE_DIALOG_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
 import { MobileSurface } from './MobileSurface';
 import { MobileHeader } from './MobileHeader';
 import { MobilePrimaryButton } from './MobilePrimaryButton';
 
 export interface MobileDialogProps {
-  /** Whether the dialog is visible. qep-tracker API. */
+  /** Whether the dialog is visible. `open` is the primary prop name. */
   open?: boolean;
-  /** Open-change handler (qep-tracker API). Called with `false` on any close gesture. */
+  /** Open-change handler. Called with `false` on any close gesture. */
   onOpenChange?: (open: boolean) => void;
-  /** Whether the dialog is visible. Arqavellum legacy alias of `open`. */
+  /** Whether the dialog is visible. Alternative alias for `open`. */
   visible?: boolean;
-  /** Close handler. Arqavellum legacy alias — wraps onOpenChange(false). */
+  /** Close handler. Alternative alias — invoked when no `onOpenChange` is supplied. */
   onClose?: () => void;
   /** Compact header title. */
   title?: string;
@@ -53,11 +56,11 @@ export interface MobileDialogProps {
   children: React.ReactNode;
   /** Primary action label. Omit to render a dismiss-only dialog. */
   primaryLabel?: string;
-  /** Legacy alias of `primaryLabel`. */
+  /** Alternative alias for `primaryLabel`. */
   primaryActionLabel?: string;
   /** Primary action handler. Omit for a dismiss-only dialog. */
   onPrimary?: () => void;
-  /** Legacy alias of `onPrimary`. */
+  /** Alternative alias for `onPrimary`. */
   onPrimaryAction?: () => void;
   /** Loading state for the primary action. */
   primaryLoading?: boolean;
@@ -222,9 +225,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
+  // Policy spread lands on `cardWrapper` — the visible centered dialog
+  // card. NOT on the surrounding `cardLayer` (which is pointerEvents=
+  // 'box-none' and exists only to layout the card within the viewport).
+  // SB2 verifies that a portal panel carries the policy style; this is
+  // the canonical MobileDialog site.
+  //
+  // The previous `width: '90%'` was a hand-tuned approximation of the
+  // mobile column; the policy spread replaces it with the canonical
+  // `width: '100%' + maxWidth: 380 + alignSelf: 'center'` shape. This
+  // is NOT visually identical to the old behavior — narrow viewports
+  // render the card wider than before. The host `cardLayer` applies a
+  // 16pt horizontal padding, so `width: '100%'` resolves to viewport
+  // width minus 32pt. On iPhone SE @ 320pt the card is now 288pt
+  // centered (vs the previous 259pt — `90%` of 288pt with an extra
+  // ~13pt gutter on each side). At 420pt+ viewports the card caps at
+  // 380pt centered, matching the previous visual. The wider
+  // narrow-viewport behavior is intentional: the dialog is the
+  // focused interruptive surface on mobile, and the previous extra
+  // 10% gutter read as drift rather than breathing room.
   cardWrapper: {
-    width: '90%',
-    maxWidth: 380,
+    ...MOBILE_DIALOG_WIDTH_STYLE,
   },
   body: {
     padding: 20,

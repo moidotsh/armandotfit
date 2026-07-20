@@ -51,10 +51,14 @@ const EXCLUDE_DIRS = new Set([
   '__tests__',
   '__mocks__',
   'scripts',
-  'archive-v1',
 ]);
 
 const SOURCE_EXTS = ['.ts', '.tsx', '.js', '.jsx'];
+
+// Path prefixes that should never be walked. `supabase/functions` is Deno-side
+// code with different conventions (console.* logging, https:// imports) —
+// client-side audits don't apply.
+const EXCLUDE_PATH_PREFIXES = ['supabase/functions'];
 
 function isExcluded(absPath: string): boolean {
   const rel = relative(ROOT, absPath);
@@ -63,6 +67,9 @@ function isExcluded(absPath: string): boolean {
   if (rel.startsWith('..')) return true;
   const parts = rel.split('/');
   if (parts.some((p) => EXCLUDE_DIRS.has(p))) return true;
+  for (const prefix of EXCLUDE_PATH_PREFIXES) {
+    if (rel === prefix || rel.startsWith(prefix + '/')) return true;
+  }
   return false;
 }
 
@@ -186,6 +193,11 @@ const C2_EXEMPT_FILES = new Set([
   // It deliberately wraps RN Modal to escape host ScrollView / transform /
   // clipping contexts. This is the one place where RN Modal is the point.
   join(ROOT, 'components/MobilePremium/MobileDialog.tsx'),
+  // MobileSheet is the MobilePremium kit's canonical bottom/top sheet. Same
+  // load-bearing reason as MobileDialog: a sheet MUST portal to the OS level
+  // or it gets clipped by ancestor surfaces (MobileSurface has overflow:hidden
+  // + borderRadius, and host ScrollViews swallow absolute positioning).
+  join(ROOT, 'components/MobilePremium/MobileSheet.tsx'),
 ]);
 
 const C2_EXEMPT_REGEX = /\bc2-exempt\b/;

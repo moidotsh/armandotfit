@@ -20,6 +20,11 @@ export default defineConfig({
     alias: {
       '@': '.',
       'react-native': path.resolve(__dirname, './__mocks__/react-native.ts'),
+      'react-native-svg': path.resolve(__dirname, './__mocks__/react-native-svg.ts'),
+      '@react-native-community/datetimepicker': path.resolve(
+        __dirname,
+        './__mocks__/@react-native-community/datetimepicker.ts',
+      ),
     },
   },
 });

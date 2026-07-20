@@ -13,8 +13,8 @@ describe('theme', () => {
     expect(lightKeys).toEqual(darkKeys);
   });
 
-  it('uses indigo as the default brand color in light mode', () => {
-    expect(theme.colors.light.brand).toBe('#4F46E5');
+  it('uses armandotfit orange as the brand color in light mode', () => {
+    expect(theme.colors.light.brand).toBe('#FF9500');
   });
 
   it('exports typography tokens', () => {

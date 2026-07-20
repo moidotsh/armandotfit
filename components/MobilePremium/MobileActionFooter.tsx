@@ -22,7 +22,7 @@ import React from 'react';
 import { Platform, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePressedStyle } from '../premium/shared';
-import { theme } from '../../constants';
+import { theme, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
 import { MobilePrimaryButton, type MobilePrimaryButtonProps } from './MobilePrimaryButton';
 
@@ -139,9 +139,7 @@ export function MobileActionFooter({
 const styles = StyleSheet.create({
   // ── Structured mode ──────────────────────────────────────────────────
   container: {
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
     paddingTop: 12,
     paddingHorizontal: 20,
     borderTopWidth: 1,
@@ -162,9 +160,7 @@ const styles = StyleSheet.create({
 
   // ── Children mode (legacy) ───────────────────────────────────────────
   legacyContainer: {
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
     paddingHorizontal: 20,
     paddingTop: 8,
   },

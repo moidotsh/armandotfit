@@ -10,28 +10,30 @@
 //   • Horizontal layout — icon + text side-by-side, not the legacy
 //     left-border bar.
 //
-// API compatibility: accepts both `type` (qep-tracker API) and `variant`
-// (arqavellum legacy API) for the alert kind, and both `message` (qep-tracker)
-// and `body` (arqavellum legacy) for the supporting text.
+// API compatibility: accepts both `type` and `variant` for the alert kind
+// (same values, different prop name), and both `message` and `body` for the
+// supporting text. Consumers can use whichever pair fits their calling
+// convention; the component resolves `type ?? variant` and `message ?? body`.
 
 import React from 'react';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { AlertCircle, CheckCircle2, Info, AlertTriangle } from '@tamagui/lucide-icons-2';
 import { useAppTheme } from '../../context';
+import { MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 
 export type MobileAlertType = 'error' | 'warning' | 'success' | 'info';
 export type MobileAlertVariant = 'success' | 'warning' | 'error' | 'info';
 
 export interface MobileAlertProps {
-  /** Alert kind. qep-tracker API. */
+  /** Alert kind. `type` is the primary prop name. */
   type?: MobileAlertType;
-  /** Alert kind. Arqavellum legacy API (same values, different name). */
+  /** Alert kind. Alternative alias for `type` (same values, different name). */
   variant?: MobileAlertVariant;
   /** Single-line title. */
   title?: string;
-  /** Supporting message (1-2 lines). qep-tracker API. */
+  /** Supporting message (1-2 lines). `message` is the primary prop name. */
   message?: string;
-  /** Supporting message. Arqavellum legacy alias of `message`. */
+  /** Supporting message. Alternative alias for `message`. */
   body?: string;
   /** Test ID. */
   testID?: string;
@@ -122,9 +124,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
   },
   iconCircle: {
     width: 24,

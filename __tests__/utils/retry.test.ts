@@ -85,9 +85,9 @@ describe('isNetworkError', () => {
 
 describe('classifyMutationError', () => {
   it('classifies OFFLINE messages as offline', () => {
-    const result = classifyMutationError(new Error('OFFLINE'), 'save workout');
+    const result = classifyMutationError(new Error('OFFLINE'), 'save entry');
     expect(result.type).toBe('offline');
-    expect(result.message).toContain('Cannot save workout while offline');
+    expect(result.message).toContain('Cannot save entry while offline');
   });
 
   it('classifies network-pattern errors as network', () => {

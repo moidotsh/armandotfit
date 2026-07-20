@@ -1,15 +1,15 @@
 // components/MobilePremium/MobileSurface.tsx
-// The single material surface per screen. FORKED FROM qep-tracker — the
-// surface treatment is identical (gradient + hairline + glow + tint) but
-// every color reference resolves to `useAppTheme().colors.*` (the live
-// palette for the active colorScheme). Light is default; dark flips
-// automatically via the ThemeProvider.
+// The single material surface per screen. Surface treatment is gradient +
+// hairline + glow + tint; every color reference resolves to
+// `useAppTheme().colors.*` (the live palette for the active colorScheme).
+// Light is default; dark flips automatically via the ThemeProvider.
 
 import React, { useMemo } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { isWeb } from '../../utils';
 import { useAndroidChromeBlurFix } from '../../hooks';
 import { useAppTheme } from '../../context';
+import { MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 
 export interface MobileSurfaceProps {
   children?: React.ReactNode;
@@ -139,9 +139,7 @@ const styles = StyleSheet.create({
   surface: {
     position: 'relative',
     overflow: 'hidden',
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    ...MOBILE_CONTENT_WIDTH_STYLE,
   },
   innerHairline: {
     position: 'absolute',

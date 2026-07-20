@@ -4,7 +4,7 @@
 
 ## What armandotfit is
 
-The first consumer of arqavellum. Arqavellum absorbed the one-time architectural cost (47-pattern constitution, 10-audit pre-commit gate, repository pattern, MobilePremium design system forked to light, PWA runtime-injection block). Armandotfit owns its domain layer on top — the fitness logic that turns the shell into a shipping app.
+The first consumer of arqavellum. Arqavellum absorbed the one-time architectural cost (47-pattern constitution, 12-audit pre-commit gate, repository pattern, MobilePremium design system forked to light, PWA runtime-injection block). Armandotfit owns its domain layer on top — the fitness logic that turns the shell into a shipping app.
 
 - **PWA-first.** Static web export is the supported default; installable from the browser. Native iOS/Android export is an intentional consumer extension — armandotfit ships native scaffolding (`icon`, `ios`, `android`, `expo-splash-screen` plugin in `app.config.ts`) + branded PNGs at `./assets/`. Releasing native would require `eas.json`, EAS Build config, the consumer's own iOS bundle ID + Android application/package ID (replacing the `app.armandotfit` starter value), and platform validation.
 - **Light is the default; dark is opt-in.** Theme palette ships both modes; the active palette resolves at runtime via `useAppTheme()`.
@@ -41,7 +41,7 @@ Route (app/) → Hook (hooks/) → Service (services/) → Repository (utils/sup
 - **No hardcoded hex colors.** `audit-ui-theme.ts` (S7) enforces this — use `theme.colors.{light,dark}.*`.
 - **No `setInterval` without `clearInterval`.** `audit-runtime-resilience.ts` (R4a) enforces this.
 
-The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 10-audit pre-commit gate is documented in `CLAUDE.md` → "Pre-commit checks".
+The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 12-audit pre-commit gate is documented in `CLAUDE.md` → "Pre-commit checks".
 
 ## Domain shape
 

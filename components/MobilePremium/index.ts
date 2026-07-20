@@ -48,6 +48,62 @@ export type {
   MobileSelectionOption,
 } from './MobileSelectionList';
 
+export { SegmentedControl } from './SegmentedControl';
+export type { SegmentedControlProps, Segment } from './SegmentedControl';
+
+export { FilterChip } from './FilterChip';
+export type { FilterChipProps, FilterChipAccessibilityRole } from './FilterChip';
+
+export { FilterChipGroup } from './FilterChipGroup';
+export type { FilterChipGroupProps } from './FilterChipGroup';
+
+export { DisclosureRow } from './DisclosureRow';
+export type { DisclosureRowProps } from './DisclosureRow';
+
+export { EmptyState } from './EmptyState';
+export type { EmptyStateProps, EmptyStateAction } from './EmptyState';
+
+export { StatCard } from './StatCard';
+export type { StatCardProps, StatCardVariant, StatCardSize } from './StatCard';
+
+export { Avatar } from './Avatar';
+export type {
+  AvatarProps,
+  AvatarSize,
+  AvatarShape,
+  AvatarPresence,
+} from './Avatar';
+
+export { SegmentedProgress } from './SegmentedProgress';
+export type {
+  SegmentedProgressProps,
+  ProgressSegment,
+} from './SegmentedProgress';
+
+export { OfflineBanner } from './OfflineBanner';
+export type { OfflineBannerProps, OfflineBannerVariant } from './OfflineBanner';
+
+export { CarouselTutorial } from './CarouselTutorial';
+export type { CarouselTutorialProps, TutorialSlide } from './CarouselTutorial';
+
+export { Wizard } from './Wizard';
+export type { WizardProps, WizardStep } from './Wizard';
+
+export { ProgressRing } from './ProgressRing';
+export type { ProgressRingProps } from './ProgressRing';
+
+export { MobileSheet } from './MobileSheet';
+export type { MobileSheetProps } from './MobileSheet';
+
+export { DatePickerField } from './DatePickerField';
+export type { DatePickerFieldProps } from './DatePickerField';
+
+export { CalendarGrid } from './CalendarGrid';
+export type { CalendarGridProps } from './CalendarGrid';
+
+export { RevealMask } from './RevealMask';
+export type { RevealMaskProps, RevealMaskVariant } from './RevealMask';
+
 export { MobileStepRail } from './MobileStepRail';
 export type { MobileStepRailProps } from './MobileStepRail';
 

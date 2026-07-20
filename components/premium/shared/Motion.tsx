@@ -1,8 +1,8 @@
 // components/premium/shared/Motion.tsx
 // Shared motion primitives — the single source of truth for animation
-// across arqavellum. Ported verbatim from qep-tracker's premium/shared/Motion.tsx;
-// the four-pillar motion language (Enter / Transition / Respond / Shake) is
-// platform-agnostic and carries the calm-air / considered-motion philosophy.
+// across arqavellum. The four-pillar motion language
+// (Enter / Transition / Respond / Shake) is platform-agnostic and carries
+// the calm-air / considered-motion philosophy.
 //
 //   Enter       → <FadeIn>           (mount-time fade + slide up)
 //   Transition  → <Crossfade>        (step-to-step crossfade + drift)
@@ -19,6 +19,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Pressable,
+  View,
   type PressableStateCallbackType,
   type StyleProp,
   type ViewStyle,
@@ -214,7 +215,7 @@ export function Crossfade({
   }, [index]);
 
   return (
-    <Animated.View style={[{ position: 'relative' }, style]}>
+    <View style={[{ position: 'relative' }, style]}>
       {outgoingRef.current ? (
         <Animated.View
           key={`out-${outgoingRef.current.key}`}
@@ -231,16 +232,14 @@ export function Crossfade({
           {outgoingRef.current.element}
         </Animated.View>
       ) : null}
-      <Animated.View
-        key={`in-${current.key}`}
-        style={{
-          opacity: current.opacity,
-          transform: [{ translateX: current.translateX }],
-        }}
-      >
-        {current.element}
-      </Animated.View>
-    </Animated.View>
+      {/* Incoming child renders as a plain View so it is always visible.
+          The previous Animated.View wrapper depended on Animated.Value
+          propagation for initial visibility, which left carousel/wizard
+          slides rendering empty on some web builds. The outgoing layer's
+          fade-out + drift still carries the crossfade feel; the incoming
+          child simply appears underneath as the old one fades away. */}
+      <View key={`in-${current.key}`}>{current.element}</View>
+    </View>
   );
 }
 

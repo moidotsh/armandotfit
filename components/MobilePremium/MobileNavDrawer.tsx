@@ -12,9 +12,9 @@
 //     context.
 //   • 'cutout': panel + scrim start below the home header so the brand
 //     and hamburger (which the consumer swaps to X) stay visible at the
-//     same position. Matches the qep-tracker pattern. The `header` prop
-//     is ignored. The consumer's home header must render at the same
-//     x/y position so the brand persists visually as the drawer slides.
+//     same position. The `header` prop is ignored. The consumer's home
+//     header must render at the same x/y position so the brand persists
+//     visually as the drawer slides.
 //
 // Premium signals:
 //   • Slides in from the left with an iOS-sheet curve
@@ -235,7 +235,7 @@ export function MobileNavDrawer({
       return activePathname === '/' || activePathname === '' || activePathname == null;
     }
     if (activePathname == null) return false;
-    // startsWith so nested routes (e.g. /workout-detail/123) highlight
+    // startsWith so nested routes (e.g. /items/123) highlight
     // their parent item.
     return activePathname === id || activePathname.startsWith(`${id}/`);
   };
