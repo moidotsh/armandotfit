@@ -25,3 +25,6 @@ export type { HamburgerButtonProps } from './HamburgerButton';
 export { DashboardSkeleton } from './DashboardSkeleton';
 export { WorkoutListSkeleton } from './WorkoutListSkeleton';
 export type { WorkoutListSkeletonProps } from './WorkoutListSkeleton';
+
+export { TrainingConsistencyGrid } from './TrainingConsistencyGrid';
+export type { TrainingConsistencyGridProps } from './TrainingConsistencyGrid';

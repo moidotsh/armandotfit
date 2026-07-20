@@ -1,7 +1,9 @@
 // app/analytics.tsx
-// Analytics screen — daily-aggregate history + weekly bucketing. The
-// chart layer (a real chart lib) lands in a-Phase 5; for now the weekly
-// bucketing renders as a text bar-chart so the data is visible.
+// Analytics screen — daily-aggregate history + weekly bucketing + a
+// training-consistency grid over the selected range. The chart layer
+// (a real chart lib) lands in a-Phase 5; for now the weekly bucketing
+// renders as a text bar-chart so the data is visible, and the
+// consistency grid surfaces per-day workout density as a heatmap.
 
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -13,15 +15,24 @@ import {
   MobileSectionEyebrow,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
+import { TrainingConsistencyGrid } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory } from '../hooks';
 import { AnalyticsService } from '../services';
+import { addDays } from '../utils';
 import { SCREEN_BODY_STYLE } from '../constants';
 
 type Range = 7 | 30 | 90;
 
 const RANGE_OPTIONS: Range[] = [7, 30, 90];
+
+function toISODate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 export default function AnalyticsScreen() {
   const { colors } = useAppTheme();
@@ -34,6 +45,15 @@ export default function AnalyticsScreen() {
   }, [historyQuery.data]);
 
   const maxWorkouts = Math.max(1, ...weekly.map((w) => w.totalWorkouts));
+
+  // Grid range: today + range days back (matches the repository's
+  // `gte(date, today - daysBack)` filter so every row returned by the
+  // hook lands on a visible cell).
+  const gridRange = useMemo(() => {
+    const end = new Date();
+    const start = addDays(end, -range);
+    return { startDate: toISODate(start), endDate: toISODate(end) };
+  }, [range]);
 
   return (
     <SafeAreaView
@@ -64,6 +84,21 @@ export default function AnalyticsScreen() {
             </Text>
           ))}
         </View>
+
+        <View style={{ height: 16 }} />
+        <MobileSectionEyebrow>Training consistency</MobileSectionEyebrow>
+        <MobileSurface padding={16}>
+          {historyQuery.isLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <TrainingConsistencyGrid
+              data={historyQuery.data ?? []}
+              startDate={gridRange.startDate}
+              endDate={gridRange.endDate}
+              testID="analytics-consistency-grid"
+            />
+          )}
+        </MobileSurface>
 
         <View style={{ height: 16 }} />
         <MobileSectionEyebrow>Workouts per week</MobileSectionEyebrow>
