@@ -25,10 +25,9 @@
  *         active / ...), it is flagged. The window is approximate — regex
  *         can't brace-match — so triage handles misfires.
  *
- * Arqavellum does not ship the qep-tracker R1 RPC `verify_session` audit
- * (that's a separate `audit-rpc-auth.ts` for PIN-based auth — arqavellum
- * uses email/password by default; a consumer re-adds it if they switch
- * to PIN auth).
+ * This repo does not ship the R1 RPC `verify_session` audit (that's a
+ * separate `audit-rpc-auth.ts` for PIN-based auth — this repo uses
+ * email/password by default; re-add it if switching to PIN auth).
  *
  * Suppress R4 with `// r4-exempt` and R1 with `// r1-exempt` (300-char
  * lookback before the reported match).

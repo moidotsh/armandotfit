@@ -9,8 +9,10 @@
 //     (13/600), subtitle uses 12/400 muted.
 //   • Surface-tinted background when checked (subtle, no thick accent bar).
 //
-// API compatibility: accepts both `title`/`subtitle` (qep-tracker API) and
-// `label`/`helperText` (arqavellum legacy API).
+// API compatibility: accepts both `title`/`subtitle` and `label`/`helperText`
+// prop pairs (same values, different prop names). Consumers can use whichever
+// pair fits their calling convention; the component resolves
+// `title ?? label` and `subtitle ?? helperText`.
 
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
@@ -20,13 +22,13 @@ import { theme } from '../../constants';
 import { useAppTheme } from '../../context';
 
 export interface MobileCheckboxItemProps {
-  /** Checkbox title. qep-tracker API. */
+  /** Checkbox title. `title` is the primary prop name. */
   title?: string;
-  /** Optional supporting copy under the title. qep-tracker API. */
+  /** Optional supporting copy under the title. `subtitle` is the primary prop name. */
   subtitle?: string;
-  /** Checkbox label. Arqavellum legacy alias of `title`. */
+  /** Checkbox label. Alternative alias for `title`. */
   label?: string;
-  /** Helper text. Arqavellum legacy alias of `subtitle`. */
+  /** Helper text. Alternative alias for `subtitle`. */
   helperText?: string;
   /** Current checked state. */
   checked: boolean;

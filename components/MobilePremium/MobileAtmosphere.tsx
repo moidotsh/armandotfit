@@ -2,9 +2,9 @@
 // Universal mobile atmosphere — a continuous drifting color-field
 // background that runs behind every surface in the light premium kit.
 //
-// FORKED FROM qep-tracker — surface semantics carry over (auth/setup/training/
-// goal/instructions/privacy/analytics), but every palette stop is retuned
-// for light surfaces. See components/premium/shared/atmospherePalettes.ts.
+// Surface semantics (auth/setup/training/goal/instructions/privacy/analytics)
+// are domain-agnostic; every palette stop is retuned for light surfaces.
+// See components/premium/shared/atmospherePalettes.ts.
 //
 // Each surface gets a palette stop that reflects its role:
 //   • auth          — soft sky-blue on pale ice

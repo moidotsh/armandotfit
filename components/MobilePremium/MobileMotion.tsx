@@ -1,8 +1,8 @@
 // components/MobilePremium/MobileMotion.tsx
 // Re-export of the shared motion primitives under the MobilePremium namespace.
-// Kept for backwards compatibility — qep-tracker consumers that imported
-// motion from `components/MobilePremium/MobileMotion` can drop their import
-// path in unchanged. New consumers should import from `components/premium/shared`
+// Kept for backwards compatibility — consumers that imported motion from
+// `components/MobilePremium/MobileMotion` can keep their import path
+// unchanged. New consumers should import from `components/premium/shared`
 // directly (it's the canonical source).
 
 export {

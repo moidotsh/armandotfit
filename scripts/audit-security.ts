@@ -23,8 +23,6 @@
  *
  * No --fix mode: these violations aren't safely auto-fixable.
  *
- * Mirrors the structure of the qep-tracker audit-security.ts.
- *
  * Run: `bun run scripts/audit-security.ts`
  * Exits 1 on any violation, 0 otherwise.
  */

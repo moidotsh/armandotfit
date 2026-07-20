@@ -19,8 +19,6 @@
  *
  * No --fix mode: these violations aren't safely auto-fixable.
  *
- * Mirrors the structure of the qep-tracker audit-ui-theme.ts.
- *
  * Run: `bun run scripts/audit-ui-theme.ts`
  * Exits 1 on any violation, 0 otherwise.
  */
