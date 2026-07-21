@@ -7,4 +7,4 @@ export { AuthProvider, useAuth } from './AuthContext';
 export { ThemeProvider, useAppTheme } from './ThemeContext';
 export type { ColorSchemePreference } from './ThemeContext';
 export { ToastProvider, useToast } from './ToastContext';
-export type { Toast, ToastType } from './ToastContext';
+export type { Toast, ToastType, ToastAction, ToastShowOptions } from './ToastContext';

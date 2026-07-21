@@ -75,6 +75,22 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
       <Text style={[styles.message, { color: colors.text }]} numberOfLines={3}>
         {toast.message}
       </Text>
+      {toast.action ? (
+        <Pressable
+          onPress={() => {
+            toast.action?.onPress();
+            onDismiss(toast.id);
+          }}
+          hitSlop={8}
+          style={styles.actionButton}
+          accessibilityRole="button"
+          accessibilityLabel={toast.action.label}
+        >
+          <Text style={[styles.actionLabel, { color: colors.brand }]} numberOfLines={1}>
+            {toast.action.label}
+          </Text>
+        </Pressable>
+      ) : null}
       <Pressable
         onPress={() => onDismiss(toast.id)}
         hitSlop={8}
@@ -157,6 +173,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     lineHeight: 18,
+  },
+  actionButton: {
+    // 44pt inclusive tap target per HIG; label sits at the compact
+    // rhythm of the rest of the toast. Shrink-resistant so a long
+    // label truncates instead of pushing the close button off-card.
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  actionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   closeButton: {
     width: 24,
