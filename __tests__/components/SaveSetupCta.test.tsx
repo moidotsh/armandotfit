@@ -8,24 +8,23 @@
 //      When the exercise cannot resolve to exactly one capability, the
 //      CTA stays hidden and Settings remains the only creation path
 //      (documented fallback).
-//   2. Prefill — opening the sheet prefills the label with the
-//      capability label + attachment/grip/notes hint.
-//   3. Submit gate — the Save setup button is disabled when the label
-//      trims to empty.
-//   4. Create dispatch — tapping Save calls useCreateSetupPreset.mutate
-//      with the resolved capability + the snapshot's grip/attachment/
-//      notes values.
-//   5. Success — closes the sheet and calls onSaved with the new preset
-//      (parent uses it to flip applied acknowledgement state).
+//   2. Create dispatch — tapping the chip calls
+//      useCreateSetupPreset.mutate with an auto-generated label that
+//      captures every setup dimension (exercise · attachment · grip ·
+//      notes, null segments skipped) plus the resolved capability and
+//      the snapshot's grip/attachment/notes values. One tap, no sheet.
+//   3. Auto-label structure — the dispatched label starts with the
+//      exercise name (not the capability) and includes each non-null
+//      setup dimension in the documented order.
+//   4. Success — calls onSaved with the new preset (parent uses it to
+//      flip applied acknowledgement state).
 //
 // Query convention: this repo's tests query by text content (RN testID
 // renders as `testid` in jsdom, not `data-testid`, so getByTestId does
-// not match). The label input is reached via querySelector on the
-// testid attribute; the submit button is reached via its "Save setup"
-// text.
+// not match). The chip is reached via its "+ Save setup" label text.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import { render, fireEvent, cleanup } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { ThemeProvider, ToastProvider } from '../../context';
 import { screenHookStubs } from '../setup';
@@ -47,11 +46,13 @@ const EMPTY_SNAPSHOT = {
   equipmentNotes: null,
 };
 
+const EXERCISE_NAME = 'Cable Bicep Curl';
+
 function makeCreatedPreset(overrides: Partial<SetupPreset> = {}): SetupPreset {
   return {
     id: 'preset-new',
     userId: 'user-1',
-    label: 'Cable station · rope',
+    label: 'Cable Bicep Curl · rope',
     capabilitySlug: EquipmentCapabilitySlug.CABLE_STATION,
     gripText: 'neutral',
     attachmentSlug: 'rope',
@@ -62,20 +63,6 @@ function makeCreatedPreset(overrides: Partial<SetupPreset> = {}): SetupPreset {
     updatedAt: '2026-07-26T00:00:00Z',
     ...overrides,
   };
-}
-
-// Locate the textinput inside the labeled wrapper. RN's testID mock
-// renders as the lowercase `testid` DOM attribute; we reach it via
-// querySelector rather than getByTestId. Returns the custom element
-// (RN textinput is not a real HTMLInputElement in jsdom).
-function labelInput(container: HTMLElement): Element {
-  const input = container.querySelector(
-    '[testid="save-setup-cta-label"] textinput',
-  );
-  if (!input) {
-    throw new Error('label textinput not rendered');
-  }
-  return input;
 }
 
 beforeEach(() => {
@@ -94,6 +81,7 @@ describe('SaveSetupCta — visibility gate', () => {
       <Wrap>
         <SaveSetupCta
           resolvedCapability={EquipmentCapabilitySlug.CABLE_STATION}
+          exerciseName={EXERCISE_NAME}
           setupSnapshot={EMPTY_SNAPSHOT}
           onSaved={() => {}}
         />
@@ -103,13 +91,14 @@ describe('SaveSetupCta — visibility gate', () => {
   });
 
   it('renders null when resolvedCapability is null (ambiguous / no-resolved-capability fallback)', () => {
-    // This is the documented fallback: when the exercise resolves to
-    // zero or >1 capabilities, the CTA stays hidden and Settings is the
-    // only creation path. The component must NOT render or guess.
+    // Documented fallback: when the exercise resolves to zero or >1
+    // capabilities, the CTA stays hidden and Settings is the only
+    // creation path. The component must NOT render or guess.
     const { container } = render(
       <Wrap>
         <SaveSetupCta
           resolvedCapability={null}
+          exerciseName={EXERCISE_NAME}
           setupSnapshot={{
             gripText: 'neutral',
             attachmentSlug: 'rope',
@@ -129,6 +118,7 @@ describe('SaveSetupCta — visibility gate', () => {
       <Wrap>
         <SaveSetupCta
           resolvedCapability={'time-machine' as unknown as string}
+          exerciseName={EXERCISE_NAME}
           setupSnapshot={{
             gripText: 'neutral',
             attachmentSlug: null,
@@ -141,11 +131,12 @@ describe('SaveSetupCta — visibility gate', () => {
     expect(container.textContent).toBe('');
   });
 
-  it('renders the CTA when ≥1 setup value AND a known resolvedCapability are present', () => {
+  it('renders the chip when ≥1 setup value AND a known resolvedCapability are present', () => {
     const { getByText } = render(
       <Wrap>
         <SaveSetupCta
           resolvedCapability={EquipmentCapabilitySlug.CABLE_STATION}
+          exerciseName={EXERCISE_NAME}
           setupSnapshot={{
             gripText: 'neutral',
             attachmentSlug: null,
@@ -155,7 +146,7 @@ describe('SaveSetupCta — visibility gate', () => {
         />
       </Wrap>,
     );
-    expect(getByText('+ Save as setup')).toBeTruthy();
+    expect(getByText('+ Save setup')).toBeTruthy();
   });
 
   it('renders when only equipmentNotes is set (notes-only is a legitimate save trigger)', () => {
@@ -163,6 +154,7 @@ describe('SaveSetupCta — visibility gate', () => {
       <Wrap>
         <SaveSetupCta
           resolvedCapability={EquipmentCapabilitySlug.CABLE_STATION}
+          exerciseName={EXERCISE_NAME}
           setupSnapshot={{
             gripText: null,
             attachmentSlug: null,
@@ -172,73 +164,14 @@ describe('SaveSetupCta — visibility gate', () => {
         />
       </Wrap>,
     );
-    expect(getByText('+ Save as setup')).toBeTruthy();
+    expect(getByText('+ Save setup')).toBeTruthy();
   });
 });
 
-// ─── Prefill behavior ────────────────────────────────────────────────
-
-describe('SaveSetupCta — label prefill', () => {
-  it('prefills the label input with capability · attachment when the sheet opens', () => {
-    const { getByText, container } = render(
-      <Wrap>
-        <SaveSetupCta
-          resolvedCapability={EquipmentCapabilitySlug.CABLE_STATION}
-          setupSnapshot={{
-            gripText: null,
-            attachmentSlug: 'rope',
-            equipmentNotes: null,
-          }}
-          onSaved={() => {}}
-        />
-      </Wrap>,
-    );
-    fireEvent.click(getByText('+ Save as setup'));
-    // The controlled value lands as a `value` attribute on the RN
-    // textinput custom element — read it via getAttribute (the element
-    // is not a real HTMLInputElement, so `.value` is undefined).
-    const value = labelInput(container).getAttribute('value') ?? '';
-    expect(value).toMatch(/Cable station/i);
-    expect(value).toMatch(/rope/);
-  });
-
-  it('falls back to grip when attachment is null', () => {
-    const { getByText, container } = render(
-      <Wrap>
-        <SaveSetupCta
-          resolvedCapability={EquipmentCapabilitySlug.CABLE_STATION}
-          setupSnapshot={{
-            gripText: 'neutral',
-            attachmentSlug: null,
-            equipmentNotes: null,
-          }}
-          onSaved={() => {}}
-        />
-      </Wrap>,
-    );
-    fireEvent.click(getByText('+ Save as setup'));
-    const value = labelInput(container).getAttribute('value') ?? '';
-    expect(value).toMatch(/neutral/);
-  });
-});
-
-// ─── Submit gate ─────────────────────────────────────────────────────
-//
-// The `disabled={!trimmedLabel}` JSX gate is trivial and positively
-// exercised by the create-dispatch test below (the prefilled non-empty
-// label yields a non-disabled submit that fires mutate). The negative
-// direction (empty label → disabled) requires simulating a TextInput
-// value change, which this repo's RN mock doesn't support cleanly in
-// jsdom — see ExerciseSetupRow.test.tsx for the same constraint.
-// Coverage of the empty case is provided by the boundary validator
-// test (__tests__/repositories/SetupPresetRepository.test.ts), which
-// rejects a 0-length label at the repository boundary regardless of
-// what the UI does.
-
-// ─── Create dispatch + success ───────────────────────────────────────
+// ─── Create dispatch (one tap, auto-label) ───────────────────────────
 
 describe('SaveSetupCta — create dispatch', () => {
-  it('calls useCreateSetupPreset.mutate with the resolved capability + the snapshot setup values', () => {
+  it('calls useCreateSetupPreset.mutate with the auto-label, capability, and snapshot values on a single tap', () => {
     const mutate = vi.fn();
     screenHookStubs.useCreateSetupPreset.mockReturnValue({
       mutate,
@@ -248,32 +181,128 @@ describe('SaveSetupCta — create dispatch', () => {
       <Wrap>
         <SaveSetupCta
           resolvedCapability={EquipmentCapabilitySlug.CABLE_STATION}
+          exerciseName={EXERCISE_NAME}
           setupSnapshot={{
-            gripText: 'neutral',
-            attachmentSlug: 'rope',
-            equipmentNotes: 'Column 3',
+            gripText: 'Reverse grip',
+            attachmentSlug: 'EZ-Bar',
+            equipmentNotes: 'Window',
           }}
           onSaved={() => {}}
         />
       </Wrap>,
     );
-    fireEvent.click(getByText('+ Save as setup'));
-    // Submit with the prefilled label.
-    fireEvent.click(getByText('Save setup'));
+    // One tap on the chip — no sheet, no second tap.
+    fireEvent.click(getByText('+ Save setup'));
     expect(mutate).toHaveBeenCalledTimes(1);
     const [vars] = mutate.mock.calls[0];
     expect(vars).toEqual({
       dto: {
         label: expect.any(String),
         capabilitySlug: EquipmentCapabilitySlug.CABLE_STATION,
-        gripText: 'neutral',
-        attachmentSlug: 'rope',
-        equipmentNotes: 'Column 3',
+        gripText: 'Reverse grip',
+        attachmentSlug: 'EZ-Bar',
+        equipmentNotes: 'Window',
       },
     });
   });
 
-  it('on success: closes the sheet, calls onSaved with the new preset', async () => {
+  it('auto-label captures exercise name first, then attachment, grip, and notes in that order', () => {
+    const mutate = vi.fn();
+    screenHookStubs.useCreateSetupPreset.mockReturnValue({
+      mutate,
+      isPending: false,
+    });
+    const { getByText } = render(
+      <Wrap>
+        <SaveSetupCta
+          resolvedCapability={EquipmentCapabilitySlug.CABLE_STATION}
+          exerciseName="Cable Bicep Curl"
+          setupSnapshot={{
+            gripText: 'Reverse grip',
+            attachmentSlug: 'EZ-Bar',
+            equipmentNotes: 'Window',
+          }}
+          onSaved={() => {}}
+        />
+      </Wrap>,
+    );
+    fireEvent.click(getByText('+ Save setup'));
+    const [vars] = mutate.mock.calls[0];
+    const label: string = vars.dto.label;
+    // Exercise name anchors the label (not capability).
+    expect(label.startsWith('Cable Bicep Curl')).toBe(true);
+    // Capability is dropped from the label entirely.
+    expect(label).not.toMatch(/Cable station/i);
+    // Each non-null dimension is present, in the documented order:
+    // exercise → attachment → grip → notes.
+    const exIdx = label.indexOf('Cable Bicep Curl');
+    const attachIdx = label.indexOf('EZ-Bar');
+    const gripIdx = label.indexOf('Reverse grip');
+    const notesIdx = label.indexOf('Window');
+    expect(exIdx).toBeLessThan(attachIdx);
+    expect(attachIdx).toBeLessThan(gripIdx);
+    expect(gripIdx).toBeLessThan(notesIdx);
+    // Middle-dot separator.
+    expect(label).toContain(' · ');
+  });
+
+  it('auto-label skips null segments (attachment omitted)', () => {
+    const mutate = vi.fn();
+    screenHookStubs.useCreateSetupPreset.mockReturnValue({
+      mutate,
+      isPending: false,
+    });
+    const { getByText } = render(
+      <Wrap>
+        <SaveSetupCta
+          resolvedCapability={EquipmentCapabilitySlug.CABLE_STATION}
+          exerciseName="Cable Bicep Curl"
+          setupSnapshot={{
+            gripText: 'Reverse grip',
+            attachmentSlug: null,
+            equipmentNotes: null,
+          }}
+          onSaved={() => {}}
+        />
+      </Wrap>,
+    );
+    fireEvent.click(getByText('+ Save setup'));
+    const [vars] = mutate.mock.calls[0];
+    // Exercise + grip only, no trailing separators.
+    expect(vars.dto.label).toBe('Cable Bicep Curl · Reverse grip');
+  });
+
+  it('does not dispatch mutate when the visibility gate is closed (tap is unreachable)', () => {
+    // Sanity: when the component renders null, there is no chip to tap.
+    // The contract is that mutate is only callable when visible.
+    const mutate = vi.fn();
+    screenHookStubs.useCreateSetupPreset.mockReturnValue({
+      mutate,
+      isPending: false,
+    });
+    const { container } = render(
+      <Wrap>
+        <SaveSetupCta
+          resolvedCapability={null}
+          exerciseName={EXERCISE_NAME}
+          setupSnapshot={{
+            gripText: 'neutral',
+            attachmentSlug: 'rope',
+            equipmentNotes: null,
+          }}
+          onSaved={() => {}}
+        />
+      </Wrap>,
+    );
+    expect(container.textContent).toBe('');
+    expect(mutate).not.toHaveBeenCalled();
+  });
+});
+
+// ─── Success ─────────────────────────────────────────────────────────
+
+describe('SaveSetupCta — success', () => {
+  it('on success: calls onSaved with the new preset', () => {
     let captured: { onSuccess?: (p: SetupPreset) => void; onError?: (e: Error) => void } = {};
     const mutate = vi.fn((_vars, opts) => {
       captured = opts ?? {};
@@ -283,10 +312,11 @@ describe('SaveSetupCta — create dispatch', () => {
       isPending: false,
     });
     const onSaved = vi.fn();
-    const { getByText, container, queryByText } = render(
+    const { getByText } = render(
       <Wrap>
         <SaveSetupCta
           resolvedCapability={EquipmentCapabilitySlug.CABLE_STATION}
+          exerciseName={EXERCISE_NAME}
           setupSnapshot={{
             gripText: 'neutral',
             attachmentSlug: 'rope',
@@ -296,19 +326,10 @@ describe('SaveSetupCta — create dispatch', () => {
         />
       </Wrap>,
     );
-    fireEvent.click(getByText('+ Save as setup'));
-    fireEvent.click(getByText('Save setup'));
+    fireEvent.click(getByText('+ Save setup'));
     expect(captured.onSuccess).toBeDefined();
     const newPreset = makeCreatedPreset();
     captured.onSuccess!(newPreset);
-    // Sheet closes — the "Capability ·" line unmounts.
-    await waitFor(() => {
-      expect(queryByText(/Capability ·/)).toBeNull();
-    });
-    // Label input wrapper unmounts too.
-    expect(
-      container.querySelector('[testid="save-setup-cta-label"]'),
-    ).toBeNull();
     expect(onSaved).toHaveBeenCalledTimes(1);
     expect(onSaved).toHaveBeenCalledWith(newPreset);
   });

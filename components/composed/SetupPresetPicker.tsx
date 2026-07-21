@@ -18,11 +18,14 @@
 //     a visible acknowledgement row with a Clear affordance. Clear
 //     dispatches onClear — the parent patches the draft setup fields
 //     back to null. No preset id is written to the draft or to history.
-//   • When there are zero compatible presets, renders a compact empty
-//     state that directs the user to enter setup values above (and tap
-//     "Save as setup" — handled by the sibling SaveSetupCta component
-//     in the same exercise card). An optional onManage link is included
-//     only when the parent wires it, so the workout flow stays uncluttered.
+//   • Accepts an optional saveAffordance node (typically a
+//     <SaveSetupCta/>) rendered inside the chip row after preset chips.
+//     When saveAffordance is provided AND zero compatible presets
+//     exist, the saveAffordance renders alone — no empty box.
+//   • When saveAffordance is absent AND zero compatible presets exist,
+//     renders a compact helper line pointing the user to the setup
+//     inputs above. Management lives in Settings, reached deliberately
+//     from the Settings menu — no inline navigation link.
 //
 // What this component does NOT do:
 //   • It does not own preset state — the parent (screen) does.
@@ -32,6 +35,8 @@
 //     job, threaded through workoutStore.toLogWorkoutDTO.
 //   • It does not write a preset id anywhere — the appliedPresetId is
 //     purely client-side acknowledgement state owned by the parent.
+//   • It does not navigate. The "Manage setups" link was removed;
+//     management lives in Settings, not mid-workout.
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -66,12 +71,13 @@ export interface SetupPresetPickerProps {
    */
   onClear?: () => void;
   /**
-   * Optional: dispatched when the user taps "Manage setups" in the
-   * empty state. Parent typically routes to /setup-presets. Omit to
-   * keep the workout flow uncluttered when no management surface is
-   * desired inline.
+   * Optional: the inline save affordance (typically <SaveSetupCta/>).
+   * Rendered inside the chip row after any compatible preset chips.
+   * When provided AND zero compatible presets exist, this renders
+   * alone — the empty-state box is suppressed in favor of the
+   * saveAffordance standing in as the call to action.
    */
-  onManage?: () => void;
+  saveAffordance?: React.ReactNode;
 }
 
 export function SetupPresetPicker({
@@ -82,7 +88,7 @@ export function SetupPresetPicker({
   onApply,
   appliedPresetId = null,
   onClear,
-  onManage,
+  saveAffordance,
 }: SetupPresetPickerProps) {
   const { colors } = useAppTheme();
 
@@ -99,6 +105,13 @@ export function SetupPresetPicker({
       presets.find((p) => p.id === appliedPresetId) ??
       null
     : null;
+
+  // When the parent provides a saveAffordance, it stands in for the
+  // empty-state box — the chip itself is the call to action, no extra
+  // copy needed. When no saveAffordance is provided (e.g. capability
+  // unresolved, or nothing to save), fall back to a compact helper.
+  const showEmptyBox = compatible.length === 0 && !saveAffordance;
+  const showChipRow = compatible.length > 0 || !!saveAffordance;
 
   return (
     <View
@@ -149,7 +162,7 @@ export function SetupPresetPicker({
         </View>
       ) : null}
 
-      {compatible.length > 0 ? (
+      {showChipRow ? (
         <FilterChipGroup>
           {compatible.map((preset) => (
             <FilterChip
@@ -161,8 +174,11 @@ export function SetupPresetPicker({
               accessibilityLabel={`Use saved setup ${preset.label}`}
             />
           ))}
+          {saveAffordance}
         </FilterChipGroup>
-      ) : (
+      ) : null}
+
+      {showEmptyBox ? (
         <View
           style={[
             styles.emptyBox,
@@ -173,24 +189,10 @@ export function SetupPresetPicker({
           ]}
         >
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            No saved setup fits this exercise yet. Enter your setup above
-            and tap “Save as setup” to reuse it next time.
+            Enter setup above to save.
           </Text>
-          {onManage ? (
-            <Pressable
-              onPress={onManage}
-              accessibilityRole="link"
-              accessibilityLabel="Manage saved setups"
-              hitSlop={6}
-              style={styles.emptyManageLink}
-            >
-              <Text style={[styles.manageLink, { color: colors.brand }]}>
-                Manage setups
-              </Text>
-            </Pressable>
-          ) : null}
         </View>
-      )}
+      ) : null}
     </View>
   );
 }
@@ -239,19 +241,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    gap: 6,
   },
   emptyText: {
     fontSize: 11,
     lineHeight: 14,
-  },
-  emptyManageLink: {
-    alignSelf: 'flex-start',
-    marginTop: 2,
-  },
-  manageLink: {
-    fontSize: 11,
-    fontWeight: '600',
   },
 });
 

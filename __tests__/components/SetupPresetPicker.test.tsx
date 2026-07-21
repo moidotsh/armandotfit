@@ -9,7 +9,7 @@
 //      the user where to go next.
 //   2. Zero-compatible empty state copy renders when no preset passes
 //      the field-level rule (capability match + per-field catalog
-//      governance).
+//      governance) AND no saveAffordance is provided.
 //   3. Renders one chip per compatible preset, labeled with preset.label.
 //   4. Tapping a chip dispatches onApply with the matched preset.
 //   5. Capability gate — a preset whose capability is not in the
@@ -23,6 +23,10 @@
 //      a compatible preset; tapping Clear dispatches onClear.
 //  10. Vocabulary preservation — rope vs cable-rope are distinct slugs
 //      (no normalization).
+//  11. saveAffordance slot — when provided, the node renders INSIDE the
+//      chip row after preset chips. When provided AND zero compatible
+//      presets exist, the saveAffordance renders alone (no empty box).
+//      The empty-box copy is suppressed in that case.
 
 import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
@@ -57,6 +61,12 @@ const CABLE_CAPS = [EquipmentCapabilitySlug.CABLE_STATION];
 const CABLE_GRIPS = ['neutral'];
 const CABLE_ATTACHMENTS = ['rope', 'straight-bar'];
 
+// A stand-in for the <SaveSetupCta/> node the parent threads in. Tests
+// only care that the node lands in the DOM where the picker puts it.
+function SaveAffordanceStub() {
+  return <>{'+ Save setup'}</>;
+}
+
 describe('SetupPresetPicker — always-render + helper text', () => {
   it('renders the "Saved equipment setups" eyebrow + helper text even when the preset list is empty', () => {
     const { getByText } = render(
@@ -80,7 +90,7 @@ describe('SetupPresetPicker — always-render + helper text', () => {
     ).toBeTruthy();
   });
 
-  it('renders the zero-compatible empty state copy when no preset passes the field-level rule', () => {
+  it('renders the zero-compatible empty-state copy when no preset passes the field-level rule and no saveAffordance is provided', () => {
     // Capability mismatch — preset is for dumbbells, exercise is cable.
     const { getByText } = render(
       <Wrap>
@@ -95,12 +105,10 @@ describe('SetupPresetPicker — always-render + helper text', () => {
         />
       </Wrap>,
     );
-    expect(
-      getByText(/No saved setup fits this exercise yet/),
-    ).toBeTruthy();
+    expect(getByText(/Enter setup above to save\./)).toBeTruthy();
   });
 
-  it('renders the zero-compatible empty state copy when capability matches but grip is not declared', () => {
+  it('renders the zero-compatible empty-state copy when capability matches but grip is not declared', () => {
     // Capability matches but the preset's grip is not in the catalog
     // options for this exercise — the field-level rule filters it out.
     const { getByText, queryByText } = render(
@@ -114,9 +122,7 @@ describe('SetupPresetPicker — always-render + helper text', () => {
         />
       </Wrap>,
     );
-    expect(
-      getByText(/No saved setup fits this exercise yet/),
-    ).toBeTruthy();
+    expect(getByText(/Enter setup above to save\./)).toBeTruthy();
     expect(queryByText('Bad grip')).toBeNull();
   });
 });
@@ -259,38 +265,49 @@ describe('SetupPresetPicker — applied acknowledgement + Clear', () => {
   });
 });
 
-describe('SetupPresetPicker — Manage link', () => {
-  it('renders the "Manage setups" link in the empty state when onManage is provided', () => {
-    const onManage = vi.fn();
+describe('SetupPresetPicker — saveAffordance slot', () => {
+  it('renders the saveAffordance inside the chip row alongside compatible preset chips', () => {
+    const preset = makePreset({ id: 'p1', label: 'Rope low', attachmentSlug: 'rope' });
     const { getByText } = render(
       <Wrap>
         <SetupPresetPicker
-          presets={[]}
+          presets={[preset]}
           exerciseCapabilities={CABLE_CAPS}
           exerciseGripOptions={CABLE_GRIPS}
           exerciseAttachmentOptions={CABLE_ATTACHMENTS}
           onApply={() => {}}
-          onManage={onManage}
+          saveAffordance={<SaveAffordanceStub />}
         />
       </Wrap>,
     );
-    fireEvent.click(getByText('Manage setups'));
-    expect(onManage).toHaveBeenCalledTimes(1);
+    // Both the compatible preset chip and the save affordance render
+    // in the same row.
+    expect(getByText('Rope low')).toBeTruthy();
+    expect(getByText('+ Save setup')).toBeTruthy();
   });
 
-  it('does NOT render the "Manage setups" link when onManage is omitted', () => {
-    const { queryByText } = render(
+  it('renders the saveAffordance ALONE (no empty box) when zero compatible presets exist', () => {
+    // No compatible presets (capability mismatch), but a saveAffordance
+    // is provided. The affordance stands in for the empty-state box —
+    // the chip itself is the call to action.
+    const { getByText, queryByText } = render(
       <Wrap>
         <SetupPresetPicker
-          presets={[]}
+          presets={[
+            makePreset({ capabilitySlug: EquipmentCapabilitySlug.DUMBBELLS }),
+          ]}
           exerciseCapabilities={CABLE_CAPS}
           exerciseGripOptions={CABLE_GRIPS}
           exerciseAttachmentOptions={CABLE_ATTACHMENTS}
           onApply={() => {}}
+          saveAffordance={<SaveAffordanceStub />}
         />
       </Wrap>,
     );
-    expect(queryByText('Manage setups')).toBeNull();
+    expect(getByText('+ Save setup')).toBeTruthy();
+    // The empty-state helper copy does NOT render when saveAffordance
+    // is present — the chip replaces it.
+    expect(queryByText(/Enter setup above to save\./)).toBeNull();
   });
 });
 
@@ -309,7 +326,7 @@ describe('SetupPresetPicker — Option A (notes-only allowed for any capability-
     );
     expect(getByText('Notes only')).toBeTruthy();
     // Empty state copy does NOT render — at least one compatible preset exists.
-    expect(queryByText(/No saved setup fits this exercise yet/)).toBeNull();
+    expect(queryByText(/Enter setup above to save\./)).toBeNull();
   });
 });
 
@@ -330,8 +347,6 @@ describe('SetupPresetPicker — vocabulary preservation (no slug normalization)'
       </Wrap>,
     );
     expect(queryByText('Rope')).toBeNull();
-    expect(
-      getByText(/No saved setup fits this exercise yet/),
-    ).toBeTruthy();
+    expect(getByText(/Enter setup above to save\./)).toBeTruthy();
   });
 });

@@ -30,7 +30,6 @@ import { useToast } from '../context';
 import { useAppTheme } from '../context';
 import {
   navigateToExerciseDatabase,
-  navigateToSetupPresets,
   navigateToSplitSelection,
   safeGoBack,
 } from '../navigation';
@@ -494,35 +493,21 @@ export default function WorkoutDetailScreen() {
                     setDraftExerciseSetup(ex.localId, patch)
                   }
                 />
-                {/* Phase 6 — in-workout save-as-setup CTA. Primary
-                    preset-creation path; visible only when the draft
-                    has at least one setup value AND the exercise
-                    resolves to exactly one capability. The CTA infers
-                    the capability from context, never asks the user. */}
-                <SaveSetupCta
-                  resolvedCapability={resolvedCapability}
-                  setupSnapshot={{
-                    gripText: ex.userGrip,
-                    attachmentSlug: ex.attachmentSlug,
-                    equipmentNotes: ex.userEquipmentNotes,
-                  }}
-                  onSaved={(preset) => {
-                    setAppliedPresetByLocalId((prev) => ({
-                      ...prev,
-                      [ex.localId]: preset.id,
-                    }));
-                  }}
-                  testID={`save-setup-cta-${ex.localId}`}
-                />
                 {/* Phase 6 — preset picker. Always renders; surfaces an
-                    empty state directing the user back to the setup
-                    row + Save as setup CTA above when no compatible
-                    preset exists. The onApply dispatcher threads
-                    through workoutStore.applyPresetToDraftExercise,
-                    which re-checks compatibility as the load-bearing
-                    gate. appliedPresetId + onClear drive the visible
+                    empty state when no compatible preset exists. The
+                    onApply dispatcher threads through
+                    workoutStore.applyPresetToDraftExercise, which
+                    re-checks compatibility as the load-bearing gate.
+                    appliedPresetId + onClear drive the visible
                     acknowledgement + clear affordance; the parent owns
-                    that state (never persisted). */}
+                    that state (never persisted).
+                    saveAffordance threads the in-workout save-as-setup
+                    CTA into the chip row. The CTA renders only when
+                    the draft has at least one setup value AND the
+                    exercise resolves to exactly one capability; it
+                    infers the capability from context, never asks the
+                    user. When the CTA is hidden (gate fails), the
+                    picker falls back to its compact empty-state copy. */}
                 <SetupPresetPicker
                   presets={activePresets.data ?? []}
                   exerciseCapabilities={exCapabilities}
@@ -557,7 +542,24 @@ export default function WorkoutDetailScreen() {
                       return next;
                     });
                   }}
-                  onManage={navigateToSetupPresets}
+                  saveAffordance={
+                    <SaveSetupCta
+                      resolvedCapability={resolvedCapability}
+                      exerciseName={ex.exerciseName}
+                      setupSnapshot={{
+                        gripText: ex.userGrip,
+                        attachmentSlug: ex.attachmentSlug,
+                        equipmentNotes: ex.userEquipmentNotes,
+                      }}
+                      onSaved={(preset) => {
+                        setAppliedPresetByLocalId((prev) => ({
+                          ...prev,
+                          [ex.localId]: preset.id,
+                        }));
+                      }}
+                      testID={`save-setup-cta-${ex.localId}`}
+                    />
+                  }
                 />
                 {ex.sets.length > 0 ? (
                   <View style={{ marginTop: 8 }}>
