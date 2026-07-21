@@ -85,6 +85,10 @@ export interface DraftExercise {
   perSide: boolean | null;
   slotNotes: string | null;
   source: WorkoutExerciseSource | null;
+  // Phase 5 equipment-setup snapshot — nullable. Cable attachment / station
+  // detail the user picked for this exercise in this session. Threaded into
+  // the DTO at save time so the persisted row carries the frozen setup.
+  attachmentSlug: string | null;
 }
 
 /** Client-only draft session (no server id yet). */
@@ -206,6 +210,20 @@ interface WorkoutState {
   removeSetFromDraft: (exerciseLocalId: string, setLocalId: string) => void;
   setDraftNotes: (notes: string | null) => void;
   setDraftDuration: (durationMinutes: number) => void;
+  /**
+   * Phase 5 — patch a draft exercise's equipment-setup fields (grip,
+   * attachment, equipment notes). No-op when the draft is null or the
+   * exercise local id doesn't match. Any subset of the patch fields may
+   * be provided; unmentioned fields stay put.
+   */
+  setDraftExerciseSetup: (
+    exerciseLocalId: string,
+    patch: {
+      userGrip?: string | null;
+      attachmentSlug?: string | null;
+      userEquipmentNotes?: string | null;
+    },
+  ) => void;
   toLogWorkoutDTO: () => LogWorkoutDTO | null;
   resetSession: () => void;
 }
@@ -286,6 +304,8 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       perSide: null,
       slotNotes: null,
       source: null,
+      // Phase 5 — attachment starts unset; user edits via setDraftExerciseSetup.
+      attachmentSlug: null,
     };
     set({
       draft: { ...draft, exercises: [...draft.exercises, next] },
@@ -345,6 +365,8 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
         perSide: null,
         slotNotes: null,
         source: 'static',
+        // Phase 5 — attachment starts unset on the static path.
+        attachmentSlug: null,
       };
       return next;
     });
@@ -401,6 +423,10 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
         perSide: slot.perSide,
         slotNotes: slot.slotNotes,
         source: 'plan',
+        // Phase 5 — attachment starts unset on the plan path too. The
+        // plan slot doesn't prescribe an attachment; the user picks at
+        // session time.
+        attachmentSlug: null,
       };
       return next;
     });
@@ -496,6 +522,19 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     set({ draft: { ...draft, duration } });
   },
 
+  setDraftExerciseSetup: (exerciseLocalId, patch) => {
+    const draft = get().draft;
+    if (!draft) return;
+    set({
+      draft: {
+        ...draft,
+        exercises: draft.exercises.map((e) =>
+          e.localId === exerciseLocalId ? { ...e, ...patch } : e,
+        ),
+      },
+    });
+  },
+
   toLogWorkoutDTO: (): LogWorkoutDTO | null => {
     const draft = get().draft;
     if (!draft) return null;
@@ -515,6 +554,9 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       perSide: e.perSide,
       slotNotes: e.slotNotes,
       source: e.source,
+      // Phase 5 — attachment snapshot threaded through. Null on rows the
+      // user didn't pick an attachment for.
+      attachmentSlug: e.attachmentSlug,
       sets: e.sets.map((s): ExerciseSetInputDTO => ({
         setNumber: s.setNumber,
         targetReps: s.targetReps,

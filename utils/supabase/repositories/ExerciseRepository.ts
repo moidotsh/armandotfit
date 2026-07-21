@@ -42,6 +42,7 @@ import type {
   ExerciseEquipmentRequirement,
   ExerciseEquipmentRequirementPath,
   ExerciseAlternative,
+  ExerciseGripOption,
   ID,
 } from '../../../shared/types';
 
@@ -167,6 +168,16 @@ interface AlternativeRow {
   created_at: string;
 }
 
+interface GripOptionRow {
+  id: string;
+  exercise_id: string;
+  grip_slug: string;
+  attachment_slug: string | null;
+  is_primary: boolean;
+  display_order: number;
+  created_at: string;
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // Repository
 // ──────────────────────────────────────────────────────────────────────
@@ -194,6 +205,7 @@ export class ExerciseRepository
   private static REQUIREMENT_PATHS = 'exercise_equipment_requirement_paths';
   private static REQUIREMENTS = 'exercise_equipment_requirements';
   private static ALTERNATIVES = 'exercise_alternatives';
+  private static GRIP_OPTIONS = 'exercise_grip_options';
 
   /** List exercises with optional filters. Always returns camelCased rows. */
   async findAll(options?: FindOptions & ExerciseFilter): Promise<RepositoryResult<Exercise[]>> {
@@ -830,6 +842,30 @@ export class ExerciseRepository
     }
   }
 
+  /**
+   * Load all catalog grip options for a set of exercises. Returns a flat
+   * list — group by exercise_id at the call site. Used by the Phase 5
+   * equipment-setup UI to populate the attachment selector. Empty array
+   * when exerciseIds is empty (no query fires).
+   */
+  async listGripOptionsForExercises(
+    exerciseIds: ID[],
+  ): Promise<RepositoryResult<ExerciseGripOption[]>> {
+    try {
+      if (exerciseIds.length === 0) return ok([]);
+      const { data, error } = await supabase
+        .from(ExerciseRepository.GRIP_OPTIONS)
+        .select('*')
+        .in('exercise_id', exerciseIds)
+        .order('exercise_id', { ascending: true })
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return ok((data as GripOptionRow[]).map(toGripOption));
+    } catch (e) {
+      return this.handleError('listGripOptionsForExercises', e);
+    }
+  }
+
   // ────────────────────────────────────────────────────────────────────
   // Junction helpers (private)
   // ────────────────────────────────────────────────────────────────────
@@ -1070,6 +1106,18 @@ function toAlternative(row: AlternativeRow): ExerciseAlternative {
     altType: row.alt_type,
     priority: row.priority,
     intentNote: row.intent_note,
+    createdAt: row.created_at,
+  };
+}
+
+function toGripOption(row: GripOptionRow): ExerciseGripOption {
+  return {
+    id: row.id,
+    exerciseId: row.exercise_id,
+    gripSlug: row.grip_slug,
+    attachmentSlug: row.attachment_slug,
+    isPrimary: row.is_primary,
+    displayOrder: row.display_order,
     createdAt: row.created_at,
   };
 }

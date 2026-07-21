@@ -62,7 +62,7 @@ interface WorkoutSessionRow {
   updated_at: string;
 }
 
-interface WorkoutSessionExerciseRow {
+export interface WorkoutSessionExerciseRow {
   id: string;
   workout_session_id: string;
   exercise_id: string;
@@ -78,6 +78,8 @@ interface WorkoutSessionExerciseRow {
   per_side: boolean | null;
   slot_notes: string | null;
   source: WorkoutExerciseSource | null;
+  // Phase 5 equipment-setup snapshot — nullable, passive metadata
+  attachment_slug: string | null;
   created_at: string;
 }
 
@@ -277,6 +279,8 @@ export class WorkoutRepository
               per_side: input.perSide ?? null,
               slot_notes: input.slotNotes ?? null,
               source: input.source ?? null,
+              // Phase 5 equipment-setup snapshot — nullable; passive metadata.
+              attachment_slug: input.attachmentSlug ?? null,
             })
             .select('*')
             .single();
@@ -400,6 +404,17 @@ export class WorkoutRepository
           target_rep_range: input.targetRepRange ?? null,
           rest_timer_seconds: input.restTimerSeconds ?? 60,
           notes: input.notes ?? null,
+          // Phase 4 provenance — threaded through so ad-hoc in-session
+          // adds also carry their plan context when the caller provides
+          // it. Closes the gap where these columns were silently dropped
+          // on the addExerciseToSession path.
+          plan_slot_id: input.planSlotId ?? null,
+          template_slot_id: input.templateSlotId ?? null,
+          per_side: input.perSide ?? null,
+          slot_notes: input.slotNotes ?? null,
+          source: input.source ?? null,
+          // Phase 5 equipment-setup snapshot — nullable; passive metadata.
+          attachment_slug: input.attachmentSlug ?? null,
         })
         .select('*')
         .single();
@@ -501,7 +516,7 @@ function toSession(row: WorkoutSessionRow): WorkoutSession {
   };
 }
 
-function toSessionExercise(row: WorkoutSessionExerciseRow): WorkoutSessionExercise {
+export function toSessionExercise(row: WorkoutSessionExerciseRow): WorkoutSessionExercise {
   return {
     id: row.id,
     workoutSessionId: row.workout_session_id,
@@ -518,6 +533,8 @@ function toSessionExercise(row: WorkoutSessionExerciseRow): WorkoutSessionExerci
     perSide: row.per_side,
     slotNotes: row.slot_notes,
     source: row.source,
+    // Phase 5 equipment-setup snapshot — nullable; passive metadata.
+    attachmentSlug: row.attachment_slug,
     createdAt: row.created_at,
   };
 }

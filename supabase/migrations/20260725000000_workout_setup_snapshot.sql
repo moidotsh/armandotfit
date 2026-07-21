@@ -1,0 +1,66 @@
+-- Migration: 20260725000000_workout_setup_snapshot.sql
+-- Why: Phase 5 adds minimal equipment-setup logging on the session
+-- exercise row. The setup that was actually used for a historical
+-- exercise — cable attachment, grip label, ad-hoc equipment notes —
+-- is now captured alongside the existing user_grip + user_equipment_notes
+-- columns so a future "what did I use last time" lookup doesn't have
+-- to reconstruct it from memory.
+--
+-- Phase 1 (catalog_extensions) already ships exercise_grip_options with
+-- grip_slug + attachment_slug pairs. Phase 5 closes the loop: the user
+-- picks one of those options (or types a free-text grip) at session
+-- time, and the chosen attachment slug is frozen onto the historical
+-- session_exercises row.
+--
+-- One ALTER TABLE, one new nullable TEXT column, no FK, no CHECK, no
+-- index, no RLS, no trigger, no RPC:
+--
+--   workout_session_exercises
+--     attachment_slug TEXT
+--       The cable attachment (or analogous station detail) the user
+--       picked for this exercise in this session. Frozen at save time.
+--       NULL on every pre-Phase-5 row and on any session exercise the
+--       user didn't pick an attachment for. Vocabulary is owned by the
+--       CableAttachmentSlug TS union in constants/exerciseSetup.ts —
+--       rope | straight-bar | v-bar | lat-bar | handle. Stored as
+--       TEXT (no CHECK) so the vocabulary can extend without a
+--       migration; the TS guard casts at the repository boundary.
+--
+-- Six invariants this migration enforces:
+--   1. Nullable. Historical rows read as NULL; no backfill.
+--   2. No DEFAULT. NULL is the only sensible "unset" value.
+--   3. No FK. The column references the TS-side CableAttachmentSlug
+--      vocabulary, not a DB table; catalog changes can't break history.
+--   4. No CHECK. The TS union is canonical; DB stores TEXT.
+--   5. No index. The column is never queried by — it is display-only
+--      metadata on a historical row.
+--   6. No RLS / trigger / RPC. The existing workout_session_exercises
+--      policies (baseline 00000000000000 + Phase 4) already scope
+--      reads/writes by user_id = auth.uid() through the ownership
+--      chain; the new column inherits that scoping automatically.
+--
+-- Passive metadata only: setup fields do not drive any algorithm in
+-- v1. They do not affect eligibility, plan generation, substitution,
+-- plan adoption, plan-backed launch, static-fallback launch, history
+-- grouping, streaks, or analytics. The column is read-side display
+-- context for the workout-detail completed-session view.
+--
+-- Idempotency: ADD COLUMN IF NOT EXISTS so re-running is a no-op.
+--
+-- Triangulation:
+--   Companion types: shared/types/workout.ts (WorkoutSessionExercise +
+--   WorkoutSessionExerciseInputDTO attachmentSlug fields).
+--   Companion store: stores/workoutStore.ts (DraftExercise.attachmentSlug
+--   + setDraftExerciseSetup action). Companion repository:
+--   utils/supabase/repositories/WorkoutRepository.ts (create() +
+--   addExerciseToSession() inserts the new column; toSessionExercise
+--   reads it). Companion catalog: exercise_grip_options (migration
+--   20260721000000) is the suggestion source. Verified by
+--   __tests__/supabase/workout-setup-migration.test.ts.
+-- ──────────────────────────────────────────────────────────────────────
+
+ALTER TABLE public.workout_session_exercises
+  ADD COLUMN IF NOT EXISTS attachment_slug TEXT;
+
+COMMENT ON COLUMN public.workout_session_exercises.attachment_slug IS
+  'Cable attachment (or analogous station detail) the user picked for this exercise in this session (Phase 5). Frozen at save time. Vocabulary owned by the CableAttachmentSlug TS union in constants/exerciseSetup.ts (rope | straight-bar | v-bar | lat-bar | handle). Stored as TEXT with no CHECK so the vocabulary can extend without a migration; TS casts at the repository boundary. NO FK by design — the column references a TS-side vocabulary, not a DB table, so catalog changes cannot invalidate historical rows. NULL on pre-Phase-5 rows and on any exercise the user did not pick an attachment for. Passive metadata only: this column is never queried by and does not drive eligibility, plan generation, substitution, launch, history grouping, streaks, or analytics.';

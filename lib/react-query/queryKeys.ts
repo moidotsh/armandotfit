@@ -37,6 +37,14 @@ export const queryKeys = {
     favorites: () => [...queryKeys.exercises.all, 'favorites'] as const,
   },
 
+  /** Phase 5 catalog grip options keyed by exercise id list. The key
+   *  carries the sorted + joined id list so two callers with the same
+   *  set of exercise ids (in any order) hit the same cache entry. */
+  exerciseSetupOptions: {
+    list: (exerciseIds: ID[]) =>
+      ['exerciseSetupOptions', 'list', [...exerciseIds].sort().join(',')] as const,
+  },
+
   /** Reference data: muscle categories, muscles, equipment types. */
   reference: {
     all: ['reference'] as const,

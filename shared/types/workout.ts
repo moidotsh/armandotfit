@@ -89,6 +89,10 @@ export interface WorkoutSession {
  * — history must survive plan/slot deletion), perSide + slotNotes
  * (frozen from the plan slot prescription snapshot), source ('plan' |
  * 'static' | null). All nullable; historical rows read as null.
+ *
+ * Phase 5 added attachmentSlug (no FK, no CHECK — TS union canonical):
+ * the cable attachment / station detail the user picked for this
+ * exercise in this session. Frozen at save time. Passive metadata.
  */
 export interface WorkoutSessionExercise {
   id: ID;
@@ -106,6 +110,8 @@ export interface WorkoutSessionExercise {
   perSide: boolean | null;
   slotNotes: string | null;
   source: WorkoutExerciseSource | null;
+  // Phase 5 equipment-setup snapshot (nullable, passive metadata)
+  attachmentSlug: string | null;
   createdAt: string;
 }
 
@@ -176,6 +182,8 @@ export interface WorkoutSessionExerciseInputDTO {
   perSide?: boolean | null;
   slotNotes?: string | null;
   source?: WorkoutExerciseSource | null;
+  // Phase 5 equipment-setup snapshot (optional — omitted when unset)
+  attachmentSlug?: string | null;
   sets: ExerciseSetInputDTO[];
 }
 

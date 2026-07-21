@@ -25,7 +25,7 @@ import {
   CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { SetRow, EditableSetRow, HydrationErrorState } from '../components/composed';
+import { SetRow, EditableSetRow, HydrationErrorState, ExerciseSetupRow } from '../components/composed';
 import { useToast } from '../context';
 import { useAppTheme } from '../context';
 import {
@@ -38,6 +38,7 @@ import {
   useLogWorkout,
   useSuggestedExercises,
   usePlanLaunchHydration,
+  useExerciseSetupOptions,
   useAiPayload,
 } from '../hooks';
 import { useWorkoutStore } from '../stores';
@@ -73,6 +74,9 @@ export default function WorkoutDetailScreen() {
   const removeSetFromDraft = useWorkoutStore((s) => s.removeSetFromDraft);
   const removeExerciseFromDraft = useWorkoutStore(
     (s) => s.removeExerciseFromDraft,
+  );
+  const setDraftExerciseSetup = useWorkoutStore(
+    (s) => s.setDraftExerciseSetup,
   );
 
   const logMutation = useLogWorkout();
@@ -124,6 +128,13 @@ export default function WorkoutDetailScreen() {
         }
       : null,
   );
+  // Phase 5 — batched catalog grip-options fetch for the draft's exercise
+  // ids. One query covers every active row; empty array short-circuits in
+  // the repository + the hook returns an empty Map. The same query runs
+  // unconditionally on every render so Rules of Hooks are satisfied; the
+  // empty-input branch keeps the cost ~zero when no draft is active.
+  const draftExerciseIds = draft ? draft.exercises.map((e) => e.exerciseId) : [];
+  const setupOptions = useExerciseSetupOptions(draftExerciseIds);
   const hydratedRef = useRef(false);
   useEffect(() => {
     if (!draft) {
@@ -277,6 +288,21 @@ export default function WorkoutDetailScreen() {
                     {ex.exercise.name}
                   </MobileSectionEyebrow>
                   <MobileSurface padding={12}>
+                    {/* Phase 5 — read-only setup + prescription snapshot.
+                        Renders populated values across grip, attachment,
+                        equipment notes, per-side, and slot notes. Silent
+                        when all are null/false. */}
+                    <ExerciseSetupRow
+                      mode="readOnly"
+                      userGrip={ex.userGrip}
+                      attachmentSlug={ex.attachmentSlug}
+                      userEquipmentNotes={ex.userEquipmentNotes}
+                      perSide={ex.perSide}
+                      slotNotes={ex.slotNotes}
+                      onSetupChange={() => {
+                        /* no-op in read-only mode */
+                      }}
+                    />
                     {ex.sets.map((s: ExerciseSet) => (
                       <SetRow
                         key={s.id}
@@ -415,6 +441,20 @@ export default function WorkoutDetailScreen() {
                     </Text>
                   </Pressable>
                 </View>
+                {/* Phase 5 — equipment-setup row (grip + attachment +
+                    notes). Sits between the exercise header and the set
+                    list. The catalog grip options feed the suggestion
+                    chips; the user can ignore them and type free text. */}
+                <ExerciseSetupRow
+                  mode="active"
+                  userGrip={ex.userGrip}
+                  attachmentSlug={ex.attachmentSlug}
+                  userEquipmentNotes={ex.userEquipmentNotes}
+                  gripOptions={setupOptions.data?.get(ex.exerciseId) ?? []}
+                  onSetupChange={(patch) =>
+                    setDraftExerciseSetup(ex.localId, patch)
+                  }
+                />
                 {ex.sets.length > 0 ? (
                   <View style={{ marginTop: 8 }}>
                     {ex.sets.map((s) => (

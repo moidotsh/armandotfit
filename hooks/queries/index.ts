@@ -17,6 +17,7 @@ export {
   useEquipmentTypes,
   useSuggestedExercises,
 } from './useExercises';
+export { useExerciseSetupOptions } from './useExerciseSetupOptions';
 export {
   useDashboardSummary,
   useStreaks,

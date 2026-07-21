@@ -359,6 +359,12 @@ const screenHookStubs = vi.hoisted(() => ({
     }),
   ),
   useAiPayload: vi.fn((..._a: unknown[]): string => ''),
+  useExerciseSetupOptions: vi.fn(
+    (..._a: unknown[]): {
+      data: Map<unknown, unknown> | undefined;
+      isLoading: boolean;
+    } => ({ data: undefined, isLoading: false }),
+  ),
 }));
 
 vi.mock('../hooks', async (importOriginal) => {
@@ -382,6 +388,8 @@ vi.mock('../hooks', async (importOriginal) => {
     useWorkoutDetail: (...a: unknown[]) => screenHookStubs.useWorkoutDetail(...a),
     useLogWorkout: (...a: unknown[]) => screenHookStubs.useLogWorkout(...a),
     useAiPayload: (...a: unknown[]) => screenHookStubs.useAiPayload(...a),
+    useExerciseSetupOptions: (...a: unknown[]) =>
+      screenHookStubs.useExerciseSetupOptions(...a),
   };
 });
 

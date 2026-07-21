@@ -37,3 +37,6 @@ export type {
   PlanLookupErrorAlertProps,
   HydrationErrorStateProps,
 } from './PlanLaunchErrors';
+
+export { ExerciseSetupRow } from './ExerciseSetupRow';
+export type { ExerciseSetupRowProps } from './ExerciseSetupRow';
