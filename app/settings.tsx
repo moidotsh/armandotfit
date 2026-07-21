@@ -187,9 +187,10 @@ export default function SettingsScreen() {
           equipment entries.
         </Text>
         <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
-          Save your usual grip, attachment, and station combinations as
-          reusable presets (Phase 6). Compatible presets surface in the
-          active workout for one-tap apply.
+          Manage your saved setups — rename, retire, or delete ones you
+          no longer use. You can also create capability-specific setups
+          here for equipment the in-workout flow doesn't cover. Saved
+          setups surface inline on compatible exercises.
         </Text>
 
         <MobileSectionEyebrow flush={false}>Reference</MobileSectionEyebrow>

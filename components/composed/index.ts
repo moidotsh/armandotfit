@@ -43,3 +43,6 @@ export type { ExerciseSetupRowProps } from './ExerciseSetupRow';
 
 export { SetupPresetPicker } from './SetupPresetPicker';
 export type { SetupPresetPickerProps } from './SetupPresetPicker';
+
+export { SaveSetupCta } from './SaveSetupCta';
+export type { SaveSetupCtaProps } from './SaveSetupCta';

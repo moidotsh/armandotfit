@@ -4,7 +4,7 @@
 //   - no id: live logging against workoutStore.draft
 // Save path flushes via useLogWorkout and clears the store.
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -25,11 +25,12 @@ import {
   CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { SetRow, EditableSetRow, HydrationErrorState, ExerciseSetupRow, SetupPresetPicker } from '../components/composed';
+import { SetRow, EditableSetRow, HydrationErrorState, ExerciseSetupRow, SetupPresetPicker, SaveSetupCta } from '../components/composed';
 import { useToast } from '../context';
 import { useAppTheme } from '../context';
 import {
   navigateToExerciseDatabase,
+  navigateToSetupPresets,
   navigateToSplitSelection,
   safeGoBack,
 } from '../navigation';
@@ -83,6 +84,17 @@ export default function WorkoutDetailScreen() {
   const applyPresetToDraftExercise = useWorkoutStore(
     (s) => s.applyPresetToDraftExercise,
   );
+
+  // Phase 6 — client-side acknowledgement of which preset was last
+  // applied to each draft exercise. Pure UX state: it drives the
+  // picker's "Applied · <label>" row + Clear affordance. NEVER
+  // persisted to the draft or to workout history (no preset id is
+  // written to the session-exercise row; Phase 5 denormalized the
+  // values, not the preset reference). Resets with the draft when
+  // the session is saved or discarded.
+  const [appliedPresetByLocalId, setAppliedPresetByLocalId] = useState<
+    Record<string, string>
+  >({});
 
   const logMutation = useLogWorkout();
 
@@ -427,7 +439,25 @@ export default function WorkoutDetailScreen() {
             )
           )
         ) : (
-          draft.exercises.map((ex) => (
+          draft.exercises.map((ex) => {
+            // Per-exercise catalog + capability context, shared by the
+            // setup row, the save-as-setup CTA, and the preset picker.
+            // Hoisted once per render so the three children see the same
+            // arrays without re-running the filter pipeline.
+            const exCapabilities = capabilitiesMap.data?.get(ex.exerciseId) ?? [];
+            const exGripOptions = (setupOptions.data?.get(ex.exerciseId) ?? [])
+              .map((o) => o.gripSlug)
+              .filter((s): s is string => typeof s === 'string' && s.length > 0);
+            const exAttachmentOptions = (setupOptions.data?.get(ex.exerciseId) ?? [])
+              .map((o) => o.attachmentSlug)
+              .filter((s): s is string => typeof s === 'string' && s.length > 0);
+            // Phase 6 — the in-workout save-as-setup flow infers the
+            // capability from context. When the exercise resolves to
+            // exactly one capability, the CTA renders; otherwise (zero
+            // or >1) the CTA stays hidden and Settings remains the only
+            // creation path (documented + tested fallback).
+            const resolvedCapability = exCapabilities.length === 1 ? exCapabilities[0] : null;
+            return (
             <View key={ex.localId} style={{ marginBottom: 12 }}>
               <MobileSurface padding={12}>
                 <View style={styles.exerciseHeader}>
@@ -464,35 +494,70 @@ export default function WorkoutDetailScreen() {
                     setDraftExerciseSetup(ex.localId, patch)
                   }
                 />
-                {/* Phase 6 — preset picker. Renders only when at least
-                    one active preset is field-level compatible with
-                    this exercise (capability match + per-field catalog
-                    governance). The onApply dispatcher threads through
-                    workoutStore.applyPresetToDraftExercise, which re-
-                    checks compatibility as the load-bearing gate. */}
+                {/* Phase 6 — in-workout save-as-setup CTA. Primary
+                    preset-creation path; visible only when the draft
+                    has at least one setup value AND the exercise
+                    resolves to exactly one capability. The CTA infers
+                    the capability from context, never asks the user. */}
+                <SaveSetupCta
+                  resolvedCapability={resolvedCapability}
+                  setupSnapshot={{
+                    gripText: ex.userGrip,
+                    attachmentSlug: ex.attachmentSlug,
+                    equipmentNotes: ex.userEquipmentNotes,
+                  }}
+                  onSaved={(preset) => {
+                    setAppliedPresetByLocalId((prev) => ({
+                      ...prev,
+                      [ex.localId]: preset.id,
+                    }));
+                  }}
+                  testID={`save-setup-cta-${ex.localId}`}
+                />
+                {/* Phase 6 — preset picker. Always renders; surfaces an
+                    empty state directing the user back to the setup
+                    row + Save as setup CTA above when no compatible
+                    preset exists. The onApply dispatcher threads
+                    through workoutStore.applyPresetToDraftExercise,
+                    which re-checks compatibility as the load-bearing
+                    gate. appliedPresetId + onClear drive the visible
+                    acknowledgement + clear affordance; the parent owns
+                    that state (never persisted). */}
                 <SetupPresetPicker
                   presets={activePresets.data ?? []}
-                  exerciseCapabilities={capabilitiesMap.data?.get(ex.exerciseId) ?? []}
-                  exerciseGripOptions={(setupOptions.data?.get(ex.exerciseId) ?? [])
-                    .map((o) => o.gripSlug)
-                    .filter((s): s is string => typeof s === 'string' && s.length > 0)}
-                  exerciseAttachmentOptions={(setupOptions.data?.get(ex.exerciseId) ?? [])
-                    .map((o) => o.attachmentSlug)
-                    .filter((s): s is string => typeof s === 'string' && s.length > 0)}
+                  exerciseCapabilities={exCapabilities}
+                  exerciseGripOptions={exGripOptions}
+                  exerciseAttachmentOptions={exAttachmentOptions}
+                  appliedPresetId={appliedPresetByLocalId[ex.localId] ?? null}
                   onApply={(preset) => {
                     const res = applyPresetToDraftExercise(ex.localId, preset, {
-                      capabilities: capabilitiesMap.data?.get(ex.exerciseId) ?? [],
-                      gripOptions: (setupOptions.data?.get(ex.exerciseId) ?? [])
-                        .map((o) => o.gripSlug)
-                        .filter((s): s is string => typeof s === 'string' && s.length > 0),
-                      attachmentOptions: (setupOptions.data?.get(ex.exerciseId) ?? [])
-                        .map((o) => o.attachmentSlug)
-                        .filter((s): s is string => typeof s === 'string' && s.length > 0),
+                      capabilities: exCapabilities,
+                      gripOptions: exGripOptions,
+                      attachmentOptions: exAttachmentOptions,
                     });
                     if (!res.ok) {
                       showToast('error', res.reason);
+                    } else {
+                      setAppliedPresetByLocalId((prev) => ({
+                        ...prev,
+                        [ex.localId]: preset.id,
+                      }));
                     }
                   }}
+                  onClear={() => {
+                    setDraftExerciseSetup(ex.localId, {
+                      userGrip: null,
+                      attachmentSlug: null,
+                      userEquipmentNotes: null,
+                    });
+                    setAppliedPresetByLocalId((prev) => {
+                      if (!(ex.localId in prev)) return prev;
+                      const next = { ...prev };
+                      delete next[ex.localId];
+                      return next;
+                    });
+                  }}
+                  onManage={navigateToSetupPresets}
                 />
                 {ex.sets.length > 0 ? (
                   <View style={{ marginTop: 8 }}>
@@ -539,7 +604,8 @@ export default function WorkoutDetailScreen() {
                 </Pressable>
               </MobileSurface>
             </View>
-          ))
+          );
+          })
         )}
 
         <View style={{ height: 8 }} />

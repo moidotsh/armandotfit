@@ -97,19 +97,19 @@ describe('SetupPresetsScreen — empty state', () => {
         <SetupPresetsScreen />
       </Wrap>,
     );
-    expect(getByText('No presets yet')).toBeTruthy();
+    expect(getByText('No setups saved yet')).toBeTruthy();
     expect(
-      getByText(/Save your usual grip, attachment, and station combinations/),
+      getByText(/The fastest way to save one is from an active workout/),
     ).toBeTruthy();
   });
 
-  it('renders a Create preset CTA in the empty state', () => {
+  it('renders a Create setup CTA in the empty state', () => {
     const { getByText } = render(
       <Wrap>
         <SetupPresetsScreen />
       </Wrap>,
     );
-    expect(getByText('Create preset')).toBeTruthy();
+    expect(getByText('Create setup')).toBeTruthy();
   });
 });
 

@@ -296,9 +296,9 @@ export default function SetupPresetsScreen() {
           <LoadingSpinner />
         ) : presets.length === 0 ? (
           <EmptyState
-            title="No presets yet"
-            message="Save your usual grip, attachment, and station combinations as reusable presets. Compatible presets surface in the active workout for one-tap apply."
-            action={{ label: 'Create preset', onPress: openCreate, variant: 'primary' }}
+            title="No setups saved yet"
+            message="The fastest way to save one is from an active workout: enter your grip, attachment, or notes on an exercise and tap “Save as setup.” Create one here for capability-specific setups the in-workout flow doesn't cover."
+            action={{ label: 'Create setup', onPress: openCreate, variant: 'primary' }}
             testID="setup-presets-empty"
           />
         ) : (
