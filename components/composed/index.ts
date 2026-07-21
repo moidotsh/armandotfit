@@ -40,3 +40,6 @@ export type {
 
 export { ExerciseSetupRow } from './ExerciseSetupRow';
 export type { ExerciseSetupRowProps } from './ExerciseSetupRow';
+
+export { SetupPresetPicker } from './SetupPresetPicker';
+export type { SetupPresetPickerProps } from './SetupPresetPicker';

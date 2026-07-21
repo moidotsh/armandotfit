@@ -20,7 +20,7 @@ import {
   CopyForAiButton,
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
-import { navigateToPremiumShowcase, navigateToEquipmentInventory, safeGoBack } from '../navigation';
+import { navigateToPremiumShowcase, navigateToEquipmentInventory, navigateToSetupPresets, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile, useAiPayload } from '../hooks';
 import { DAY_OF_WEEK_LABELS, SCREEN_BODY_STYLE } from '../constants';
 import { logger } from '../utils/logger';
@@ -173,6 +173,11 @@ export default function SettingsScreen() {
             label="Equipment Inventory"
             value="Edit"
             onPress={navigateToEquipmentInventory}
+          />
+          <MobileSettingsRow
+            label="Setup Presets"
+            value="Manage"
+            onPress={navigateToSetupPresets}
             isLast
           />
         </MobileSurface>
@@ -180,6 +185,11 @@ export default function SettingsScreen() {
           Tell us what equipment you have access to. Your selections power
           exercise eligibility (Phase 3) without touching your manual
           equipment entries.
+        </Text>
+        <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
+          Save your usual grip, attachment, and station combinations as
+          reusable presets (Phase 6). Compatible presets surface in the
+          active workout for one-tap apply.
         </Text>
 
         <MobileSectionEyebrow flush={false}>Reference</MobileSectionEyebrow>

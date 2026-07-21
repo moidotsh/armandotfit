@@ -5,12 +5,16 @@
 // notes-only presets (gripText + attachmentSlug both null) are allowed
 // per Phase 6 contract amendment (Option A).
 //
-// The full repository CRUD path is verified by the integration tests
-// under __tests__/app/SetupPresetManagement.test.tsx and the
-// history-independence test under
-// __tests__/repositories/SetupPresetRepository.deletion.test.ts. This
-// file locks the pure validator that runs at the create/update
-// boundary so UI bypass cannot land invalid data.
+// The full CRUD path is verified by the management-route integration
+// test under __tests__/app/SetupPresetManagement.test.tsx. The
+// history-independence guarantee (deleting a preset leaves saved
+// workouts unchanged) is verified by the store-level test under
+// __tests__/stores/workoutStore.history-independence.test.ts and the
+// schema-level no-FK invariant under
+// __tests__/supabase/setup-preset-migration.test.ts. This file locks
+// the pure validator that runs at the create/update boundary so UI
+// bypass cannot land invalid data, plus the repository's public method
+// surface (CRUD entrypoints) for user-isolation coverage.
 
 import { describe, it, expect } from 'vitest';
 import {
@@ -154,7 +158,7 @@ describe('validateSetupPresetInput — notes-only presets (Option A)', () => {
 });
 
 // ──────────────────────────────────────────────────────────────────────
-// Repository class shape — locks the singleton export + the six methods
+// Repository class shape — locks the singleton export + the seven methods
 // ──────────────────────────────────────────────────────────────────────
 
 describe('SetupPresetRepository — public API surface', () => {
@@ -162,7 +166,7 @@ describe('SetupPresetRepository — public API surface', () => {
     expect(setupPresetRepository).toBeInstanceOf(SetupPresetRepository);
   });
 
-  it('exposes the six public methods', () => {
+  it('exposes the seven public methods (list-active, list-all, create, update, retire, un-retire, delete)', () => {
     const repo = setupPresetRepository;
     expect(typeof repo.listActiveForUser).toBe('function');
     expect(typeof repo.listAllForUser).toBe('function');
@@ -171,5 +175,33 @@ describe('SetupPresetRepository — public API surface', () => {
     expect(typeof repo.retire).toBe('function');
     expect(typeof repo.unretire).toBe('function');
     expect(typeof repo.delete).toBe('function');
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────
+// User-isolation — the two list methods take userId as a required first
+// argument so the caller cannot accidentally fetch cross-user rows. RLS
+// at the DB level (verified in setup-preset-migration.test.ts) is the
+// last-mile gate, but the repository signature forces every caller to
+// declare which user they're querying for. Hard-delete takes only the
+// presetId — RLS scoping ensures the row is owned by the calling user.
+// ──────────────────────────────────────────────────────────────────────
+
+describe('SetupPresetRepository — user-isolation signatures', () => {
+  it('listActiveForUser.length === 1 — userId is a required parameter', () => {
+    // Function.length is the number of declared parameters before the
+    // first default/rest. Locks the contract: every read takes a userId.
+    expect(setupPresetRepository.listActiveForUser.length).toBe(1);
+  });
+
+  it('listAllForUser.length === 1 — userId is a required parameter', () => {
+    expect(setupPresetRepository.listAllForUser.length).toBe(1);
+  });
+
+  it('create.length >= 2 — userId + dto are both required', () => {
+    // create is `(userId, dto)` — two declared params, before any
+    // default-valued arg. Locks that the caller cannot create a preset
+    // without declaring ownership.
+    expect(setupPresetRepository.create.length).toBeGreaterThanOrEqual(2);
   });
 });

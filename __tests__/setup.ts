@@ -365,6 +365,54 @@ const screenHookStubs = vi.hoisted(() => ({
       isLoading: boolean;
     } => ({ data: undefined, isLoading: false }),
   ),
+  useExerciseCapabilities: vi.fn(
+    (..._a: unknown[]): {
+      data: Map<unknown, unknown> | undefined;
+      isLoading: boolean;
+    } => ({ data: undefined, isLoading: false }),
+  ),
+  useActiveSetupPresets: vi.fn(
+    (..._a: unknown[]): {
+      data: unknown[];
+      isLoading: boolean;
+    } => ({ data: [], isLoading: false }),
+  ),
+  useAllSetupPresets: vi.fn(
+    (..._a: unknown[]): {
+      data: unknown[];
+      isLoading: boolean;
+    } => ({ data: [], isLoading: false }),
+  ),
+  useCreateSetupPreset: vi.fn(
+    (..._a: unknown[]): {
+      mutate: (vars: unknown, opts?: unknown) => void;
+      isPending: boolean;
+    } => ({ mutate: () => {}, isPending: false }),
+  ),
+  useUpdateSetupPreset: vi.fn(
+    (..._a: unknown[]): {
+      mutate: (vars: unknown, opts?: unknown) => void;
+      isPending: boolean;
+    } => ({ mutate: () => {}, isPending: false }),
+  ),
+  useRetireSetupPreset: vi.fn(
+    (..._a: unknown[]): {
+      mutate: (vars: unknown, opts?: unknown) => void;
+      isPending: boolean;
+    } => ({ mutate: () => {}, isPending: false }),
+  ),
+  useUnretireSetupPreset: vi.fn(
+    (..._a: unknown[]): {
+      mutate: (vars: unknown, opts?: unknown) => void;
+      isPending: boolean;
+    } => ({ mutate: () => {}, isPending: false }),
+  ),
+  useDeleteSetupPreset: vi.fn(
+    (..._a: unknown[]): {
+      mutate: (vars: unknown, opts?: unknown) => void;
+      isPending: boolean;
+    } => ({ mutate: () => {}, isPending: false }),
+  ),
 }));
 
 vi.mock('../hooks', async (importOriginal) => {
@@ -390,6 +438,22 @@ vi.mock('../hooks', async (importOriginal) => {
     useAiPayload: (...a: unknown[]) => screenHookStubs.useAiPayload(...a),
     useExerciseSetupOptions: (...a: unknown[]) =>
       screenHookStubs.useExerciseSetupOptions(...a),
+    useExerciseCapabilities: (...a: unknown[]) =>
+      screenHookStubs.useExerciseCapabilities(...a),
+    useActiveSetupPresets: (...a: unknown[]) =>
+      screenHookStubs.useActiveSetupPresets(...a),
+    useAllSetupPresets: (...a: unknown[]) =>
+      screenHookStubs.useAllSetupPresets(...a),
+    useCreateSetupPreset: (...a: unknown[]) =>
+      screenHookStubs.useCreateSetupPreset(...a),
+    useUpdateSetupPreset: (...a: unknown[]) =>
+      screenHookStubs.useUpdateSetupPreset(...a),
+    useRetireSetupPreset: (...a: unknown[]) =>
+      screenHookStubs.useRetireSetupPreset(...a),
+    useUnretireSetupPreset: (...a: unknown[]) =>
+      screenHookStubs.useUnretireSetupPreset(...a),
+    useDeleteSetupPreset: (...a: unknown[]) =>
+      screenHookStubs.useDeleteSetupPreset(...a),
   };
 });
 

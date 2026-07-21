@@ -51,6 +51,7 @@ import type {
   WorkoutVariantSnapshot,
 } from '../shared/types';
 import type { PlanHydrationSlot } from '../services/planLaunchService';
+import { isPresetCompatibleWithExercise } from '../services';
 
 /** Client-only draft set (no server id yet). */
 export interface DraftSet {
@@ -224,6 +225,37 @@ interface WorkoutState {
       userEquipmentNotes?: string | null;
     },
   ) => void;
+  /**
+   * Phase 6 — apply a user-owned equipment-setup preset to a draft
+   * exercise. Runs the field-level compatibility rule
+   * (isPresetCompatibleWithExercise) as the load-bearing correctness
+   * gate; the picker's UX filter is a separate concern and UI bypass
+   * cannot land an incompatible apply.
+   *
+   * Null fields in the preset ("no preference in this dimension") do
+   * NOT overwrite the draft's existing values — only the non-null
+   * fields are written. This mirrors the Phase 6 "preferred values"
+   * contract: a notes-only preset leaves the existing grip/attachment
+   * alone and only writes equipmentNotes.
+   *
+   * Returns `{ ok: true }` on success or `{ ok: false, reason }` when
+   * the preset is incompatible with the active exercise. Callers
+   * surface the reason via a toast.
+   */
+  applyPresetToDraftExercise: (
+    exerciseLocalId: string,
+    preset: {
+      capabilitySlug: string;
+      gripText: string | null;
+      attachmentSlug: string | null;
+      equipmentNotes: string | null;
+    },
+    exerciseContext: {
+      capabilities: ReadonlyArray<string>;
+      gripOptions: ReadonlyArray<string>;
+      attachmentOptions: ReadonlyArray<string>;
+    },
+  ) => { ok: true } | { ok: false; reason: string };
   toLogWorkoutDTO: () => LogWorkoutDTO | null;
   resetSession: () => void;
 }
@@ -533,6 +565,53 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
         ),
       },
     });
+  },
+
+  applyPresetToDraftExercise: (exerciseLocalId, preset, exerciseContext) => {
+    const draft = get().draft;
+    if (!draft) {
+      return { ok: false, reason: 'No active draft session.' };
+    }
+    // Load-bearing correctness gate — UI bypass cannot land an
+    // incompatible apply. Mirrors the helper used by the picker so
+    // both gates share a single rule.
+    const compatible = isPresetCompatibleWithExercise(
+      preset,
+      exerciseContext.capabilities,
+      exerciseContext.gripOptions,
+      exerciseContext.attachmentOptions,
+    );
+    if (!compatible) {
+      return {
+        ok: false,
+        reason:
+          'This preset is not compatible with the exercise (capability or field-level mismatch).',
+      };
+    }
+    // Build a patch that only includes the preset's non-null fields —
+    // null means "no preference, leave the existing value alone".
+    const patch: {
+      userGrip?: string | null;
+      attachmentSlug?: string | null;
+      userEquipmentNotes?: string | null;
+    } = {};
+    if (preset.gripText !== null) patch.userGrip = preset.gripText;
+    if (preset.attachmentSlug !== null) patch.attachmentSlug = preset.attachmentSlug;
+    if (preset.equipmentNotes !== null) patch.userEquipmentNotes = preset.equipmentNotes;
+    if (Object.keys(patch).length === 0) {
+      // Notes-only preset with all three null — nothing to apply, but
+      // the compatibility gate passed so we count this as success.
+      return { ok: true };
+    }
+    set({
+      draft: {
+        ...draft,
+        exercises: draft.exercises.map((e) =>
+          e.localId === exerciseLocalId ? { ...e, ...patch } : e,
+        ),
+      },
+    });
+    return { ok: true };
   },
 
   toLogWorkoutDTO: (): LogWorkoutDTO | null => {

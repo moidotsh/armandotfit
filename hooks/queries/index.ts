@@ -18,6 +18,7 @@ export {
   useSuggestedExercises,
 } from './useExercises';
 export { useExerciseSetupOptions } from './useExerciseSetupOptions';
+export { useExerciseCapabilities } from './useExerciseCapabilities';
 export {
   useDashboardSummary,
   useStreaks,

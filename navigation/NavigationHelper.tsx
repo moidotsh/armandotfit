@@ -45,6 +45,7 @@ export enum NavigationPath {
   EQUIPMENT_INVENTORY = 'equipment-inventory',
   PLAN_PREVIEW = 'plan-preview',
   PLAN_REPLACEMENT = 'plan-replacement',
+  SETUP_PRESETS = 'setup-presets',
 }
 
 /**
@@ -73,6 +74,7 @@ export const navigationHierarchy: Record<string, NavigationPath> = {
   [NavigationPath.EQUIPMENT_INVENTORY]: NavigationPath.SETTINGS,
   [NavigationPath.PLAN_PREVIEW]: NavigationPath.WORKOUT_PROGRAMS,
   [NavigationPath.PLAN_REPLACEMENT]: NavigationPath.PLAN_PREVIEW,
+  [NavigationPath.SETUP_PRESETS]: NavigationPath.SETTINGS,
 };
 
 // ─── Push helpers (drill in) ────────────────────────────────────────────
@@ -177,6 +179,14 @@ export function navigateToPlanReplacement(params: {
       templateExerciseId: params.templateExerciseId,
     },
   });
+}
+
+/**
+ * Open the Phase 6 setup-presets management route (full CRUD: create,
+ * edit, retire, un-retire, delete). Reached from settings.
+ */
+export function navigateToSetupPresets() {
+  router.push('/setup-presets');
 }
 
 // ─── Replace helpers (redirects) ────────────────────────────────────────

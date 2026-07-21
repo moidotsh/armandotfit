@@ -45,6 +45,15 @@ export const queryKeys = {
       ['exerciseSetupOptions', 'list', [...exerciseIds].sort().join(',')] as const,
   },
 
+  /** Phase 6 resolved equipment capabilities per exercise id list. The
+   *  hook looks up each exercise's slug via findByIds, then resolves
+   *  slug → SYSTEM_EXERCISES_BY_SLUG → equipment → capabilitiesForExercise
+   *  client-side. Same sorted-join key shape as exerciseSetupOptions. */
+  exerciseCapabilities: {
+    list: (exerciseIds: ID[]) =>
+      ['exerciseCapabilities', 'list', [...exerciseIds].sort().join(',')] as const,
+  },
+
   /** Reference data: muscle categories, muscles, equipment types. */
   reference: {
     all: ['reference'] as const,

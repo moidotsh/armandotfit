@@ -22,6 +22,7 @@ export {
   navigateToEquipmentInventory,
   navigateToPlanPreview,
   navigateToPlanReplacement,
+  navigateToSetupPresets,
   replaceWithHome,
   replaceWithLogin,
   replaceWithRegister,

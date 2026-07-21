@@ -25,7 +25,7 @@ import {
   CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { SetRow, EditableSetRow, HydrationErrorState, ExerciseSetupRow } from '../components/composed';
+import { SetRow, EditableSetRow, HydrationErrorState, ExerciseSetupRow, SetupPresetPicker } from '../components/composed';
 import { useToast } from '../context';
 import { useAppTheme } from '../context';
 import {
@@ -39,6 +39,8 @@ import {
   useSuggestedExercises,
   usePlanLaunchHydration,
   useExerciseSetupOptions,
+  useExerciseCapabilities,
+  useActiveSetupPresets,
   useAiPayload,
 } from '../hooks';
 import { useWorkoutStore } from '../stores';
@@ -77,6 +79,9 @@ export default function WorkoutDetailScreen() {
   );
   const setDraftExerciseSetup = useWorkoutStore(
     (s) => s.setDraftExerciseSetup,
+  );
+  const applyPresetToDraftExercise = useWorkoutStore(
+    (s) => s.applyPresetToDraftExercise,
   );
 
   const logMutation = useLogWorkout();
@@ -135,6 +140,10 @@ export default function WorkoutDetailScreen() {
   // empty-input branch keeps the cost ~zero when no draft is active.
   const draftExerciseIds = draft ? draft.exercises.map((e) => e.exerciseId) : [];
   const setupOptions = useExerciseSetupOptions(draftExerciseIds);
+  // Phase 6 — per-exercise resolved capability slugs + active preset list.
+  // capabilities drives picker eligibility; presets is the candidate row set.
+  const capabilitiesMap = useExerciseCapabilities(draftExerciseIds);
+  const activePresets = useActiveSetupPresets();
   const hydratedRef = useRef(false);
   useEffect(() => {
     if (!draft) {
@@ -454,6 +463,36 @@ export default function WorkoutDetailScreen() {
                   onSetupChange={(patch) =>
                     setDraftExerciseSetup(ex.localId, patch)
                   }
+                />
+                {/* Phase 6 — preset picker. Renders only when at least
+                    one active preset is field-level compatible with
+                    this exercise (capability match + per-field catalog
+                    governance). The onApply dispatcher threads through
+                    workoutStore.applyPresetToDraftExercise, which re-
+                    checks compatibility as the load-bearing gate. */}
+                <SetupPresetPicker
+                  presets={activePresets.data ?? []}
+                  exerciseCapabilities={capabilitiesMap.data?.get(ex.exerciseId) ?? []}
+                  exerciseGripOptions={(setupOptions.data?.get(ex.exerciseId) ?? [])
+                    .map((o) => o.gripSlug)
+                    .filter((s): s is string => typeof s === 'string' && s.length > 0)}
+                  exerciseAttachmentOptions={(setupOptions.data?.get(ex.exerciseId) ?? [])
+                    .map((o) => o.attachmentSlug)
+                    .filter((s): s is string => typeof s === 'string' && s.length > 0)}
+                  onApply={(preset) => {
+                    const res = applyPresetToDraftExercise(ex.localId, preset, {
+                      capabilities: capabilitiesMap.data?.get(ex.exerciseId) ?? [],
+                      gripOptions: (setupOptions.data?.get(ex.exerciseId) ?? [])
+                        .map((o) => o.gripSlug)
+                        .filter((s): s is string => typeof s === 'string' && s.length > 0),
+                      attachmentOptions: (setupOptions.data?.get(ex.exerciseId) ?? [])
+                        .map((o) => o.attachmentSlug)
+                        .filter((s): s is string => typeof s === 'string' && s.length > 0),
+                    });
+                    if (!res.ok) {
+                      showToast('error', res.reason);
+                    }
+                  }}
                 />
                 {ex.sets.length > 0 ? (
                   <View style={{ marginTop: 8 }}>
