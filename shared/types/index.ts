@@ -13,3 +13,4 @@ export * from './workout';
 export * from './analytics';
 export * from './program';
 export * from './userPlan';
+export * from './setupPreset';

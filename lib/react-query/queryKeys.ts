@@ -61,6 +61,15 @@ export const queryKeys = {
     capabilities: () => [...queryKeys.userEquipment.all, 'capabilities'] as const,
   },
 
+  /** Phase 6 user-owned equipment-setup presets. */
+  setupPresets: {
+    all: ['setupPresets'] as const,
+    /** Active-only list — the session-time picker hot path. */
+    activeList: () => [...queryKeys.setupPresets.all, 'activeList'] as const,
+    /** Active + retired — the management UI path. */
+    allList: () => [...queryKeys.setupPresets.all, 'allList'] as const,
+  },
+
   /** User-owned program plans (Phase 3). */
   userPlans: {
     all: ['userPlans'] as const,

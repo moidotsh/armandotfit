@@ -640,3 +640,75 @@ export function resolveCapabilitiesToEquipmentSlugs(
   }
   return [...out];
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// Inverse resolver (Phase 6): equipment slugs → capability slugs
+// ──────────────────────────────────────────────────────────────────────
+//
+// Phase 6 presets are capability-scoped. To decide which presets are
+// eligible for a given exercise, we need the inverse of the resolver
+// above: given an exercise's EquipmentSlug list (from SYSTEM_EXERCISES
+// in shared/exercises/data.ts), return the set of capability slugs
+// whose resolver could produce any of those equipment slugs.
+//
+// For simple capabilities the inverse is 1:1. For detail-bearing
+// capabilities (bench, cable-station, leg-curl, calf-raise) the
+// inverse considers the UNION of every possible detail permutation
+// (e.g. cable-station matches when the exercise lists any of
+// cable-rope / cable-straight-bar / cable-v-bar / cable-lat-bar /
+// cable-handle).
+//
+// Precomputed once at module load; reused by capabilitiesForExercise.
+
+const CAPABILITY_TO_ALL_EQUIPMENT_SLUGS: Record<
+  EquipmentCapabilitySlug,
+  EquipmentSlug[]
+> = (() => {
+  const out: Partial<Record<EquipmentCapabilitySlug, EquipmentSlug[]>> = {};
+  for (const [slug, eq] of Object.entries(SIMPLE_CAPABILITY_TO_EQUIPMENT)) {
+    out[slug as EquipmentCapabilitySlug] = [eq];
+  }
+  out[EquipmentCapabilitySlug.CABLE_STATION] = Object.values(CABLE_ATTACHMENT_TO_EQUIPMENT);
+  out[EquipmentCapabilitySlug.BENCH] = Object.values(BENCH_POSITION_TO_EQUIPMENT);
+  out[EquipmentCapabilitySlug.LEG_CURL] = Object.values(LEG_CURL_VARIANT_TO_EQUIPMENT);
+  out[EquipmentCapabilitySlug.CALF_RAISE] = Object.values(CALF_RAISE_VARIANT_TO_EQUIPMENT);
+  return out as Record<EquipmentCapabilitySlug, EquipmentSlug[]>;
+})();
+
+const EQUIPMENT_SLUG_TO_CAPABILITIES: Map<EquipmentSlug, EquipmentCapabilitySlug[]> = (() => {
+  const m = new Map<EquipmentSlug, EquipmentCapabilitySlug[]>();
+  for (const [cap, slugs] of Object.entries(CAPABILITY_TO_ALL_EQUIPMENT_SLUGS)) {
+    for (const eq of slugs) {
+      const list = m.get(eq) ?? [];
+      list.push(cap as EquipmentCapabilitySlug);
+      m.set(eq, list);
+    }
+  }
+  return m;
+})();
+
+/**
+ * Return the set of EquipmentCapabilitySlug values whose resolver could
+ * produce any of the given equipment slugs. Used by the Phase 6 preset
+ * picker + the apply-time compatibility check. Pure + total — empty
+ * input returns an empty array.
+ *
+ * Note: calf-raise with variant=leg-press resolves to LEG_PRESS_MACHINE,
+ * which is also produced by the leg-press capability. An exercise with
+ * LEG_PRESS_MACHINE in its equipment list therefore matches BOTH
+ * calf-raise and leg-press capabilities. The caller decides whether to
+ * narrow further.
+ */
+export function capabilitiesForExercise(
+  equipmentSlugs: ReadonlyArray<EquipmentSlug>,
+): EquipmentCapabilitySlug[] {
+  const out = new Set<EquipmentCapabilitySlug>();
+  for (const slug of equipmentSlugs) {
+    const caps = EQUIPMENT_SLUG_TO_CAPABILITIES.get(slug);
+    if (caps) {
+      for (const c of caps) out.add(c);
+    }
+  }
+  return [...out];
+}
+

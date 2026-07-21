@@ -14,3 +14,10 @@ export {
 export { useUpdateProfile } from './useUpdateProfile';
 export { useSaveEquipmentCapabilities } from './useSaveEquipmentCapabilities';
 export { useSaveUserPlan, useReplacePlanSlot } from './useUserPlanMutations';
+export {
+  useCreateSetupPreset,
+  useUpdateSetupPreset,
+  useRetireSetupPreset,
+  useUnretireSetupPreset,
+  useDeleteSetupPreset,
+} from './useSetupPresetMutations';

@@ -41,3 +41,4 @@ export {
   type PlanHydrationSlot,
   type ResolvedPlanSlot,
 } from './planLaunchService';
+export { isPresetCompatibleWithExercise } from './setupPresetCompatibility';

@@ -29,6 +29,7 @@ import {
   validateCapabilityDetails,
   resolveCapabilityToEquipmentSlugs,
   resolveCapabilitiesToEquipmentSlugs,
+  capabilitiesForExercise,
   type SelectedCapability,
 } from '../../constants/equipmentCapabilities';
 import { EquipmentSlug } from '../../shared/exercises/data';
@@ -463,5 +464,118 @@ describe('resolver — idempotency + round-trip', () => {
     if (reValidated.ok) {
       expect(reValidated.selections).toEqual(validated.selections);
     }
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────
+// Inverse resolver (Phase 6): capabilitiesForExercise
+// ──────────────────────────────────────────────────────────────────────
+
+describe('capabilitiesForExercise — inverse resolver', () => {
+  it('returns an empty array for an empty equipment list', () => {
+    expect(capabilitiesForExercise([])).toEqual([]);
+  });
+
+  it('resolves a simple 1:1 capability (dumbbell)', () => {
+    expect(capabilitiesForExercise([EquipmentSlug.DUMBBELL])).toEqual([
+      EquipmentCapabilitySlug.DUMBBELLS,
+    ]);
+  });
+
+  it('resolves a simple 1:1 capability (barbell)', () => {
+    expect(capabilitiesForExercise([EquipmentSlug.BARBELL])).toEqual([
+      EquipmentCapabilitySlug.BARBELL,
+    ]);
+  });
+
+  it('resolves cable-station when the exercise lists any cable attachment (detail-bearing union)', () => {
+    // cable-station is detail-bearing; its full resolved set spans all
+    // 5 attachments. An exercise with any one of them should resolve
+    // back to the cable-station capability.
+    for (const slug of [
+      EquipmentSlug.CABLE_ROPE,
+      EquipmentSlug.CABLE_STRAIGHT_BAR,
+      EquipmentSlug.CABLE_V_BAR,
+      EquipmentSlug.CABLE_LAT_BAR,
+      EquipmentSlug.CABLE_HANDLE,
+    ]) {
+      const caps = capabilitiesForExercise([slug]);
+      expect(caps, `expected cable-station for ${slug}`).toContain(
+        EquipmentCapabilitySlug.CABLE_STATION,
+      );
+    }
+  });
+
+  it('resolves bench when the exercise lists any bench position (detail-bearing union)', () => {
+    for (const slug of [
+      EquipmentSlug.FLAT_BENCH,
+      EquipmentSlug.INCLINE_BENCH,
+      EquipmentSlug.DECLINE_BENCH,
+    ]) {
+      const caps = capabilitiesForExercise([slug]);
+      expect(caps, `expected bench for ${slug}`).toContain(EquipmentCapabilitySlug.BENCH);
+    }
+  });
+
+  it('resolves leg-curl for both seated + lying variants', () => {
+    expect(capabilitiesForExercise([EquipmentSlug.LEG_CURL_MACHINE])).toContain(
+      EquipmentCapabilitySlug.LEG_CURL,
+    );
+    expect(capabilitiesForExercise([EquipmentSlug.LYING_LEG_CURL_MACHINE])).toContain(
+      EquipmentCapabilitySlug.LEG_CURL,
+    );
+  });
+
+  it('resolves calf-raise for standing + seated + leg-press variants', () => {
+    expect(capabilitiesForExercise([EquipmentSlug.CALF_RAISE_MACHINE])).toContain(
+      EquipmentCapabilitySlug.CALF_RAISE,
+    );
+    expect(capabilitiesForExercise([EquipmentSlug.SEATED_CALF_RAISE_MACHINE])).toContain(
+      EquipmentCapabilitySlug.CALF_RAISE,
+    );
+  });
+
+  it('returns BOTH calf-raise AND leg-press for LEG_PRESS_MACHINE (cross-resolution)', () => {
+    // calf-raise with variant=leg-press resolves to LEG_PRESS_MACHINE,
+    // which is also produced by the leg-press capability. An exercise
+    // with LEG_PRESS_MACHINE in its equipment list therefore matches
+    // BOTH capabilities — the caller decides whether to narrow further.
+    const caps = capabilitiesForExercise([EquipmentSlug.LEG_PRESS_MACHINE]);
+    expect(caps).toContain(EquipmentCapabilitySlug.LEG_PRESS);
+    expect(caps).toContain(EquipmentCapabilitySlug.CALF_RAISE);
+  });
+
+  it('dedupes capabilities across multiple equipment slugs', () => {
+    // Multiple cable attachments should still produce a single
+    // cable-station capability entry.
+    const caps = capabilitiesForExercise([
+      EquipmentSlug.CABLE_ROPE,
+      EquipmentSlug.CABLE_V_BAR,
+      EquipmentSlug.DUMBBELL,
+    ]);
+    const cableCount = caps.filter((c) => c === EquipmentCapabilitySlug.CABLE_STATION).length;
+    expect(cableCount).toBe(1);
+    expect(caps).toContain(EquipmentCapabilitySlug.DUMBBELLS);
+  });
+
+  it('is pure — calling twice with the same input yields the same reference shape', () => {
+    // Result is a fresh array each call, but contents + order are stable.
+    const a = capabilitiesForExercise([EquipmentSlug.DUMBBELL, EquipmentSlug.BARBELL]);
+    const b = capabilitiesForExercise([EquipmentSlug.DUMBBELL, EquipmentSlug.BARBELL]);
+    expect(a).toEqual(b);
+  });
+
+  it('skips equipment slugs that have no capability mapping', () => {
+    // An equipment slug that doesn't appear in any capability's
+    // resolved set is silently skipped — no throw, no undefined entry.
+    // (Currently every EquipmentSlug maps to at least one capability,
+    // but this test guards against future additions.)
+    const caps = capabilitiesForExercise([
+      EquipmentSlug.DUMBBELL,
+      // Add a non-existent cast to test the skip path; the resolver
+      // treats unknown values as no-ops via Map.get returning undefined.
+      'nonexistent-equipment-slug' as unknown as EquipmentSlug,
+    ]);
+    expect(caps).toEqual([EquipmentCapabilitySlug.DUMBBELLS]);
   });
 });
