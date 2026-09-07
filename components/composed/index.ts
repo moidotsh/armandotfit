@@ -19,8 +19,6 @@ export type { EditableSetRowProps } from './EditableSetRow';
 export { SplitExerciseRow } from './SplitExerciseRow';
 export type { SplitExerciseRowProps } from './SplitExerciseRow';
 
-export { HamburgerButton } from './HamburgerButton';
-export type { HamburgerButtonProps } from './HamburgerButton';
 
 export { DashboardSkeleton } from './DashboardSkeleton';
 export { WorkoutListSkeleton } from './WorkoutListSkeleton';

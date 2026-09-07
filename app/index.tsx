@@ -24,11 +24,12 @@ import {
   MobilePrimaryButton,
   MobileSectionEyebrow,
   MobileNavDrawer,
+  MobileNavDrawerGlassCap,
+  HamburgerButton,
   CopyForAiButton,
   type MobileNavDrawerItem,
 } from '../components/MobilePremium';
 import {
-  HamburgerButton,
   WorkoutSessionItem,
   DashboardSkeleton,
   WorkoutListSkeleton,
@@ -139,6 +140,7 @@ export default function HomeScreen() {
             onPress={() => setDrawerOpen((prev) => !prev)}
           />
         }
+        drawerGlassCap={<MobileNavDrawerGlassCap open={drawerOpen} />}
         rightAction={<CopyForAiButton variant="subtle" payload={aiPayload} testID="dashboard-copy-for-ai" />}
       />
       <ScrollView
