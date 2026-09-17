@@ -3,7 +3,7 @@
 // suggested-tag prefill, tag toggling, set CRUD, and the save-time DTO
 // (half-filled sets dropped — a logged set is a done set).
 
-import { describe, expect, it, beforeEach } from 'bun:test';
+import { describe, expect, it, beforeEach } from 'vitest';
 import { useWorkoutStore } from '../../stores/workoutStore';
 import { getSlotsForDay } from '../../shared/exercises/splits';
 

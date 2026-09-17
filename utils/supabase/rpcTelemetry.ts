@@ -18,8 +18,11 @@
 //   - S8: uses fetchWithRetry rather than raw fetch, so the structural lint
 //     rule stays clean.
 //
-// Arqavellum ships the wrapper but no consumer is wired by default — consumers
-// add the matching edge function + table and start wrapping repository calls.
+// Arqavellum ships the full system: this wrapper + the edge function at
+// `supabase/functions/track-rpc/index.ts` + the table defined in
+// `supabase/migrations/00000000000000_rpc_telemetry.sql`. The edge function
+// ships with an EMPTY allowlist — consumers add entries as they wrap
+// repository methods (see "Enabling RPC telemetry" in `CLAUDE.md`).
 
 import { fetchWithRetry } from '../api-client';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../constants';
@@ -53,9 +56,8 @@ const PLATFORM = detectPlatform();
  *   3. Returns the original result so the caller's error handling is
  *      unaffected.
  *
- * `actorId` is intentionally generic — qep-tracker calls this `deviceUuid`
- * because its analytics identifier is the device UUID. Arqavellum leaves the
- * identifier name open so consumers can pass whatever stable id they use.
+ * `actorId` is intentionally generic — pass whatever stable identifier your
+ * domain uses (user_id, device_id, anonymous_id, null for pre-session calls).
  *
  * Note on `PromiseLike<R>`: supabase's `.rpc()` returns a
  * `PostgrestFilterBuilder` which is thenable (has `then`) but not a real

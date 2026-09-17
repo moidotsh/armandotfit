@@ -2,9 +2,9 @@
 // Arqavellum's default auth surface: Supabase email/password. Wraps the
 // supabase-js auth API in a domain-agnostic service so consumers get a
 // working auth flow out of the box (login, register, logout, session
-// restore, password reset). Consumers needing qep-tracker-style
-// PIN+device-UUID auth re-add those primitives as a customization —
-// see CLAUDE.md → "When to add PIN auth".
+// restore, password reset). Consumers needing PIN+device-UUID auth
+// re-add those primitives as a customization — see CLAUDE.md →
+// "When to add PIN auth".
 
 import { supabase } from './client';
 import { logger } from '../logger';

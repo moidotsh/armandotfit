@@ -37,7 +37,6 @@ module.exports = [
       'node_modules/*',
       'supabase/**',
       'scripts/**',
-      'archive-v1/**',
     ],
   },
   {

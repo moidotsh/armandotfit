@@ -1,5 +1,8 @@
 // stores/storage.ts
-// Re-export — the storage adapter lives in utils/storage.ts (utils
-// modules import it at the leaf, never via the stores barrel). This
-// shim keeps the historical stores/storage import path working.
-export { zustandStorage } from '../utils/storage';
+// Re-export shim — the storage adapter moved to utils/storage.ts (it is
+// infra, not domain state, and utils modules must import it at the LEAF
+// level: pulling the stores barrel from utils closes a barrel cycle via
+// networkStore's logger import). Same-folder stores imports keep working
+// through this shim; new cross-folder importers go to utils/storage.
+export * from '../utils/storage';
+export { default } from '../utils/storage';

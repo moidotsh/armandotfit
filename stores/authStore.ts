@@ -1,7 +1,7 @@
 // stores/authStore.ts
 // Cross-cutting auth state. Slim by design — domain auth concerns
 // (e.g. PIN re-auth, encryption-key status) live in consumer-added
-// stores. This authStore only carries the user identity + status
+// stores. Arqavellum's authStore only carries the user identity + status
 // that every consumer needs.
 
 // =============================================================================
@@ -94,7 +94,7 @@ export const useAuthStore = create<AuthState>()(
       reset: () => set(initialState),
     }),
     {
-      name: 'armandotfit-auth',
+      name: 'arqavellum-auth',
       storage: createJSONStorage(() => zustandStorage),
       // Auth state is fully re-derived on every boot — AuthProvider's
       // mount-time setStatus('loading') + restoreSession() decide the

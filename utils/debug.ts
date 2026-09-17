@@ -3,10 +3,10 @@
 // drop all `debugLog` call sites as dead code, so shipping a `debugLog`
 // in a hot path has zero runtime cost.
 //
-// Unlike qep-tracker's version, arqavellum's debug.ts does NOT ship a
-// module whitelist — instead, every consumer can pick the gating rule
-// (env var, build flag, per-module toggle) that fits their needs. The
-// default is "off in production, on in dev, no module filter".
+// arqavellum's debug.ts does NOT ship a module whitelist — every consumer
+// can pick the gating rule (env var, build flag, per-module toggle) that
+// fits their needs. The default is "off in production, on in dev, no
+// module filter".
 //
 // If you need per-module gating, wrap `debugLog` in a thin shim in your
 // consumer's utils/ that filters by module name before calling through.
@@ -18,7 +18,7 @@ import { logger } from './logger';
  * is dropped as dead code by the bundler). In development, routes through
  * the standard logger under the 'debug' namespace.
  *
- * @param module - Logical module name (e.g. 'auth', 'workout', 'sync').
+ * @param module - Logical module name (e.g. 'auth', 'sync', 'records').
  * @param message - Human-readable message.
  * @param data - Optional structured data; serialised by the logger.
  */

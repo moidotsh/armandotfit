@@ -6,6 +6,7 @@
 
 import type { z } from 'zod';
 import { logger } from '../../logger';
+import { handleApiError } from '../../errors';
 
 /**
  * Result type for repository operations. Discriminated union on
@@ -208,4 +209,31 @@ export function handleRepositoryError(
   const c = classifySupabaseError(error);
   logger.warn('repository', `${operation} failed:`, c.message);
   return err(`${operation} failed: ${c.message}`, c.code, c.cause);
+}
+
+/**
+ * Convenience constructor for the UNAUTHORIZED failure shape — collapses
+ * inline `new RepositoryError('No session', UNAUTHORIZED)` repeats into
+ * one call so wording and code stay in lockstep.
+ */
+export function unauthorized<T>(reason: string = 'Unauthorized'): RepositoryResult<T> {
+  return {
+    success: false,
+    error: new RepositoryError(reason, RepositoryErrorCode.UNAUTHORIZED),
+  };
+}
+
+/**
+ * Service-layer conversion helper. A repository returns a structured
+ * `RepositoryResult<T>`; services throw on failure so React Query and
+ * the UI's error boundary can react. Logs the failure at the call site
+ * (tagged 'repository') BEFORE throwing, routing through
+ * `handleApiError` so the RepositoryErrorCode is preserved.
+ */
+export function throwIfFailed<T>(result: RepositoryResult<T>, context: string): T {
+  if (!result.success) {
+    logger.error('repository', `${context}: repository returned failure`, result.error);
+    throw handleApiError(result.error, context);
+  }
+  return result.data;
 }

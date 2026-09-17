@@ -3,6 +3,13 @@
 // audit-logging-errors (S10) blocks raw `throw new Error(...)` outside its
 // carve-out and expects AppError for anything that crosses a service boundary.
 
+// Note: utils/errors ↔ utils/supabase/repositories/types is a bidirectional
+// cycle (errors needs RepositoryError for instanceof; types needs
+// handleApiError for throwIfFailed). Works because handleApiError is a
+// hoisted function declaration and types.ts invokes it only inside the
+// throwIfFailed function body — never at module init.
+import { RepositoryError, RepositoryErrorCode } from './supabase/repositories';
+
 export enum ErrorCode {
   NETWORK_ERROR = 'ERR_NETWORK',
   TIMEOUT = 'ERR_TIMEOUT',
@@ -148,6 +155,18 @@ export function handleApiError(error: unknown, context?: string): AppError {
     return error;
   }
 
+  // RepositoryError — must run BEFORE isSupabaseError because RepositoryError
+  // duck-types as a SupabaseError (has `.message`) and would otherwise fall
+  // into mapSupabaseCode with a non-SQLSTATE `.code` (the literal "NOT_FOUND")
+  // and silently downgrade to UNKNOWN. See repoCodeToAppCode below.
+  if (error instanceof RepositoryError) {
+    const code = repoCodeToAppCode(error.code);
+    return new AppError(error.message, code, {
+      cause: error.cause,
+      details: { context, repositoryCode: error.code },
+    });
+  }
+
   if (error instanceof TypeError && error.message.includes('fetch')) {
     return new AppError('Network request failed', ErrorCode.NETWORK_ERROR, {
       cause: error as Error,
@@ -169,6 +188,45 @@ export function handleApiError(error: unknown, context?: string): AppError {
   return new AppError('An unexpected error occurred', ErrorCode.UNKNOWN, {
     details: { error, context },
   });
+}
+
+/**
+ * RepositoryError → AppError code mapping. The load-bearing switch that
+ * keeps retry decisions consistent across both pipelines: a `RepositoryError`
+ * thrown via `throwIfFailed` (in `utils/supabase/repositories/types.ts`)
+ * gets the same `ErrorCode` it would have had if the retry predicate
+ * (`lib/react-query/queryClient.ts`) inspected the RepositoryError directly.
+ *
+ * `NETWORK_ERROR → NETWORK_ERROR` (recoverable); all other codes map to
+ * non-recoverable. Without this mapping, `RepositoryError` instances
+ * fall through to the `isSupabaseError` branch and get mapped via
+ * `mapSupabaseCode(error.code)` — but `.code` on a RepositoryError is the
+ * literal string "NOT_FOUND", not a SQLSTATE, so every code silently
+ * downgrades to UNKNOWN, defeats the retry predicate's tightening, and
+ * produces ~10s spinner storms on 404 / 42P01 / 42501.
+ *
+ * Implemented as a switch (not a top-level const map) so the
+ * `RepositoryErrorCode` enum is referenced at call time, not at
+ * module-init time. utils/errors ↔ utils/supabase/repositories/types
+ * is a genuine bidirectional cycle (errors needs RepositoryError for
+ * instanceof; types needs handleApiError for throwIfFailed); a top-level
+ * const map would access the enum during utils/errors module init,
+ * before types has finished evaluating its enum. A switch inside a
+ * function body defers the lookup to first call, by which point both
+ * modules have fully loaded.
+ */
+function repoCodeToAppCode(code: RepositoryErrorCode): ErrorCode {
+  switch (code) {
+    case RepositoryErrorCode.NOT_FOUND: return ErrorCode.NOT_FOUND;
+    case RepositoryErrorCode.VALIDATION_ERROR: return ErrorCode.VALIDATION_ERROR;
+    case RepositoryErrorCode.STORAGE_ERROR: return ErrorCode.STORAGE_ERROR;
+    case RepositoryErrorCode.NETWORK_ERROR: return ErrorCode.NETWORK_ERROR;
+    case RepositoryErrorCode.CONFLICT: return ErrorCode.DUPLICATE_ENTRY;
+    case RepositoryErrorCode.UNAUTHORIZED: return ErrorCode.UNAUTHORIZED;
+    case RepositoryErrorCode.UNKNOWN:
+    default:
+      return ErrorCode.UNKNOWN;
+  }
 }
 
 interface SupabaseError {

@@ -44,6 +44,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // gone provider (audit R1). Each session write mirrors into
   // authStore so the AuthGuard + safeGoBack() can read live status.
   useEffect(() => {
+    // Dev-mode auth bypass: set EXPO_PUBLIC_DISABLE_AUTH=1 in .env.local
+    // to skip the login flow + explore the app without credentials.
+    // Useful during development when no Supabase project is provisioned
+    // or when testing UI without a backend. The mock session (demo-user)
+    // makes AuthGuard see 'authenticated' so no redirect to /login fires.
+    if (
+      process.env.EXPO_PUBLIC_DISABLE_AUTH === '1' ||
+      process.env.EXPO_PUBLIC_DISABLE_AUTH === 'true'
+    ) {
+      const mockSession: AuthSession = {
+        userId: 'dev-user',
+        email: 'dev@arqavellum.app',
+        accessToken: 'dev-access-token',
+        refreshToken: 'dev-refresh-token',
+      };
+      setSession(mockSession);
+      useAuthStore.getState().setSession({
+        userId: mockSession.userId,
+        email: mockSession.email,
+      });
+      return;
+    }
+
     let cancelled = false;
     let unsubscribe = () => {};
 

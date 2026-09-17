@@ -49,18 +49,17 @@ vi.mock('expo-router', () => ({
     replace: vi.fn(),
     back: vi.fn(),
     navigate: vi.fn(),
-    canGoBack: vi.fn(() => false),
   })),
   useLocalSearchParams: vi.fn(() => ({})),
   useGlobalSearchParams: vi.fn(() => ({})),
   usePathname: vi.fn(() => '/'),
+  useSegments: vi.fn(() => ['/']),
   Link: 'Link',
   router: {
     push: vi.fn(),
     replace: vi.fn(),
     back: vi.fn(),
     navigate: vi.fn(),
-    canGoBack: vi.fn(() => false),
   },
   Stack: {
     Screen: 'Screen',
@@ -151,6 +150,16 @@ vi.mock('tamagui', () => ({
     lg: false,
     xl: false,
   })),
+  // Identity pass-through: components use it to resolve theme variable
+  // objects to plain values; the mock theme only holds plain strings.
+  getVariableValue: vi.fn((value: unknown) => value),
+  // Stable viewport for components that measure (charts, gauges, grids).
+  useWindowDimensions: vi.fn(() => ({
+    width: 1024,
+    height: 768,
+    scale: 1,
+    fontScale: 1,
+  })),
   themed: vi.fn((component) => component),
   createTamagui: vi.fn((config) => config),
   config: {},
@@ -162,46 +171,23 @@ vi.mock('tamagui', () => ({
   Theme: 'Theme',
 }));
 
-vi.mock('@tamagui/lucide-icons-2', () => ({
-  ChevronRight: 'ChevronRight',
-  ChevronLeft: 'ChevronLeft',
-  ChevronDown: 'ChevronDown',
-  ChevronUp: 'ChevronUp',
-  Check: 'Check',
-  X: 'X',
-  Plus: 'Plus',
-  Minus: 'Minus',
-  Settings: 'Settings',
-  User: 'User',
-  Home: 'Home',
-  Calendar: 'Calendar',
-  Clock: 'Clock',
-  Info: 'Info',
-  AlertCircle: 'AlertCircle',
-  AlertTriangle: 'AlertTriangle',
-  CheckCircle2: 'CheckCircle2',
-  HelpCircle: 'HelpCircle',
-  Trash: 'Trash',
-  Edit: 'Edit',
-  Save: 'Save',
-  Upload: 'Upload',
-  Download: 'Download',
-  RefreshCw: 'RefreshCw',
-  Eye: 'Eye',
-  EyeOff: 'EyeOff',
-  Lock: 'Lock',
-  Unlock: 'Unlock',
-  Sun: 'Sun',
-  Moon: 'Moon',
-  Monitor: 'Monitor',
-  ClipboardCopy: 'ClipboardCopy',
-  Menu: 'Menu',
-  Bell: 'Bell',
-  Mail: 'Mail',
-  Search: 'Search',
-  Package: 'Package',
-  TrendingUp: 'TrendingUp',
-}));
+// Mock @tamagui/lucide-icons-2: every icon the installed package exports
+// answers its own name (a string). The list derives from the package's
+// type declarations — the runtime module can't execute under jsdom (its
+// dependency chain carries react-native-only syntax), and a hand-kept
+// list grows one entry per icon.
+vi.mock('@tamagui/lucide-icons-2', async () => {
+  const { readFileSync } = await import('node:fs');
+  const dts = readFileSync(
+    'node_modules/@tamagui/lucide-icons-2/types/index.d.ts',
+    'utf8',
+  );
+  const mocked: Record<string, string> = {};
+  for (const match of dts.matchAll(/export \{ (\w+) \} from/g)) {
+    mocked[match[1]] = match[1];
+  }
+  return mocked;
+});
 
 // Mock @supabase/supabase-js.
 vi.mock('@supabase/supabase-js', () => ({
@@ -239,6 +225,10 @@ vi.mock('@supabase/supabase-js', () => ({
       upsert: vi.fn(() => Promise.resolve({ data: null, error: null })),
     })),
     rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    channel: vi.fn(() => ({
+      on: vi.fn(() => ({ subscribe: vi.fn() })),
+    })),
+    removeChannel: vi.fn(),
   })),
 }));
 
@@ -269,192 +259,3 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Suppress console errors in tests unless explicitly asserted.
 vi.spyOn(console, 'error').mockImplementation(() => {});
-
-// ── Screen-test hook stubs ────────────────────────────────────────────
-//
-// Phase 4 resilience follow-up: integration tests for app/split-selection
-// and app/workout-detail need to control the React Query state of the
-// plan-launch hooks (useActivePlanForVariant, usePlanLaunchHydration) to
-// reproduce the lookup-error and hydration-error UI branches. T2 Part A
-// requires module-level vi.mock() calls to live in this file (not in the
-// test files), so the mocks are centralized here.
-//
-// The stubs are vi.hoisted so the vi.mock factory — which is itself
-// hoisted by Vitest — can safely reference them. Each stub defaults to
-// the "happy empty" shape so tests that don't care about a hook still
-// get a sane return value. Screen integration tests override the stubs
-// per-test via `screenHookStubs.X.mockReturnValue(...)`.
-//
-// Scope: only the hooks the two screens actually import from `../hooks`.
-// Other hook exports are not stubbed; tests that need them must add
-// their own stub here.
-
-const screenHookStubs = vi.hoisted(() => ({
-  useProfile: vi.fn(
-    (..._a: unknown[]): { data: unknown; isLoading: boolean } => ({
-      data: undefined,
-      isLoading: false,
-    }),
-  ),
-  useRecentWorkouts: vi.fn(
-    (..._a: unknown[]): { data: unknown[] } => ({ data: [] }),
-  ),
-  useVariantTree: vi.fn(
-    (..._a: unknown[]): { data: unknown; isLoading: boolean } => ({
-      data: undefined,
-      isLoading: false,
-    }),
-  ),
-  useActivePlanForVariant: vi.fn(
-    (..._a: unknown[]): {
-      data: unknown;
-      isError: boolean;
-      isLoading: boolean;
-      refetch: () => Promise<unknown>;
-    } => ({
-      data: null,
-      isError: false,
-      isLoading: false,
-      refetch: () => Promise.resolve({}),
-    }),
-  ),
-  usePlanLaunchHydration: vi.fn(
-    (..._a: unknown[]): {
-      data: unknown;
-      isError: boolean;
-      isLoading: boolean;
-      refetch: () => Promise<unknown>;
-    } => ({
-      data: null,
-      isError: false,
-      isLoading: false,
-      refetch: () => Promise.resolve({}),
-    }),
-  ),
-  useSuggestedExercises: vi.fn(
-    (..._a: unknown[]): { data: unknown[]; isLoading: boolean } => ({
-      data: [],
-      isLoading: false,
-    }),
-  ),
-  useWorkoutDetail: vi.fn(
-    (..._a: unknown[]): { data: unknown; isLoading: boolean } => ({
-      data: undefined,
-      isLoading: false,
-    }),
-  ),
-  useLogWorkout: vi.fn(
-    (..._a: unknown[]): {
-      mutate: (dto: unknown) => void;
-      isPending: boolean;
-      isSuccess: boolean;
-      isError: boolean;
-      error: unknown;
-    } => ({
-      mutate: () => {},
-      isPending: false,
-      isSuccess: false,
-      isError: false,
-      error: null,
-    }),
-  ),
-  useAiPayload: vi.fn((..._a: unknown[]): string => ''),
-  useExerciseSetupOptions: vi.fn(
-    (..._a: unknown[]): {
-      data: Map<unknown, unknown> | undefined;
-      isLoading: boolean;
-    } => ({ data: undefined, isLoading: false }),
-  ),
-  useExerciseCapabilities: vi.fn(
-    (..._a: unknown[]): {
-      data: Map<unknown, unknown> | undefined;
-      isLoading: boolean;
-    } => ({ data: undefined, isLoading: false }),
-  ),
-  useActiveSetupPresets: vi.fn(
-    (..._a: unknown[]): {
-      data: unknown[];
-      isLoading: boolean;
-    } => ({ data: [], isLoading: false }),
-  ),
-  useAllSetupPresets: vi.fn(
-    (..._a: unknown[]): {
-      data: unknown[];
-      isLoading: boolean;
-    } => ({ data: [], isLoading: false }),
-  ),
-  useCreateSetupPreset: vi.fn(
-    (..._a: unknown[]): {
-      mutate: (vars: unknown, opts?: unknown) => void;
-      isPending: boolean;
-    } => ({ mutate: () => {}, isPending: false }),
-  ),
-  useUpdateSetupPreset: vi.fn(
-    (..._a: unknown[]): {
-      mutate: (vars: unknown, opts?: unknown) => void;
-      isPending: boolean;
-    } => ({ mutate: () => {}, isPending: false }),
-  ),
-  useRetireSetupPreset: vi.fn(
-    (..._a: unknown[]): {
-      mutate: (vars: unknown, opts?: unknown) => void;
-      isPending: boolean;
-    } => ({ mutate: () => {}, isPending: false }),
-  ),
-  useUnretireSetupPreset: vi.fn(
-    (..._a: unknown[]): {
-      mutate: (vars: unknown, opts?: unknown) => void;
-      isPending: boolean;
-    } => ({ mutate: () => {}, isPending: false }),
-  ),
-  useDeleteSetupPreset: vi.fn(
-    (..._a: unknown[]): {
-      mutate: (vars: unknown, opts?: unknown) => void;
-      isPending: boolean;
-    } => ({ mutate: () => {}, isPending: false }),
-  ),
-}));
-
-vi.mock('../hooks', async (importOriginal) => {
-  // Pull in the real barrel so non-stubbed exports (useReducedMotion,
-  // usePlatformAnimation, usePressedStyle, useFadeIn, …) keep working
-  // for every other test. The 9 stubs below override only the hooks the
-  // Phase 4 resilience screen tests need to control; everything else
-  // passes through untouched.
-  const actual = await importOriginal<typeof import('../hooks')>();
-  return {
-    ...actual,
-    useProfile: (...a: unknown[]) => screenHookStubs.useProfile(...a),
-    useRecentWorkouts: (...a: unknown[]) => screenHookStubs.useRecentWorkouts(...a),
-    useVariantTree: (...a: unknown[]) => screenHookStubs.useVariantTree(...a),
-    useActivePlanForVariant: (...a: unknown[]) =>
-      screenHookStubs.useActivePlanForVariant(...a),
-    usePlanLaunchHydration: (...a: unknown[]) =>
-      screenHookStubs.usePlanLaunchHydration(...a),
-    useSuggestedExercises: (...a: unknown[]) =>
-      screenHookStubs.useSuggestedExercises(...a),
-    useWorkoutDetail: (...a: unknown[]) => screenHookStubs.useWorkoutDetail(...a),
-    useLogWorkout: (...a: unknown[]) => screenHookStubs.useLogWorkout(...a),
-    useAiPayload: (...a: unknown[]) => screenHookStubs.useAiPayload(...a),
-    useExerciseSetupOptions: (...a: unknown[]) =>
-      screenHookStubs.useExerciseSetupOptions(...a),
-    useExerciseCapabilities: (...a: unknown[]) =>
-      screenHookStubs.useExerciseCapabilities(...a),
-    useActiveSetupPresets: (...a: unknown[]) =>
-      screenHookStubs.useActiveSetupPresets(...a),
-    useAllSetupPresets: (...a: unknown[]) =>
-      screenHookStubs.useAllSetupPresets(...a),
-    useCreateSetupPreset: (...a: unknown[]) =>
-      screenHookStubs.useCreateSetupPreset(...a),
-    useUpdateSetupPreset: (...a: unknown[]) =>
-      screenHookStubs.useUpdateSetupPreset(...a),
-    useRetireSetupPreset: (...a: unknown[]) =>
-      screenHookStubs.useRetireSetupPreset(...a),
-    useUnretireSetupPreset: (...a: unknown[]) =>
-      screenHookStubs.useUnretireSetupPreset(...a),
-    useDeleteSetupPreset: (...a: unknown[]) =>
-      screenHookStubs.useDeleteSetupPreset(...a),
-  };
-});
-
-export { screenHookStubs };

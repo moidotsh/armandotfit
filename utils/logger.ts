@@ -1,6 +1,6 @@
 // utils/logger.ts
 // Environment-aware logging utility. This is the single legitimate `console.*`
-// site in armandotfit — audit-logging-errors (S11) blocks live console calls
+// site in arqavellum — audit-logging-errors (S11) blocks live console calls
 // elsewhere and treats this file as the source of truth.
 //
 // Best-effort credential redaction:
@@ -44,7 +44,6 @@ type LogContext =
   | 'repository';
 
 declare global {
-  // eslint-disable-next-line no-var
   var currentLogLevel: LogLevel | undefined;
 }
 
@@ -83,7 +82,7 @@ function formatMessage(context: LogContext, message: string): string {
 // header colon-form would leave "Authorization: " behind while the
 // Bearer segment is redacted).
 
-const REDACTION_PATTERNS: ReadonlyArray<{ pattern: RegExp; replacement: string }> = [
+const REDACTION_PATTERNS: readonly { pattern: RegExp; replacement: string }[] = [
   // "Authorization: Bearer xxx" / "Authorization: Basic xxx" / "Authorization: Digest xxx"
   // — case-insensitive, allows whitespace flexibility around the colon.
   {

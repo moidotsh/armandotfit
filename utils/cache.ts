@@ -1,7 +1,7 @@
 // utils/cache.ts
 // Generic TTL + LRU cache for any data the consumer wants to memoize.
-// Domain-agnostic — armandotfit defines its own cache key namespace via
-// a `cacheKeys` factory in domain code (e.g. `cacheKeys.workoutDetail(id)`).
+// Domain-agnostic — arqavellum doesn't ship a default cache key namespace;
+// consumers define their own (`cacheKeys` factory in their domain code).
 
 import { logger } from './logger';
 

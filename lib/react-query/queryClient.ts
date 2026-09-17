@@ -1,7 +1,7 @@
 // lib/react-query/queryClient.ts
-// React Query client configuration. Mirrors qep-tracker's error-handling
-// shape: queries/mutations funnel errors through handleApiError, auth-class
-// errors trigger the registered handler (set up fromAuthProvider).
+// React Query client configuration. Queries and mutations funnel errors
+// through handleApiError; auth-class errors trigger the registered handler
+// (set up by fromAuthProvider).
 
 import { QueryClient } from '@tanstack/react-query';
 import { AppError, handleApiError } from '../../utils/errors';

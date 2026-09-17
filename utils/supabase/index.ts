@@ -10,14 +10,14 @@ export {
   type AuthResult,
 } from './AuthService';
 export {
-  type IRepository,
   type RepositoryResult,
-  type FindOptions,
   RepositoryError,
   RepositoryErrorCode,
   ok,
   err,
   validateWithSchema,
-  BaseRepository,
+  unauthorized,
+  throwIfFailed,
 } from './repositories';
 export { withRpcTelemetry } from './rpcTelemetry';
+export { startRealtimeTable, type RealtimeRow, type RealtimeTableConfig } from './realtimeTable';

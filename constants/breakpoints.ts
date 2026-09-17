@@ -1,7 +1,7 @@
 // constants/breakpoints.ts
 // Responsive breakpoint definitions. Arqavellum is PWA-first so the desktop
-// breakpoints are slimmer than qep-tracker's (no sidebar collapse, no right
-// panel threshold). Container queries are preserved verbatim — they're the
+// breakpoints are intentionally slim (no sidebar collapse, no right-panel
+// threshold). Container queries are preserved verbatim — they're the
 // load-bearing size-detection mechanism for MobilePremium components.
 
 export const BREAKPOINTS = {

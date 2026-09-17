@@ -51,5 +51,9 @@ export function getAiRouteMetadata(pathname: string): AiRouteMeta {
     const entry = ROUTE_AI_METADATA[candidate];
     if (entry) return entry;
   }
-  return ROUTE_AI_METADATA[''] ?? {};
+  // Nothing matches — empty, NEVER the root entry: the downstream
+  // consumers (route curtain, Copy-for-AI) apply their own shell-title
+  // fallbacks (auth screens) or the wordmark, and inheriting Dashboard
+  // here would stamp it over every unregistered route.
+  return {};
 }

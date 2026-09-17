@@ -17,7 +17,7 @@ import {
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
 import { navigateToRegister, navigateToForgotPassword } from '../navigation';
-import { SCREEN_BODY_STYLE } from '../constants';
+import { SCREEN_BODY_STYLE, APP_DISPLAY_NAME } from '../constants';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
@@ -78,7 +78,7 @@ export default function LoginScreen() {
 
         <View style={{ height: 16 }} />
         <Text style={[styles.help, { color: colors.textSecondary }]}>
-          New to armandotfit?{' '}
+          New to {APP_DISPLAY_NAME}?{' '}
           <Text
             accessibilityRole="link"
             onPress={navigateToRegister}

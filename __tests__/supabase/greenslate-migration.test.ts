@@ -3,11 +3,12 @@
 // no DB required. Catches the classes of bugs found in review (missing
 // trigger drop, broken CHECK, missing backfill) ever being reintroduced.
 
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 const SQL = readFileSync(
-  new URL('../../supabase/migrations/20261001000000_greenslate_rebuild.sql', import.meta.url),
+  resolve(process.cwd(), 'supabase/migrations/20261001000000_greenslate_rebuild.sql'),
   'utf8',
 );
 
@@ -71,7 +72,7 @@ describe('greenslate migration', () => {
 
   it('grants companion: every table reaches anon/authenticated', async () => {
     const grants = readFileSync(
-      new URL('../../supabase/migrations/20261001000001_grants.sql', import.meta.url),
+      resolve(process.cwd(), 'supabase/migrations/20261001000001_grants.sql'),
       'utf8',
     );
     for (const t of ['users', 'exercises', 'sessions', 'logged_exercises', 'logged_sets']) {
