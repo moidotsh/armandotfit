@@ -1,4 +1,4 @@
-# Arqavellum — Canonical Doc Ownership
+# armandotfit — Canonical Doc Ownership
 
 > Settles "which doc owns claim X" disputes. If two docs appear to own the same claim, one is canonical and the other cross-links. This file is the authority.
 
@@ -12,9 +12,9 @@
 | Claim-type → owner-doc map (this meta-layer) | this file (`docs/OWNERSHIP.md`) | — |
 | MobilePremium design system (four pillars, primitive inventory, atmosphere palettes, 490px test, gating policy) | `docs/architecture/mobile-premium-design-system.md` | The visual source of truth is `app/dev/premium.tsx`; the doc is the written reference. |
 | PWA installability (manifest, SW, runtime injection, icons) | `docs/architecture/pwa-installability.md` | The runtime injection block in `app/_layout.tsx` is load-bearing — keep it in sync with the doc. |
-| How to evolve arqavellum itself (when to fix in arqavellum vs. in a consumer) | `docs/contributing.md` | — |
-| Exercise-catalog governance (movement family / canonical exercise / setup dimensions / free-text notes / per-exercise UI discernment / attachment-vocabulary mismatch) | `docs/architecture/exercise-catalog-governance.md` | Source of truth for the catalog model + future-setup-dimension matrix + §4 attachment-vocabulary mismatch (deferred normalization). CLAUDE.md invariants #9 / #12 / #13 / #16 cross-link. |
-| Seeded split design record (one-a-day / two-a-day working split as already mirrored into the catalog/schema, slot status matrix, non-negotiable rules for future seed updates) | `docs/architecture/exercise-catalog-governance.md` (§5) | Canonical TS runtime source remains `shared/exercises/splits.ts` per CLAUDE.md invariant #12; the §5 design record owns the slot-by-slot status + the programming-review outcomes. |
+| Logging data model (five-table schema) | `supabase/migrations/20261001000000_greenslate_rebuild.sql` | The migration file is the schema of record. |
+| Exercise identity + logging governance (identity test, tags, promotion rule) | `docs/architecture/exercise-logging-governance.md` | Source of truth for the identity-vs-realization boundary and when tags earn structure. CLAUDE.md invariants #4–#8 cross-link. |
+| The AM/PM program (slots, Rx, suggested tags) | `shared/exercises/splits.ts` | The program is TypeScript data, never a doc or a table. |
 | Theme tokens (canonical hex values) | `constants/theme.ts` | Source of truth. Docs that mention a color link here; they don't restate the hex. |
 | Animation durations | `constants/animation.ts` | Source of truth. `ARCHITECTURE.md` §S3 cross-links. |
 | Responsive breakpoints | `constants/breakpoints.ts` | Source of truth. `ARCHITECTURE.md` §C3 and §C9 cross-link. |
