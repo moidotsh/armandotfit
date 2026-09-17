@@ -116,9 +116,16 @@ deleted alternatives graph:
   lists same-family catalog entries; the empty state (single-entry
   families, custom exercises) points at Remove + Add, which can bring
   in anything, including a typed custom exercise.
-- **Remembered overrides are a promotion candidate**, not built: if the
-  same swap is made repeatedly (≥3 sessions), a per-slot remembered
-  override (client-side preference, program untouched) earns its build.
+- **Standing overrides are BUILT (promoted by owner decision,
+  2026-10-17):** `programOverrideStore` holds per-slot substitutions
+  (`slotKey = split:day:window:position` → catalog slug + name),
+  persisted client-side. Applied everywhere slots resolve (program
+  display, split-selection preview, session hydration) via
+  `resolveSlots`. An override keeps the slot's programmed Rx and
+  position, clears its suggested tags (they belonged to the programmed
+  exercise), and resets with one tap. The authored program in
+  `splits.ts` remains the asset — overrides are standing substitutions
+  ("this gym has no leg press"), never edits.
 
 ## 4. The program's relationship to identity
 

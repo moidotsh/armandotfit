@@ -27,6 +27,7 @@ const ROUTE_AI_METADATA: Record<string, AiRouteMeta> = {
   progression: { title: 'Progression', contextLabel: 'Lifetime totals' },
   analytics: { title: 'Analytics', contextLabel: 'History' },
   settings: { title: 'Settings', contextLabel: 'Preferences' },
+  program: { title: 'My Program', contextLabel: 'The split' },
   dev: { title: 'Dev', contextLabel: 'Internal' },
 };
 

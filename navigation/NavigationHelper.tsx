@@ -49,6 +49,7 @@ export enum NavigationPath {
   EXERCISE_DETAIL = 'exercise-detail',
   PROGRESSION = 'progression',
   ANALYTICS = 'analytics',
+  PROGRAM = 'program',
   SPLIT_SELECTION = 'split-selection',
 }
 
@@ -73,6 +74,7 @@ export const navigationHierarchy: Record<string, NavigationPath> = {
   [NavigationPath.EXERCISE_DETAIL]: NavigationPath.EXERCISE_DATABASE,
   [NavigationPath.PROGRESSION]: NavigationPath.HOME,
   [NavigationPath.ANALYTICS]: NavigationPath.HOME,
+  [NavigationPath.PROGRAM]: NavigationPath.HOME,
   [NavigationPath.SPLIT_SELECTION]: NavigationPath.HOME,
 };
 
@@ -130,6 +132,11 @@ export function navigateToExerciseDetail(exerciseSlug: string) {
 /** Open the progression dashboard (PR tracking + volume trends). */
 export function navigateToProgression() {
   push('/progression');
+}
+
+/** Open My Program — the split display with plan-time swaps. */
+export function navigateToProgram() {
+  push('/program');
 }
 
 /** Open the analytics screen (charts + history). */

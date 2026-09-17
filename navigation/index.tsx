@@ -17,6 +17,7 @@ export {
   navigateToExerciseDetail,
   navigateToProgression,
   navigateToAnalytics,
+  navigateToProgram,
   navigateToSplitSelection,
   replaceWithHome,
   replaceWithLogin,

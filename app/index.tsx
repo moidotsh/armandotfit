@@ -13,6 +13,7 @@ import {
   Dumbbell,
   TrendingUp,
   BarChart2,
+  CalendarDays,
   Settings,
   X,
 } from '@tamagui/lucide-icons-2';
@@ -44,6 +45,7 @@ import {
 } from '../constants';
 import {
   navigateToSettings,
+  navigateToProgram,
   navigateToWorkoutDetail,
   navigateToExerciseDatabase,
   navigateToProgression,
@@ -115,6 +117,12 @@ export default function HomeScreen() {
       label: 'Exercises',
       icon: <Dumbbell size={18} color={colors.background} />,
       onPress: navigateToExerciseDatabase,
+    },
+    {
+      id: '/program',
+      label: 'Program',
+      icon: <CalendarDays size={18} color={colors.background} />,
+      onPress: navigateToProgram,
     },
     {
       id: '/progression',
@@ -262,6 +270,13 @@ export default function HomeScreen() {
         <View style={{ height: 16 }} />
         <MobileSectionEyebrow>Explore</MobileSectionEyebrow>
         <View style={styles.actionsRow}>
+          <MobilePrimaryButton
+            variant="ghost"
+            onPress={navigateToProgram}
+            style={styles.actionButton}
+          >
+            Program
+          </MobilePrimaryButton>
           <MobilePrimaryButton
             variant="ghost"
             onPress={navigateToProgression}

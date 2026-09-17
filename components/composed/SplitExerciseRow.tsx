@@ -11,24 +11,23 @@ import { useAppTheme } from '../../context';
 import {
   SYSTEM_EXERCISES_BY_SLUG,
   formatExerciseAttributes,
-  type ExerciseKey,
-  type SplitSlot,
+  type ResolvedSlot,
 } from '../../shared/exercises';
 
 export interface SplitExerciseRowProps {
-  slot: SplitSlot;
+  slot: ResolvedSlot;
   /** Position in the day's plan (1-indexed). Shown as a leading index. */
   index?: number;
 }
 
-function rxLabel(slot: SplitSlot): string {
+function rxLabel(slot: ResolvedSlot): string {
   const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
   return `${sets} × ${slot.reps[0]}–${slot.reps[1]}`;
 }
 
 export function SplitExerciseRow({ slot, index }: SplitExerciseRowProps) {
   const { colors } = useAppTheme();
-  const exercise = SYSTEM_EXERCISES_BY_SLUG[slot.exercise as ExerciseKey];
+  const exercise = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
   const title = exercise?.name ?? slot.exercise;
   const attrs = exercise ? formatExerciseAttributes(exercise) : null;
 

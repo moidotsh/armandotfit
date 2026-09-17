@@ -23,3 +23,9 @@ export { useExerciseStore } from './exerciseStore';
 
 // Remembered split defaults (persisted) — the launcher/picker open with these.
 export { useSplitPreferenceStore } from './splitPreferenceStore';
+
+// Standing per-slot program substitutions (persisted).
+export {
+  useProgramOverrideStore,
+  type ProgramOverride,
+} from './programOverrideStore';

@@ -7,6 +7,7 @@ export { AlertCircle } from '@tamagui/lucide-icons-2/dist/esm/icons/AlertCircle.
 export { AlertTriangle } from '@tamagui/lucide-icons-2/dist/esm/icons/AlertTriangle.mjs';
 export { BarChart2 } from '@tamagui/lucide-icons-2/dist/esm/icons/BarChart2.mjs';
 export { Bell } from '@tamagui/lucide-icons-2/dist/esm/icons/Bell.mjs';
+export { CalendarDays } from '@tamagui/lucide-icons-2/dist/esm/icons/CalendarDays.mjs';
 export { Check } from '@tamagui/lucide-icons-2/dist/esm/icons/Check.mjs';
 export { CheckCircle2 } from '@tamagui/lucide-icons-2/dist/esm/icons/CheckCircle2.mjs';
 export { ChevronDown } from '@tamagui/lucide-icons-2/dist/esm/icons/ChevronDown.mjs';

@@ -37,7 +37,7 @@ import type {
   LogSessionDTO,
   PreferredSplit,
 } from '../shared/types';
-import type { ExerciseKey, SplitSlot } from '../shared/exercises/splits';
+import type { ExerciseKey, ResolvedSlot } from '../shared/exercises/splits';
 import { SYSTEM_EXERCISES_BY_SLUG } from '../shared/exercises/data';
 
 /** Client-only draft set (no server id yet). */
@@ -116,7 +116,7 @@ interface WorkoutState {
    * per programmed set. The caller MUST guard with
    * `draft.exercises.length === 0` — this overwrites unconditionally.
    */
-  hydrateFromSplit: (slots: SplitSlot[]) => void;
+  hydrateFromSplit: (slots: ResolvedSlot[]) => void;
   removeExerciseFromDraft: (localId: string) => void;
   addSetToDraft: (exerciseLocalId: string, partial?: Partial<DraftSet>) => string;
   updateSetInDraft: (
@@ -152,7 +152,7 @@ const newLocalId = (): string =>
     : `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 /** Rx label from a programmed slot: '3 × 8–10' (uses sets max). */
-function rxLabel(slot: SplitSlot): string {
+function rxLabel(slot: ResolvedSlot): string {
   const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
   return `${sets} × ${slot.reps[0]}–${slot.reps[1]}`;
 }

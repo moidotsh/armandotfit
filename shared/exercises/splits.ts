@@ -50,6 +50,15 @@ export type ExerciseKey =
 /** AM vs PM session — planning-time context for twoADay splits. */
 export type SessionWindow = 'am' | 'pm' | 'single';
 
+/** A slot resolved for use: the programmed shape, identity possibly overridden. */
+export interface ResolvedSlot {
+  /** Catalog slug — the programmed ExerciseKey or an override's slug. */
+  exercise: string;
+  suggestedTags: string[];
+  sets: [number, number];
+  reps: [number, number];
+}
+
 /** One programmed slot: coarse identity + suggested realization tags + Rx. */
 export interface SplitSlot {
   exercise: ExerciseKey;

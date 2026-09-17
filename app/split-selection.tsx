@@ -31,7 +31,8 @@ import { SplitExerciseRow } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, safeGoBack } from '../navigation';
 import { useProfile, useRecentWorkouts, useAiPayload } from '../hooks';
-import { useWorkoutStore, useSplitPreferenceStore } from '../stores';
+import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
+import { resolveSlots } from '../services';
 import {
   WORKOUT_SPLIT_LIST,
   SESSION_MODE_LIST,
@@ -78,6 +79,7 @@ export default function SplitSelectionScreen() {
   const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
   const preferredMode = useSplitPreferenceStore((s) => s.sessionMode);
   const setPreference = useSplitPreferenceStore((s) => s.setPreference);
+  const programOverrides = useProgramOverrideStore((s) => s.overrides);
 
   const [splitChoice, setSplitChoice] = useState<string>(preferredSplit);
   const [sessionChoice, setSessionChoice] = useState<string>(preferredMode);
@@ -127,8 +129,8 @@ export default function SplitSelectionScreen() {
   // deactivated rest slot.
   const draftDay = selectedSlot?.splitDay ?? suggestedDay;
 
-  // Preview the day's programmed slots (coarse identity + Rx + tags).
-  const previewSlots = getSlotsForDay(split, draftDay, session);
+  // Preview the day's slots with standing substitutions applied.
+  const previewSlots = resolveSlots(split, draftDay, session, programOverrides);
 
   const handleStart = () => {
     // Remember the choices — the next launch opens pre-configured.

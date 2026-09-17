@@ -43,7 +43,8 @@ import {
   useAiPayload,
   useLastUsedTags,
 } from '../hooks';
-import { useWorkoutStore } from '../stores';
+import { useWorkoutStore, useProgramOverrideStore } from '../stores';
+import { resolveSlots } from '../services';
 import { getSlotsForDay, getDayTitle, TAG_VOCABULARY_SEED } from '../shared/exercises';
 import { SCREEN_BODY_STYLE } from '../constants';
 
@@ -66,6 +67,7 @@ export default function WorkoutDetailScreen() {
   const resetSession = useWorkoutStore((s) => s.resetSession);
   const toLogSessionDTO = useWorkoutStore((s) => s.toLogSessionDTO);
   const hydrateFromSplit = useWorkoutStore((s) => s.hydrateFromSplit);
+  const programOverrides = useProgramOverrideStore((s) => s.overrides);
   const addSetToDraft = useWorkoutStore((s) => s.addSetToDraft);
   const updateSetInDraft = useWorkoutStore((s) => s.updateSetInDraft);
   const removeSetFromDraft = useWorkoutStore((s) => s.removeSetFromDraft);
@@ -116,11 +118,16 @@ export default function WorkoutDetailScreen() {
     if (hydratedRef.current) return;
     if (draft.exercises.length > 0) return;
     hydratedRef.current = true;
-    const slots = getSlotsForDay(draft.splitType, draft.day, draft.sessionMode);
+    const slots = resolveSlots(
+      draft.splitType,
+      draft.day,
+      draft.sessionMode,
+      programOverrides,
+    );
     if (slots.length > 0) {
       hydrateFromSplit(slots);
     }
-  }, [draft, hydrateFromSplit]);
+  }, [draft, hydrateFromSplit, programOverrides]);
 
   // "What did I use last time" — the caller's most recent tags per
   // exercise replace the program's suggested prefill exactly once per

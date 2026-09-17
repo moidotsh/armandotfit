@@ -6,3 +6,4 @@
 export { WorkoutService } from './workoutService';
 export { ProgressionService, computeStreaks } from './progressionService';
 export { AnalyticsService } from './analyticsService';
+export { slotKey, resolveSlots } from './programService';
