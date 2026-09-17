@@ -29,7 +29,7 @@ import { useAuthStore } from '../stores';
 // covers before the swap and the destination stamps on.
 const push = (path: string | Href) => withRouteCurtain(() => router.push(path as never), 'up');
 const replace = (path: string | Href) => withRouteCurtain(() => router.replace(path as never), 'up');
-const back = () => withRouteCurtain(() => back(), 'down');
+const back = () => withRouteCurtain(() => router.back(), 'down');
 
 /**
  * Shell navigation paths. Consumers add their own routes to a sibling
