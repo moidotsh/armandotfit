@@ -1,59 +1,62 @@
 // services/analyticsService.ts
-// Analytics-screen read path: historical aggregations for charts. Thin
-// wrapper over ProgressionRepository.findByUser with date-bucketing
-// helpers. Stateless — no writes (analytics are trigger-maintained).
+// Analytics-screen read path: daily activity + weekly buckets computed
+// from raw session history at read time. Stateless — no writes, and no
+// aggregates are ever stored.
 
-import {
-  progressionRepository,
-  type RepositoryResult,
-} from '../utils/supabase/repositories';
-import type { ID, UserAnalytics } from '../shared/types';
+import { WorkoutService } from './workoutService';
+import type { RepositoryResult } from '../utils/supabase/repositories';
+import { ok } from '../utils/supabase/repositories';
+import type { ID, DayActivity } from '../shared/types';
 
-/**
- * AnalyticsService — chart-data read orchestrator. Used by the analytics
- * screen to plot workouts-per-day, duration-per-week, etc. The repository
- * returns daily rows; the service shapes them for the chart library.
- */
-export class AnalyticsService {
-  /** Last 30 days of analytics rows (default). Used by the weekly chart. */
-  static async getRecent(
-    userId: ID,
-    daysBack = 30,
-  ): Promise<RepositoryResult<UserAnalytics[]>> {
-    return progressionRepository.findByUser(userId, { daysBack });
-  }
-
-  /**
-   * Bucket daily rows into weekly totals. The repository returns raw
-   * daily rows; the chart library wants one point per week. Aggregation
-   * is service-level because the bucketing rule is UI-shaped.
-   */
-  static bucketWeekly(rows: UserAnalytics[]): Array<{
-    weekStart: string;
-    totalWorkouts: number;
-    totalDuration: number;
-  }> {
-    const buckets = new Map<string, { totalWorkouts: number; totalDuration: number }>();
-    for (const row of rows) {
-      const weekStart = getWeekStart(row.date);
-      const bucket = buckets.get(weekStart) ?? { totalWorkouts: 0, totalDuration: 0 };
-      bucket.totalWorkouts += row.totalWorkouts;
-      bucket.totalDuration += row.totalDuration;
-      buckets.set(weekStart, bucket);
-    }
-    return Array.from(buckets.entries())
-      .map(([weekStart, totals]) => ({ weekStart, ...totals }))
-      .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
-  }
+function localDate(iso: string): string {
+  const d = new Date(iso);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
-/** ISO date of the Monday starting the week containing `isoDate`. */
-function getWeekStart(isoDate: string): string {
-  const date = new Date(isoDate);
-  const day = date.getUTCDay(); // 0 = Sun, 1 = Mon, ...
-  const diff = (day + 6) % 7; // Monday = 0
-  date.setUTCDate(date.getUTCDate() - diff);
-  return date.toISOString().slice(0, 10);
+export class AnalyticsService {
+  /** Per-day session counts for the last `daysBack` days. */
+  static async getDailyActivity(
+    userId: ID,
+    daysBack = 30,
+  ): Promise<RepositoryResult<DayActivity[]>> {
+    const res = await WorkoutService.getRecentSessions(userId, 200);
+    if (!res.success) return res;
+    const since = new Date();
+    since.setDate(since.getDate() - daysBack);
+    const sinceStr = localDate(since.toISOString());
+    const byDay = new Map<string, number>();
+    for (const s of res.data) {
+      const d = localDate(s.startedAt);
+      if (d < sinceStr) continue;
+      byDay.set(d, (byDay.get(d) ?? 0) + 1);
+    }
+    return ok(
+      Array.from(byDay.entries())
+        .map(([date, sessions]) => ({ date, sessions }))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+    );
+  }
+
+  /** Bucket daily activity into weekly totals (Monday-start weeks). */
+  static bucketWeekly(rows: DayActivity[]): Array<{
+    weekStart: string;
+    sessions: number;
+  }> {
+    const buckets = new Map<string, number>();
+    for (const row of rows) {
+      const d = new Date(row.date + 'T12:00:00');
+      const day = (d.getDay() + 6) % 7; // Mon = 0
+      d.setDate(d.getDate() - day);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      buckets.set(key, (buckets.get(key) ?? 0) + row.sessions);
+    }
+    return Array.from(buckets.entries())
+      .map(([weekStart, sessions]) => ({ weekStart, sessions }))
+      .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+  }
 }
 
 export default AnalyticsService;

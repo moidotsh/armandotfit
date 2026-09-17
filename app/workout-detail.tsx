@@ -1,10 +1,12 @@
 // app/workout-detail.tsx
-// Active workout session. Two modes:
+// Active session screen. Two modes:
 //   - id param: read-only detail of a past session
 //   - no id: live logging against workoutStore.draft
-// Save path flushes via useLogWorkout and clears the store.
+// The draft hydrates from the program slots (local data — no fetch) and
+// saves via useLogWorkout once, at the end. A logged set is a done set;
+// rows with missing reps/weight are dropped at save time.
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -25,7 +27,8 @@ import {
   CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { SetRow, EditableSetRow, HydrationErrorState, ExerciseSetupRow, SetupPresetPicker, SaveSetupCta } from '../components/composed';
+import { SetRow, EditableSetRow, TagChips } from '../components/composed';
+import { EmptyState } from '../components/MobilePremium';
 import { useToast } from '../context';
 import { useAppTheme } from '../context';
 import {
@@ -36,17 +39,13 @@ import {
 import {
   useWorkoutDetail,
   useLogWorkout,
-  useSuggestedExercises,
-  usePlanLaunchHydration,
-  useExerciseSetupOptions,
-  useExerciseCapabilities,
-  useActiveSetupPresets,
+  useDeleteSession,
   useAiPayload,
+  useLastUsedTags,
 } from '../hooks';
 import { useWorkoutStore } from '../stores';
-import { getSystemExercise, getDayTitle } from '../shared/exercises';
+import { getSlotsForDay, getDayTitle, TAG_VOCABULARY_SEED } from '../shared/exercises';
 import { SCREEN_BODY_STYLE } from '../constants';
-import type { ExerciseSet, ID } from '../shared/types';
 
 export default function WorkoutDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -64,38 +63,29 @@ export default function WorkoutDetailScreen() {
   const setSaving = useWorkoutStore((s) => s.setSaving);
   const setSessionError = useWorkoutStore((s) => s.setSessionError);
   const setDraftNotes = useWorkoutStore((s) => s.setDraftNotes);
-  const setDraftDuration = useWorkoutStore((s) => s.setDraftDuration);
   const resetSession = useWorkoutStore((s) => s.resetSession);
-  const toLogWorkoutDTO = useWorkoutStore((s) => s.toLogWorkoutDTO);
-  const hydrateSuggestedExercises = useWorkoutStore(
-    (s) => s.hydrateSuggestedExercises,
-  );
-  const hydrateFromPlan = useWorkoutStore((s) => s.hydrateFromPlan);
+  const toLogSessionDTO = useWorkoutStore((s) => s.toLogSessionDTO);
+  const hydrateFromSplit = useWorkoutStore((s) => s.hydrateFromSplit);
   const addSetToDraft = useWorkoutStore((s) => s.addSetToDraft);
   const updateSetInDraft = useWorkoutStore((s) => s.updateSetInDraft);
   const removeSetFromDraft = useWorkoutStore((s) => s.removeSetFromDraft);
   const removeExerciseFromDraft = useWorkoutStore(
     (s) => s.removeExerciseFromDraft,
   );
-  const setDraftExerciseSetup = useWorkoutStore(
-    (s) => s.setDraftExerciseSetup,
+  const toggleDraftExerciseTag = useWorkoutStore(
+    (s) => s.toggleDraftExerciseTag,
   );
-  const applyPresetToDraftExercise = useWorkoutStore(
-    (s) => s.applyPresetToDraftExercise,
-  );
-
-  // Phase 6 — client-side acknowledgement of which preset was last
-  // applied to each draft exercise. Pure UX state: it drives the
-  // picker's "Applied · <label>" row + Clear affordance. NEVER
-  // persisted to the draft or to workout history (no preset id is
-  // written to the session-exercise row; Phase 5 denormalized the
-  // values, not the preset reference). Resets with the draft when
-  // the session is saved or discarded.
-  const [appliedPresetByLocalId, setAppliedPresetByLocalId] = useState<
-    Record<string, string>
-  >({});
+  const setDraftExerciseTags = useWorkoutStore((s) => s.setDraftExerciseTags);
 
   const logMutation = useLogWorkout();
+  const deleteSessionMutation = useDeleteSession();
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+  useEffect(() => {
+    if (deleteSessionMutation.isSuccess) {
+      showToast('success', 'Session deleted');
+      safeGoBack();
+    }
+  }, [deleteSessionMutation.isSuccess, showToast]);
 
   const draftAiPayload = useAiPayload(
     draft
@@ -105,56 +95,15 @@ export default function WorkoutDetailScreen() {
             `- Split: ${draft.splitType === 'oneADay' ? '1-a-day' : 'AM/PM'}`,
             `- Day: ${draft.day}${draft.splitType === 'twoADay' ? ` (${draft.sessionMode})` : ''}`,
             `- Exercises: ${draft.exercises.length}`,
-            `- Duration: ${draft.duration}m`,
-            draft.launchSource === 'plan'
-              ? '- Launch source: saved plan'
-              : '- Launch source: static split',
           ].join('\n'),
         }
       : undefined,
   );
 
-  // Pre-hydrate the draft from the day's suggested exercises once per
-  // session. Idempotent via hydratedRef + the empty-draft check, so a
-  // user who discards all exercises and re-adds manually won't get
-  // re-seeded. The session mode (AM/PM) is threaded through from the
-  // draft so twoADay sessions hydrate the correct exercise list.
-  //
-  // Phase 4 adds a sibling path: when draft.launchSource === 'plan',
-  // the draft hydrates from the saved plan's session slots via
-  // hydrateFromPlan (prescription snapshot + provenance carried through).
-  // The two paths share the same idempotency guard — only one runs per
-  // session.
-  const suggestedQuery = useSuggestedExercises(
-    draft?.splitType ?? 'oneADay',
-    draft?.day ?? 1,
-    draft?.sessionMode ?? 'am',
-    // Skip the suggested-exercises query entirely when launching from a
-    // plan — its data isn't needed and would just consume a round-trip.
-    !!draft && draft.launchSource !== 'plan',
-  );
-  const planHydrationQuery = usePlanLaunchHydration(
-    draft && draft.launchSource === 'plan'
-      ? {
-          launchSource: draft.launchSource,
-          planId: draft.planId,
-          splitType: draft.splitType,
-          day: draft.day,
-          sessionMode: draft.sessionMode,
-        }
-      : null,
-  );
-  // Phase 5 — batched catalog grip-options fetch for the draft's exercise
-  // ids. One query covers every active row; empty array short-circuits in
-  // the repository + the hook returns an empty Map. The same query runs
-  // unconditionally on every render so Rules of Hooks are satisfied; the
-  // empty-input branch keeps the cost ~zero when no draft is active.
-  const draftExerciseIds = draft ? draft.exercises.map((e) => e.exerciseId) : [];
-  const setupOptions = useExerciseSetupOptions(draftExerciseIds);
-  // Phase 6 — per-exercise resolved capability slugs + active preset list.
-  // capabilities drives picker eligibility; presets is the candidate row set.
-  const capabilitiesMap = useExerciseCapabilities(draftExerciseIds);
-  const activePresets = useActiveSetupPresets();
+  // Hydrate the draft from the program slots once per session. Local +
+  // synchronous — the program is TypeScript data. Idempotent via
+  // hydratedRef + the empty-draft check, so a user who discards all
+  // exercises and re-adds manually won't get re-seeded.
   const hydratedRef = useRef(false);
   useEffect(() => {
     if (!draft) {
@@ -163,40 +112,34 @@ export default function WorkoutDetailScreen() {
     }
     if (hydratedRef.current) return;
     if (draft.exercises.length > 0) return;
-
-    // Phase 4 — plan path.
-    if (draft.launchSource === 'plan') {
-      const slots = planHydrationQuery.data;
-      if (!slots || slots.length === 0) return;
-      hydratedRef.current = true;
-      hydrateFromPlan(slots);
-      return;
-    }
-
-    // Static-suggested path.
-    const suggested = suggestedQuery.data;
-    if (!suggested || suggested.length === 0) return;
-    const payload = suggested.flatMap((ex) => {
-      const local = ex.slug ? getSystemExercise(ex.slug) : undefined;
-      if (!local) return [];
-      return [{
-        exerciseId: ex.id as ID,
-        exerciseName: ex.name,
-        variation: local.variation ?? null,
-        defaultSets: local.defaultSets,
-        defaultReps: local.defaultReps,
-      }];
-    });
-    if (payload.length === 0) return;
     hydratedRef.current = true;
-    hydrateSuggestedExercises(payload);
-  }, [
-    draft,
-    suggestedQuery.data,
-    planHydrationQuery.data,
-    hydrateSuggestedExercises,
-    hydrateFromPlan,
-  ]);
+    const slots = getSlotsForDay(draft.splitType, draft.day, draft.sessionMode);
+    if (slots.length > 0) {
+      hydrateFromSplit(slots);
+    }
+  }, [draft, hydrateFromSplit]);
+
+  // "What did I use last time" — the caller's most recent tags per
+  // exercise replace the program's suggested prefill exactly once per
+  // session (guarded by ref). Program tags remain one tap away in the
+  // chip suggestions.
+  const draftNames = draft && draft.exercises.length > 0
+    ? draft.exercises.map((e) => e.exerciseName)
+    : null;
+  const lastTagsQuery = useLastUsedTags(draftNames);
+  const lastTagsRef = useRef(false);
+  useEffect(() => {
+    if (!draft || lastTagsRef.current) return;
+    const byName = lastTagsQuery.data;
+    if (!byName || byName.size === 0) return;
+    lastTagsRef.current = true;
+    for (const ex of draft.exercises) {
+      const last = byName.get(ex.exerciseName.toLowerCase());
+      if (last && last.length > 0) {
+        setDraftExerciseTags(ex.localId, last);
+      }
+    }
+  }, [draft, lastTagsQuery.data, setDraftExerciseTags]);
 
   // If no id and no active draft, redirect to split-selection once.
   useEffect(() => {
@@ -210,10 +153,10 @@ export default function WorkoutDetailScreen() {
     setSaving(logMutation.isPending);
   }, [logMutation.isPending, setSaving]);
 
-  // On successful save, toast + reset + go home.
+  // On successful save, toast + reset + go back.
   useEffect(() => {
     if (logMutation.isSuccess) {
-      showToast('success', 'Workout saved');
+      showToast('success', 'Session saved');
       resetSession();
       safeGoBack();
     }
@@ -231,30 +174,19 @@ export default function WorkoutDetailScreen() {
   }, [logMutation.isError, logMutation.error, setSessionError]);
 
   const handleSave = () => {
-    const dto = toLogWorkoutDTO();
+    const dto = toLogSessionDTO();
     if (!dto) {
       setSessionError('No active session to save.');
       return;
     }
-    if (dto.exercises.length === 0) {
-      setSessionError('Add at least one exercise before saving.');
+    const hasLoggedSets = dto.exercises.some((e) => e.sets.length > 0);
+    if (!hasLoggedSets) {
+      setSessionError('Log at least one set before saving.');
       return;
     }
-    if (dto.duration <= 0) {
-      setDraftDuration(15); // sensible default if user forgot to set it
-    }
-    const finalDto = toLogWorkoutDTO();
-    if (finalDto) {
-      logMutation.mutate(finalDto);
-    }
+    logMutation.mutate(dto);
   };
 
-  // Phase 4 resilience — the canonical discard path, shared by the
-  // footer's Discard button and the plan-hydration error state. Clears
-  // the draft (and therefore any partially-hydrated state) and returns
-  // the user toward split-selection via safeGoBack. The redirect effect
-  // at the top of the screen will also bounce to split-selection if
-  // isSessionActive collapses, so this is idempotent.
   const handleDiscard = () => {
     resetSession();
     safeGoBack();
@@ -272,13 +204,19 @@ export default function WorkoutDetailScreen() {
         <MobileHeader
           title={
             session
-              ? new Date(session.date).toLocaleDateString(undefined, {
+              ? new Date(session.startedAt).toLocaleDateString(undefined, {
                   month: 'short',
                   day: 'numeric',
                 })
-              : 'Workout'
+              : 'Session'
           }
-          eyebrow={session ? `${session.duration}m · day ${session.day}` : ''}
+          eyebrow={
+            session
+              ? session.splitDay != null
+                ? `day ${session.splitDay}`
+                : 'ad-hoc'
+              : ''
+          }
           onBack={safeGoBack}
           navRightAction={<CopyForAiButton payload={draftAiPayload} testID="workout-detail-readonly-copy-for-ai" />}
         />
@@ -291,45 +229,42 @@ export default function WorkoutDetailScreen() {
             <LoadingSpinner />
           ) : (
             <>
-              {session.notes ? (
+              {session.note ? (
                 <>
                   <MobileSectionEyebrow>Notes</MobileSectionEyebrow>
                   <MobileSurface padding={16}>
                     <Text style={[styles.bodyText, { color: colors.text }]}>
-                      {session.notes}
+                      {session.note}
                     </Text>
                   </MobileSurface>
                   <View style={{ height: 16 }} />
                 </>
               ) : null}
+              {session.exercises.length === 0 ? (
+                <EmptyState
+                  compact
+                  title="No exercises logged"
+                  message="This session was saved with a note only."
+                  testID="workout-detail-empty"
+                />
+              ) : null}
               {session.exercises.map((ex) => (
                 <View key={ex.id} style={{ marginBottom: 12 }}>
                   <MobileSectionEyebrow>
-                    {ex.exercise.name}
+                    {ex.exerciseName || 'Exercise'}
                   </MobileSectionEyebrow>
                   <MobileSurface padding={12}>
-                    {/* Phase 5 — read-only setup + prescription snapshot.
-                        Renders populated values across grip, attachment,
-                        equipment notes, per-side, and slot notes. Silent
-                        when all are null/false. */}
-                    <ExerciseSetupRow
-                      mode="readOnly"
-                      userGrip={ex.userGrip}
-                      attachmentSlug={ex.attachmentSlug}
-                      userEquipmentNotes={ex.userEquipmentNotes}
-                      perSide={ex.perSide}
-                      slotNotes={ex.slotNotes}
-                      onSetupChange={() => {
-                        /* no-op in read-only mode */
-                      }}
-                    />
-                    {ex.sets.map((s: ExerciseSet) => (
+                    {ex.tags.length > 0 ? (
+                      <Text style={[styles.tagsLine, { color: colors.textSecondary }]}>
+                        {ex.tags.join(' · ')}
+                      </Text>
+                    ) : null}
+                    {ex.sets.map((s) => (
                       <SetRow
                         key={s.id}
-                        setNumber={s.setNumber}
-                        actualReps={s.actualReps}
+                        position={s.position}
+                        reps={s.reps}
                         weight={s.weight}
-                        completed={s.completed}
                       />
                     ))}
                   </MobileSurface>
@@ -338,6 +273,23 @@ export default function WorkoutDetailScreen() {
             </>
           )}
         </ScrollView>
+        <MobileActionFooter>
+          <MobilePrimaryButton
+            variant="ghost"
+            onPress={() => {
+              if (!id) return;
+              if (!confirmDelete) {
+                setConfirmDelete(true);
+                return;
+              }
+              deleteSessionMutation.mutate(id);
+            }}
+            loading={deleteSessionMutation.isPending}
+            testID="workout-detail-delete"
+          >
+            {confirmDelete ? 'Tap again to delete' : 'Delete session'}
+          </MobilePrimaryButton>
+        </MobileActionFooter>
       </SafeAreaView>
     );
   }
@@ -359,10 +311,6 @@ export default function WorkoutDetailScreen() {
     );
   }
 
-  // Header eyebrow surfaces the day title when available (e.g. "Full Body
-  // Day 1"); falls back to the split-type + day number for rest days / v1
-  // splits without title metadata. For twoADay, suffix the session mode
-  // so AM vs PM is visible at a glance.
   const dayTitle = getDayTitle(draft.splitType, draft.day);
   const sessionSuffix =
     draft.splitType === 'twoADay' ? ` · ${draft.sessionMode.toUpperCase()}` : '';
@@ -391,222 +339,94 @@ export default function WorkoutDetailScreen() {
           {draft.exercises.length} exercise{draft.exercises.length === 1 ? '' : 's'}
         </MobileSectionEyebrow>
 
-        {/* Phase 4 — "Saved plan" indicator. Surfaces the launch source
-            on the active-session header so the user knows their session
-            is hydrating from the resolved plan vs the static split. */}
-        {draft.launchSource === 'plan' ? (
-          <View style={styles.planBadgeWrap}>
-            <View style={[styles.planBadge, { backgroundColor: `${colors.brand}14`, borderColor: `${colors.brand}55` }]}>
-              <Text style={[styles.planBadgeText, { color: colors.brand }]}>
-                From your saved plan
-              </Text>
-            </View>
-          </View>
-        ) : null}
-
         {draft.exercises.length === 0 ? (
-          draft.launchSource === 'plan' && planHydrationQuery.isError ? (
-            // Phase 4 resilience — plan-hydration query failed. Render an
-            // explicit error state instead of an indefinite spinner. The
-            // draft's exercises stay empty (the mount effect early-returns
-            // on error) so no stale partially-hydrated state is shown.
-            // Retry re-invokes the React Query refetch; Discard uses the
-            // existing resetSession + safeGoBack path so the user returns
-            // to split-selection to make the explicit plan-vs-static
-            // decision there (no silent in-screen static substitution).
-            <HydrationErrorState
-              onRetry={() => {
-                void planHydrationQuery.refetch();
-              }}
-              onDiscard={handleDiscard}
-              testID="workout-detail-hydration-error"
-            />
-          ) : (
-            (draft.launchSource === 'plan'
-              ? planHydrationQuery.isLoading || planHydrationQuery.data == null
-              : suggestedQuery.isLoading ||
-                (suggestedQuery.data != null && suggestedQuery.data.length > 0)) ? (
-              <MobileSurface padding={20}>
-                <LoadingSpinner />
-              </MobileSurface>
-            ) : (
-              <MobileSurface padding={20}>
-                <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                  No exercises planned for this day. Tap below to add your own.
-                </Text>
-              </MobileSurface>
-            )
-          )
+          <MobileSurface padding={20}>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+              No exercises planned for this day. Tap below to add your own.
+            </Text>
+          </MobileSurface>
         ) : (
           draft.exercises.map((ex) => {
-            // Per-exercise catalog + capability context, shared by the
-            // setup row, the save-as-setup CTA, and the preset picker.
-            // Hoisted once per render so the three children see the same
-            // arrays without re-running the filter pipeline.
-            const exCapabilities = capabilitiesMap.data?.get(ex.exerciseId) ?? [];
-            const exGripOptions = (setupOptions.data?.get(ex.exerciseId) ?? [])
-              .map((o) => o.gripSlug)
-              .filter((s): s is string => typeof s === 'string' && s.length > 0);
-            const exAttachmentOptions = (setupOptions.data?.get(ex.exerciseId) ?? [])
-              .map((o) => o.attachmentSlug)
-              .filter((s): s is string => typeof s === 'string' && s.length > 0);
-            // Phase 6 — the in-workout save-as-setup flow infers the
-            // capability from context. When the exercise resolves to
-            // exactly one capability, the CTA renders; otherwise (zero
-            // or >1) the CTA stays hidden and Settings remains the only
-            // creation path (documented + tested fallback).
-            const resolvedCapability = exCapabilities.length === 1 ? exCapabilities[0] : null;
+            const repsHint = ex.targetRx?.split('×')[1]?.trim() ?? null;
+            const suggestions = TAG_VOCABULARY_SEED.filter(
+              (t) => !ex.tags.includes(t),
+            ).slice(0, 6);
             return (
-            <View key={ex.localId} style={{ marginBottom: 12 }}>
-              <MobileSurface padding={12}>
-                <View style={styles.exerciseHeader}>
-                  <Text style={[styles.exerciseName, { color: colors.text }]}>
-                    {ex.exerciseName}
-                  </Text>
-                  <Pressable
-                    onPress={() => removeExerciseFromDraft(ex.localId)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Remove ${ex.exerciseName} from session`}
-                    hitSlop={8}
-                  >
-                    <Text
-                      style={[
-                        styles.removeExerciseCta,
-                        { color: colors.textSecondary },
-                      ]}
+              <View key={ex.localId} style={{ marginBottom: 12 }}>
+                <MobileSurface padding={12}>
+                  <View style={styles.exerciseHeader}>
+                    <Text style={[styles.exerciseName, { color: colors.text }]}>
+                      {ex.exerciseName}
+                    </Text>
+                    <Pressable
+                      onPress={() => removeExerciseFromDraft(ex.localId)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remove ${ex.exerciseName} from session`}
+                      hitSlop={8}
                     >
-                      Remove
+                      <Text
+                        style={[
+                          styles.removeExerciseCta,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        Remove
+                      </Text>
+                    </Pressable>
+                  </View>
+                  {ex.targetRx ? (
+                    <Text style={[styles.rxLine, { color: colors.textSecondary }]}>
+                      Target {ex.targetRx}
+                    </Text>
+                  ) : null}
+                  {/* Realization tags — the single context surface. */}
+                  <TagChips
+                    tags={ex.tags}
+                    suggestions={suggestions}
+                    onToggleTag={(tag) => toggleDraftExerciseTag(ex.localId, tag)}
+                    onAddTag={(tag) => toggleDraftExerciseTag(ex.localId, tag)}
+                    testID={`tag-chips-${ex.localId}`}
+                  />
+                  {ex.sets.length > 0 ? (
+                    <View style={{ marginTop: 8 }}>
+                      {ex.sets.map((s) => (
+                        <EditableSetRow
+                          key={s.localId}
+                          position={s.position}
+                          weight={s.weight}
+                          reps={s.reps}
+                          repsHint={repsHint}
+                          onChangeWeight={(w) =>
+                            updateSetInDraft(ex.localId, s.localId, { weight: w })
+                          }
+                          onChangeReps={(r) =>
+                            updateSetInDraft(ex.localId, s.localId, { reps: r })
+                          }
+                          onRemove={() =>
+                            removeSetFromDraft(ex.localId, s.localId)
+                          }
+                        />
+                      ))}
+                    </View>
+                  ) : (
+                    <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                      No sets logged.
+                    </Text>
+                  )}
+                  <Pressable
+                    onPress={() => addSetToDraft(ex.localId)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add set to ${ex.exerciseName}`}
+                    hitSlop={6}
+                    style={styles.addSetCta}
+                  >
+                    <Text style={[styles.addCta, { color: colors.brand }]}>
+                      + Add set
                     </Text>
                   </Pressable>
-                </View>
-                {/* Phase 5 — equipment-setup row (grip + attachment +
-                    notes). Sits between the exercise header and the set
-                    list. The catalog grip options feed the suggestion
-                    chips; the user can ignore them and type free text. */}
-                <ExerciseSetupRow
-                  mode="active"
-                  userGrip={ex.userGrip}
-                  attachmentSlug={ex.attachmentSlug}
-                  userEquipmentNotes={ex.userEquipmentNotes}
-                  gripOptions={setupOptions.data?.get(ex.exerciseId) ?? []}
-                  onSetupChange={(patch) =>
-                    setDraftExerciseSetup(ex.localId, patch)
-                  }
-                />
-                {/* Phase 6 — preset picker. Always renders; surfaces an
-                    empty state when no compatible preset exists. The
-                    onApply dispatcher threads through
-                    workoutStore.applyPresetToDraftExercise, which
-                    re-checks compatibility as the load-bearing gate.
-                    appliedPresetId + onClear drive the visible
-                    acknowledgement + clear affordance; the parent owns
-                    that state (never persisted).
-                    saveAffordance threads the in-workout save-as-setup
-                    CTA into the chip row. The CTA renders only when
-                    the draft has at least one setup value AND the
-                    exercise resolves to exactly one capability; it
-                    infers the capability from context, never asks the
-                    user. When the CTA is hidden (gate fails), the
-                    picker falls back to its compact empty-state copy. */}
-                <SetupPresetPicker
-                  presets={activePresets.data ?? []}
-                  exerciseCapabilities={exCapabilities}
-                  exerciseGripOptions={exGripOptions}
-                  exerciseAttachmentOptions={exAttachmentOptions}
-                  appliedPresetId={appliedPresetByLocalId[ex.localId] ?? null}
-                  onApply={(preset) => {
-                    const res = applyPresetToDraftExercise(ex.localId, preset, {
-                      capabilities: exCapabilities,
-                      gripOptions: exGripOptions,
-                      attachmentOptions: exAttachmentOptions,
-                    });
-                    if (!res.ok) {
-                      showToast('error', res.reason);
-                    } else {
-                      setAppliedPresetByLocalId((prev) => ({
-                        ...prev,
-                        [ex.localId]: preset.id,
-                      }));
-                    }
-                  }}
-                  onClear={() => {
-                    setDraftExerciseSetup(ex.localId, {
-                      userGrip: null,
-                      attachmentSlug: null,
-                      userEquipmentNotes: null,
-                    });
-                    setAppliedPresetByLocalId((prev) => {
-                      if (!(ex.localId in prev)) return prev;
-                      const next = { ...prev };
-                      delete next[ex.localId];
-                      return next;
-                    });
-                  }}
-                  saveAffordance={
-                    <SaveSetupCta
-                      resolvedCapability={resolvedCapability}
-                      exerciseName={ex.exerciseName}
-                      setupSnapshot={{
-                        gripText: ex.userGrip,
-                        attachmentSlug: ex.attachmentSlug,
-                        equipmentNotes: ex.userEquipmentNotes,
-                      }}
-                      onSaved={(preset) => {
-                        setAppliedPresetByLocalId((prev) => ({
-                          ...prev,
-                          [ex.localId]: preset.id,
-                        }));
-                      }}
-                      testID={`save-setup-cta-${ex.localId}`}
-                    />
-                  }
-                />
-                {ex.sets.length > 0 ? (
-                  <View style={{ marginTop: 8 }}>
-                    {ex.sets.map((s) => (
-                      <EditableSetRow
-                        key={s.localId}
-                        setNumber={s.setNumber}
-                        weight={s.weight}
-                        reps={s.actualReps}
-                        completed={s.completed}
-                        repRange={s.repRange}
-                        onChangeWeight={(w) =>
-                          updateSetInDraft(ex.localId, s.localId, { weight: w })
-                        }
-                        onChangeReps={(r) =>
-                          updateSetInDraft(ex.localId, s.localId, { actualReps: r })
-                        }
-                        onToggleComplete={() =>
-                          updateSetInDraft(ex.localId, s.localId, {
-                            completed: !s.completed,
-                          })
-                        }
-                        onRemove={() =>
-                          removeSetFromDraft(ex.localId, s.localId)
-                        }
-                      />
-                    ))}
-                  </View>
-                ) : (
-                  <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                    No sets logged.
-                  </Text>
-                )}
-                <Pressable
-                  onPress={() => addSetToDraft(ex.localId)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Add set to ${ex.exerciseName}`}
-                  hitSlop={6}
-                  style={styles.addSetCta}
-                >
-                  <Text style={[styles.addCta, { color: colors.brand }]}>
-                    + Add set
-                  </Text>
-                </Pressable>
-              </MobileSurface>
-            </View>
-          );
+                </MobileSurface>
+              </View>
+            );
           })
         )}
 
@@ -646,7 +466,7 @@ export default function WorkoutDetailScreen() {
           loading={isSaving || logMutation.isPending}
           disabled={draft.exercises.length === 0}
         >
-          Save workout
+          Save session
         </MobilePrimaryButton>
       </MobileActionFooter>
     </SafeAreaView>
@@ -666,17 +486,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
+  rxLine: { fontSize: 12, marginTop: 2 },
+  tagsLine: { fontSize: 12, lineHeight: 16, marginBottom: 6 },
   removeExerciseCta: { fontSize: 12, fontWeight: '500' },
   addSetCta: { marginTop: 8, alignSelf: 'flex-start' },
   addCta: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
   errorText: { fontSize: 12, lineHeight: 16 },
-  planBadgeWrap: { marginBottom: 8 },
-  planBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-    alignSelf: 'flex-start',
-  },
-  planBadgeText: { fontSize: 11, fontWeight: '600' },
 });

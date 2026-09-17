@@ -3,21 +3,5 @@
 // primitive (invalidate / setQueryData) to satisfy D3.
 
 export { useLogWorkout } from './useLogWorkout';
-export {
-  useUpdateSession,
-  useDeleteSession,
-  useAddExerciseToSession,
-  useAddSetTo,
-  useUpdateSet,
-  useDeleteSet,
-} from './useUpdateSession';
+export { useUpdateSession, useDeleteSession } from './useUpdateSession';
 export { useUpdateProfile } from './useUpdateProfile';
-export { useSaveEquipmentCapabilities } from './useSaveEquipmentCapabilities';
-export { useSaveUserPlan, useReplacePlanSlot } from './useUserPlanMutations';
-export {
-  useCreateSetupPreset,
-  useUpdateSetupPreset,
-  useRetireSetupPreset,
-  useUnretireSetupPreset,
-  useDeleteSetupPreset,
-} from './useSetupPresetMutations';

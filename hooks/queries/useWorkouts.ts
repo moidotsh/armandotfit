@@ -1,23 +1,20 @@
 // hooks/queries/useWorkouts.ts
-// Read paths for workout sessions. Pulls userId from the auth store so
+// Read paths for training sessions. Pulls userId from the auth store so
 // callers don't have to thread it through. Caches via queryKeys.workouts.
 
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import { WorkoutService } from '../../services';
 import { queryKeys } from '../../lib/react-query';
 import { useAuthStore } from '../../stores';
-import type { WorkoutSession, WorkoutSessionWithDetails, ID } from '../../shared/types';
+import type { TrainingSession, SessionWithDetails, ID } from '../../shared/types';
 
-/**
- * Recent workout sessions for the home dashboard. Returns the header
- * only — call useWorkoutDetail(id) to expand a single session.
- */
+/** Recent sessions for the home dashboard (headers only). */
 export function useRecentWorkouts(limit = 10) {
   const userId = useAuthStore((s) => s.userId);
   return useQuery({
     queryKey: queryKeys.workouts.recent(limit),
     queryFn: async () => {
-      if (!userId) return [] as WorkoutSession[];
+      if (!userId) return [] as TrainingSession[];
       const res = await WorkoutService.getRecentSessions(userId, limit);
       if (!res.success) throw res.error;
       return res.data;
@@ -26,14 +23,11 @@ export function useRecentWorkouts(limit = 10) {
   });
 }
 
-/**
- * Full workout detail (header + exercises + sets). Used by the detail
- * screen and the in-session logging screen.
- */
+/** Full session detail (header + exercises + sets). */
 export function useWorkoutDetail(
   id: ID | null | undefined,
   options?: Omit<
-    UseQueryOptions<WorkoutSessionWithDetails | null>,
+    UseQueryOptions<SessionWithDetails | null>,
     'queryKey' | 'queryFn' | 'enabled'
   >,
 ) {

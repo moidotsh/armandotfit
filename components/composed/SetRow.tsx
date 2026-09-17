@@ -1,38 +1,26 @@
 // components/composed/SetRow.tsx
-// Reusable set row for both the live-draft workout view and the read-only
-// session detail. The shape (set number · reps @ weight · completion
-// indicator) is identical across both contexts; only the source type
-// differs (DraftSet vs ExerciseSet). Accepts already-normalized props so
-// neither context has to map into a shared type.
+// Read-only set row for the session detail view. A logged_sets row IS a
+// completed set — no completion indicator. Shape: position · reps × weight.
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
 
 export interface SetRowProps {
-  setNumber: number;
-  actualReps: number | null | undefined;
-  weight: number | null | undefined;
-  completed: boolean;
+  position: number;
+  reps: number;
+  weight: number;
 }
 
-export function SetRow({ setNumber, actualReps, weight, completed }: SetRowProps) {
+export function SetRow({ position, reps, weight }: SetRowProps) {
   const { colors } = useAppTheme();
   return (
     <View style={styles.row}>
-      <Text style={[styles.setNumber, { color: colors.textSecondary }]}>
-        {setNumber}
+      <Text style={[styles.setPosition, { color: colors.textSecondary }]}>
+        {position}
       </Text>
       <Text style={[styles.setText, { color: colors.text }]}>
-        {actualReps ?? '–'} reps @ {weight ?? '–'}
-      </Text>
-      <Text
-        style={[
-          styles.setStatus,
-          { color: completed ? colors.brand : colors.textSecondary },
-        ]}
-      >
-        {completed ? '✓' : '○'}
+        {reps} reps @ {weight}
       </Text>
     </View>
   );
@@ -45,7 +33,6 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     gap: 12,
   },
-  setNumber: { fontSize: 12, fontWeight: '600', minWidth: 18 },
+  setPosition: { fontSize: 12, fontWeight: '600', minWidth: 18 },
   setText: { fontSize: 13, flex: 1 },
-  setStatus: { fontSize: 14, fontWeight: '600' },
 });

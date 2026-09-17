@@ -1,271 +1,267 @@
 // shared/exercises/splits.ts
-// Day→exercise assignments for the two split archetypes armandotfit ships
-// with. Ported from archive-v1/data/workoutDataRefactored.ts. The exercise
-// keys here (e.g. 'barbell-press-incline') match the `slug` column in the
-// seed migration (supabase/migrations/20260718000002_seed_system_exercises.sql
-// + 20260721000002_seed_catalog_and_programs.sql) — both sides of this
-// contract must stay in sync. A key present in this file but missing from
-// the DB will resolve to undefined at lookup time, and the
-// suggested-exercises helper drops it.
+// The AM/PM training program — the one authored asset this app carries.
+// Pure TypeScript data; deliberately NOT modeled in the database.
 //
-// The v2 data structure (4 days each for oneADay + twoADay) is preserved.
-// Days 5–7 are rest days in both splits — the user logs those ad-hoc via
-// the active-session UI.
+// Identity model: each slot names one COARSE exercise identity (matching
+// a `name` in the seeded exercises table + an entry in data.ts by slug).
+// Where the program implies a specific realization (grip, attachment,
+// style), that lives in `suggestedTags` — pre-filled into the session
+// draft as tags on the logged exercise, editable at log time. Tags never
+// affect identity; two logged exercises with different tags are the same
+// exercise row.
 //
-// The catalog extension migration (20260721000002) adds 17 substitution
-// pool exercises that are NOT placed on a split day. They live in the
-// ExerciseKey union so the browse UI, alternatives graph, and
-// program-template slots can reference them — but the day-assignment
-// arrays below intentionally do not include them.
+// Prescriptions (sets/reps ranges) live here, on the slot — program data
+// belongs to the program, not to the exercise catalog. data.ts keeps only
+// display-level defaults for browsing.
 
 // ──────────────────────────────────────────────────────────────────────
-// Exercise keys (union type for compile-time safety)
+// Types
 // ──────────────────────────────────────────────────────────────────────
 
-/**
- * String-keyed identifier for each system exercise. Mirrors the seed
- * migration's exercises.slug column. The union is intentionally closed —
- * adding a new system exercise means landing it here AND in the seed SQL
- * in the same change.
- *
- * The 17 pool slugs (substitutes referenced by the alternatives graph and
- * the program-template slot seed) are listed separately. They are not
- * placed on a split day.
- */
+/** Slug of a coarse exercise identity placed on a split day. */
 export type ExerciseKey =
-  // Chest
-  | 'barbell-press-incline'
-  | 'dumbbell-fly-incline'
-  | 'chest-fly-machine'
-  | 'incline-machine-press'
-  // Arms
-  | 'overhead-tricep-extension-cable'
-  | 'tricep-dip-machine'
-  | 'dumbbell-curl-seated-incline'
-  | 'cable-rope-curl'
-  // Shoulders
-  | 'egyptian-cable-lateral-raise'
-  | 'face-pull-cable-rope-grip'
-  | 'shoulder-press-machine-or-dumbbell'
+  | 'leg-press'
+  | 'leg-press-calf-raise'
+  | 'standing-machine-calf-raise'
+  | 'back-extension'
+  | 'leg-raise'
+  | 'incline-barbell-press'
+  | 'cable-overhead-tricep-extension'
+  | 'shoulder-press'
+  | 'cable-lateral-raise'
+  | 'machine-shrug'
+  | 'machine-chest-fly'
+  | 'tibia-raise'
+  | 'machine-leg-curl'
+  | 'lat-pulldown'
+  | 'machine-ab-crunch'
+  | 'dumbbell-curl'
+  | 'face-pull'
+  | 'bulgarian-split-squat'
+  | 'straight-arm-pulldown'
+  | 'machine-incline-press'
+  | 'machine-dip'
   | 'dumbbell-overhead-press'
-  // Back
-  | 'lower-back-extension-calisthenic'
-  | 'seated-cable-row-v-grip'
-  | 'lat-pulldown-reverse-grip'
-  | 'straight-arm-cable-pulldown'
-  | 'machine-shrug-plate-loaded'
   | 'dumbbell-shrug'
-  // Upper leg
-  | 'leg-press-machine'
-  | 'bulgarian-split-squat-dumbbell'
-  | 'machine-leg-curl-seated'
-  // Lower leg
-  | 'tibia-raise-machine-or-band'
-  | 'calf-raise-leg-press-machine'
-  | 'machine-calf-raise-standing'
-  // Abs
-  | 'leg-raise-captains-chair'
-  | 'machine-ab-crunch-eccentric-emphasized'
-  // Substitution pool — catalog extension (migration 20260721000002).
-  // Referenced by exercise_alternatives and program-template slots; not
-  // placed on a oneADay/twoADay split day.
-  | 'hack-squat-machine'
-  | 'seated-calf-raise-machine'
-  | 'romanian-deadlift-barbell'
-  | 'floor-leg-raise'
-  | 'incline-dumbbell-press'
-  | 'overhead-dumbbell-tricep-extension'
-  | 'barbell-overhead-press'
-  | 'dumbbell-lateral-raise'
-  | 'lying-leg-curl-machine'
-  | 'pull-up-bar'
-  | 'cable-rope-crunch'
-  | 'dumbbell-curl-standing'
-  | 'reverse-pec-deck'
-  | 'walking-lunge-dumbbell'
-  | 'dumbbell-pullover'
-  | 'bench-dip'
-  | 'barbell-row';
+  | 'incline-dumbbell-fly'
+  | 'cable-row'
+  | 'cable-curl';
 
-// ──────────────────────────────────────────────────────────────────────
-// 1-a-day splits (4 days)
-// ──────────────────────────────────────────────────────────────────────
+/** AM vs PM session — planning-time context for twoADay splits. */
+export type SessionWindow = 'am' | 'pm' | 'single';
 
-export interface OneADayDay {
-  day: 1 | 2 | 3 | 4;
-  title: string;
-  exercises: ExerciseKey[];
+/** One programmed slot: coarse identity + suggested realization tags + Rx. */
+export interface SplitSlot {
+  exercise: ExerciseKey;
+  /** Pre-filled tags on the logged exercise (editable at log time). */
+  suggestedTags: string[];
+  /** Programmed set range as [min, max]. */
+  sets: [number, number];
+  /** Programmed rep range as [min, max]. */
+  reps: [number, number];
 }
-
-export const ONE_A_DAY_SPLITS: OneADayDay[] = [
-  {
-    day: 1,
-    title: 'Full Body Day 1',
-    exercises: [
-      'leg-press-machine',
-      'calf-raise-leg-press-machine',
-      'leg-raise-captains-chair',
-      'barbell-press-incline',
-      'overhead-tricep-extension-cable',
-      'shoulder-press-machine-or-dumbbell',
-      'egyptian-cable-lateral-raise',
-    ],
-  },
-  {
-    day: 2,
-    title: 'Full Body Day 2',
-    exercises: [
-      'machine-shrug-plate-loaded',
-      'chest-fly-machine',
-      'tibia-raise-machine-or-band',
-      'machine-leg-curl-seated',
-      'lat-pulldown-reverse-grip',
-      'dumbbell-curl-seated-incline',
-      'face-pull-cable-rope-grip',
-    ],
-  },
-  {
-    day: 3,
-    title: 'Full Body Day 3',
-    exercises: [
-      'bulgarian-split-squat-dumbbell',
-      'machine-calf-raise-standing',
-      'straight-arm-cable-pulldown',
-      'incline-machine-press',
-      'tricep-dip-machine',
-      'dumbbell-overhead-press',
-      'egyptian-cable-lateral-raise',
-    ],
-  },
-  {
-    day: 4,
-    title: 'Full Body Day 4',
-    exercises: [
-      'dumbbell-fly-incline',
-      'tibia-raise-machine-or-band',
-      'machine-leg-curl-seated',
-      'seated-cable-row-v-grip',
-      'machine-ab-crunch-eccentric-emphasized',
-      'cable-rope-curl',
-      'face-pull-cable-rope-grip',
-    ],
-  },
-];
-
-// ──────────────────────────────────────────────────────────────────────
-// AM/PM splits (4 days)
-// ──────────────────────────────────────────────────────────────────────
 
 export interface TwoADayDay {
   day: 1 | 2 | 3 | 4;
   title: string;
-  am: ExerciseKey[];
-  pm: ExerciseKey[];
+  am: SplitSlot[];
+  pm: SplitSlot[];
 }
+
+export interface OneADayDay {
+  day: 1 | 2 | 3 | 4;
+  title: string;
+  session: SplitSlot[];
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Two-a-day (AM/PM) — 4 days × 2 sessions × 4 slots
+// ──────────────────────────────────────────────────────────────────────
 
 export const TWO_A_DAY_SPLITS: TwoADayDay[] = [
   {
     day: 1,
     title: 'Workout Day 1',
     am: [
-      'leg-press-machine',
-      'calf-raise-leg-press-machine',
-      'lower-back-extension-calisthenic',
-      'leg-raise-captains-chair',
+      { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'back-extension', suggestedTags: [], sets: [2, 2], reps: [10, 12] },
+      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
     ],
     pm: [
-      'barbell-press-incline',
-      'overhead-tricep-extension-cable',
-      'shoulder-press-machine-or-dumbbell',
-      'egyptian-cable-lateral-raise',
+      { exercise: 'incline-barbell-press', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
+      { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'shoulder-press', suggestedTags: ['machine'], sets: [2, 2], reps: [8, 10] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
     ],
   },
   {
     day: 2,
     title: 'Workout Day 2',
     am: [
-      'machine-shrug-plate-loaded',
-      'chest-fly-machine',
-      'tibia-raise-machine-or-band',
-      'machine-leg-curl-seated',
+      { exercise: 'machine-shrug', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'tibia-raise', suggestedTags: ['machine'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
     ],
     pm: [
-      'lat-pulldown-reverse-grip',
-      'machine-ab-crunch-eccentric-emphasized',
-      'dumbbell-curl-seated-incline',
-      'face-pull-cable-rope-grip',
+      { exercise: 'lat-pulldown', suggestedTags: ['underhand', 'lat-bar'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'dumbbell-curl', suggestedTags: ['seated', 'incline'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
     ],
   },
   {
     day: 3,
     title: 'Workout Day 3',
     am: [
-      'bulgarian-split-squat-dumbbell',
-      'machine-calf-raise-standing',
-      'straight-arm-cable-pulldown',
-      'leg-raise-captains-chair',
+      { exercise: 'bulgarian-split-squat', suggestedTags: ['dumbbell', 'per-leg'], sets: [2, 2], reps: [8, 10] },
+      { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'straight-arm-pulldown', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
     ],
     pm: [
-      'incline-machine-press',
-      'tricep-dip-machine',
-      'dumbbell-overhead-press',
-      'egyptian-cable-lateral-raise',
+      { exercise: 'machine-incline-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-dip', suggestedTags: [], sets: [2, 2], reps: [8, 10] },
+      { exercise: 'dumbbell-overhead-press', suggestedTags: [], sets: [2, 2], reps: [8, 10] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
     ],
   },
   {
     day: 4,
     title: 'Workout Day 4',
     am: [
-      'dumbbell-shrug',
-      'dumbbell-fly-incline',
-      'tibia-raise-machine-or-band',
-      'machine-leg-curl-seated',
+      { exercise: 'dumbbell-shrug', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'incline-dumbbell-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'tibia-raise', suggestedTags: ['machine'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
     ],
     pm: [
-      'seated-cable-row-v-grip',
-      'machine-ab-crunch-eccentric-emphasized',
-      'cable-rope-curl',
-      'face-pull-cable-rope-grip',
+      { exercise: 'cable-row', suggestedTags: ['seated', 'v-grip', 'neutral'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'cable-curl', suggestedTags: ['rope', 'neutral'], sets: [3, 3], reps: [10, 12] },
+      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
     ],
   },
+];
+
+// ──────────────────────────────────────────────────────────────────────
+// One-a-day — same content compressed to one 7-exercise session per day.
+// Deliberate omissions vs the AM+PM union: Back Extension (Day 1),
+// Machine Ab Crunch (Day 2), Leg Raise (Day 3), Dumbbell Shrug (Day 4).
+// ──────────────────────────────────────────────────────────────────────
+
+export const ONE_A_DAY_SPLITS: OneADayDay[] = [
+  {
+    day: 1,
+    title: 'Full Body Day 1',
+    session: [
+      { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'incline-barbell-press', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
+      { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'shoulder-press', suggestedTags: ['machine'], sets: [2, 2], reps: [8, 10] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 2,
+    title: 'Full Body Day 2',
+    session: [
+      { exercise: 'machine-shrug', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'tibia-raise', suggestedTags: ['machine'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'lat-pulldown', suggestedTags: ['underhand', 'lat-bar'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'dumbbell-curl', suggestedTags: ['seated', 'incline'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 3,
+    title: 'Full Body Day 3',
+    session: [
+      { exercise: 'bulgarian-split-squat', suggestedTags: ['dumbbell', 'per-leg'], sets: [2, 2], reps: [8, 10] },
+      { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'straight-arm-pulldown', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'machine-incline-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-dip', suggestedTags: [], sets: [2, 2], reps: [8, 10] },
+      { exercise: 'dumbbell-overhead-press', suggestedTags: [], sets: [2, 2], reps: [8, 10] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 4,
+    title: 'Full Body Day 4',
+    session: [
+      { exercise: 'incline-dumbbell-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'tibia-raise', suggestedTags: ['machine'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'cable-row', suggestedTags: ['seated', 'v-grip', 'neutral'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'cable-curl', suggestedTags: ['rope', 'neutral'], sets: [3, 3], reps: [10, 12] },
+      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
+    ],
+  },
+];
+
+// ──────────────────────────────────────────────────────────────────────
+// Tag vocabulary seed — autocomplete suggestions for the tag input.
+// Folded from the old exercise_grip_options seed values (normalized,
+// unprefixed) plus the program's suggested realization tags.
+// ──────────────────────────────────────────────────────────────────────
+
+export const TAG_VOCABULARY_SEED: string[] = [
+  'rope',
+  'straight-bar',
+  'lat-bar',
+  'v-grip',
+  'handle',
+  'neutral',
+  'underhand',
+  'overhand',
+  'machine',
+  'dumbbell',
+  'seated',
+  'standing',
+  'incline',
+  'captains-chair',
+  'egyptian',
+  'eccentric',
+  'per-leg',
 ];
 
 // ──────────────────────────────────────────────────────────────────────
 // Lookup helpers
 // ──────────────────────────────────────────────────────────────────────
 
-/**
- * Resolves the exercise keys for a given split + day. For twoADay, returns
- * the AM set only (the user picks AM or PM at session-start time — the
- * PM set is available via a follow-up session later in the day). Returns
- * an empty array for rest days (5–7) or out-of-range days.
- *
- * Callers should hydrate these keys against the ExerciseRepository cache
- * (useExercises) before display, since the canonical exercise metadata
- * (display name, muscles, equipment) lives in the DB.
- */
-export function getExercisesForDay(
+/** Programmed slots for a split + day + window. Empty for rest/out-of-range. */
+export function getSlotsForDay(
   split: 'oneADay' | 'twoADay',
   day: number,
-  session: 'am' | 'pm' = 'am',
-): ExerciseKey[] {
+  window: SessionWindow = 'am',
+): SplitSlot[] {
   if (day < 1 || day > 4) return [];
   if (split === 'oneADay') {
-    return ONE_A_DAY_SPLITS.find((d) => d.day === day)?.exercises ?? [];
+    return ONE_A_DAY_SPLITS.find((d) => d.day === day)?.session ?? [];
   }
   const entry = TWO_A_DAY_SPLITS.find((d) => d.day === day);
   if (!entry) return [];
-  return session === 'am' ? entry.am : entry.pm;
+  return window === 'am' ? entry.am : entry.pm;
 }
 
-/**
- * Returns the day's title (e.g. "Full Body Day 1") for the active-session
- * header + split preview surfaces. Empty string for rest days / out of range.
- */
-export function getDayTitle(
+/** Coarse exercise keys for a split + day + window (order preserved). */
+export function getExercisesForDay(
   split: 'oneADay' | 'twoADay',
   day: number,
-): string {
+  window: SessionWindow = 'am',
+): ExerciseKey[] {
+  return getSlotsForDay(split, day, window).map((s) => s.exercise);
+}
+
+/** Day title for headers ("Workout Day 1" / "Full Body Day 1"). */
+export function getDayTitle(split: 'oneADay' | 'twoADay', day: number): string {
   if (day < 1 || day > 4) return '';
   if (split === 'oneADay') {
     return ONE_A_DAY_SPLITS.find((d) => d.day === day)?.title ?? '';

@@ -1,29 +1,28 @@
 // hooks/queries/useProgression.ts
-// Dashboard + analytics read paths. Composes ProgressionService (summary)
-// + AnalyticsService (history) + the streaks RPC. All userId-threaded
-// via the auth store.
+// Dashboard + analytics read paths. Composes ProgressionService (summary
+// + streaks, computed at read) + AnalyticsService (daily activity).
+// userId threaded via the auth store.
 
 import { useQuery } from '@tanstack/react-query';
 import { ProgressionService, AnalyticsService } from '../../services';
 import { queryKeys } from '../../lib/react-query';
 import { useAuthStore } from '../../stores';
-import type { ProgressionSummary, StreakInfo, UserAnalytics } from '../../shared/types';
+import type { ProgressionSummary, StreakInfo, DayActivity } from '../../shared/types';
 
-/** Home-dashboard summary (totals + streaks + weekly goal). */
+const EMPTY_SUMMARY: ProgressionSummary = {
+  streak: { current: 0, best: 0 },
+  totalSessions: 0,
+  thisWeekSessions: 0,
+  lastSessionDate: null,
+};
+
+/** Home-dashboard summary (streaks + totals). */
 export function useDashboardSummary() {
   const userId = useAuthStore((s) => s.userId);
   return useQuery<ProgressionSummary>({
     queryKey: queryKeys.analytics.summary(),
     queryFn: async () => {
-      if (!userId) {
-        return {
-          streak: { current: 0, best: 0 },
-          totalWorkouts: 0,
-          totalDurationMinutes: 0,
-          weeklyGoal: { completed: 0, target: 4 },
-          lastWorkoutDate: null,
-        } satisfies ProgressionSummary;
-      }
+      if (!userId) return EMPTY_SUMMARY;
       const res = await ProgressionService.getDashboardSummary(userId);
       if (!res.success) throw res.error;
       return res.data;
@@ -47,14 +46,14 @@ export function useStreaks() {
   });
 }
 
-/** Analytics history (last N days) for the analytics chart. */
+/** Daily activity for the analytics consistency grid. */
 export function useAnalyticsHistory(daysBack = 30) {
   const userId = useAuthStore((s) => s.userId);
-  return useQuery<UserAnalytics[]>({
+  return useQuery<DayActivity[]>({
     queryKey: queryKeys.analytics.history(daysBack),
     queryFn: async () => {
-      if (!userId) return [] as UserAnalytics[];
-      const res = await AnalyticsService.getRecent(userId, daysBack);
+      if (!userId) return [] as DayActivity[];
+      const res = await AnalyticsService.getDailyActivity(userId, daysBack);
       if (!res.success) throw res.error;
       return res.data;
     },

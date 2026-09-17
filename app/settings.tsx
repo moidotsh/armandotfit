@@ -20,9 +20,10 @@ import {
   CopyForAiButton,
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
-import { navigateToPremiumShowcase, navigateToEquipmentInventory, navigateToSetupPresets, safeGoBack } from '../navigation';
-import { useProfile, useUpdateProfile, useAiPayload } from '../hooks';
+import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
+import { useProfile, useUpdateProfile, useAiPayload, usePwaPrompt } from '../hooks';
 import { DAY_OF_WEEK_LABELS, SCREEN_BODY_STYLE } from '../constants';
+import { useToast } from '../context';
 import { logger } from '../utils/logger';
 
 const PREFERENCE_LABELS: Record<ColorSchemePreference, string> = {
@@ -48,7 +49,9 @@ function PreferenceIcon({ pref, color }: { pref: ColorSchemePreference; color: s
 export default function SettingsScreen() {
   const { session, signOut } = useAuth();
   const { preference, setPreference, colorScheme, colors } = useAppTheme();
+  const { showToast } = useToast();
   const accent = colors.brand;
+  const pwaPrompt = usePwaPrompt();
 
   // Rest-days multi-select state. Reads from the profile cache; mutates
   // via the patch-profile mutation, which optimistically updates the
@@ -164,34 +167,35 @@ export default function SettingsScreen() {
         </MobileSurface>
         <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
           Rest days are visually deactivated in the workout-day picker. The
-          cycle counter ignores them — it only advances when you log a workout.
+          day-of-split suggestion ignores them — it only advances when you
+          log a session.
         </Text>
 
-        <MobileSectionEyebrow flush={false}>Equipment</MobileSectionEyebrow>
-        <MobileSurface padding={0}>
-          <MobileSettingsRow
-            label="Equipment Inventory"
-            value="Edit"
-            onPress={navigateToEquipmentInventory}
-          />
-          <MobileSettingsRow
-            label="Setup Presets"
-            value="Manage"
-            onPress={navigateToSetupPresets}
-            isLast
-          />
-        </MobileSurface>
-        <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
-          Tell us what equipment you have access to. Your selections power
-          exercise eligibility (Phase 3) without touching your manual
-          equipment entries.
-        </Text>
-        <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
-          Manage your saved setups — rename, retire, or delete ones you
-          no longer use. You can also create capability-specific setups
-          here for equipment the in-workout flow doesn't cover. Saved
-          setups surface inline on compatible exercises.
-        </Text>
+        {pwaPrompt.shouldShow ? (
+          <>
+            <MobileSectionEyebrow flush={false}>Install</MobileSectionEyebrow>
+            <MobileSurface padding={0}>
+              <MobileSettingsRow
+                label="Install app"
+                value="How?"
+                onPress={() => {
+                  showToast(
+                    'info',
+                    pwaPrompt.platform === 'ios'
+                      ? 'Safari: Share → Add to Home Screen'
+                      : 'Chrome: ⋮ menu → Install app',
+                  );
+                  pwaPrompt.dismiss();
+                }}
+                isLast
+              />
+            </MobileSurface>
+            <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
+              Install armandotfit on your home screen for the full-screen,
+              offline-tolerant gym experience.
+            </Text>
+          </>
+        ) : null}
 
         <MobileSectionEyebrow flush={false}>Reference</MobileSectionEyebrow>
         <MobileSurface padding={0}>

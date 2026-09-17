@@ -1,18 +1,17 @@
 // components/composed/ExerciseListItem.tsx
-// Reusable list row for an exercise in browse / picker contexts. Used by
-// exercise-database.tsx and by the suggested-exercises picker (when the
-// user adds from a split suggestion). Wraps the name + type/difficulty
-// meta pattern.
+// Reusable list row for an exercise in browse/picker contexts. Renders
+// from the local catalog entry (SystemExerciseData — the sole display
+// source), keyed by slug.
 
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { MobileSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
-import type { Exercise } from '../../shared/types';
+import type { SystemExerciseData } from '../../shared/exercises';
 
 export interface ExerciseListItemProps {
-  exercise: Pick<Exercise, 'id' | 'name' | 'exerciseType' | 'difficultyLevel'>;
-  onPress: (id: string) => void;
+  exercise: SystemExerciseData;
+  onPress: (slug: string) => void;
 }
 
 export function ExerciseListItem({ exercise, onPress }: ExerciseListItemProps) {
@@ -22,8 +21,9 @@ export function ExerciseListItem({ exercise, onPress }: ExerciseListItemProps) {
     .join(' · ');
   return (
     <Pressable
-      onPress={() => onPress(exercise.id)}
+      onPress={() => onPress(exercise.slug)}
       accessibilityRole="button"
+      accessibilityLabel={exercise.name}
     >
       <MobileSurface padding={14}>
         <Text style={[styles.name, { color: colors.text }]}>

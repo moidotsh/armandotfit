@@ -43,13 +43,8 @@ export function useUpdateProfile() {
       if (previousProfile) {
         const optimistic: Profile = {
           ...previousProfile,
-          ...(dto.firstName !== undefined ? { firstName: dto.firstName } : null),
-          ...(dto.lastName !== undefined ? { lastName: dto.lastName } : null),
           ...(dto.displayName !== undefined ? { displayName: dto.displayName } : null),
-          ...(dto.preferredSplit !== undefined ? { preferredSplit: dto.preferredSplit } : null),
-          ...(dto.weeklyGoal !== undefined ? { weeklyGoal: dto.weeklyGoal } : null),
           ...(dto.restDays !== undefined ? { restDays: dto.restDays } : null),
-          updatedAt: new Date().toISOString(),
         };
         queryClient.setQueryData<Profile | null>(profileKey, optimistic);
       }

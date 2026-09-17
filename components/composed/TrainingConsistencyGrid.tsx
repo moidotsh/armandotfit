@@ -5,7 +5,7 @@
 // ActivityGridDatum shape and forwards to the shared <ActivityGrid>.
 //
 // Mapping policy: one cell per calendar day in [startDate, endDate];
-// cell value = UserAnalytics.totalWorkouts for that day. Days without a
+// cell value = DayActivity.sessions for that day. Days without a
 // row render as zero-activity cells (handled by the underlying grid).
 // Level derivation uses the default value/maxValue thresholds, so a day
 // with the user's max workout count lands at level 4, a single workout
@@ -18,11 +18,11 @@
 
 import React, { useMemo } from 'react';
 import { ActivityGrid, type ActivityGridDatum } from '../MobilePremium';
-import type { UserAnalytics } from '../../shared/types';
+import type { DayActivity } from '../../shared/types';
 
 export interface TrainingConsistencyGridProps {
   /** Daily-aggregate history from useAnalyticsHistory. Unsorted is fine. */
-  data: readonly UserAnalytics[];
+  data: readonly DayActivity[];
   /** Required — start of the inclusive range, 'YYYY-MM-DD'. */
   startDate: string;
   /** Required — end of the inclusive range, 'YYYY-MM-DD'. */
@@ -43,7 +43,7 @@ export function TrainingConsistencyGrid({
   testID,
 }: TrainingConsistencyGridProps) {
   const gridData = useMemo<ActivityGridDatum[]>(
-    () => data.map((d) => ({ date: d.date, value: d.totalWorkouts })),
+    () => data.map((d) => ({ date: d.date, value: d.sessions })),
     [data],
   );
 

@@ -33,9 +33,8 @@ export default function ProgressionScreen() {
           visibleContent: [
             `- Current streak: ${summary.streak.current} days`,
             `- Best streak: ${summary.streak.best} days`,
-            `- Workouts logged: ${summary.totalWorkouts}`,
-            `- Total training time: ${summary.totalDurationMinutes} min`,
-            `- Weekly goal: ${summary.weeklyGoal.completed}/${summary.weeklyGoal.target}`,
+            `- Sessions logged: ${summary.totalSessions}`,
+            `- This week: ${summary.thisWeekSessions}`,
           ].join('\n'),
         }
       : undefined,
@@ -87,27 +86,19 @@ export default function ProgressionScreen() {
             <MobileSurface padding={20}>
               <View style={styles.rowBetween}>
                 <Text style={[styles.label, { color: colors.textSecondary }]}>
-                  Workouts logged
+                  Sessions logged
                 </Text>
                 <Text style={[styles.value, { color: colors.text }]}>
-                  {summary?.totalWorkouts ?? 0}
+                  {summary?.totalSessions ?? 0}
                 </Text>
               </View>
               <View style={styles.rowBetween}>
                 <Text style={[styles.label, { color: colors.textSecondary }]}>
-                  Total training time
+                  Last session
                 </Text>
                 <Text style={[styles.value, { color: colors.text }]}>
-                  {summary?.totalDurationMinutes ?? 0} min
-                </Text>
-              </View>
-              <View style={styles.rowBetween}>
-                <Text style={[styles.label, { color: colors.textSecondary }]}>
-                  Last workout
-                </Text>
-                <Text style={[styles.value, { color: colors.text }]}>
-                  {summary?.lastWorkoutDate
-                    ? new Date(summary.lastWorkoutDate).toLocaleDateString()
+                  {summary?.lastSessionDate
+                    ? new Date(summary.lastSessionDate).toLocaleDateString()
                     : '—'}
                 </Text>
               </View>
@@ -118,10 +109,10 @@ export default function ProgressionScreen() {
             <MobileSurface padding={20}>
               <View style={styles.rowBetween}>
                 <Text style={[styles.label, { color: colors.textSecondary }]}>
-                  Goal progress
+                  Sessions
                 </Text>
                 <Text style={[styles.value, { color: colors.text }]}>
-                  {summary?.weeklyGoal.completed ?? 0} / {summary?.weeklyGoal.target ?? 4}
+                  {summary?.thisWeekSessions ?? 0}
                 </Text>
               </View>
             </MobileSurface>

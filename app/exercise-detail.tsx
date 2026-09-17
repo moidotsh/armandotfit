@@ -1,7 +1,7 @@
 // app/exercise-detail.tsx
-// Detail card for a single exercise: instructions, tips, muscles worked,
-// required equipment, variations. When a draft session is active, an
-// "Add to active session" CTA in the footer wires to addExerciseToDraft.
+// Detail card for a catalog exercise: instructions, tips, muscles,
+// equipment. When a draft session is active, an "Add to active session"
+// CTA wires to addExerciseToDraft (coarse identity + slug).
 
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -16,19 +16,28 @@ import {
   MobileActionFooter,
   CopyForAiButton,
 } from '../components/MobilePremium';
-import { LoadingSpinner } from '../components/primitives';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
 import { useExerciseDetail, useAiPayload } from '../hooks';
 import { useWorkoutStore } from '../stores';
+import {
+  EQUIPMENT_DISPLAY_NAMES,
+  MUSCLE_DISPLAY_NAMES,
+  type EquipmentSlug,
+  type MuscleSlug,
+} from '../shared/exercises';
 import { SCREEN_BODY_STYLE } from '../constants';
-import type { ID } from '../shared/types';
+import type { ExerciseKey } from '../shared/exercises';
+
+function equipmentLabel(e: EquipmentSlug | { slug: EquipmentSlug }): string {
+  return EQUIPMENT_DISPLAY_NAMES[typeof e === 'string' ? e : e.slug];
+}
 
 export default function ExerciseDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { slug } = useLocalSearchParams<{ slug: string }>();
   const { colors } = useAppTheme();
   const { showToast } = useToast();
-  const query = useExerciseDetail(id ?? null);
+  const query = useExerciseDetail(slug ?? null);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
   const addExerciseToDraft = useWorkoutStore((s) => s.addExerciseToDraft);
 
@@ -38,12 +47,13 @@ export default function ExerciseDetailScreen() {
     exercise
       ? {
           title: exercise.name,
-          contextLabel: exercise.exerciseType ?? 'Exercise',
+          contextLabel: exercise.exerciseType,
           visibleContent: [
-            `- Type: ${exercise.exerciseType ?? '—'}`,
-            `- Muscles: ${exercise.muscles.map((m) => m.muscle.displayName).join(', ') || '—'}`,
-            `- Equipment: ${exercise.equipment.map((e) => e.equipmentType.displayName).join(', ') || '—'}`,
-            `- Variations: ${exercise.variations.length}`,
+            `- Type: ${exercise.exerciseType}`,
+            `- Muscles: ${[...exercise.primaryMuscles, ...exercise.secondaryMuscles]
+              .map((m) => MUSCLE_DISPLAY_NAMES[m as MuscleSlug])
+              .join(', ') || '—'}`,
+            `- Equipment: ${exercise.equipment.map(equipmentLabel).join(', ') || '—'}`,
           ].join('\n'),
         }
       : undefined,
@@ -66,37 +76,49 @@ export default function ExerciseDetailScreen() {
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator={false}
       >
-        {query.isLoading || !exercise ? (
-          <LoadingSpinner />
+        {!exercise ? (
+          <Text style={[styles.missing, { color: colors.textSecondary }]}>
+            Unknown exercise.
+          </Text>
         ) : (
           <>
             <MobileSectionEyebrow>Instructions</MobileSectionEyebrow>
             <MobileSurface padding={16}>
               <Text style={[styles.bodyText, { color: colors.text }]}>
-                {exercise.instructions ?? 'No instructions available.'}
+                {exercise.instructions || 'No instructions available.'}
               </Text>
               {exercise.tips ? (
-                <View style={{ height: 12 }} />
-              ) : null}
-              {exercise.tips ? (
-                <Text style={[styles.tips, { color: colors.textSecondary }]}>
-                  Tip: {exercise.tips}
-                </Text>
+                <>
+                  <View style={{ height: 12 }} />
+                  <Text style={[styles.tips, { color: colors.textSecondary }]}>
+                    Tip: {exercise.tips}
+                  </Text>
+                </>
               ) : null}
             </MobileSurface>
 
-            {exercise.muscles.length > 0 && (
+            {exercise.primaryMuscles.length + exercise.secondaryMuscles.length > 0 && (
               <>
                 <View style={{ height: 16 }} />
                 <MobileSectionEyebrow>Muscles worked</MobileSectionEyebrow>
                 <MobileSurface padding={16}>
-                  {exercise.muscles.map((m) => (
-                    <View key={m.muscle.id} style={styles.row}>
+                  {exercise.primaryMuscles.map((m) => (
+                    <View key={m} style={styles.row}>
                       <Text style={[styles.label, { color: colors.text }]}>
-                        {m.muscle.displayName}
+                        {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
                       </Text>
                       <Text style={[styles.tag, { color: colors.textSecondary }]}>
-                        {m.isPrimary ? 'primary' : 'secondary'}
+                        primary
+                      </Text>
+                    </View>
+                  ))}
+                  {exercise.secondaryMuscles.map((m) => (
+                    <View key={m} style={styles.row}>
+                      <Text style={[styles.label, { color: colors.text }]}>
+                        {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
+                      </Text>
+                      <Text style={[styles.tag, { color: colors.textSecondary }]}>
+                        secondary
                       </Text>
                     </View>
                   ))}
@@ -109,35 +131,11 @@ export default function ExerciseDetailScreen() {
                 <View style={{ height: 16 }} />
                 <MobileSectionEyebrow>Equipment</MobileSectionEyebrow>
                 <MobileSurface padding={16}>
-                  {exercise.equipment.map((e) => (
-                    <View key={e.equipmentType.id} style={styles.row}>
+                  {exercise.equipment.map((e, i) => (
+                    <View key={`${e}-${i}`} style={styles.row}>
                       <Text style={[styles.label, { color: colors.text }]}>
-                        {e.equipmentType.displayName}
+                        {equipmentLabel(e)}
                       </Text>
-                      <Text style={[styles.tag, { color: colors.textSecondary }]}>
-                        {e.isRequired ? 'required' : 'optional'}
-                      </Text>
-                    </View>
-                  ))}
-                </MobileSurface>
-              </>
-            )}
-
-            {exercise.variations.length > 0 && (
-              <>
-                <View style={{ height: 16 }} />
-                <MobileSectionEyebrow>Variations</MobileSectionEyebrow>
-                <MobileSurface padding={16}>
-                  {exercise.variations.map((v) => (
-                    <View key={v.variation.id} style={styles.row}>
-                      <Text style={[styles.label, { color: colors.text }]}>
-                        {v.variation.name}
-                      </Text>
-                      {v.difficultyProgression != null && (
-                        <Text style={[styles.tag, { color: colors.textSecondary }]}>
-                          step {v.difficultyProgression}
-                        </Text>
-                      )}
                     </View>
                   ))}
                 </MobileSurface>
@@ -151,8 +149,8 @@ export default function ExerciseDetailScreen() {
           <MobilePrimaryButton
             onPress={() => {
               addExerciseToDraft({
-                exerciseId: exercise.id as ID,
                 exerciseName: exercise.name,
+                exerciseSlug: exercise.slug as ExerciseKey | '',
               });
               showToast('success', `Added ${exercise.name} to session`);
               safeGoBack();
@@ -172,6 +170,7 @@ const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
   bodyText: { fontSize: 14, lineHeight: 20 },
   tips: { fontSize: 13, lineHeight: 18, fontStyle: 'italic' },
+  missing: { fontSize: 13, lineHeight: 18 },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',

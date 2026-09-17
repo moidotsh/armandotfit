@@ -28,46 +28,12 @@ export const queryKeys = {
     current: () => ['profile', 'current'] as const,
   },
 
-  /** Exercise library: system + current user's custom. */
+  /** Exercise library (local catalog; key kept for cache namespacing). */
   exercises: {
     all: ['exercises'] as const,
     list: <T = unknown>(filter?: T) =>
       [...queryKeys.exercises.all, 'list', filter] as const,
     detail: (id: string) => [...queryKeys.exercises.all, 'detail', id] as const,
-    favorites: () => [...queryKeys.exercises.all, 'favorites'] as const,
-  },
-
-  /** Phase 5 catalog grip options keyed by exercise id list. The key
-   *  carries the sorted + joined id list so two callers with the same
-   *  set of exercise ids (in any order) hit the same cache entry. */
-  exerciseSetupOptions: {
-    list: (exerciseIds: ID[]) =>
-      ['exerciseSetupOptions', 'list', [...exerciseIds].sort().join(',')] as const,
-  },
-
-  /** Phase 6 resolved equipment capabilities per exercise id list. The
-   *  hook looks up each exercise's slug via findByIds, then resolves
-   *  slug → SYSTEM_EXERCISES_BY_SLUG → equipment → capabilitiesForExercise
-   *  client-side. Same sorted-join key shape as exerciseSetupOptions. */
-  exerciseCapabilities: {
-    list: (exerciseIds: ID[]) =>
-      ['exerciseCapabilities', 'list', [...exerciseIds].sort().join(',')] as const,
-  },
-
-  /** Reference data: muscle categories, muscles, equipment types. */
-  reference: {
-    all: ['reference'] as const,
-    muscleCategories: () => [...queryKeys.reference.all, 'muscleCategories'] as const,
-    muscles: () => [...queryKeys.reference.all, 'muscles'] as const,
-    equipmentTypes: () => [...queryKeys.reference.all, 'equipmentTypes'] as const,
-  },
-
-  /** User-owned equipment inventory. */
-  userEquipment: {
-    all: ['userEquipment'] as const,
-    list: () => [...queryKeys.userEquipment.all, 'list'] as const,
-    /** Phase 2 capability selections (user_equipment_capabilities rows). */
-    capabilities: () => [...queryKeys.userEquipment.all, 'capabilities'] as const,
   },
 
   /** Phase 6 user-owned equipment-setup presets. */
@@ -127,6 +93,9 @@ export const queryKeys = {
     all: ['workouts'] as const,
     recent: (limit = 10) => [...queryKeys.workouts.all, 'recent', limit] as const,
     detail: (id: string) => [...queryKeys.workouts.all, 'detail', id] as const,
+    /** Most-recent tags per exercise-name list (session-start prefill). */
+    lastTags: (namesKey: string) =>
+      [...queryKeys.workouts.all, 'last-tags', namesKey] as const,
   },
 
   /** Dashboard summary + chart data. */

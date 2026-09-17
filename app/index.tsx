@@ -13,7 +13,6 @@ import {
   Dumbbell,
   TrendingUp,
   BarChart2,
-  BookOpen,
   Settings,
   X,
 } from '@tamagui/lucide-icons-2';
@@ -34,6 +33,7 @@ import {
   DashboardSkeleton,
   WorkoutListSkeleton,
 } from '../components/composed';
+import { EmptyState } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
 import { theme, APP_LAYOUT, SCREEN_BODY_STYLE } from '../constants';
 import {
@@ -44,7 +44,6 @@ import {
   navigateToAnalytics,
   navigateToSplitSelection,
   navigateToHome,
-  navigateToWorkoutPrograms,
 } from '../navigation';
 import {
   useDashboardSummary,
@@ -70,8 +69,8 @@ export default function HomeScreen() {
           visibleContent: [
             `- Current streak: ${streak?.current ?? 0} days`,
             `- Best streak: ${streak?.best ?? 0} days`,
-            `- Weekly goal: ${summary.weeklyGoal.completed}/${summary.weeklyGoal.target}`,
-            `- Total workouts: ${summary.totalWorkouts ?? 0}`,
+            `- This week: ${summary.thisWeekSessions ?? 0} sessions`,
+            `- Total sessions: ${summary.totalSessions ?? 0}`,
             `- Recent sessions: ${recent.length}`,
           ].join('\n'),
         }
@@ -108,12 +107,6 @@ export default function HomeScreen() {
       label: 'Analytics',
       icon: <BarChart2 size={18} color={colors.text} />,
       onPress: navigateToAnalytics,
-    },
-    {
-      id: '/workout-programs',
-      label: 'Programs',
-      icon: <BookOpen size={18} color={colors.text} />,
-      onPress: navigateToWorkoutPrograms,
     },
     {
       id: '/settings',
@@ -176,7 +169,7 @@ export default function HomeScreen() {
                   This week
                 </Text>
                 <Text style={[styles.statValue, { color: colors.text }]}>
-                  {summary?.weeklyGoal.completed ?? 0} / {summary?.weeklyGoal.target ?? 4}
+                  {summary?.thisWeekSessions ?? 0} sessions
                 </Text>
               </View>
             </View>
@@ -209,11 +202,13 @@ export default function HomeScreen() {
         {recentQuery.isLoading ? (
           <WorkoutListSkeleton />
         ) : recent.length === 0 ? (
-          <MobileSurface padding={20}>
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              No workouts yet. Tap “Start workout” to log your first session.
-            </Text>
-          </MobileSurface>
+          <EmptyState
+            title="No sessions yet"
+            message="Your logged AM/PM sessions land here — streaks, day-of-split, and history start with the first one."
+            icon={<PlusCircle size={28} color={colors.brand} />}
+            action={{ label: 'Start workout', onPress: navigateToSplitSelection }}
+            testID="home-empty-state"
+          />
         ) : (
           <View style={styles.recentList}>
             {recent.map((w) => (

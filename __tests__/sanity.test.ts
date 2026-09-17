@@ -13,8 +13,12 @@ describe('theme', () => {
     expect(lightKeys).toEqual(darkKeys);
   });
 
-  it('uses armandotfit orange as the brand color in light mode', () => {
-    expect(theme.colors.light.brand).toBe('#FF9500');
+  it('uses the armandotfit ember brand in light mode', () => {
+    // Ember ink palette — brand is the fill slot (3:1 on paper),
+    // brandText is the AA small-text companion, textOnBrand is warm ink.
+    expect(theme.colors.light.brand).toBe('#E8590C');
+    expect(theme.colors.light.brandText).toBe('#A03A08');
+    expect(theme.colors.light.textOnBrand).toBe('#231B15');
   });
 
   it('exports typography tokens', () => {

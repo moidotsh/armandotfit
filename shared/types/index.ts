@@ -1,16 +1,12 @@
 // shared/types/index.ts
 // Barrel export for shared types. UI code imports repository-normalized
-// types from here (or from a consumer-specific types barrel that re-exports
-// from here). Audit-testing-types (T1) blocks UI code from importing raw
-// `shared/types` directly when a repository-normalized variant exists.
+// types from here. Audit-testing-types (T1) blocks UI code from
+// importing raw `shared/types` directly when a repository-normalized
+// variant exists.
 
 export * from './api';
 export * from './env';
-// Domain types (armandotfit consumers)
 export * from './profile';
 export * from './exercise';
 export * from './workout';
 export * from './analytics';
-export * from './program';
-export * from './userPlan';
-export * from './setupPreset';

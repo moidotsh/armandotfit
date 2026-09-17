@@ -26,10 +26,6 @@ const ROUTE_AI_METADATA: Record<string, AiRouteMeta> = {
   'exercise-detail': { title: 'Exercise', contextLabel: 'Library detail' },
   progression: { title: 'Progression', contextLabel: 'Lifetime totals' },
   analytics: { title: 'Analytics', contextLabel: 'History' },
-  'workout-programs': { title: 'Programs', contextLabel: 'Templates' },
-  'equipment-inventory': { title: 'Equipment', contextLabel: 'Capability wizard' },
-  'plan-preview': { title: 'Plan preview', contextLabel: 'Phase 3 planner' },
-  'plan-replacement': { title: 'Replace slot', contextLabel: 'Phase 3 planner' },
   settings: { title: 'Settings', contextLabel: 'Preferences' },
   dev: { title: 'Dev', contextLabel: 'Internal' },
 };

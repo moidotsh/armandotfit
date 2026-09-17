@@ -45,13 +45,13 @@ export default function AnalyticsScreen() {
     return AnalyticsService.bucketWeekly(historyQuery.data);
   }, [historyQuery.data]);
 
-  const maxWorkouts = Math.max(1, ...weekly.map((w) => w.totalWorkouts));
+  const maxWorkouts = Math.max(1, ...weekly.map((w) => w.sessions));
 
-  const totalWorkoutsInRange = weekly.reduce((sum, w) => sum + w.totalWorkouts, 0);
+  const sessionsInRange = weekly.reduce((sum, w) => sum + w.sessions, 0);
   const aiPayload = useAiPayload({
     visibleContent: [
       `- Range: ${range} days`,
-      `- Workouts in range: ${totalWorkoutsInRange}`,
+      `- Sessions in range: ${sessionsInRange}`,
       `- Weeks bucketed: ${weekly.length}`,
     ].join('\n'),
   });
@@ -143,14 +143,14 @@ export default function AnalyticsScreen() {
                     style={[
                       styles.barFill,
                       {
-                        width: `${(w.totalWorkouts / maxWorkouts) * 100}%`,
+                        width: `${(w.sessions / maxWorkouts) * 100}%`,
                         backgroundColor: colors.brand,
                       },
                     ]}
                   />
                 </View>
                 <Text style={[styles.barValue, { color: colors.text }]}>
-                  {w.totalWorkouts}
+                  {w.sessions}
                 </Text>
               </View>
             ))

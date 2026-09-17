@@ -1,44 +1,8 @@
 // services/index.ts
-// Barrel for the services layer. Arqavellum's infrastructure
-// (BaseQueueService, OfflineQueueService) + armandotfit's concrete
-// domain services.
+// Barrel for domain services. Services orchestrate repositories +
+// computed-at-read logic; UI code goes through hooks, hooks go through
+// services (S9).
 
-export { BaseQueueService } from './base';
-export {
-  OfflineQueueService,
-  type QueueItem,
-  type QueueItemStatus,
-  type SyncResult,
-} from './offlineQueueService';
-
-// armandotfit domain services
 export { WorkoutService } from './workoutService';
-export { ProgressionService } from './progressionService';
+export { ProgressionService, computeStreaks } from './progressionService';
 export { AnalyticsService } from './analyticsService';
-export {
-  generatePlanForVariant,
-  buildUserEquipmentInventory,
-  snapshotPrescription,
-  flattenGeneratedPlan,
-  isExerciseEligible,
-  resolveSlot,
-  listReplacementCandidates,
-  type ExerciseRequirementGraph,
-  type AlternativeEdge,
-  type ReplacementCandidate,
-  type SlotResolutionResult,
-} from './planGenerationService';
-export {
-  SPLIT_TO_VARIANT_SLUG,
-  VARIANT_SLUG_TO_SPLIT,
-  sessionWindowForLaunch,
-  isPlanComplete,
-  selectTemplateSlotsForSession,
-  selectPlanSlotsForSession,
-  buildHydrationPayloadFromResolved,
-  buildTemplateSnapshot,
-  buildVariantSnapshot,
-  type PlanHydrationSlot,
-  type ResolvedPlanSlot,
-} from './planLaunchService';
-export { isPresetCompatibleWithExercise } from './setupPresetCompatibility';

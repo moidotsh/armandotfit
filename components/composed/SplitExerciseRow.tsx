@@ -1,34 +1,36 @@
 // components/composed/SplitExerciseRow.tsx
-// Read-only row that surfaces a system exercise with the attributes the
-// user wants visible at split-planning time: equipment needed, primary
-// muscles, target sets × rep range. Used by the split-selection preview
-// and by the active-session "add from split" picker. Source data is the
-// local SystemExerciseData (canonical for display); the DB row's id is
-// threaded through when the user actually adds it to a draft.
+// Read-only row for the split-selection preview: coarse exercise name,
+// programmed Rx, suggested tags, and equipment/muscle display hints from
+// the local catalog. Rx comes from the PROGRAM slot (splits.ts), not the
+// exercise's catalog defaults.
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { MobileSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
 import {
+  SYSTEM_EXERCISES_BY_SLUG,
   formatExerciseAttributes,
-  formatRepRange,
-  type SystemExerciseData,
+  type ExerciseKey,
+  type SplitSlot,
 } from '../../shared/exercises';
 
 export interface SplitExerciseRowProps {
-  exercise: SystemExerciseData;
+  slot: SplitSlot;
   /** Position in the day's plan (1-indexed). Shown as a leading index. */
   index?: number;
 }
 
-export function SplitExerciseRow({ exercise, index }: SplitExerciseRowProps) {
+function rxLabel(slot: SplitSlot): string {
+  const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
+  return `${sets} × ${slot.reps[0]}–${slot.reps[1]}`;
+}
+
+export function SplitExerciseRow({ slot, index }: SplitExerciseRowProps) {
   const { colors } = useAppTheme();
-  const attrs = formatExerciseAttributes(exercise);
-  const setsHint = `${exercise.defaultSets} × ${formatRepRange(exercise.defaultReps)}`;
-  const title = exercise.variation
-    ? `${exercise.name} · ${exercise.variation}`
-    : exercise.name;
+  const exercise = SYSTEM_EXERCISES_BY_SLUG[slot.exercise as ExerciseKey];
+  const title = exercise?.name ?? slot.exercise;
+  const attrs = exercise ? formatExerciseAttributes(exercise) : null;
 
   return (
     <MobileSurface padding={12}>
@@ -42,15 +44,20 @@ export function SplitExerciseRow({ exercise, index }: SplitExerciseRowProps) {
           {title}
         </Text>
         <Text style={[styles.setsHint, { color: colors.textSecondary }]}>
-          {setsHint}
+          {rxLabel(slot)}
         </Text>
       </View>
-      {attrs.equipmentLabel ? (
+      {slot.suggestedTags.length > 0 ? (
+        <Text style={[styles.attributeLine, { color: colors.textSecondary }]}>
+          {slot.suggestedTags.join(' · ')}
+        </Text>
+      ) : null}
+      {attrs?.equipmentLabel ? (
         <Text style={[styles.attributeLine, { color: colors.textSecondary }]}>
           Equipment: {attrs.equipmentLabel}
         </Text>
       ) : null}
-      {attrs.primaryMuscleLabel ? (
+      {attrs?.primaryMuscleLabel ? (
         <Text style={[styles.attributeLine, { color: colors.textSecondary }]}>
           Primary: {attrs.primaryMuscleLabel}
         </Text>

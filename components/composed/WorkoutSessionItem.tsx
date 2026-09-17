@@ -1,22 +1,15 @@
 // components/composed/WorkoutSessionItem.tsx
-// Reusable list row for a workout session. Used by the home dashboard's
-// "Recent workouts" list and by the analytics history view (when it
-// surfaces per-session entries). Wraps the date + duration + day-slot
-// pattern that both routes were duplicating inline.
-//
-// Lives in the composed tier (one tier above primitives) because it
-// composes MobileSurface + Pressable + Text into a domain-specific row.
-// The MobilePremium kit intentionally doesn't ship a list-row primitive
-// because the row shape is too domain-specific to generalize.
+// Reusable list row for a training session (home dashboard's recent list
+// and analytics history). Wraps the date + day-of-split pattern.
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MobileSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
-import type { WorkoutSession } from '../../shared/types';
+import type { TrainingSession } from '../../shared/types';
 
 export interface WorkoutSessionItemProps {
-  session: Pick<WorkoutSession, 'id' | 'date' | 'duration' | 'day'>;
+  session: Pick<TrainingSession, 'id' | 'startedAt' | 'splitDay'>;
   onPress: (id: string) => void;
 }
 
@@ -30,14 +23,14 @@ export function WorkoutSessionItem({ session, onPress }: WorkoutSessionItemProps
       <MobileSurface padding={14}>
         <View style={styles.row}>
           <Text style={[styles.date, { color: colors.text }]}>
-            {new Date(session.date).toLocaleDateString(undefined, {
+            {new Date(session.startedAt).toLocaleDateString(undefined, {
               weekday: 'short',
               month: 'short',
               day: 'numeric',
             })}
           </Text>
           <Text style={[styles.meta, { color: colors.textSecondary }]}>
-            {session.duration}m · day {session.day}
+            {session.splitDay != null ? `day ${session.splitDay}` : 'ad-hoc'}
           </Text>
         </View>
       </MobileSurface>

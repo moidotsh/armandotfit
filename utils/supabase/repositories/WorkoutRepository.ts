@@ -1,14 +1,12 @@
 // utils/supabase/repositories/WorkoutRepository.ts
-// Repository over the workout-logging relational chain:
-//   workout_sessions → workout_session_exercises → exercise_sets
+// Repository over the five-table logging chain:
+//   sessions → logged_exercises → logged_sets
 //
-// The create path (logWorkout) does a sequential multi-insert: session row
-// first, then session_exercises with the session id, then sets with each
-// session_exercise id. The chain is wrapped in a try/catch that deletes
-// the session row on any downstream failure (cascade clears children) so
-// the DB never lands a half-state. A server-side RPC would be one round-
-// trip + atomic, but the multi-insert path is fine for v1 write volume
-// and avoids a follow-up migration just for this.
+// The create path resolves each exercise NAME to an exercises row
+// (find-or-create — pool exercises get their row on first log), then does
+// a sequential multi-insert: session row, logged_exercises, logged_sets.
+// The chain is wrapped so any downstream failure deletes the session row
+// (cascade clears children) — the DB never lands a half-state.
 
 import { supabase } from '../client';
 import { BaseRepository } from './BaseRepository';
@@ -21,80 +19,48 @@ import {
   ok,
 } from './types';
 import type {
-  Exercise,
-  ExerciseSet,
-  ExerciseSetInputDTO,
-  ExerciseType,
-  DifficultyLevel,
   ID,
-  LogWorkoutDTO,
-  WorkoutSession,
-  WorkoutSessionExercise,
-  WorkoutSessionExerciseInputDTO,
-  WorkoutSessionExerciseWithSets,
-  WorkoutSessionUpdateDTO,
-  WorkoutSessionWithDetails,
-  WorkoutTemplateSnapshot,
-  WorkoutVariantSnapshot,
-  WorkoutExerciseSource,
+  LoggedExercise,
+  LoggedExerciseWithSets,
+  LoggedSet,
+  LogSessionDTO,
+  SessionUpdateDTO,
+  SessionWithDetails,
+  TrainingSession,
 } from '../../../shared/types';
 
 // ──────────────────────────────────────────────────────────────────────
 // Row shapes
 // ──────────────────────────────────────────────────────────────────────
 
-interface WorkoutSessionRow {
+interface SessionRow {
   id: string;
   user_id: string;
-  date: string;
-  split_type: WorkoutSession['splitType'];
-  day: number;
-  duration: number;
-  notes: string | null;
-  // Phase 4 provenance — nullable, backward-compatible
-  session_window: WorkoutSession['sessionWindow'];
-  started_at: string | null;
-  completed_at: string | null;
-  plan_id: string | null;
-  plan_template_snapshot: WorkoutTemplateSnapshot | null;
-  plan_variant_snapshot: WorkoutVariantSnapshot | null;
+  started_at: string;
+  note: string | null;
+  split_day: number | null;
   created_at: string;
-  updated_at: string;
 }
 
-export interface WorkoutSessionExerciseRow {
+interface LoggedExerciseRow {
   id: string;
-  workout_session_id: string;
+  session_id: string;
   exercise_id: string;
-  order_in_workout: number;
-  user_grip: string | null;
-  user_equipment_notes: string | null;
-  target_rep_range: string | null;
-  rest_timer_seconds: number;
-  notes: string | null;
-  // Phase 4 provenance — nullable, backward-compatible
-  plan_slot_id: string | null;
-  template_slot_id: string | null;
-  per_side: boolean | null;
-  slot_notes: string | null;
-  source: WorkoutExerciseSource | null;
-  // Phase 5 equipment-setup snapshot — nullable, passive metadata
-  attachment_slug: string | null;
+  position: number;
+  tags: string[] | null;
+  note: string | null;
   created_at: string;
+  /** Embedded join from the nested select (exercises.name). */
+  exercise?: { name: string } | null;
 }
 
-interface ExerciseSetRow {
+interface LoggedSetRow {
   id: string;
-  workout_session_exercise_id: string;
-  set_number: number;
-  target_reps: number | null;
-  actual_reps: number | null;
-  weight: number | null;
-  rep_range: string | null;
-  completed: boolean;
-  completed_at: string | null;
-  rest_duration_seconds: number | null;
-  notes: string | null;
+  logged_exercise_id: string;
+  position: number;
+  reps: number;
+  weight: number | string;
+  note: string | null;
   created_at: string;
 }
 
@@ -103,26 +69,21 @@ interface ExerciseSetRow {
 // ──────────────────────────────────────────────────────────────────────
 
 export class WorkoutRepository
-  extends BaseRepository<
-    WorkoutSession,
-    LogWorkoutDTO,
-    WorkoutSessionUpdateDTO
-  >
-  implements
-    IRepository<WorkoutSession, LogWorkoutDTO, WorkoutSessionUpdateDTO>
+  extends BaseRepository<TrainingSession, LogSessionDTO, SessionUpdateDTO>
+  implements IRepository<TrainingSession, LogSessionDTO, SessionUpdateDTO>
 {
-  private static SESSIONS = 'workout_sessions';
-  private static SESSION_EXERCISES = 'workout_session_exercises';
-  private static SETS = 'exercise_sets';
+  private static SESSIONS = 'sessions';
+  private static LOGGED_EXERCISES = 'logged_exercises';
+  private static LOGGED_SETS = 'logged_sets';
 
-  /** List recent sessions for the home / history screens (header only). */
+  /** List recent sessions (headers) for the home / history screens. */
   async findAll(
     options?: FindOptions & { userId?: ID },
-  ): Promise<RepositoryResult<WorkoutSession[]>> {
+  ): Promise<RepositoryResult<TrainingSession[]>> {
     try {
       let query = supabase.from(WorkoutRepository.SESSIONS).select('*');
       if (options?.userId) query = query.eq('user_id', options.userId);
-      query = query.order('date', { ascending: false });
+      query = query.order('started_at', { ascending: false });
       if (options?.limit) query = query.limit(options.limit);
       if (options?.offset) {
         query = query.range(
@@ -132,14 +93,14 @@ export class WorkoutRepository
       }
       const { data, error } = await query;
       if (error) throw error;
-      return ok((data as WorkoutSessionRow[]).map(toSession));
+      return ok((data as SessionRow[]).map(toSession));
     } catch (e) {
       return this.handleError('findAll', e);
     }
   }
 
   /** Find a session header by id. */
-  async findById(id: string): Promise<RepositoryResult<WorkoutSession | null>> {
+  async findById(id: string): Promise<RepositoryResult<TrainingSession | null>> {
     try {
       const { data, error } = await supabase
         .from(WorkoutRepository.SESSIONS)
@@ -147,83 +108,67 @@ export class WorkoutRepository
         .eq('id', id)
         .maybeSingle();
       if (error) throw error;
-      return ok(data ? toSession(data as WorkoutSessionRow) : null);
+      return ok(data ? toSession(data as SessionRow) : null);
     } catch (e) {
       return this.handleError('findById', e);
     }
   }
 
   /**
-   * Find a session with its exercises + sets expanded. This is the shape
-   * the detail screen consumes. Uses three sequential queries because
-   * Supabase's nested-array filter has rough edges for two-level nesting.
+   * Recent sessions with full nesting (exercises + sets). The read path
+   * for progression + analytics, which are computed client-side from
+   * raw history — never stored.
    */
+  async findRecentWithDetails(
+    userId: ID,
+    limit = 50,
+  ): Promise<RepositoryResult<SessionWithDetails[]>> {
+    try {
+      const { data: rows, error } = await supabase
+        .from(WorkoutRepository.SESSIONS)
+        .select('*, logged_exercises(*, exercise:exercises(name), logged_sets(*))')
+        .eq('user_id', userId)
+        .order('started_at', { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return ok((rows as unknown as Array<SessionRow & {
+        logged_exercises: Array<LoggedExerciseRow & { logged_sets: LoggedSetRow[] }>;
+      }>).map(toSessionWithDetails));
+    } catch (e) {
+      return this.handleError('findRecentWithDetails', e);
+    }
+  }
+
+  /** Find a session with its exercises + sets expanded (detail screen). */
   async findByIdWithDetails(
     id: string,
-  ): Promise<RepositoryResult<WorkoutSessionWithDetails | null>> {
+  ): Promise<RepositoryResult<SessionWithDetails | null>> {
     try {
-      const sessionRes = await this.findById(id);
-      if (!sessionRes.success) return sessionRes;
-      if (!sessionRes.data) return ok(null);
-
-      const { data: exRows, error: exError } = await supabase
-        .from(WorkoutRepository.SESSION_EXERCISES)
-        .select(
-          '*, exercise:exercises(id, name, description, exercise_type, difficulty_level, instructions, tips, is_system_exercise, created_by_user_id, slug, created_at, updated_at)',
-        )
-        .eq('workout_session_id', id)
-        .order('order_in_workout', { ascending: true });
-      if (exError) throw exError;
-
-      const exercises = exRows as unknown as Array<
-        WorkoutSessionExerciseRow & {
-          exercise: Parameters<typeof toExerciseFromJoin>[0];
-        }
-      >;
-
-      const ids = exercises.map((e) => e.id);
-      if (ids.length === 0) {
-        return ok({
-          ...sessionRes.data,
-          exercises: [],
-        });
-      }
-
-      const { data: setRows, error: setError } = await supabase
-        .from(WorkoutRepository.SETS)
-        .select('*')
-        .in('workout_session_exercise_id', ids)
-        .order('set_number', { ascending: true });
-      if (setError) throw setError;
-
-      const setsByExercise = new Map<string, ExerciseSet[]>();
-      for (const row of setRows as ExerciseSetRow[]) {
-        const list = setsByExercise.get(row.workout_session_exercise_id) ?? [];
-        list.push(toSet(row));
-        setsByExercise.set(row.workout_session_exercise_id, list);
-      }
-
-      const result: WorkoutSessionWithDetails = {
-        ...sessionRes.data,
-        exercises: exercises.map((e) => ({
-          ...toSessionExercise(e),
-          exercise: toExerciseFromJoin(e.exercise),
-          sets: setsByExercise.get(e.id) ?? [],
-        })),
-      };
-      return ok(result);
+      const { data, error } = await supabase
+        .from(WorkoutRepository.SESSIONS)
+        .select('*, logged_exercises(*, exercise:exercises(name), logged_sets(*))')
+        .eq('id', id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return ok(null);
+      return ok(
+        toSessionWithDetails(
+          data as unknown as SessionRow & {
+            logged_exercises: Array<LoggedExerciseRow & { logged_sets: LoggedSetRow[] }>;
+          },
+        ),
+      );
     } catch (e) {
       return this.handleError('findByIdWithDetails', e);
     }
   }
 
   /**
-   * Log a complete workout in one call. Sequential insert: session →
-   * session_exercises → sets. On any downstream failure the session row
-   * is deleted (cascade clears partial children) so we never persist a
-   * half-state.
+   * Log a complete session in one call. Sequential insert: session →
+   * logged_exercises → logged_sets. On any downstream failure the session
+   * row is deleted (cascade clears partial children).
    */
-  async create(data: LogWorkoutDTO): Promise<RepositoryResult<WorkoutSessionWithDetails>> {
+  async create(data: LogSessionDTO): Promise<RepositoryResult<SessionWithDetails>> {
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) {
@@ -232,89 +177,64 @@ export class WorkoutRepository
       const userId = userData.user.id;
 
       // 1. Insert session header.
-      const completedAt = data.completedAt ?? new Date().toISOString();
       const { data: sessionRow, error: sessionErr } = await supabase
         .from(WorkoutRepository.SESSIONS)
         .insert({
           user_id: userId,
-          date: data.date,
-          split_type: data.splitType,
-          day: data.day,
-          duration: data.duration,
-          notes: data.notes ?? null,
-          // Phase 4 provenance — all nullable; omitted keys default to NULL.
-          session_window: data.sessionWindow ?? null,
-          started_at: data.startedAt ?? null,
-          completed_at: completedAt,
-          plan_id: data.planId ?? null,
-          plan_template_snapshot: data.planTemplateSnapshot ?? null,
-          plan_variant_snapshot: data.planVariantSnapshot ?? null,
+          started_at: data.startedAt,
+          note: data.note ?? null,
+          split_day: data.splitDay ?? null,
         })
         .select('*')
         .single();
       if (sessionErr) throw sessionErr;
-      const session = toSession(sessionRow as WorkoutSessionRow);
+      const session = toSession(sessionRow as SessionRow);
 
-      // 2. Insert session_exercises + sets per exercise. Failure on any
-      // exercise triggers session delete (cascade).
       try {
-        const builtExercises: WorkoutSessionExerciseWithSets[] = [];
+        // 2. Per exercise: resolve identity by name (find-or-create),
+        //    insert the logged_exercises row, then its sets.
+        const builtExercises: LoggedExerciseWithSets[] = [];
         for (const input of data.exercises) {
+          const exerciseIdRes = await this.resolveExerciseId(input.exerciseName, userId);
+          if (!exerciseIdRes.success) throw exerciseIdRes.error;
+
           const { data: exRow, error: exErr } = await supabase
-            .from(WorkoutRepository.SESSION_EXERCISES)
+            .from(WorkoutRepository.LOGGED_EXERCISES)
             .insert({
-              workout_session_id: session.id,
-              exercise_id: input.exerciseId,
-              order_in_workout: input.orderInWorkout,
-              user_grip: input.userGrip ?? null,
-              user_equipment_notes: input.userEquipmentNotes ?? null,
-              target_rep_range: input.targetRepRange ?? null,
-              rest_timer_seconds: input.restTimerSeconds ?? 60,
-              notes: input.notes ?? null,
-              // Phase 4 provenance — nullable; source defaults to 'static'
-              // for the legacy path so historical rows become
-              // distinguishable from pre-Phase-4 history on first save.
-              plan_slot_id: input.planSlotId ?? null,
-              template_slot_id: input.templateSlotId ?? null,
-              per_side: input.perSide ?? null,
-              slot_notes: input.slotNotes ?? null,
-              source: input.source ?? null,
-              // Phase 5 equipment-setup snapshot — nullable; passive metadata.
-              attachment_slug: input.attachmentSlug ?? null,
+              session_id: session.id,
+              exercise_id: exerciseIdRes.data,
+              position: input.position,
+              tags: input.tags ?? [],
+              note: input.note ?? null,
             })
             .select('*')
             .single();
           if (exErr) throw exErr;
-          const exerciseEntry = toSessionExercise(exRow as WorkoutSessionExerciseRow);
+          const exerciseEntry = toLoggedExercise(exRow as LoggedExerciseRow);
 
-          const sets: ExerciseSet[] = [];
+          const sets: LoggedSet[] = [];
           if (input.sets.length > 0) {
-            const setRows = input.sets.map((s) => toSetInsert(exerciseEntry.id, s));
+            const setRows = input.sets.map((s, i) => ({
+              logged_exercise_id: exerciseEntry.id,
+              position: i + 1,
+              reps: s.reps,
+              weight: s.weight,
+              note: s.note ?? null,
+            }));
             const { data: insertedSets, error: setErr } = await supabase
-              .from(WorkoutRepository.SETS)
+              .from(WorkoutRepository.LOGGED_SETS)
               .insert(setRows)
               .select('*');
             if (setErr) throw setErr;
-            for (const row of insertedSets as ExerciseSetRow[]) {
+            for (const row of insertedSets as LoggedSetRow[]) {
               sets.push(toSet(row));
             }
           }
 
-          // Pull the parent exercise header so the UI has the full nested
-          // shape without a refetch.
-          const { data: parentEx, error: parentErr } = await supabase
-            .from(WorkoutRepository.SESSION_EXERCISES)
-            .select(
-              'exercise:exercises(id, name, description, exercise_type, difficulty_level, instructions, tips, is_system_exercise, created_by_user_id, slug, created_at, updated_at)',
-            )
-            .eq('id', exerciseEntry.id)
-            .maybeSingle();
-          if (parentErr) throw parentErr;
+          const nameRes = await this.getExerciseName(exerciseEntry.exerciseId);
           builtExercises.push({
             ...exerciseEntry,
-            exercise: toExerciseFromJoin(
-              (parentEx as unknown as { exercise: Parameters<typeof toExerciseFromJoin>[0] }).exercise,
-            ),
+            exerciseName: nameRes ?? input.exerciseName,
             sets,
           });
         }
@@ -330,16 +250,14 @@ export class WorkoutRepository
     }
   }
 
-  /** Update session header fields (notes, duration). */
+  /** Update a session header (note) post-completion. */
   async update(
     id: string,
-    data: WorkoutSessionUpdateDTO,
-  ): Promise<RepositoryResult<WorkoutSession>> {
+    data: SessionUpdateDTO,
+  ): Promise<RepositoryResult<TrainingSession>> {
     try {
       const snake: Record<string, unknown> = {};
-      if (data.duration !== undefined) snake.duration = data.duration;
-      if (data.notes !== undefined) snake.notes = data.notes;
-      snake.updated_at = new Date().toISOString();
+      if (data.note !== undefined) snake.note = data.note;
 
       const { data: row, error } = await supabase
         .from(WorkoutRepository.SESSIONS)
@@ -348,16 +266,13 @@ export class WorkoutRepository
         .select('*')
         .single();
       if (error) throw error;
-      return ok(toSession(row as WorkoutSessionRow));
+      return ok(toSession(row as SessionRow));
     } catch (e) {
       return this.handleError('update', e);
     }
   }
 
-  /**
-   * Delete a session. FK ON DELETE CASCADE clears session_exercises, and
-   * the cascade on session_exercises clears exercise_sets in turn.
-   */
+  /** Delete a session. Cascade clears logged_exercises + logged_sets. */
   async delete(id: string): Promise<RepositoryResult<void>> {
     try {
       const { error } = await supabase
@@ -385,109 +300,93 @@ export class WorkoutRepository
   }
 
   // ────────────────────────────────────────────────────────────────────
-  // Per-exercise CRUD for in-session logging (live updates during a set)
+  // Identity resolution
   // ────────────────────────────────────────────────────────────────────
 
-  async addExerciseToSession(
-    sessionId: ID,
-    input: WorkoutSessionExerciseInputDTO,
-  ): Promise<RepositoryResult<WorkoutSessionExercise>> {
+  /**
+   * Resolve an exercise NAME to an exercises row id, creating a user-
+   * owned row on first log. System seed rows (user_id NULL) and the
+   * user's own rows both match. The name goes through .eq() (a typed
+   * filter — spaces and quotes are safe); only the user_id disjunction
+   * rides the .or() string. Race-safe via retry-on-conflict.
+   */
+  private async resolveExerciseId(
+    name: string,
+    userId: ID,
+  ): Promise<RepositoryResult<ID>> {
     try {
-      const { data, error } = await supabase
-        .from(WorkoutRepository.SESSION_EXERCISES)
-        .insert({
-          workout_session_id: sessionId,
-          exercise_id: input.exerciseId,
-          order_in_workout: input.orderInWorkout,
-          user_grip: input.userGrip ?? null,
-          user_equipment_notes: input.userEquipmentNotes ?? null,
-          target_rep_range: input.targetRepRange ?? null,
-          rest_timer_seconds: input.restTimerSeconds ?? 60,
-          notes: input.notes ?? null,
-          // Phase 4 provenance — threaded through so ad-hoc in-session
-          // adds also carry their plan context when the caller provides
-          // it. Closes the gap where these columns were silently dropped
-          // on the addExerciseToSession path.
-          plan_slot_id: input.planSlotId ?? null,
-          template_slot_id: input.templateSlotId ?? null,
-          per_side: input.perSide ?? null,
-          slot_notes: input.slotNotes ?? null,
-          source: input.source ?? null,
-          // Phase 5 equipment-setup snapshot — nullable; passive metadata.
-          attachment_slug: input.attachmentSlug ?? null,
-        })
-        .select('*')
-        .single();
-      if (error) throw error;
-      return ok(toSessionExercise(data as WorkoutSessionExerciseRow));
-    } catch (e) {
-      return this.handleError('addExerciseToSession', e);
-    }
-  }
-
-  async addSet(
-    sessionExerciseId: ID,
-    input: ExerciseSetInputDTO,
-  ): Promise<RepositoryResult<ExerciseSet>> {
-    try {
-      const { data, error } = await supabase
-        .from(WorkoutRepository.SETS)
-        .insert(toSetInsert(sessionExerciseId, input))
-        .select('*')
-        .single();
-      if (error) throw error;
-      return ok(toSet(data as ExerciseSetRow));
-    } catch (e) {
-      return this.handleError('addSet', e);
-    }
-  }
-
-  async updateSet(
-    setId: ID,
-    patch: Partial<ExerciseSetInputDTO> & { completed?: boolean; completedAt?: string | null },
-  ): Promise<RepositoryResult<ExerciseSet>> {
-    try {
-      const snake: Record<string, unknown> = {};
-      if (patch.setNumber !== undefined) snake.set_number = patch.setNumber;
-      if (patch.targetReps !== undefined) snake.target_reps = patch.targetReps;
-      if (patch.actualReps !== undefined) snake.actual_reps = patch.actualReps;
-      if (patch.weight !== undefined) snake.weight = patch.weight;
-      if (patch.repRange !== undefined) snake.rep_range = patch.repRange;
-      if (patch.completed !== undefined) {
-        snake.completed = patch.completed;
-        snake.completed_at = patch.completed
-          ? (patch.completedAt ?? new Date().toISOString())
-          : null;
+      const find = () =>
+        supabase
+          .from('exercises')
+          .select('id')
+          .eq('name', name)
+          .or(`user_id.is.null,user_id.eq.${userId}`)
+          .limit(1);
+      const { data: existing, error: findErr } = await find();
+      if (findErr) throw findErr;
+      if (existing && existing.length > 0) {
+        return ok(existing[0].id as ID);
       }
-      if (patch.restDurationSeconds !== undefined) {
-        snake.rest_duration_seconds = patch.restDurationSeconds;
-      }
-      if (patch.notes !== undefined) snake.notes = patch.notes;
-
-      const { data, error } = await supabase
-        .from(WorkoutRepository.SETS)
-        .update(snake)
-        .eq('id', setId)
-        .select('*')
+      const { data: created, error: insertErr } = await supabase
+        .from('exercises')
+        .insert({ user_id: userId, name })
+        .select('id')
         .single();
-      if (error) throw error;
-      return ok(toSet(data as ExerciseSetRow));
+      if (insertErr) {
+        // Unique violation → a concurrent create won the race; re-read.
+        const { data: reread, error: rereadErr } = await find();
+        if (rereadErr || !reread || reread.length === 0) throw insertErr;
+        return ok(reread[0].id as ID);
+      }
+      return ok(created.id as ID);
     } catch (e) {
-      return this.handleError('updateSet', e);
+      return this.handleError('resolveExerciseId', e);
     }
   }
 
-  async deleteSet(setId: ID): Promise<RepositoryResult<void>> {
+  /**
+   * The user's most-recent tags per exercise NAME — the "what did I use
+   * last time" prefill. Scans the caller's recent logged_exercises
+   * (RLS-scoped through the session ownership chain) and keeps the
+   * newest row per name. Personal scale: one bounded round-trip.
+   */
+  async findLastTagsByExerciseNames(
+    names: string[],
+  ): Promise<RepositoryResult<Map<string, string[]>>> {
+    const result = new Map<string, string[]>();
+    if (names.length === 0) return ok(result);
     try {
-      const { error } = await supabase
-        .from(WorkoutRepository.SETS)
-        .delete()
-        .eq('id', setId);
+      const { data, error } = await supabase
+        .from(WorkoutRepository.LOGGED_EXERCISES)
+        .select('tags, created_at, exercise:exercises(name)')
+        .order('created_at', { ascending: false })
+        .limit(300);
       if (error) throw error;
-      return ok(undefined);
+      const wanted = new Set(names.map((n) => n.toLowerCase()));
+      for (const row of data as unknown as Array<{
+        tags: string[] | null;
+        exercise: { name: string } | null;
+      }>) {
+        const name = row.exercise?.name;
+        if (!name) continue;
+        const key = name.toLowerCase();
+        if (!wanted.has(key) || result.has(key)) continue;
+        result.set(key, row.tags ?? []);
+      }
+      return ok(result);
     } catch (e) {
-      return this.handleError('deleteSet', e);
+      return this.handleError('findLastTagsByExerciseNames', e);
     }
+  }
+
+  /** Fetch an exercise's display name by id (null when unreadable). */
+  private async getExerciseName(exerciseId: ID): Promise<string | null> {
+    const { data } = await supabase
+      .from('exercises')
+      .select('name')
+      .eq('id', exerciseId)
+      .maybeSingle();
+    return data?.name ?? null;
   }
 }
 
@@ -495,110 +394,58 @@ export class WorkoutRepository
 // Mappers
 // ──────────────────────────────────────────────────────────────────────
 
-function toSession(row: WorkoutSessionRow): WorkoutSession {
+
+function toSession(row: SessionRow): TrainingSession {
   return {
     id: row.id,
     userId: row.user_id,
-    date: row.date,
-    splitType: row.split_type,
-    day: row.day,
-    duration: row.duration,
-    notes: row.notes,
-    // Phase 4 provenance — nullable; pre-Phase-4 rows read as null.
-    sessionWindow: row.session_window,
     startedAt: row.started_at,
-    completedAt: row.completed_at,
-    planId: row.plan_id,
-    planTemplateSnapshot: row.plan_template_snapshot,
-    planVariantSnapshot: row.plan_variant_snapshot,
+    note: row.note,
+    splitDay: row.split_day,
     createdAt: row.created_at,
-    updatedAt: row.updated_at,
   };
 }
 
-export function toSessionExercise(row: WorkoutSessionExerciseRow): WorkoutSessionExercise {
+function toLoggedExercise(row: LoggedExerciseRow): LoggedExercise {
   return {
     id: row.id,
-    workoutSessionId: row.workout_session_id,
+    sessionId: row.session_id,
     exerciseId: row.exercise_id,
-    orderInWorkout: row.order_in_workout,
-    userGrip: row.user_grip,
-    userEquipmentNotes: row.user_equipment_notes,
-    targetRepRange: row.target_rep_range,
-    restTimerSeconds: row.rest_timer_seconds,
-    notes: row.notes,
-    // Phase 4 provenance — nullable; pre-Phase-4 rows + ad-hoc adds read as null.
-    planSlotId: row.plan_slot_id,
-    templateSlotId: row.template_slot_id,
-    perSide: row.per_side,
-    slotNotes: row.slot_notes,
-    source: row.source,
-    // Phase 5 equipment-setup snapshot — nullable; passive metadata.
-    attachmentSlug: row.attachment_slug,
+    position: row.position,
+    tags: row.tags ?? [],
+    note: row.note,
     createdAt: row.created_at,
   };
 }
 
-function toSet(row: ExerciseSetRow): ExerciseSet {
+function toSet(row: LoggedSetRow): LoggedSet {
   return {
     id: row.id,
-    workoutSessionExerciseId: row.workout_session_exercise_id,
-    setNumber: row.set_number,
-    targetReps: row.target_reps,
-    actualReps: row.actual_reps,
-    weight: row.weight === null ? null : Number(row.weight),
-    repRange: row.rep_range,
-    completed: row.completed,
-    completedAt: row.completed_at,
-    restDurationSeconds: row.rest_duration_seconds,
-    notes: row.notes,
+    loggedExerciseId: row.logged_exercise_id,
+    position: row.position,
+    reps: row.reps,
+    weight: Number(row.weight),
+    note: row.note,
     createdAt: row.created_at,
   };
 }
 
-function toSetInsert(
-  sessionExerciseId: ID,
-  input: ExerciseSetInputDTO,
-): Record<string, unknown> {
+function toSessionWithDetails(row: SessionRow & {
+  logged_exercises: Array<LoggedExerciseRow & { logged_sets: LoggedSetRow[] }>;
+}): SessionWithDetails {
   return {
-    workout_session_exercise_id: sessionExerciseId,
-    set_number: input.setNumber,
-    target_reps: input.targetReps ?? null,
-    actual_reps: input.actualReps ?? null,
-    weight: input.weight ?? null,
-    rep_range: input.repRange ?? null,
-    rest_duration_seconds: input.restDurationSeconds ?? null,
-    notes: input.notes ?? null,
-  };
-}
-
-function toExerciseFromJoin(row: {
-  id: string;
-  name: string;
-  description: string | null;
-  exercise_type: string;
-  difficulty_level: string | null;
-  instructions: string | null;
-  tips: string | null;
-  is_system_exercise: boolean;
-  created_by_user_id: string | null;
-  slug: string | null;
-  created_at: string;
-  updated_at: string;
-}): Exercise {
-  return {
-    id: row.id,
-    name: row.name,
-    description: row.description,
-    exerciseType: row.exercise_type as ExerciseType,
-    difficultyLevel: row.difficulty_level as DifficultyLevel | null,
-    instructions: row.instructions,
-    tips: row.tips,
-    isSystemExercise: row.is_system_exercise,
-    createdByUserId: row.created_by_user_id,
-    slug: row.slug,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    ...toSession(row),
+    exercises: (row.logged_exercises ?? [])
+      .slice()
+      .sort((a, b) => a.position - b.position)
+      .map((e) => ({
+        ...toLoggedExercise(e),
+        exerciseName: e.exercise?.name ?? '',
+        sets: (e.logged_sets ?? [])
+          .slice()
+          .sort((a, b) => a.position - b.position)
+          .map(toSet),
+      })),
   };
 }
 

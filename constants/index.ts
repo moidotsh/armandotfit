@@ -1,5 +1,7 @@
 // constants/index.ts
-// Barrel export for the constants module. The shell barrel is intentionally
+// Barrel export for the constants module.
+export { APP_DISPLAY_NAME } from './displayName';
+// The shell barrel is intentionally
 // slim — domain constants (records, items, tips, etc.) land in consumer
 // repos, not the shell.
 
@@ -55,7 +57,8 @@ export {
   MOBILE_CONTENT_WIDTH_STYLE,
   MOBILE_DIALOG_WIDTH_STYLE,
 } from './styles';
-export type { ContentWidthMode } from './styles';
+export type { ContentWidthMode, DesktopLayoutMode } from './styles';
+export { DESKTOP_LAYOUT_MODE } from './styles';
 
 // App-level layout config (cross-cutting switches for screen composition).
 export { APP_LAYOUT } from './layout';
@@ -85,11 +88,3 @@ export type {
   UpcomingWorkoutSlot,
 } from './workoutSplits';
 
-// Program template + variant slugs. Phase 3 ships the seeded template
-// (arman-fit-commercial-gym-v1) with two variants; the constants are a
-// first-paint fallback for the browse UI.
-export {
-  KNOWN_PROGRAM_TEMPLATE_SLUG,
-  KNOWN_PROGRAM_VARIANTS,
-} from './programTemplates';
-export type { KnownProgramVariant } from './programTemplates';

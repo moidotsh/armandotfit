@@ -1,131 +1,80 @@
 // stores/workoutStore.ts
-// Active workout-session state. Ephemeral — NOT persisted. The draft
-// lives in memory while the user is logging; on completion, the
-// useLogWorkout mutation flushes it to the DB. The 5 SECTION markers
-// below are load-bearing: audit-state (D10) flags any Zustand store
-// missing them.
+// Active session state. Ephemeral — NOT persisted. The draft lives in
+// memory while the user logs; on completion, the useLogSession mutation
+// flushes it to the DB. The 5 SECTION markers below are load-bearing:
+// audit-state (D10) flags any Zustand store missing them.
 
 // =============================================================================
 // SECTION: Loading
-// isSaving — true while the logWorkout mutation is in flight. UI uses
-// this to disable the save button + show a spinner.
+// isSaving — true while the logSession mutation is in flight.
 // =============================================================================
 
 // =============================================================================
 // SECTION: Error
 // sessionError — last in-session error (save failure, set-add failure).
-// Cleared on the next attempt.
 // =============================================================================
 
 // =============================================================================
 // SECTION: Modals
-// (No modal state — workout-session UI doesn't use modals.)
+// (No modal state — session UI doesn't use modals.)
 // =============================================================================
 
 // =============================================================================
 // SECTION: Selection
 // selectedExerciseLocalId — which exercise the user is currently logging.
-// Null when no exercise is selected (rare — usually the first exercise is
-// auto-selected on add).
 // =============================================================================
 
 // =============================================================================
 // SECTION: UI
 // draft — the in-progress session (header + exercises + sets). Reset to
-// null after a successful save.
-// sessionStartedAt — ISO timestamp; drives the live duration counter.
-// isSessionActive — convenience boolean (=== draft !== null).
+// null after a successful save. sessionStartedAt drives the live timer.
 // =============================================================================
 
 import { create } from 'zustand';
 import type { SessionMode } from '../constants';
 import type {
-  ExerciseSetInputDTO,
-  ID,
-  LogWorkoutDTO,
+  LoggedExerciseInputDTO,
+  LogSessionDTO,
   PreferredSplit,
-  SessionWindow,
-  WorkoutExerciseSource,
-  WorkoutSessionExerciseInputDTO,
-  WorkoutTemplateSnapshot,
-  WorkoutVariantSnapshot,
 } from '../shared/types';
-import type { PlanHydrationSlot } from '../services/planLaunchService';
-import { isPresetCompatibleWithExercise } from '../services';
+import type { ExerciseKey, SplitSlot } from '../shared/exercises/splits';
+import { SYSTEM_EXERCISES_BY_SLUG } from '../shared/exercises/data';
 
 /** Client-only draft set (no server id yet). */
 export interface DraftSet {
   localId: string;
-  setNumber: number;
-  targetReps: number | null;
-  actualReps: number | null;
+  position: number;
+  reps: number | null;
   weight: number | null;
-  repRange: string | null;
-  restDurationSeconds: number | null;
-  notes: string | null;
-  completed: boolean;
+  note: string | null;
 }
 
 /** Client-only draft exercise (no server id yet). */
 export interface DraftExercise {
   localId: string;
-  exerciseId: ID;
-  exerciseName: string; // denormalized for UI display without a join
-  orderInWorkout: number;
-  userGrip: string | null;
-  userEquipmentNotes: string | null;
-  targetRepRange: string | null;
-  restTimerSeconds: number;
-  notes: string | null;
+  /** data.ts catalog slug — display lookup key (empty for ad-hoc adds). */
+  exerciseSlug: ExerciseKey | '';
+  /** Coarse identity name — the join key used at save time. */
+  exerciseName: string;
+  position: number;
+  tags: string[];
+  /** Programmed Rx label (e.g. '3 × 8–10') — display only, never saved. */
+  targetRx: string | null;
+  note: string | null;
   sets: DraftSet[];
-  // Phase 4 provenance — nullable; present on plan-hydrated drafts, null on
-  // static-fallback + ad-hoc adds. Threaded into WorkoutSessionExerciseInputDTO
-  // at save time so the persisted row carries its plan/template origin.
-  planSlotId: ID | null;
-  templateSlotId: ID | null;
-  perSide: boolean | null;
-  slotNotes: string | null;
-  source: WorkoutExerciseSource | null;
-  // Phase 5 equipment-setup snapshot — nullable. Cable attachment / station
-  // detail the user picked for this exercise in this session. Threaded into
-  // the DTO at save time so the persisted row carries the frozen setup.
-  attachmentSlug: string | null;
 }
 
 /** Client-only draft session (no server id yet). */
 export interface DraftSession {
   date: string;
+  /** Client-side picker context — not persisted. */
   splitType: PreferredSplit;
+  /** Day-of-split 1..4 — persisted as sessions.split_day. */
   day: number;
-  /**
-   * AM vs PM session, only meaningful for twoADay splits (oneADay is
-   * implicitly AM). Drives the suggested-exercises lookup — Day N's AM
-   * and PM slugs map to different workouts. Not persisted to a column:
-   * AM and PM are separate workout_session rows distinguished by their
-   * exercises; the mode is planning-time context only.
-   */
+  /** AM vs PM — planning-time context for twoADay; not persisted. */
   sessionMode: SessionMode;
-  duration: number;
   notes: string | null;
   exercises: DraftExercise[];
-  // Phase 4 provenance — nullable; present on plan-backed launches, null
-  // on static-fallback. Threaded into LogWorkoutDTO at save time so the
-  // persisted row carries durable plan identity (no FK — history survives
-  // plan deletion via the JSONB snapshots).
-  sessionWindow: SessionWindow | null;
-  startedAt: string | null;
-  planId: ID | null;
-  planTemplateSnapshot: WorkoutTemplateSnapshot | null;
-  planVariantSnapshot: WorkoutVariantSnapshot | null;
-  /**
-   * Discriminator for the active-session screen: 'plan' = hydrated from a
-   * saved user_program_plan via hydrateFromPlan; 'static' = hydrated from
-   * the legacy suggested-split path via hydrateSuggestedExercises. Null
-   * before hydration runs (rare — the screen calls one of the two on
-   * mount). Not threaded into the DTO — derived from per-exercise source
-   * at save time, but stored on the session for UI indicators.
-   */
-  launchSource: WorkoutExerciseSource | null;
 }
 
 interface WorkoutState {
@@ -153,56 +102,21 @@ interface WorkoutState {
     splitType: PreferredSplit;
     day: number;
     sessionMode?: SessionMode;
-    /**
-     * Phase 4 plan context. When present, the draft is marked as a
-     * plan-backed launch — sessionWindow, planId, and the immutable
-     * template/variant snapshots are threaded into the LogWorkoutDTO at
-     * save time. Omit for the static-split fallback path.
-     */
-    plan?: {
-      planId: ID;
-      sessionWindow: SessionWindow;
-      templateSnapshot: WorkoutTemplateSnapshot | null;
-      variantSnapshot: WorkoutVariantSnapshot | null;
-    };
   }) => void;
   addExerciseToDraft: (exercise: {
-    exerciseId: ID;
     exerciseName: string;
-    targetRepRange?: string | null;
-    restTimerSeconds?: number;
-  }) => string; // returns the new draft's localId
+    exerciseSlug?: ExerciseKey | '';
+    targetRx?: string | null;
+  }) => string;
   /**
-   * Bulk-populate the draft from the suggested-exercises source. Creates
-   * each exercise with its default sets pre-populated at the exercise's
-   * default rep range. The caller MUST guard with `draft.exercises.length
-   * === 0` — this method overwrites draft.exercises unconditionally so
-   * that re-runs after a partial manual edit don't double-add. Idempotency
-   * lives at the call site, not here.
+   * Bulk-populate the draft from the program's split slots. Pre-fills
+   * each exercise with its suggested tags + Rx label + an empty set row
+   * per programmed set. The caller MUST guard with
+   * `draft.exercises.length === 0` — this overwrites unconditionally.
    */
-  hydrateSuggestedExercises: (suggested: Array<{
-    exerciseId: ID;
-    exerciseName: string;
-    variation?: string | null;
-    defaultSets: number;
-    defaultReps: [number, number];
-    restTimerSeconds?: number;
-  }>) => void;
-  /**
-   * Phase 4 — bulk-populate the draft from a saved plan's hydration
-   * payload. Mirrors hydrateSuggestedExercises but pulls prescription
-   * from the plan slot snapshot (setsMin/Max, repsMin/Max, perSide,
-   * slotNotes) and threads provenance (planSlotId, templateSlotId,
-   * source='plan') into each draft row. Same overwrite-semantics caveat
-   * as hydrateSuggestedExercises: caller MUST guard with
-   * `draft.exercises.length === 0`.
-   */
-  hydrateFromPlan: (slots: PlanHydrationSlot[]) => void;
+  hydrateFromSplit: (slots: SplitSlot[]) => void;
   removeExerciseFromDraft: (localId: string) => void;
-  addSetToDraft: (
-    exerciseLocalId: string,
-    partial?: Partial<DraftSet>,
-  ) => string; // returns the new set's localId
+  addSetToDraft: (exerciseLocalId: string, partial?: Partial<DraftSet>) => string;
   updateSetInDraft: (
     exerciseLocalId: string,
     setLocalId: string,
@@ -210,53 +124,12 @@ interface WorkoutState {
   ) => void;
   removeSetFromDraft: (exerciseLocalId: string, setLocalId: string) => void;
   setDraftNotes: (notes: string | null) => void;
-  setDraftDuration: (durationMinutes: number) => void;
-  /**
-   * Phase 5 — patch a draft exercise's equipment-setup fields (grip,
-   * attachment, equipment notes). No-op when the draft is null or the
-   * exercise local id doesn't match. Any subset of the patch fields may
-   * be provided; unmentioned fields stay put.
-   */
-  setDraftExerciseSetup: (
-    exerciseLocalId: string,
-    patch: {
-      userGrip?: string | null;
-      attachmentSlug?: string | null;
-      userEquipmentNotes?: string | null;
-    },
-  ) => void;
-  /**
-   * Phase 6 — apply a user-owned equipment-setup preset to a draft
-   * exercise. Runs the field-level compatibility rule
-   * (isPresetCompatibleWithExercise) as the load-bearing correctness
-   * gate; the picker's UX filter is a separate concern and UI bypass
-   * cannot land an incompatible apply.
-   *
-   * Null fields in the preset ("no preference in this dimension") do
-   * NOT overwrite the draft's existing values — only the non-null
-   * fields are written. This mirrors the Phase 6 "preferred values"
-   * contract: a notes-only preset leaves the existing grip/attachment
-   * alone and only writes equipmentNotes.
-   *
-   * Returns `{ ok: true }` on success or `{ ok: false, reason }` when
-   * the preset is incompatible with the active exercise. Callers
-   * surface the reason via a toast.
-   */
-  applyPresetToDraftExercise: (
-    exerciseLocalId: string,
-    preset: {
-      capabilitySlug: string;
-      gripText: string | null;
-      attachmentSlug: string | null;
-      equipmentNotes: string | null;
-    },
-    exerciseContext: {
-      capabilities: ReadonlyArray<string>;
-      gripOptions: ReadonlyArray<string>;
-      attachmentOptions: ReadonlyArray<string>;
-    },
-  ) => { ok: true } | { ok: false; reason: string };
-  toLogWorkoutDTO: () => LogWorkoutDTO | null;
+  /** Toggle a tag on a draft exercise (add if absent, remove if present). */
+  toggleDraftExerciseTag: (exerciseLocalId: string, tag: string) => void;
+  /** Replace a draft exercise's tags wholesale (last-used prefill). */
+  setDraftExerciseTags: (exerciseLocalId: string, tags: string[]) => void;
+  setDraftExerciseNote: (exerciseLocalId: string, note: string | null) => void;
+  toLogSessionDTO: () => LogSessionDTO | null;
   resetSession: () => void;
 }
 
@@ -264,6 +137,12 @@ const newLocalId = (): string =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
     : `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+/** Rx label from a programmed slot: '3 × 8–10' (uses sets max). */
+function rxLabel(slot: SplitSlot): string {
+  const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
+  return `${sets} × ${slot.reps[0]}–${slot.reps[1]}`;
+}
 
 export const useWorkoutStore = create<WorkoutState>((set, get) => ({
   // SECTION: Loading
@@ -286,25 +165,15 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
   sessionStartedAt: null,
   isSessionActive: false,
 
-  startSession: ({ date, splitType, day, sessionMode = 'am', plan }) => {
+  startSession: ({ date, splitType, day, sessionMode = 'am' }) => {
     const startedAt = new Date().toISOString();
     const draft: DraftSession = {
       date: date ?? startedAt,
       splitType,
       day,
       sessionMode,
-      duration: 0,
       notes: null,
       exercises: [],
-      // Phase 4 — provenance defaults. The plan path fills these in; the
-      // static-fallback path leaves them null so the persisted row reads
-      // as a static session (source null on the header + per-exercise).
-      sessionWindow: plan?.sessionWindow ?? null,
-      startedAt,
-      planId: plan?.planId ?? null,
-      planTemplateSnapshot: plan?.templateSnapshot ?? null,
-      planVariantSnapshot: plan?.variantSnapshot ?? null,
-      launchSource: plan ? 'plan' : null,
     };
     set({
       draft,
@@ -321,23 +190,13 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     const localId = newLocalId();
     const next: DraftExercise = {
       localId,
-      exerciseId: exercise.exerciseId,
+      exerciseSlug: exercise.exerciseSlug ?? '',
       exerciseName: exercise.exerciseName,
-      orderInWorkout: draft.exercises.length + 1,
-      userGrip: null,
-      userEquipmentNotes: null,
-      targetRepRange: exercise.targetRepRange ?? null,
-      restTimerSeconds: exercise.restTimerSeconds ?? 60,
-      notes: null,
+      position: draft.exercises.length + 1,
+      tags: [],
+      targetRx: exercise.targetRx ?? null,
+      note: null,
       sets: [],
-      // Ad-hoc adds are never plan-backed — null provenance + null source.
-      planSlotId: null,
-      templateSlotId: null,
-      perSide: null,
-      slotNotes: null,
-      source: null,
-      // Phase 5 — attachment starts unset; user edits via setDraftExerciseSetup.
-      attachmentSlug: null,
     };
     set({
       draft: { ...draft, exercises: [...draft.exercises, next] },
@@ -346,129 +205,47 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     return localId;
   },
 
+  hydrateFromSplit: (slots) => {
+    const draft = get().draft;
+    if (!draft) return;
+    const exercises: DraftExercise[] = slots.map((slot, i) => {
+      const catalog = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
+      const setCount = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
+      return {
+        localId: newLocalId(),
+        exerciseSlug: slot.exercise,
+        exerciseName: catalog?.name ?? slot.exercise,
+        position: i + 1,
+        tags: [...slot.suggestedTags],
+        targetRx: rxLabel(slot),
+        note: null,
+        sets: Array.from({ length: setCount }, () => ({
+          localId: newLocalId(),
+          position: 0, // renumbered below
+          reps: null,
+          weight: null,
+          note: null,
+        })).map((s, idx) => ({ ...s, position: idx + 1 })),
+      };
+    });
+    set({
+      draft: { ...draft, exercises },
+      selectedExerciseLocalId: exercises[0]?.localId ?? null,
+    });
+  },
+
   removeExerciseFromDraft: (localId) => {
     const draft = get().draft;
     if (!draft) return;
     const filtered = draft.exercises
       .filter((e) => e.localId !== localId)
-      .map((e, i) => ({ ...e, orderInWorkout: i + 1 }));
+      .map((e, i) => ({ ...e, position: i + 1 }));
     set({
       draft: { ...draft, exercises: filtered },
       selectedExerciseLocalId:
         get().selectedExerciseLocalId === localId
           ? filtered[0]?.localId ?? null
           : get().selectedExerciseLocalId,
-    });
-  },
-
-  hydrateSuggestedExercises: (suggested) => {
-    const draft = get().draft;
-    if (!draft) return;
-    const exercises: DraftExercise[] = suggested.map((s, i) => {
-      const exerciseLocalId = newLocalId();
-      const repRange = `${s.defaultReps[0]}-${s.defaultReps[1]}`;
-      const sets: DraftSet[] = Array.from({ length: s.defaultSets }, (_, idx) => ({
-        localId: newLocalId(),
-        setNumber: idx + 1,
-        targetReps: null,
-        actualReps: null,
-        weight: null,
-        repRange,
-        restDurationSeconds: null,
-        notes: null,
-        completed: false,
-      }));
-      const next: DraftExercise = {
-        localId: exerciseLocalId,
-        exerciseId: s.exerciseId,
-        exerciseName: s.variation
-          ? `${s.exerciseName} · ${s.variation}`
-          : s.exerciseName,
-        orderInWorkout: i + 1,
-        userGrip: null,
-        userEquipmentNotes: null,
-        targetRepRange: repRange,
-        restTimerSeconds: s.restTimerSeconds ?? 60,
-        notes: null,
-        sets,
-        // Static-fallback path — provenance null, source 'static'.
-        planSlotId: null,
-        templateSlotId: null,
-        perSide: null,
-        slotNotes: null,
-        source: 'static',
-        // Phase 5 — attachment starts unset on the static path.
-        attachmentSlug: null,
-      };
-      return next;
-    });
-    set({
-      draft: {
-        ...draft,
-        exercises,
-        // Mark the session as the static-fallback launch source so the
-        // active-session indicator matches the per-exercise 'static' source.
-        launchSource: draft.launchSource ?? 'static',
-      },
-      selectedExerciseLocalId: exercises[0]?.localId ?? null,
-    });
-  },
-
-  hydrateFromPlan: (slots) => {
-    const draft = get().draft;
-    if (!draft) return;
-    const exercises: DraftExercise[] = slots.map((slot, i) => {
-      const exerciseLocalId = newLocalId();
-      const repRange = `${slot.repsMin}-${slot.repsMax}`;
-      // Plan prescription snapshot freezes setsMin/Max at adoption time.
-      // Use setsMax as the count — the user trims down (vs. suggested
-      // which uses a single defaultSets). If setsMax is 0 (shouldn't
-      // happen — adoption validator rejects), fall back to setsMin.
-      const setCount = slot.setsMax > 0 ? slot.setsMax : slot.setsMin;
-      const sets: DraftSet[] = Array.from({ length: setCount }, (_, idx) => ({
-        localId: newLocalId(),
-        setNumber: idx + 1,
-        targetReps: null,
-        actualReps: null,
-        weight: null,
-        repRange,
-        restDurationSeconds: null,
-        notes: null,
-        completed: false,
-      }));
-      const next: DraftExercise = {
-        localId: exerciseLocalId,
-        exerciseId: slot.exerciseId,
-        exerciseName: slot.variation
-          ? `${slot.exerciseName} · ${slot.variation}`
-          : slot.exerciseName,
-        orderInWorkout: i + 1,
-        userGrip: null,
-        userEquipmentNotes: null,
-        targetRepRange: repRange,
-        restTimerSeconds: 60,
-        notes: null,
-        sets,
-        // Plan-backed — provenance + source frozen from the plan slot.
-        planSlotId: slot.planSlotId,
-        templateSlotId: slot.templateSlotId,
-        perSide: slot.perSide,
-        slotNotes: slot.slotNotes,
-        source: 'plan',
-        // Phase 5 — attachment starts unset on the plan path too. The
-        // plan slot doesn't prescribe an attachment; the user picks at
-        // session time.
-        attachmentSlug: null,
-      };
-      return next;
-    });
-    set({
-      draft: {
-        ...draft,
-        exercises,
-        launchSource: 'plan',
-      },
-      selectedExerciseLocalId: exercises[0]?.localId ?? null,
     });
   },
 
@@ -480,14 +257,10 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     const localId = newLocalId();
     const nextSet: DraftSet = {
       localId,
-      setNumber: exercise.sets.length + 1,
-      targetReps: partial?.targetReps ?? null,
-      actualReps: partial?.actualReps ?? null,
+      position: exercise.sets.length + 1,
+      reps: partial?.reps ?? null,
       weight: partial?.weight ?? null,
-      repRange: partial?.repRange ?? null,
-      restDurationSeconds: partial?.restDurationSeconds ?? null,
-      notes: partial?.notes ?? null,
-      completed: partial?.completed ?? false,
+      note: partial?.note ?? null,
     };
     set({
       draft: {
@@ -534,7 +307,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
                 ...e,
                 sets: e.sets
                   .filter((s) => s.localId !== setLocalId)
-                  .map((s, i) => ({ ...s, setNumber: i + 1 })),
+                  .map((s, i) => ({ ...s, position: i + 1 })),
               }
             : e,
         ),
@@ -548,118 +321,71 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     set({ draft: { ...draft, notes } });
   },
 
-  setDraftDuration: (duration) => {
-    const draft = get().draft;
-    if (!draft) return;
-    set({ draft: { ...draft, duration } });
-  },
-
-  setDraftExerciseSetup: (exerciseLocalId, patch) => {
+  setDraftExerciseTags: (exerciseLocalId, tags) => {
     const draft = get().draft;
     if (!draft) return;
     set({
       draft: {
         ...draft,
         exercises: draft.exercises.map((e) =>
-          e.localId === exerciseLocalId ? { ...e, ...patch } : e,
+          e.localId === exerciseLocalId ? { ...e, tags } : e,
         ),
       },
     });
   },
 
-  applyPresetToDraftExercise: (exerciseLocalId, preset, exerciseContext) => {
+  toggleDraftExerciseTag: (exerciseLocalId, tag) => {
     const draft = get().draft;
-    if (!draft) {
-      return { ok: false, reason: 'No active draft session.' };
-    }
-    // Load-bearing correctness gate — UI bypass cannot land an
-    // incompatible apply. Mirrors the helper used by the picker so
-    // both gates share a single rule.
-    const compatible = isPresetCompatibleWithExercise(
-      preset,
-      exerciseContext.capabilities,
-      exerciseContext.gripOptions,
-      exerciseContext.attachmentOptions,
-    );
-    if (!compatible) {
-      return {
-        ok: false,
-        reason:
-          'This preset is not compatible with the exercise (capability or field-level mismatch).',
-      };
-    }
-    // Build a patch that only includes the preset's non-null fields —
-    // null means "no preference, leave the existing value alone".
-    const patch: {
-      userGrip?: string | null;
-      attachmentSlug?: string | null;
-      userEquipmentNotes?: string | null;
-    } = {};
-    if (preset.gripText !== null) patch.userGrip = preset.gripText;
-    if (preset.attachmentSlug !== null) patch.attachmentSlug = preset.attachmentSlug;
-    if (preset.equipmentNotes !== null) patch.userEquipmentNotes = preset.equipmentNotes;
-    if (Object.keys(patch).length === 0) {
-      // Notes-only preset with all three null — nothing to apply, but
-      // the compatibility gate passed so we count this as success.
-      return { ok: true };
-    }
+    if (!draft) return;
     set({
       draft: {
         ...draft,
         exercises: draft.exercises.map((e) =>
-          e.localId === exerciseLocalId ? { ...e, ...patch } : e,
+          e.localId === exerciseLocalId
+            ? {
+                ...e,
+                tags: e.tags.includes(tag)
+                  ? e.tags.filter((t) => t !== tag)
+                  : [...e.tags, tag],
+              }
+            : e,
         ),
       },
     });
-    return { ok: true };
   },
 
-  toLogWorkoutDTO: (): LogWorkoutDTO | null => {
+  setDraftExerciseNote: (exerciseLocalId, note) => {
+    const draft = get().draft;
+    if (!draft) return;
+    set({
+      draft: {
+        ...draft,
+        exercises: draft.exercises.map((e) =>
+          e.localId === exerciseLocalId ? { ...e, note } : e,
+        ),
+      },
+    });
+  },
+
+  toLogSessionDTO: (): LogSessionDTO | null => {
     const draft = get().draft;
     if (!draft) return null;
-    const exercises: WorkoutSessionExerciseInputDTO[] = draft.exercises.map((e) => ({
-      exerciseId: e.exerciseId,
-      orderInWorkout: e.orderInWorkout,
-      userGrip: e.userGrip,
-      userEquipmentNotes: e.userEquipmentNotes,
-      targetRepRange: e.targetRepRange,
-      restTimerSeconds: e.restTimerSeconds,
-      notes: e.notes,
-      // Phase 4 — per-exercise provenance threaded through to the DTO so
-      // the persisted row carries plan/template identity. Null on ad-hoc
-      // adds; 'static' on static-fallback hydration; 'plan' on plan-backed.
-      planSlotId: e.planSlotId,
-      templateSlotId: e.templateSlotId,
-      perSide: e.perSide,
-      slotNotes: e.slotNotes,
-      source: e.source,
-      // Phase 5 — attachment snapshot threaded through. Null on rows the
-      // user didn't pick an attachment for.
-      attachmentSlug: e.attachmentSlug,
-      sets: e.sets.map((s): ExerciseSetInputDTO => ({
-        setNumber: s.setNumber,
-        targetReps: s.targetReps,
-        actualReps: s.actualReps,
-        weight: s.weight,
-        repRange: s.repRange,
-        restDurationSeconds: s.restDurationSeconds,
-        notes: s.notes,
-      })),
+    // Only sets with both reps + weight filled are logged — a row IS a
+    // completed set, so half-filled rows are dropped, not saved as nulls.
+    const exercises: LoggedExerciseInputDTO[] = draft.exercises.map((e) => ({
+      exerciseName: e.exerciseName,
+      position: e.position,
+      tags: e.tags,
+      note: e.note,
+      sets: e.sets
+        .filter((s): s is DraftSet & { reps: number; weight: number } =>
+          s.reps !== null && s.weight !== null)
+        .map((s) => ({ reps: s.reps, weight: s.weight, note: s.note })),
     }));
     return {
-      date: draft.date,
-      splitType: draft.splitType,
-      day: draft.day,
-      duration: draft.duration,
-      notes: draft.notes,
-      // Phase 4 — session provenance threaded through. Nullable; null on
-      // static-fallback saves so historical rows read cleanly.
-      sessionWindow: draft.sessionWindow,
-      startedAt: draft.startedAt,
-      completedAt: new Date().toISOString(),
-      planId: draft.planId,
-      planTemplateSnapshot: draft.planTemplateSnapshot,
-      planVariantSnapshot: draft.planVariantSnapshot,
+      startedAt: draft.date,
+      splitDay: draft.day,
+      note: draft.notes,
       exercises,
     };
   },

@@ -1,18 +1,16 @@
 // shared/exercises/data.ts
-// Canonical exercise library data (43 system exercises). Ported from
-// archive-v1/data/{workoutDataRefactored,exercise-detail-enhanced}.ts.
-// This file is the TS-side source of truth; the SQL seed migration
-// (supabase/migrations/20260718000002_seed_system_exercises.sql +
-// 20260721000002_seed_catalog_and_programs.sql) mirrors it into the DB
-// so ExerciseRepository.findAll returns the same set.
+// The exercise catalog — the SOLE display source for exercise metadata
+// (muscles, equipment, instructions, default sets/reps for browse
+// hints). The DB exercises table stores only coarse identity (name);
+// this file owns everything shown about an exercise.
 //
-// The original 26 ship in 20260718000002; the 17-exercise substitution
-// pool (migration 20260721000002) is referenced by the alternatives graph
-// and the program-template slots but is NOT placed on a oneADay/twoADay
-// split day — see splits.ts.
+// 42 entries: 26 coarse identities placed on the AM/PM split (their
+// slugs are the ExerciseKey union in splits.ts) + 16 browsable extras
+// that get an exercises row on first log. Identity is by NAME — entries
+// sharing a name are the same exercise row regardless of slug.
 //
-// Adding a new system exercise means landing it here AND in the seed SQL
-// in the same change. The splits.ts ExerciseKey union must also extend.
+// Realization detail (grip, attachment, style) lives in the split's
+// suggestedTags + the user's session tags — never in catalog entries.
 
 import type { ExerciseType, DifficultyLevel } from '../types';
 
@@ -22,7 +20,7 @@ import type { ExerciseType, DifficultyLevel } from '../types';
 
 /**
  * Stable slugs for muscle reference rows. Mirrors the `slug` column added
- * by migration 20260718000002. Used to join exercises to muscles without
+ * catalog entries. Used to join exercises to muscles without
  * relying on UUID round-trips.
  */
 export const MuscleSlug = {
@@ -85,7 +83,6 @@ export const EquipmentSlug = {
   TIBIA_RAISE_MACHINE: 'tibia-raise-machine',
   SHOULDER_PRESS_MACHINE: 'shoulder-press-machine',
   SHRUG_MACHINE: 'shrug-machine',
-  // Added by migration 20260721000002 (catalog extension).
   HACK_SQUAT_MACHINE: 'hack-squat-machine',
   SEATED_CALF_RAISE_MACHINE: 'seated-calf-raise-machine',
   LYING_LEG_CURL_MACHINE: 'lying-leg-curl-machine',
@@ -98,7 +95,7 @@ export type EquipmentSlug = (typeof EquipmentSlug)[keyof typeof EquipmentSlug];
 // ──────────────────────────────────────────────────────────────────────
 // Display-name maps (slug → human string)
 // ──────────────────────────────────────────────────────────────────────
-// Local canonical display strings. Mirrors the seed migration's
+// Local canonical display strings (historically mirrored the seed's
 // display_name columns so attribute chips can render without a DB
 // round-trip on the split-preview / active-session surfaces. If the two
 // drift, the seed SQL is the source of truth — fix it here to match.
@@ -207,9 +204,8 @@ export interface SystemExerciseData {
 export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // ── Chest ──────────────────────────────────────────────────────────
   {
-    slug: 'barbell-press-incline',
-    name: 'Barbell Press',
-    variation: 'Incline',
+    slug: 'incline-barbell-press',
+    name: 'Incline Barbell Press',
     category: 'Chest',
     exerciseType: 'free_weight',
     difficultyLevel: 'advanced',
@@ -225,9 +221,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [6, 8],
   },
   {
-    slug: 'dumbbell-fly-incline',
-    name: 'Dumbbell Fly',
-    variation: 'Incline',
+    slug: 'incline-dumbbell-fly',
+    name: 'Incline Dumbbell Fly',
     category: 'Chest',
     exerciseType: 'free_weight',
     difficultyLevel: 'intermediate',
@@ -243,9 +238,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [12, 15],
   },
   {
-    slug: 'chest-fly-machine',
-    name: 'Chest Fly',
-    variation: 'Machine',
+    slug: 'machine-chest-fly',
+    name: 'Machine Chest Fly',
     category: 'Chest',
     exerciseType: 'machine',
     difficultyLevel: 'beginner',
@@ -261,9 +255,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [12, 15],
   },
   {
-    slug: 'incline-machine-press',
-    name: 'Machine Press',
-    variation: 'Incline',
+    slug: 'machine-incline-press',
+    name: 'Machine Incline Press',
     category: 'Chest',
     exerciseType: 'machine',
     difficultyLevel: 'intermediate',
@@ -281,9 +274,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
 
   // ── Arms ───────────────────────────────────────────────────────────
   {
-    slug: 'overhead-tricep-extension-cable',
-    name: 'Tricep Extension',
-    variation: 'Cable Overhead',
+    slug: 'cable-overhead-tricep-extension',
+    name: 'Cable Overhead Tricep Extension',
     category: 'Arms',
     exerciseType: 'cable',
     difficultyLevel: 'intermediate',
@@ -299,9 +291,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [10, 12],
   },
   {
-    slug: 'tricep-dip-machine',
-    name: 'Tricep Dip',
-    variation: 'Machine',
+    slug: 'machine-dip',
+    name: 'Machine Dip',
     category: 'Arms',
     exerciseType: 'machine',
     difficultyLevel: 'intermediate',
@@ -317,9 +308,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [8, 10],
   },
   {
-    slug: 'dumbbell-curl-seated-incline',
+    slug: 'dumbbell-curl',
     name: 'Dumbbell Curl',
-    variation: 'Seated Incline',
     category: 'Arms',
     exerciseType: 'free_weight',
     difficultyLevel: 'intermediate',
@@ -335,9 +325,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [8, 10],
   },
   {
-    slug: 'cable-rope-curl',
+    slug: 'cable-curl',
     name: 'Cable Curl',
-    variation: 'Rope Grip',
     category: 'Arms',
     exerciseType: 'cable',
     difficultyLevel: 'beginner',
@@ -355,9 +344,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
 
   // ── Shoulders ──────────────────────────────────────────────────────
   {
-    slug: 'egyptian-cable-lateral-raise',
-    name: 'Lateral Raise',
-    variation: 'Egyptian Cable',
+    slug: 'cable-lateral-raise',
+    name: 'Cable Lateral Raise',
     category: 'Shoulders',
     exerciseType: 'cable',
     difficultyLevel: 'intermediate',
@@ -373,9 +361,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [15, 20],
   },
   {
-    slug: 'face-pull-cable-rope-grip',
+    slug: 'face-pull',
     name: 'Face Pull',
-    variation: 'Cable Rope Grip',
     category: 'Shoulders',
     exerciseType: 'cable',
     difficultyLevel: 'intermediate',
@@ -391,9 +378,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [15, 20],
   },
   {
-    slug: 'shoulder-press-machine-or-dumbbell',
+    slug: 'shoulder-press',
     name: 'Shoulder Press',
-    variation: 'Machine or Dumbbell',
     category: 'Shoulders',
     exerciseType: 'machine',
     difficultyLevel: 'intermediate',
@@ -413,8 +399,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'dumbbell-overhead-press',
-    name: 'Overhead Press',
-    variation: 'Dumbbell',
+    name: 'Dumbbell Overhead Press',
     category: 'Shoulders',
     exerciseType: 'free_weight',
     difficultyLevel: 'intermediate',
@@ -432,9 +417,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
 
   // ── Back ───────────────────────────────────────────────────────────
   {
-    slug: 'lower-back-extension-calisthenic',
+    slug: 'back-extension',
     name: 'Back Extension',
-    variation: 'Calisthenic',
     category: 'Back',
     exerciseType: 'calisthenic',
     difficultyLevel: 'beginner',
@@ -450,9 +434,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [10, 12],
   },
   {
-    slug: 'seated-cable-row-v-grip',
-    name: 'Seated Cable Row',
-    variation: 'V Grip',
+    slug: 'cable-row',
+    name: 'Cable Row',
     category: 'Back',
     exerciseType: 'cable',
     difficultyLevel: 'intermediate',
@@ -468,9 +451,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [8, 10],
   },
   {
-    slug: 'lat-pulldown-reverse-grip',
+    slug: 'lat-pulldown',
     name: 'Lat Pulldown',
-    variation: 'Reverse Grip',
     category: 'Back',
     exerciseType: 'cable',
     difficultyLevel: 'intermediate',
@@ -486,9 +468,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [8, 10],
   },
   {
-    slug: 'straight-arm-cable-pulldown',
+    slug: 'straight-arm-pulldown',
     name: 'Straight-Arm Pulldown',
-    variation: 'Cable',
     category: 'Back',
     exerciseType: 'cable',
     difficultyLevel: 'intermediate',
@@ -504,9 +485,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [12, 15],
   },
   {
-    slug: 'machine-shrug-plate-loaded',
+    slug: 'machine-shrug',
     name: 'Machine Shrug',
-    variation: 'Plate-Loaded',
     category: 'Back',
     exerciseType: 'machine',
     difficultyLevel: 'beginner',
@@ -524,7 +504,6 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   {
     slug: 'dumbbell-shrug',
     name: 'Dumbbell Shrug',
-    variation: 'Standing',
     category: 'Back',
     exerciseType: 'free_weight',
     difficultyLevel: 'beginner',
@@ -541,9 +520,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
 
   // ── Upper leg ──────────────────────────────────────────────────────
   {
-    slug: 'leg-press-machine',
+    slug: 'leg-press',
     name: 'Leg Press',
-    variation: 'Machine',
     category: 'UpperLeg',
     exerciseType: 'machine',
     difficultyLevel: 'advanced',
@@ -558,9 +536,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [8, 10],
   },
   {
-    slug: 'bulgarian-split-squat-dumbbell',
+    slug: 'bulgarian-split-squat',
     name: 'Bulgarian Split Squat',
-    variation: 'Dumbbell',
     category: 'UpperLeg',
     exerciseType: 'free_weight',
     difficultyLevel: 'advanced',
@@ -576,9 +553,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [8, 10],
   },
   {
-    slug: 'machine-leg-curl-seated',
+    slug: 'machine-leg-curl',
     name: 'Machine Leg Curl',
-    variation: 'Seated',
     category: 'UpperLeg',
     exerciseType: 'machine',
     difficultyLevel: 'beginner',
@@ -595,9 +571,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
 
   // ── Lower leg ──────────────────────────────────────────────────────
   {
-    slug: 'tibia-raise-machine-or-band',
+    slug: 'tibia-raise',
     name: 'Tibia Raise',
-    variation: 'Machine or Band',
     category: 'LowerLeg',
     exerciseType: 'calisthenic',
     difficultyLevel: 'beginner',
@@ -615,9 +590,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [15, 20],
   },
   {
-    slug: 'calf-raise-leg-press-machine',
-    name: 'Calf Raise',
-    variation: 'Leg Press Machine',
+    slug: 'leg-press-calf-raise',
+    name: 'Leg Press Calf Raise',
     category: 'LowerLeg',
     exerciseType: 'machine',
     difficultyLevel: 'beginner',
@@ -632,9 +606,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [15, 20],
   },
   {
-    slug: 'machine-calf-raise-standing',
-    name: 'Machine Calf Raise',
-    variation: 'Standing',
+    slug: 'standing-machine-calf-raise',
+    name: 'Standing Machine Calf Raise',
     category: 'LowerLeg',
     exerciseType: 'machine',
     difficultyLevel: 'beginner',
@@ -651,9 +624,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
 
   // ── Abs ────────────────────────────────────────────────────────────
   {
-    slug: 'leg-raise-captains-chair',
+    slug: 'leg-raise',
     name: 'Leg Raise',
-    variation: 'Captain\u2019s Chair',
     category: 'Abs',
     exerciseType: 'calisthenic',
     difficultyLevel: 'advanced',
@@ -668,9 +640,8 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [15, 20],
   },
   {
-    slug: 'machine-ab-crunch-eccentric-emphasized',
+    slug: 'machine-ab-crunch',
     name: 'Machine Ab Crunch',
-    variation: 'Eccentric-Emphasized',
     category: 'Abs',
     exerciseType: 'machine',
     difficultyLevel: 'intermediate',
@@ -686,10 +657,9 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
 
   // ── Substitution pool ──────────────────────────────────────────────
-  // Added by migration 20260721000002. These 17 exercises are referenced
-  // by the exercise_alternatives graph and by program-template slots in
-  // the seed; they are NOT placed on a oneADay/twoADay split day. The
-  // defaultSets/defaultReps here mirror the slot prescriptions seeded in
+  // Browsable extras — NOT placed on a oneADay/twoADay split day. They
+  // get an exercises row on first log. The defaultSets/defaultReps are
+  // display hints mirrored from the historical template prescriptions in
   // 20260721000002 Step 14 where the exercise appears in the
   // two-a-day template, and fall back to conventional defaults elsewhere.
   {
@@ -906,24 +876,6 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     equipment: [EquipmentSlug.DUMBBELL],
     defaultSets: 3,
     defaultReps: [8, 10],
-  },
-  {
-    slug: 'reverse-pec-deck',
-    name: 'Reverse Pec Deck',
-    variation: 'Machine',
-    category: 'Shoulders',
-    exerciseType: 'machine',
-    difficultyLevel: 'beginner',
-    description:
-      'Reverse pec deck machine for the rear delts through transverse shoulder abduction.',
-    instructions:
-      'Sit facing the pad. Grip the handles and pull the arms backward in a wide arc, squeezing the rear delts.',
-    tips: 'Keep a slight elbow bend; lead with the elbows; pause at peak contraction.',
-    primaryMuscles: [MuscleSlug.REAR_DELTS],
-    secondaryMuscles: [MuscleSlug.UPPER_BACK, MuscleSlug.RHOMBOIDS],
-    equipment: [EquipmentSlug.PEC_DECK_MACHINE],
-    defaultSets: 3,
-    defaultReps: [15, 20],
   },
   {
     slug: 'walking-lunge-dumbbell',

@@ -8,34 +8,11 @@ export {
   useRecentWorkouts,
   useWorkoutDetail,
 } from './useWorkouts';
-export {
-  useExercises,
-  useExerciseDetail,
-  useFavoriteExercises,
-  useMuscleCategories,
-  useMuscles,
-  useEquipmentTypes,
-  useSuggestedExercises,
-} from './useExercises';
-export { useExerciseSetupOptions } from './useExerciseSetupOptions';
-export { useExerciseCapabilities } from './useExerciseCapabilities';
+export { useExercises, useExerciseDetail } from './useExercises';
 export {
   useDashboardSummary,
   useStreaks,
   useAnalyticsHistory,
 } from './useProgression';
 export { useProfile } from './useProfile';
-export { useEquipmentCapabilities } from './useEquipmentCapabilities';
-export {
-  useUserPlans,
-  useUserPlan,
-  useActivePlanForVariant,
-  useGeneratedPlanPreview,
-  useReplacementCandidates,
-} from './useUserPlans';
-export { useVariantTree } from './useProgramVariant';
-export {
-  usePlanLaunchHydration,
-  type PlanLaunchDraftSlice,
-} from './usePlanLaunchHydration';
-export { useActiveSetupPresets, useAllSetupPresets } from './useSetupPresets';
+export { useLastUsedTags } from './useLastUsedTags';
