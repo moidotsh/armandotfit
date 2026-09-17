@@ -32,6 +32,7 @@ import {
   EditableSetRow,
   TagChips,
   InkRail,
+  SwapGlyph,
 } from '../components/composed';
 import { EmptyState } from '../components/MobilePremium';
 import { useToast } from '../context';
@@ -90,6 +91,8 @@ export default function WorkoutDetailScreen() {
   );
   const setDraftExerciseTags = useWorkoutStore((s) => s.setDraftExerciseTags);
   const swapDraftExercise = useWorkoutStore((s) => s.swapDraftExercise);
+  const [pickerFor, setPickerFor] = useState<string | null>(null);
+  const pickerExercise = draft?.exercises.find((e) => e.localId === pickerFor) ?? null;
 
   const logMutation = useLogWorkout();
   const deleteSessionMutation = useDeleteSession();
@@ -310,7 +313,24 @@ export default function WorkoutDetailScreen() {
             </>
           )}
         </ScrollView>
-        <MobileActionFooter>
+        {pickerExercise ? (
+        <InkRail
+          currentSlug={pickerExercise.exerciseSlug}
+          open={pickerFor !== null}
+          onOpenChange={(next) => {
+            if (!next) setPickerFor(null);
+          }}
+          onSwap={(next) => {
+            swapDraftExercise(pickerExercise.localId, {
+              exerciseName: next.exerciseName,
+              exerciseSlug: next.exerciseSlug,
+            });
+            showToast('success', next.exerciseName);
+          }}
+          testID="swap-picker"
+        />
+      ) : null}
+      <MobileActionFooter>
           <MobilePrimaryButton
             variant="ghost"
             onPress={() => {
@@ -409,9 +429,12 @@ export default function WorkoutDetailScreen() {
               <View key={ex.localId} style={{ marginBottom: 12 }}>
                 <MobileSurface padding={12}>
                   <View style={styles.exerciseHeader}>
-                    <Text style={[styles.exerciseName, { color: colors.text }]}>
-                      {ex.exerciseName}
-                    </Text>
+                    <View style={styles.nameRow}>
+                      <Text style={[styles.exerciseName, { color: colors.text }]}>
+                        {ex.exerciseName}
+                      </Text>
+                      <SwapGlyph onPress={() => setPickerFor(ex.localId)} label={ex.exerciseName} />
+                    </View>
                     <Pressable
                       onPress={() => removeExerciseFromDraft(ex.localId)}
                       accessibilityRole="button"
@@ -428,18 +451,6 @@ export default function WorkoutDetailScreen() {
                       </Text>
                     </Pressable>
                   </View>
-                  <InkRail
-                    currentSlug={ex.exerciseSlug}
-                    onSwap={(next) => {
-                      swapDraftExercise(ex.localId, {
-                        exerciseName: next.exerciseName,
-                        exerciseSlug: next.exerciseSlug,
-                      });
-                      showToast('success', next.exerciseName);
-                    }}
-                   
-                    testID={`ink-rail-${ex.localId}`}
-                  />
                   {ex.targetRx ? (
                     <Text style={[styles.rxLine, { color: colors.textSecondary }]}>
                       Target {ex.targetRx}
@@ -557,7 +568,8 @@ const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
   bodyText: { fontSize: 14, lineHeight: 20 },
   emptyText: { fontSize: 13, lineHeight: 18 },
-  exerciseName: { fontSize: 14, fontWeight: '600', flex: 1 },
+  exerciseName: { fontSize: 14, fontWeight: '600' },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 },
   exerciseHeader: {
     flexDirection: 'row',
     alignItems: 'center',

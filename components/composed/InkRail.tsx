@@ -1,20 +1,12 @@
 // components/composed/InkRail.tsx
-// The substitution scroller — the exercise name IS the picker. A
-// full-width horizontal snap-scroll of bare text: swipe and names
-// crossfade, release and the centered name becomes the exercise. No
-// cards, no borders, no backgrounds — the ink dialect's quietest
-// surface. Adjacent names barely peek at the edges; the scroll itself
-// says "there's more."
+// The substitution picker — invisible until needed. The exercise row
+// stays perfectly clean; one tiny ⇄ glyph sits after the name. Tap it
+// and a no-chrome sheet slides up with ranked alternatives as bare
+// text rows. Tap a name, done. That's the whole interaction.
 
-import React, { useMemo, useRef, useCallback, useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-} from 'react-native';
+import React, { useMemo } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { MobileSheet } from '../MobilePremium';
 import { useAppTheme } from '../../context';
 import { rankAlternatives } from '../../services';
 import { SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
@@ -24,15 +16,25 @@ export interface InkRailProps {
   onSwap: (next: { exerciseName: string; exerciseSlug: string }) => void;
   programmed?: { slug: string; name: string } | null;
   onRestore?: () => void;
+  /** Controlled open state — the parent owns the single sheet. */
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   testID?: string;
 }
 
-interface RailItem {
-  slug: string;
-  name: string;
-  modality?: string;
-  isCurrent: boolean;
-  isProgrammed?: boolean;
+/** The tiny ⇄ glyph rendered after the exercise name. */
+export function SwapGlyph({ onPress, label }: { onPress: () => void; label: string }) {
+  const { colors } = useAppTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Change ${label}`}
+      hitSlop={8}
+    >
+      <Text style={[styles.glyph, { color: colors.textSecondary }]}>⇄</Text>
+    </Pressable>
+  );
 }
 
 export function InkRail({
@@ -40,23 +42,22 @@ export function InkRail({
   onSwap,
   programmed,
   onRestore,
+  open,
+  onOpenChange,
   testID,
 }: InkRailProps) {
   const { colors } = useAppTheme();
-  const [itemWidth, setItemWidth] = useState(0);
-  const committedIndex = useRef(0);
 
-  const items = useMemo((): RailItem[] => {
+  const items = useMemo(() => {
     const current = currentSlug
       ? SYSTEM_EXERCISES_BY_SLUG[currentSlug]
       : undefined;
     if (!current) return [];
 
     const alts = rankAlternatives(current, 6);
-    const list: RailItem[] = [
-      { slug: current.slug, name: current.name, modality: current.modality, isCurrent: true },
+    const list = [
+      { slug: current.slug, name: current.name, modality: current.modality, isCurrent: true, isProgrammed: false },
     ];
-
     if (programmed && programmed.slug !== current.slug) {
       list.push({
         slug: programmed.slug,
@@ -66,7 +67,6 @@ export function InkRail({
         isProgrammed: true,
       });
     }
-
     for (const alt of alts) {
       if (programmed && alt.exercise.slug === programmed.slug) continue;
       list.push({
@@ -74,98 +74,102 @@ export function InkRail({
         name: alt.exercise.name,
         modality: alt.exercise.modality,
         isCurrent: false,
+        isProgrammed: false,
       });
     }
     return list;
   }, [currentSlug, programmed]);
 
-  const onScrollEnd = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      if (itemWidth === 0 || items.length <= 1) return;
-      const idx = Math.round(e.nativeEvent.contentOffset.x / itemWidth);
-      if (idx === committedIndex.current) return;
-      if (idx < 0 || idx >= items.length) return;
-      committedIndex.current = idx;
-
-      const item = items[idx];
-      if (item.isCurrent) return;
-      if (item.isProgrammed && onRestore) {
-        onRestore();
-      } else {
-        onSwap({ exerciseName: item.name, exerciseSlug: item.slug });
-      }
-    },
-    [items, onSwap, onRestore],
-  );
-
-  if (items.length <= 1) return null;
-
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      decelerationRate="fast"
-      onMomentumScrollEnd={onScrollEnd}
-      onLayout={(e) => {
-        setItemWidth(e.nativeEvent.layout.width);
-      }}
-      contentContainerStyle={styles.strip}
+    <MobileSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      showHandle={false}
+      showCloseButton={false}
       testID={testID}
     >
-      {items.map((item) => (
-        <View
-          key={item.slug}
-          style={[styles.item, { width: itemWidth > 0 ? itemWidth : '100%' }]}
-        >
-          <Text
-            numberOfLines={1}
-            style={[
-              styles.name,
-              {
-                color: item.isCurrent
-                  ? colors.text
-                  : colors.textSecondary,
-              },
-              item.isCurrent ? styles.nameActive : styles.nameMuted,
+      <View style={styles.list}>
+        {items.map((item) => (
+          <Pressable
+            key={item.slug}
+            onPress={() => {
+              onOpenChange(false);
+              if (item.isCurrent) return;
+              if (item.isProgrammed && onRestore) {
+                onRestore();
+              } else {
+                onSwap({ exerciseName: item.name, exerciseSlug: item.slug });
+              }
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={
+              item.isCurrent
+                ? item.name
+                : item.isProgrammed
+                  ? `Restore ${item.name}`
+                  : `Swap to ${item.name}`
+            }
+            style={({ pressed }) => [
+              styles.row,
+              { borderBottomColor: colors.border },
+              pressed ? { opacity: 0.6 } : null,
             ]}
           >
-            {item.isProgrammed ? `↺ ${item.name}` : item.name}
-          </Text>
-          <Text
-            style={[styles.modality, { color: colors.textColors.tertiary }]}
-          >
-            {item.isProgrammed ? 'programmed' : item.modality ?? ''}
-          </Text>
-        </View>
-      ))}
-    </ScrollView>
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.name,
+                {
+                  color: item.isCurrent
+                    ? colors.brand
+                    : item.isProgrammed
+                      ? colors.textSecondary
+                      : colors.text,
+                },
+              ]}
+            >
+              {item.isProgrammed ? `↺ ${item.name}` : item.name}
+            </Text>
+            {item.isCurrent ? (
+              <Text style={[styles.meta, { color: colors.brand }]}>current</Text>
+            ) : (
+              <Text style={[styles.meta, { color: colors.textColors.tertiary }]}>
+                {item.isProgrammed ? 'restore' : item.modality ?? ''}
+              </Text>
+            )}
+          </Pressable>
+        ))}
+      </View>
+    </MobileSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  strip: {
-    flexDirection: 'row',
+  glyph: {
+    fontSize: 13,
+    fontWeight: '600',
   },
-  item: {
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingRight: 32,
+  list: {
+    paddingBottom: 16,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 13,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    gap: 12,
   },
   name: {
-    fontSize: 13,
-    lineHeight: 17,
+    fontSize: 15,
+    fontWeight: '600',
+    flex: 1,
   },
-  nameActive: {
-    fontWeight: '700',
-  },
-  nameMuted: {
-    fontWeight: '500',
-  },
-  modality: {
-    fontSize: 9,
+  meta: {
+    fontSize: 10,
     fontWeight: '500',
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginTop: 1,
+    letterSpacing: 0.5,
   },
 });

@@ -18,7 +18,7 @@ import {
   CopyForAiButton,
   type MobileSelectionOption,
 } from '../components/MobilePremium';
-import { InkRail } from '../components/composed';
+import { InkRail, SwapGlyph } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAiPayload, } from '../hooks';
@@ -53,6 +53,7 @@ export default function ProgramScreen() {
   const split = splitChoice as PreferredSplit;
 
   const overrides = useProgramOverrideStore((s) => s.overrides);
+  const [pickerFor, setPickerFor] = useState<string | null>(null);
   const setOverride = useProgramOverrideStore((s) => s.setOverride);
   const clearOverride = useProgramOverrideStore((s) => s.clearOverride);
 
@@ -98,36 +99,18 @@ export default function ProgramScreen() {
       >
         <Text style={[styles.slotIndex, { color: colors.brand }]}>{position}</Text>
         <View style={styles.slotMain}>
-          <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={2}>
-            {name}
-          </Text>
+          <View style={styles.nameRow}>
+            <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={2}>
+              {name}
+            </Text>
+            <SwapGlyph onPress={() => setPickerFor(key)} label={name} />
+          </View>
           <Text style={[styles.slotMeta, { color: colors.textSecondary }]}>
             {rxLabel(slot.sets, slot.reps)}
             {slot.suggestedTags.length > 0 ? ` · ${slot.suggestedTags.join(' · ')}` : ''}
           </Text>
         </View>
       </View>
-      <InkRail
-          currentSlug={slot.exercise}
-          programmed={
-            isOverridden && programmedSlot
-              ? {
-                  slug: programmedSlot.exercise,
-                  name:
-                    SYSTEM_EXERCISES_BY_SLUG[programmedSlot.exercise]?.name ?? '',
-                }
-              : null
-          }
-          onRestore={() => {
-            clearOverride(key);
-            showToast('success', 'Back to the programmed exercise');
-          }}
-          onSwap={(next) => {
-            setOverride(key, { slug: next.exerciseSlug, name: next.exerciseName });
-            showToast('success', next.exerciseName);
-          }}
-        testID={`ink-rail-${key}`}
-      />
     </View>
   );
   }
@@ -205,6 +188,41 @@ export default function ProgramScreen() {
           </MobilePrimaryButton>
         ) : null}
       </ScrollView>
+    {pickerFor ? (() => {
+      const [sp, d, w, pos] = pickerFor.split(':');
+      const slots = resolveSlots(sp as PreferredSplit, Number(d), w as never, overrides);
+      const pickerSlot = slots[Number(pos) - 1] ?? null;
+      const progSlot = getSlotsForDay(sp as PreferredSplit, Number(d), w as never);
+      const prog = progSlot?.[Number(pos) - 1];
+      return pickerSlot ? (
+        <InkRail
+          currentSlug={pickerSlot.exercise}
+          programmed={
+            prog && prog.exercise !== pickerSlot.exercise
+              ? {
+                  slug: prog.exercise,
+                  name: SYSTEM_EXERCISES_BY_SLUG[prog.exercise]?.name ?? '',
+                }
+              : null
+          }
+          open={pickerFor !== null}
+          onOpenChange={(next) => {
+            if (!next) setPickerFor(null);
+          }}
+          onRestore={() => {
+            clearOverride(pickerFor);
+            setPickerFor(null);
+            showToast('success', 'Back to the programmed exercise');
+          }}
+          onSwap={(next) => {
+            setOverride(pickerFor, { slug: next.exerciseSlug, name: next.exerciseName });
+            setPickerFor(null);
+            showToast('success', next.exerciseName);
+          }}
+          testID="program-swap-picker"
+        />
+      ) : null;
+    })() : null}
     </SafeAreaView>
   );
 }
@@ -233,5 +251,6 @@ const styles = StyleSheet.create({
   slotIndex: { fontSize: 13, fontWeight: '700', minWidth: 18 },
   slotMain: { flex: 1, gap: 2 },
   slotName: { fontSize: 14, fontWeight: '600' },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   slotMeta: { fontSize: 12, lineHeight: 16 },
 });
