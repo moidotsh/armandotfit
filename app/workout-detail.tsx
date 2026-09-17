@@ -279,7 +279,7 @@ export default function WorkoutDetailScreen() {
               ) : null}
               {session.exercises.length === 0 ? (
                 <EmptyState
-                  compact
+                 
                   title="No exercises logged"
                   message="This session was saved with a note only."
                   testID="workout-detail-empty"
@@ -437,7 +437,7 @@ export default function WorkoutDetailScreen() {
                       });
                       showToast('success', next.exerciseName);
                     }}
-                    compact
+                   
                     testID={`ink-rail-${ex.localId}`}
                   />
                   {ex.targetRx ? (

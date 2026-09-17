@@ -1,15 +1,13 @@
 // components/composed/InkRail.tsx
-// The substitution rail — a horizontal snap-scrolling strip of type
-// cards under each exercise. Always visible, one tap to swap, no
-// modes, no expansion, no sheets. The current exercise is the inked
-// card; alternatives are ranked by the substitution service ("the lat
-// pulldown is taken → cable row, machine row, pull-up…"). The rail is
-// the ink dialect's answer to the substitution problem: printed cards
-// on a strip, the active one inked, the rest in lighter type.
+// The substitution scroller — the exercise name IS the picker. A
+// full-width horizontal snap-scroll of bare text: swipe and names
+// crossfade, release and the centered name becomes the exercise. No
+// cards, no borders, no backgrounds — the ink dialect's quietest
+// surface. Adjacent names barely peek at the edges; the scroll itself
+// says "there's more."
 
-import React, { useRef, useMemo } from 'react';
+import React, { useMemo, useRef, useCallback, useState } from 'react';
 import {
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,62 +20,45 @@ import { rankAlternatives } from '../../services';
 import { SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
 
 export interface InkRailProps {
-  /** The slug currently in the slot ('' for custom — rail renders empty). */
   currentSlug: string;
-  /** Swap handler — receives the tapped alternative's identity. */
   onSwap: (next: { exerciseName: string; exerciseSlug: string }) => void;
-  /** When a standing override is active: restore the programmed exercise. */
   programmed?: { slug: string; name: string } | null;
   onRestore?: () => void;
-  /** In-session cards use tighter rhythm. */
-  compact?: boolean;
   testID?: string;
 }
 
-const MODALITY_LABEL: Record<string, string> = {
-  floor: 'bodyweight',
-  dumbbell: 'DB',
-  barbell: 'BB',
-  machine: 'machine',
-  cable: 'cable',
-};
+interface RailItem {
+  slug: string;
+  name: string;
+  modality?: string;
+  isCurrent: boolean;
+  isProgrammed?: boolean;
+}
 
 export function InkRail({
   currentSlug,
   onSwap,
   programmed,
   onRestore,
-  compact,
   testID,
 }: InkRailProps) {
   const { colors } = useAppTheme();
-  const scrollRef = useRef<ScrollView>(null);
+  const [itemWidth, setItemWidth] = useState(0);
+  const committedIndex = useRef(0);
 
-  const cards = useMemo(() => {
+  const items = useMemo((): RailItem[] => {
     const current = currentSlug
       ? SYSTEM_EXERCISES_BY_SLUG[currentSlug]
       : undefined;
     if (!current) return [];
 
     const alts = rankAlternatives(current, 6);
-    const items: Array<{
-      slug: string;
-      name: string;
-      modality?: string;
-      isCurrent: boolean;
-      isProgrammed?: boolean;
-    }> = [
-      {
-        slug: current.slug,
-        name: current.name,
-        modality: current.modality,
-        isCurrent: true,
-      },
+    const list: RailItem[] = [
+      { slug: current.slug, name: current.name, modality: current.modality, isCurrent: true },
     ];
 
-    // The programmed exercise appears as a restore card when overridden.
     if (programmed && programmed.slug !== current.slug) {
-      items.push({
+      list.push({
         slug: programmed.slug,
         name: programmed.name,
         modality: SYSTEM_EXERCISES_BY_SLUG[programmed.slug]?.modality,
@@ -88,125 +69,103 @@ export function InkRail({
 
     for (const alt of alts) {
       if (programmed && alt.exercise.slug === programmed.slug) continue;
-      items.push({
+      list.push({
         slug: alt.exercise.slug,
         name: alt.exercise.name,
         modality: alt.exercise.modality,
         isCurrent: false,
       });
     }
-    return items;
+    return list;
   }, [currentSlug, programmed]);
 
-  if (cards.length <= 1) return null;
+  const onScrollEnd = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (itemWidth === 0 || items.length <= 1) return;
+      const idx = Math.round(e.nativeEvent.contentOffset.x / itemWidth);
+      if (idx === committedIndex.current) return;
+      if (idx < 0 || idx >= items.length) return;
+      committedIndex.current = idx;
+
+      const item = items[idx];
+      if (item.isCurrent) return;
+      if (item.isProgrammed && onRestore) {
+        onRestore();
+      } else {
+        onSwap({ exerciseName: item.name, exerciseSlug: item.slug });
+      }
+    },
+    [items, onSwap, onRestore],
+  );
+
+  if (items.length <= 1) return null;
 
   return (
-    <View testID={testID}>
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={CARD_WIDTH + CARD_GAP}
-        decelerationRate="fast"
-        contentContainerStyle={styles.strip}
-      >
-        {cards.map((card) => (
-          <Pressable
-            key={card.slug}
-            onPress={() => {
-              if (card.isCurrent) return;
-              if (card.isProgrammed && onRestore) {
-                onRestore();
-              } else {
-                onSwap({
-                  exerciseName: card.name,
-                  exerciseSlug: card.slug,
-                });
-              }
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={
-              card.isCurrent
-                ? card.name
-                : card.isProgrammed
-                  ? `Restore ${card.name}`
-                  : `Swap to ${card.name}`
-            }
-            style={({ pressed }) => [
-              styles.card,
-              compact ? styles.cardCompact : null,
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      decelerationRate="fast"
+      onMomentumScrollEnd={onScrollEnd}
+      onLayout={(e) => {
+        setItemWidth(e.nativeEvent.layout.width);
+      }}
+      contentContainerStyle={styles.strip}
+      testID={testID}
+    >
+      {items.map((item) => (
+        <View
+          key={item.slug}
+          style={[styles.item, { width: itemWidth > 0 ? itemWidth : '100%' }]}
+        >
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.name,
               {
-                borderColor: card.isCurrent
-                  ? colors.brand
-                  : colors.border,
-                backgroundColor: card.isCurrent
-                  ? `${colors.brand}14`
-                  : 'transparent',
+                color: item.isCurrent
+                  ? colors.text
+                  : colors.textSecondary,
               },
-              pressed ? { opacity: 0.7 } : null,
+              item.isCurrent ? styles.nameActive : styles.nameMuted,
             ]}
           >
-            <Text
-              numberOfLines={compact ? 1 : 2}
-              style={[
-                styles.cardName,
-                compact ? styles.cardNameCompact : null,
-                { color: card.isCurrent ? colors.brand : colors.text },
-              ]}
-            >
-              {card.name}
-            </Text>
-            <Text
-              style={[
-                styles.cardModality,
-                { color: colors.textSecondary },
-              ]}
-            >
-              {card.isProgrammed
-                ? '↺ programmed'
-                : MODALITY_LABEL[card.modality ?? ''] ?? card.modality}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-    </View>
+            {item.isProgrammed ? `↺ ${item.name}` : item.name}
+          </Text>
+          <Text
+            style={[styles.modality, { color: colors.textColors.tertiary }]}
+          >
+            {item.isProgrammed ? 'programmed' : item.modality ?? ''}
+          </Text>
+        </View>
+      ))}
+    </ScrollView>
   );
 }
-
-const CARD_WIDTH = 120;
-const CARD_GAP = 8;
 
 const styles = StyleSheet.create({
   strip: {
     flexDirection: 'row',
-    gap: CARD_GAP,
-    paddingRight: 16,
   },
-  card: {
-    width: CARD_WIDTH,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    gap: 2,
+  item: {
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingRight: 32,
   },
-  cardCompact: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+  name: {
+    fontSize: 13,
+    lineHeight: 17,
   },
-  cardName: {
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 15,
+  nameActive: {
+    fontWeight: '700',
   },
-  cardNameCompact: {
-    fontSize: 11,
-    lineHeight: 13,
+  nameMuted: {
+    fontWeight: '500',
   },
-  cardModality: {
-    fontSize: 9.5,
+  modality: {
+    fontSize: 9,
     fontWeight: '500',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
+    marginTop: 1,
   },
 });
