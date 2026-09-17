@@ -52,8 +52,10 @@ export interface DraftSet {
 /** Client-only draft exercise (no server id yet). */
 export interface DraftExercise {
   localId: string;
-  /** data.ts catalog slug — display lookup key (empty for ad-hoc adds). */
-  exerciseSlug: ExerciseKey | '';
+  /** data.ts catalog slug — display lookup key ('' for ad-hoc adds).
+   *  Plain string: swaps can bring in any catalog entry, not just the
+   *  26 split keys the ExerciseKey union covers. */
+  exerciseSlug: string;
   /** Coarse identity name — the join key used at save time. */
   exerciseName: string;
   position: number;
@@ -105,7 +107,7 @@ interface WorkoutState {
   }) => void;
   addExerciseToDraft: (exercise: {
     exerciseName: string;
-    exerciseSlug?: ExerciseKey | '';
+    exerciseSlug?: string;
     targetRx?: string | null;
   }) => string;
   /**
@@ -128,6 +130,17 @@ interface WorkoutState {
   toggleDraftExerciseTag: (exerciseLocalId: string, tag: string) => void;
   /** Replace a draft exercise's tags wholesale (last-used prefill). */
   setDraftExerciseTags: (exerciseLocalId: string, tags: string[]) => void;
+  /**
+   * Swap a draft exercise's IDENTITY in place (session-time
+   * substitution): position, Rx label, and logged set rows survive;
+   * the name/slug swap and tags reset (the slot's suggested tags were
+   * for the original exercise). Ephemeral by design — the program
+   * itself never changes.
+   */
+  swapDraftExercise: (
+    exerciseLocalId: string,
+    next: { exerciseName: string; exerciseSlug: string },
+  ) => void;
   setDraftExerciseNote: (exerciseLocalId: string, note: string | null) => void;
   toLogSessionDTO: () => LogSessionDTO | null;
   resetSession: () => void;
@@ -319,6 +332,21 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     const draft = get().draft;
     if (!draft) return;
     set({ draft: { ...draft, notes } });
+  },
+
+  swapDraftExercise: (exerciseLocalId, next) => {
+    const draft = get().draft;
+    if (!draft) return;
+    set({
+      draft: {
+        ...draft,
+        exercises: draft.exercises.map((e) =>
+          e.localId === exerciseLocalId
+            ? { ...e, exerciseName: next.exerciseName, exerciseSlug: next.exerciseSlug, tags: [] }
+            : e,
+        ),
+      },
+    });
   },
 
   setDraftExerciseTags: (exerciseLocalId, tags) => {

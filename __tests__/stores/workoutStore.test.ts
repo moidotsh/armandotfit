@@ -66,6 +66,29 @@ describe('workoutStore', () => {
     expect(dto!.exercises[0].sets).toEqual([{ reps: 8, weight: 180, note: null }]);
   });
 
+  it('swapDraftExercise swaps identity in place — position, Rx, and set rows survive; tags reset', () => {
+    useWorkoutStore.getState().startSession({ splitType: 'twoADay', day: 2, sessionMode: 'pm' });
+    useWorkoutStore.getState().hydrateFromSplit(
+      getSlotsForDay('twoADay', 2, 'pm'),
+    );
+    const target = useWorkoutStore.getState().draft!.exercises[0]; // Lat Pulldown
+    useWorkoutStore.getState().addSetToDraft(target.localId, { reps: 8, weight: 100 });
+    useWorkoutStore.getState().toggleDraftExerciseTag(target.localId, 'underhand');
+
+    useWorkoutStore.getState().swapDraftExercise(target.localId, {
+      exerciseName: 'Pull-up',
+      exerciseSlug: 'pull-up-bar',
+    });
+
+    const swapped = useWorkoutStore.getState().draft!.exercises[0];
+    expect(swapped.exerciseName).toBe('Pull-up');
+    expect(swapped.position).toBe(1);
+    expect(swapped.targetRx).toBe(target.targetRx);
+    expect(swapped.sets).toHaveLength(target.sets.length + 1); // hydrated rows survive + the logged set
+    expect(swapped.sets.some((set) => set.reps === 8 && set.weight === 100)).toBe(true);
+    expect(swapped.tags).toEqual([]);
+  });
+
   it('resetSession clears the draft', () => {
     useWorkoutStore.getState().startSession({ splitType: 'oneADay', day: 1 });
     useWorkoutStore.getState().resetSession();

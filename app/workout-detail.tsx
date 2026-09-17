@@ -6,7 +6,7 @@
 // saves via useLogWorkout once, at the end. A logged set is a done set;
 // rows with missing reps/weight are dropped at save time.
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -27,7 +27,7 @@ import {
   CopyForAiButton,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { SetRow, EditableSetRow, TagChips } from '../components/composed';
+import { SetRow, EditableSetRow, TagChips, SwapExerciseSheet } from '../components/composed';
 import { EmptyState } from '../components/MobilePremium';
 import { useToast } from '../context';
 import { useAppTheme } from '../context';
@@ -76,6 +76,9 @@ export default function WorkoutDetailScreen() {
     (s) => s.toggleDraftExerciseTag,
   );
   const setDraftExerciseTags = useWorkoutStore((s) => s.setDraftExerciseTags);
+  const swapDraftExercise = useWorkoutStore((s) => s.swapDraftExercise);
+  const [swapTargetLocalId, setSwapTargetLocalId] = useState<string | null>(null);
+  const swapTarget = draft?.exercises.find((e) => e.localId === swapTargetLocalId) ?? null;
 
   const logMutation = useLogWorkout();
   const deleteSessionMutation = useDeleteSession();
@@ -358,21 +361,33 @@ export default function WorkoutDetailScreen() {
                     <Text style={[styles.exerciseName, { color: colors.text }]}>
                       {ex.exerciseName}
                     </Text>
-                    <Pressable
-                      onPress={() => removeExerciseFromDraft(ex.localId)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Remove ${ex.exerciseName} from session`}
-                      hitSlop={8}
-                    >
-                      <Text
-                        style={[
-                          styles.removeExerciseCta,
-                          { color: colors.textSecondary },
-                        ]}
+                    <View style={styles.headerCtas}>
+                      <Pressable
+                        onPress={() => setSwapTargetLocalId(ex.localId)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Swap ${ex.exerciseName} for an alternative`}
+                        hitSlop={8}
                       >
-                        Remove
-                      </Text>
-                    </Pressable>
+                        <Text style={[styles.removeExerciseCta, { color: colors.brand }]}>
+                          Swap
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => removeExerciseFromDraft(ex.localId)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Remove ${ex.exerciseName} from session`}
+                        hitSlop={8}
+                      >
+                        <Text
+                          style={[
+                            styles.removeExerciseCta,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
+                          Remove
+                        </Text>
+                      </Pressable>
+                    </View>
                   </View>
                   {ex.targetRx ? (
                     <Text style={[styles.rxLine, { color: colors.textSecondary }]}>
@@ -457,6 +472,23 @@ export default function WorkoutDetailScreen() {
           </>
         ) : null}
       </ScrollView>
+      <SwapExerciseSheet
+        exerciseSlug={swapTarget?.exerciseSlug ?? ''}
+        open={swapTargetLocalId !== null}
+        onOpenChange={(next) => {
+          if (!next) setSwapTargetLocalId(null);
+        }}
+        onSwap={(next) => {
+          if (swapTargetLocalId) {
+            swapDraftExercise(swapTargetLocalId, {
+              exerciseName: next.exerciseName,
+              exerciseSlug: next.exerciseSlug,
+            });
+            showToast('success', `Swapped in ${next.exerciseName}`);
+          }
+        }}
+        testID="swap-exercise-sheet"
+      />
       <MobileActionFooter>
         <MobilePrimaryButton variant="ghost" onPress={handleDiscard}>
           Discard
@@ -488,6 +520,7 @@ const styles = StyleSheet.create({
   },
   rxLine: { fontSize: 12, marginTop: 2 },
   tagsLine: { fontSize: 12, lineHeight: 16, marginBottom: 6 },
+  headerCtas: { flexDirection: 'row', gap: 14 },
   removeExerciseCta: { fontSize: 12, fontWeight: '500' },
   addSetCta: { marginTop: 8, alignSelf: 'flex-start' },
   addCta: { fontSize: 14, fontWeight: '600', textAlign: 'center' },

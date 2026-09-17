@@ -98,6 +98,28 @@ PR-exclusion flags, set-level tags for protocols like drop sets, RPE as
 a set column. Each has its trigger written in the blank-slate design
 record this model came from; don't build ahead of them.
 
+## 3.5 Session-time substitution (the swap)
+
+Swapping a slot's exercise at session time — machine occupied, gym lacks
+the equipment, dislike — is a FIRST-CLASS flow, satisfied without the
+deleted alternatives graph:
+
+- **Movement families are display-only metadata** (`family?` on
+  `data.ts` entries — the historical 20 family slugs, reborn as catalog
+  display data). Families never affect identity, history, or
+  progression.
+- **The swap is ephemeral**: `swapDraftExercise` replaces the draft
+  exercise's identity in place (position, Rx label, and logged set rows
+  survive; tags reset — the slot's suggested tags belonged to the
+  original exercise). The program in `splits.ts` never changes.
+- **No alternatives graph, no eligibility engine** — the swap sheet
+  lists same-family catalog entries; the empty state (single-entry
+  families, custom exercises) points at Remove + Add, which can bring
+  in anything, including a typed custom exercise.
+- **Remembered overrides are a promotion candidate**, not built: if the
+  same swap is made repeatedly (≥3 sessions), a per-slot remembered
+  override (client-side preference, program untouched) earns its build.
+
 ## 4. The program's relationship to identity
 
 `splits.ts` references identities by `ExerciseKey` (a slug union) but

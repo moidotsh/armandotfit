@@ -179,6 +179,14 @@ export interface SystemExerciseData {
   name: string;
   /** Display category for the browse UI (Chest / Arms / etc.). */
   category: string;
+  /**
+   * Movement family — the substitution role ('chest-press-incline',
+   * 'vertical-pull', ...). DISPLAY-ONLY: families group the browse UI
+   * and power the in-session swap sheet; they never affect identity,
+   * history, or progression. Entries without a family simply offer no
+   * same-family alternatives.
+   */
+  family?: string;
   /** Sub-label, e.g. 'Incline' or 'Cable'. */
   variation?: string;
   exerciseType: ExerciseType;
@@ -205,6 +213,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // ── Chest ──────────────────────────────────────────────────────────
   {
     slug: 'incline-barbell-press',
+    family: 'chest-press-incline',
     name: 'Incline Barbell Press',
     category: 'Chest',
     exerciseType: 'free_weight',
@@ -222,6 +231,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'incline-dumbbell-fly',
+    family: 'chest-fly',
     name: 'Incline Dumbbell Fly',
     category: 'Chest',
     exerciseType: 'free_weight',
@@ -239,6 +249,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'machine-chest-fly',
+    family: 'chest-fly',
     name: 'Machine Chest Fly',
     category: 'Chest',
     exerciseType: 'machine',
@@ -256,6 +267,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'machine-incline-press',
+    family: 'chest-press-incline',
     name: 'Machine Incline Press',
     category: 'Chest',
     exerciseType: 'machine',
@@ -275,6 +287,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // ── Arms ───────────────────────────────────────────────────────────
   {
     slug: 'cable-overhead-tricep-extension',
+    family: 'elbow-extension-overhead',
     name: 'Cable Overhead Tricep Extension',
     category: 'Arms',
     exerciseType: 'cable',
@@ -292,6 +305,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'machine-dip',
+    family: 'elbow-extension-press',
     name: 'Machine Dip',
     category: 'Arms',
     exerciseType: 'machine',
@@ -309,6 +323,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'dumbbell-curl',
+    family: 'elbow-flexion',
     name: 'Dumbbell Curl',
     category: 'Arms',
     exerciseType: 'free_weight',
@@ -326,6 +341,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'cable-curl',
+    family: 'elbow-flexion',
     name: 'Cable Curl',
     category: 'Arms',
     exerciseType: 'cable',
@@ -345,6 +361,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // ── Shoulders ──────────────────────────────────────────────────────
   {
     slug: 'cable-lateral-raise',
+    family: 'lateral-raise',
     name: 'Cable Lateral Raise',
     category: 'Shoulders',
     exerciseType: 'cable',
@@ -362,6 +379,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'face-pull',
+    family: 'face-pull',
     name: 'Face Pull',
     category: 'Shoulders',
     exerciseType: 'cable',
@@ -379,6 +397,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'shoulder-press',
+    family: 'overhead-press',
     name: 'Shoulder Press',
     category: 'Shoulders',
     exerciseType: 'machine',
@@ -399,6 +418,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'dumbbell-overhead-press',
+    family: 'overhead-press',
     name: 'Dumbbell Overhead Press',
     category: 'Shoulders',
     exerciseType: 'free_weight',
@@ -418,6 +438,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // ── Back ───────────────────────────────────────────────────────────
   {
     slug: 'back-extension',
+    family: 'hip-hinge-spinal-extension',
     name: 'Back Extension',
     category: 'Back',
     exerciseType: 'calisthenic',
@@ -435,6 +456,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'cable-row',
+    family: 'horizontal-pull',
     name: 'Cable Row',
     category: 'Back',
     exerciseType: 'cable',
@@ -452,6 +474,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'lat-pulldown',
+    family: 'vertical-pull',
     name: 'Lat Pulldown',
     category: 'Back',
     exerciseType: 'cable',
@@ -469,6 +492,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'straight-arm-pulldown',
+    family: 'vertical-pull-straight-arm',
     name: 'Straight-Arm Pulldown',
     category: 'Back',
     exerciseType: 'cable',
@@ -486,6 +510,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'machine-shrug',
+    family: 'scapular-elevation',
     name: 'Machine Shrug',
     category: 'Back',
     exerciseType: 'machine',
@@ -503,6 +528,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'dumbbell-shrug',
+    family: 'scapular-elevation',
     name: 'Dumbbell Shrug',
     category: 'Back',
     exerciseType: 'free_weight',
@@ -521,6 +547,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // ── Upper leg ──────────────────────────────────────────────────────
   {
     slug: 'leg-press',
+    family: 'knee-dominant-bilateral',
     name: 'Leg Press',
     category: 'UpperLeg',
     exerciseType: 'machine',
@@ -537,6 +564,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'bulgarian-split-squat',
+    family: 'knee-dominant-unilateral',
     name: 'Bulgarian Split Squat',
     category: 'UpperLeg',
     exerciseType: 'free_weight',
@@ -554,6 +582,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'machine-leg-curl',
+    family: 'knee-flexion',
     name: 'Machine Leg Curl',
     category: 'UpperLeg',
     exerciseType: 'machine',
@@ -572,6 +601,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // ── Lower leg ──────────────────────────────────────────────────────
   {
     slug: 'tibia-raise',
+    family: 'dorsi-flexion',
     name: 'Tibia Raise',
     category: 'LowerLeg',
     exerciseType: 'calisthenic',
@@ -591,6 +621,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'leg-press-calf-raise',
+    family: 'plantar-flexion',
     name: 'Leg Press Calf Raise',
     category: 'LowerLeg',
     exerciseType: 'machine',
@@ -607,6 +638,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'standing-machine-calf-raise',
+    family: 'plantar-flexion',
     name: 'Standing Machine Calf Raise',
     category: 'LowerLeg',
     exerciseType: 'machine',
@@ -625,6 +657,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // ── Abs ────────────────────────────────────────────────────────────
   {
     slug: 'leg-raise',
+    family: 'vertical-leg-raise',
     name: 'Leg Raise',
     category: 'Abs',
     exerciseType: 'calisthenic',
@@ -641,6 +674,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'machine-ab-crunch',
+    family: 'trunk-flexion',
     name: 'Machine Ab Crunch',
     category: 'Abs',
     exerciseType: 'machine',
@@ -664,6 +698,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // two-a-day template, and fall back to conventional defaults elsewhere.
   {
     slug: 'hack-squat-machine',
+    family: 'knee-dominant-bilateral',
     name: 'Hack Squat',
     variation: 'Machine',
     category: 'UpperLeg',
@@ -682,6 +717,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'seated-calf-raise-machine',
+    family: 'plantar-flexion',
     name: 'Seated Calf Raise',
     variation: 'Machine',
     category: 'LowerLeg',
@@ -700,6 +736,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'romanian-deadlift-barbell',
+    family: 'hip-hinge-spinal-extension',
     name: 'Romanian Deadlift',
     variation: 'Barbell',
     category: 'UpperLeg',
@@ -718,6 +755,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'floor-leg-raise',
+    family: 'vertical-leg-raise',
     name: 'Floor Leg Raise',
     variation: 'Lying',
     category: 'Abs',
@@ -736,6 +774,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'incline-dumbbell-press',
+    family: 'chest-press-incline',
     name: 'Incline Dumbbell Press',
     variation: 'Incline',
     category: 'Chest',
@@ -754,6 +793,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'overhead-dumbbell-tricep-extension',
+    family: 'elbow-extension-overhead',
     name: 'Overhead Tricep Extension',
     variation: 'Dumbbell',
     category: 'Arms',
@@ -772,6 +812,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'barbell-overhead-press',
+    family: 'overhead-press',
     name: 'Overhead Press',
     variation: 'Barbell',
     category: 'Shoulders',
@@ -790,6 +831,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'dumbbell-lateral-raise',
+    family: 'lateral-raise',
     name: 'Lateral Raise',
     variation: 'Dumbbell',
     category: 'Shoulders',
@@ -808,6 +850,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'lying-leg-curl-machine',
+    family: 'knee-flexion',
     name: 'Lying Leg Curl',
     variation: 'Machine',
     category: 'UpperLeg',
@@ -826,6 +869,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'pull-up-bar',
+    family: 'vertical-pull',
     name: 'Pull-up',
     variation: 'Bar',
     category: 'Back',
@@ -844,6 +888,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'cable-rope-crunch',
+    family: 'trunk-flexion',
     name: 'Cable Crunch',
     variation: 'Rope',
     category: 'Abs',
@@ -862,6 +907,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'walking-lunge-dumbbell',
+    family: 'knee-dominant-unilateral',
     name: 'Walking Lunge',
     variation: 'Dumbbell',
     category: 'UpperLeg',
@@ -880,6 +926,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'dumbbell-pullover',
+    family: 'vertical-pull-straight-arm',
     name: 'Dumbbell Pullover',
     variation: 'Flat Bench',
     category: 'Back',
@@ -898,6 +945,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'bench-dip',
+    family: 'elbow-extension-press',
     name: 'Bench Dip',
     variation: 'Bodyweight',
     category: 'Arms',
@@ -916,6 +964,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'barbell-row',
+    family: 'horizontal-pull',
     name: 'Barbell Row',
     variation: 'Bent-Over',
     category: 'Back',
