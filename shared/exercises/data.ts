@@ -861,23 +861,6 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [15, 20],
   },
   {
-    slug: 'dumbbell-curl-standing',
-    name: 'Dumbbell Curl',
-    variation: 'Standing',
-    category: 'Arms',
-    exerciseType: 'free_weight',
-    difficultyLevel: 'beginner',
-    description: 'Standing dumbbell curl for the biceps, optionally with supination.',
-    instructions:
-      'Stand with dumbbells at your sides. Curl up toward the shoulders, then lower under control.',
-    tips: 'Pin the elbows to your sides; avoid swinging; full extension at the bottom.',
-    primaryMuscles: [MuscleSlug.BICEPS],
-    secondaryMuscles: [MuscleSlug.FOREARMS],
-    equipment: [EquipmentSlug.DUMBBELL],
-    defaultSets: 3,
-    defaultReps: [8, 10],
-  },
-  {
     slug: 'walking-lunge-dumbbell',
     name: 'Walking Lunge',
     variation: 'Dumbbell',
