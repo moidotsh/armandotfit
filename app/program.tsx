@@ -18,7 +18,7 @@ import {
   CopyForAiButton,
   type MobileSelectionOption,
 } from '../components/MobilePremium';
-import { AlternativesExpansion } from '../components/composed';
+import { InkRail } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAiPayload, } from '../hooks';
@@ -56,7 +56,7 @@ export default function ProgramScreen() {
   const setOverride = useProgramOverrideStore((s) => s.setOverride);
   const clearOverride = useProgramOverrideStore((s) => s.clearOverride);
 
-  const [openKey, setOpenKey] = useState<string | null>(null);
+
 
   const days = split === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
   const overriddenCount = Object.keys(overrides).length;
@@ -83,69 +83,54 @@ export default function ProgramScreen() {
     const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
     const name = entry?.name ?? slot.exercise;
     const isOverridden = key in overrides;
-    const isOpen = openKey === key;
+    const programmedSlot = getSlotsForDay(split, day, window)[position - 1];
 
     return (
       <View key={key}>
-        <Pressable
-          onPress={() => setOpenKey(isOpen ? null : key)}
-          accessibilityRole="button"
-          accessibilityLabel={
-            isOpen ? `Hide alternatives for ${name}` : `Alternatives for ${name}`
-          }
-          style={({ pressed }) => [
-            styles.slotRow,
-            {
-              borderBottomColor: colors.border,
-              borderLeftColor: isOverridden ? colors.brand : 'transparent',
-            },
-            pressed ? { opacity: 0.7 } : null,
-          ]}
-        >
-          <Text style={[styles.slotIndex, { color: colors.brand }]}>{position}</Text>
-          <View style={styles.slotMain}>
-            <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={2}>
-              {name}
-            </Text>
-            <Text style={[styles.slotMeta, { color: colors.textSecondary }]}>
-              {rxLabel(slot.sets, slot.reps)}
-              {slot.suggestedTags.length > 0 ? ` · ${slot.suggestedTags.join(' · ')}` : ''}
-            </Text>
-          </View>
-          <Text style={[styles.chevron, { color: colors.textSecondary }]}>
-            {isOpen ? '⌃' : '⌄'}
+      <View
+        style={[
+          styles.slotRow,
+          {
+            borderBottomColor: colors.border,
+            borderLeftColor: isOverridden ? colors.brand : 'transparent',
+          },
+        ]}
+      >
+        <Text style={[styles.slotIndex, { color: colors.brand }]}>{position}</Text>
+        <View style={styles.slotMain}>
+          <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={2}>
+            {name}
           </Text>
-        </Pressable>
-        {isOpen ? (
-          <AlternativesExpansion
-            currentSlug={slot.exercise}
-            programmed={
-              isOverridden
-                ? {
-                    slug: getSlotsForDay(split, day, window)[position - 1].exercise,
-                    name:
-                      SYSTEM_EXERCISES_BY_SLUG[
-                        getSlotsForDay(split, day, window)[position - 1].exercise
-                      ]?.name ?? '',
-                  }
-                : null
-            }
-            onRestore={() => {
-              clearOverride(key);
-              setOpenKey(null);
-              showToast('success', 'Back to the programmed exercise');
-            }}
-            onSelect={(next) => {
-              setOverride(key, { slug: next.exerciseSlug, name: next.exerciseName });
-              setOpenKey(null);
-              showToast('success', next.exerciseName);
-            }}
-            testID={`alternatives-${key}`}
-          />
-        ) : null}
+          <Text style={[styles.slotMeta, { color: colors.textSecondary }]}>
+            {rxLabel(slot.sets, slot.reps)}
+            {slot.suggestedTags.length > 0 ? ` · ${slot.suggestedTags.join(' · ')}` : ''}
+          </Text>
+        </View>
       </View>
-    );
-  };
+      <InkRail
+          currentSlug={slot.exercise}
+          programmed={
+            isOverridden && programmedSlot
+              ? {
+                  slug: programmedSlot.exercise,
+                  name:
+                    SYSTEM_EXERCISES_BY_SLUG[programmedSlot.exercise]?.name ?? '',
+                }
+              : null
+          }
+          onRestore={() => {
+            clearOverride(key);
+            showToast('success', 'Back to the programmed exercise');
+          }}
+          onSwap={(next) => {
+            setOverride(key, { slug: next.exerciseSlug, name: next.exerciseName });
+            showToast('success', next.exerciseName);
+          }}
+        testID={`ink-rail-${key}`}
+      />
+    </View>
+  );
+  }
 
   return (
     <SafeAreaView
@@ -245,7 +230,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     paddingLeft: 8,
   },
-  chevron: { fontSize: 14, fontWeight: '600' },
   slotIndex: { fontSize: 13, fontWeight: '700', minWidth: 18 },
   slotMain: { flex: 1, gap: 2 },
   slotName: { fontSize: 14, fontWeight: '600' },

@@ -10,6 +10,7 @@ export {
   type AlternativesExpansionProps,
   type AlternativesSelection,
 } from './AlternativesExpansion';
+export { InkRail, type InkRailProps } from './InkRail';
 export { SplitExerciseRow, type SplitExerciseRowProps } from './SplitExerciseRow';
 export { ExerciseListItem, type ExerciseListItemProps } from './ExerciseListItem';
 export { WorkoutSessionItem, type WorkoutSessionItemProps } from './WorkoutSessionItem';

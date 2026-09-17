@@ -31,7 +31,7 @@ import {
   SetRow,
   EditableSetRow,
   TagChips,
-  AlternativesExpansion,
+  InkRail,
 } from '../components/composed';
 import { EmptyState } from '../components/MobilePremium';
 import { useToast } from '../context';
@@ -90,9 +90,6 @@ export default function WorkoutDetailScreen() {
   );
   const setDraftExerciseTags = useWorkoutStore((s) => s.setDraftExerciseTags);
   const swapDraftExercise = useWorkoutStore((s) => s.swapDraftExercise);
-  // Inline substitution: the exercise name is the control — one open
-  // expansion at a time, tap an alternative to stamp it in.
-  const [openAltLocalId, setOpenAltLocalId] = useState<string | null>(null);
 
   const logMutation = useLogWorkout();
   const deleteSessionMutation = useDeleteSession();
@@ -412,30 +409,9 @@ export default function WorkoutDetailScreen() {
               <View key={ex.localId} style={{ marginBottom: 12 }}>
                 <MobileSurface padding={12}>
                   <View style={styles.exerciseHeader}>
-                    <Pressable
-                      onPress={() =>
-                        setOpenAltLocalId(
-                          openAltLocalId === ex.localId ? null : ex.localId,
-                        )
-                      }
-                      accessibilityRole="button"
-                      accessibilityLabel={
-                        openAltLocalId === ex.localId
-                          ? `Hide alternatives for ${ex.exerciseName}`
-                          : `Alternatives for ${ex.exerciseName}`
-                      }
-                      hitSlop={4}
-                      style={styles.exerciseNameWrap}
-                    >
-                      <Text style={[styles.exerciseName, { color: colors.text }]}>
-                        {ex.exerciseName}
-                      </Text>
-                      <Text
-                        style={[styles.chevron, { color: colors.textSecondary }]}
-                      >
-                        {openAltLocalId === ex.localId ? '⌃' : '⌄'}
-                      </Text>
-                    </Pressable>
+                    <Text style={[styles.exerciseName, { color: colors.text }]}>
+                      {ex.exerciseName}
+                    </Text>
                     <Pressable
                       onPress={() => removeExerciseFromDraft(ex.localId)}
                       accessibilityRole="button"
@@ -452,21 +428,18 @@ export default function WorkoutDetailScreen() {
                       </Text>
                     </Pressable>
                   </View>
-                  {openAltLocalId === ex.localId ? (
-                    <AlternativesExpansion
-                      currentSlug={ex.exerciseSlug}
-                      compact
-                      onSelect={(next) => {
-                        swapDraftExercise(ex.localId, {
-                          exerciseName: next.exerciseName,
-                          exerciseSlug: next.exerciseSlug,
-                        });
-                        setOpenAltLocalId(null);
-                        showToast('success', next.exerciseName);
-                      }}
-                      testID={`alternatives-${ex.localId}`}
-                    />
-                  ) : null}
+                  <InkRail
+                    currentSlug={ex.exerciseSlug}
+                    onSwap={(next) => {
+                      swapDraftExercise(ex.localId, {
+                        exerciseName: next.exerciseName,
+                        exerciseSlug: next.exerciseSlug,
+                      });
+                      showToast('success', next.exerciseName);
+                    }}
+                    compact
+                    testID={`ink-rail-${ex.localId}`}
+                  />
                   {ex.targetRx ? (
                     <Text style={[styles.rxLine, { color: colors.textSecondary }]}>
                       Target {ex.targetRx}
@@ -604,13 +577,6 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 22, fontWeight: '700', letterSpacing: -0.3, fontVariant: ['tabular-nums'] },
   statLabel: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 2 },
   tagsLine: { fontSize: 12, lineHeight: 16, marginBottom: 6 },
-  exerciseNameWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flex: 1,
-  },
-  chevron: { fontSize: 14, fontWeight: '600' },
   removeExerciseCta: { fontSize: 12, fontWeight: '500' },
   addSetCta: { marginTop: 8, alignSelf: 'flex-start' },
   addCta: { fontSize: 14, fontWeight: '600', textAlign: 'center' },

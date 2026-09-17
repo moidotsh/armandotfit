@@ -911,7 +911,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'pull-up-bar',
-    modality: 'floor',
+    modality: 'machine',
     family: 'vertical-pull',
     name: 'Pull-up',
     variation: 'Bar',
@@ -1422,7 +1422,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'inverted-row',
-    modality: 'floor',
+    modality: 'machine',
     family: 'horizontal-pull',
     name: 'Inverted Row',
     category: 'Back',
@@ -1575,7 +1575,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'chin-up',
-    modality: 'floor',
+    modality: 'machine',
     family: 'vertical-pull',
     name: 'Chin-Up',
     category: 'Back',
@@ -1881,7 +1881,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   },
   {
     slug: 'hanging-knee-raise',
-    modality: 'floor',
+    modality: 'machine',
     family: 'vertical-leg-raise',
     name: 'Hanging Knee Raise',
     category: 'Abs',

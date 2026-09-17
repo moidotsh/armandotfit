@@ -20,3 +20,4 @@ export {
   formatVolume,
   formatElapsed,
 } from './sessionMath';
+export { rankAlternatives, type RankedAlternative } from './substitutionService';

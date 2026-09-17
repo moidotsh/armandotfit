@@ -50,7 +50,7 @@ describe('movement families (display-only)', () => {
   it('the modality lattice: split families cover multiple modalities', () => {
     // The substitution contract — every split family offers alternatives
     // across equipment modalities. Deliberate exceptions recorded below.
-    const EXCEPTIONS = new Set(['dorsi-flexion']); // genuinely machine/band-only
+    const EXCEPTIONS = new Set(['dorsi-flexion', 'vertical-pull']); // machine/band-only, or bar-station (re-tagged from floor)
     const families = new Set<string>();
     for (const day of TWO_A_DAY_SPLITS) {
       for (const slot of [...day.am, ...day.pm]) {
