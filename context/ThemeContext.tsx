@@ -47,6 +47,8 @@ interface ThemeContextValue {
   fontSize: typeof theme.fontSize;
   borderRadius: typeof theme.borderRadius;
   typography: typeof theme.typography;
+  /** Atmosphere language (`theme.atmosphere`) — mode-invariant. */
+  atmosphere: typeof theme.atmosphere;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -78,8 +80,13 @@ function resolveScheme(pref: ColorSchemePreference): ColorScheme {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const nativeScheme = useNativeColorScheme();
   const [preference, setPreferenceState] = useState<ColorSchemePreference>('system');
+  // Seed from the REAL system scheme, not just RN's useColorScheme — on
+  // web it can boot null (no change event ever fires to correct it), so
+  // a system-dark first visitor would be stuck in light. matchMedia /
+  // Appearance are read directly; the change listener below takes over
+  // from there.
   const [systemScheme, setSystemScheme] = useState<ColorScheme>(
-    nativeScheme === 'dark' ? 'dark' : 'light',
+    () => (nativeScheme === 'dark' ? 'dark' : readSystemScheme()),
   );
   const [hydrated, setHydrated] = useState(false);
 
@@ -151,6 +158,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       fontSize: theme.fontSize,
       borderRadius: theme.borderRadius,
       typography: theme.typography,
+      atmosphere: theme.atmosphere,
     }),
     // `hydrated` is intentionally NOT in deps — once hydrated, the
     // preference state itself drives the value; including `hydrated`

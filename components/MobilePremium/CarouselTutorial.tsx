@@ -67,6 +67,7 @@ const EYEBROW_STYLE = {
   fontWeight: theme.typography.mobileEyebrow.fontWeight as any,
   lineHeight: theme.typography.mobileEyebrow.lineHeight,
   letterSpacing: theme.typography.mobileEyebrow.letterSpacing,
+  fontFamily: theme.typography.mobileEyebrow.fontFamily,
 } as const;
 
 function clamp(v: number, lo: number, hi: number): number {

@@ -39,12 +39,11 @@ const EXCLUDE_DIRS = new Set([
   '__tests__',
   '__mocks__',
   'scripts',
-  'archive-v1',
 ]);
 
 // Path prefixes that should never be walked (treated like EXCLUDE_DIRS
 // but matched as prefix so subdirectories are also excluded).
-const EXCLUDE_PATH_PREFIXES = ['public'];
+const EXCLUDE_PATH_PREFIXES = ['public', 'supabase/functions'];
 
 const SOURCE_EXTS = ['.ts', '.tsx', '.js', '.jsx'];
 

@@ -51,6 +51,14 @@ export interface MobileSheetProps {
   accentColor?: string;
   /** Test ID. */
   testID?: string;
+  /**
+   * Lift the panel's content-width cap (e.g. a comparison matrix that
+   * legitimately needs more than the mobile column). The canonical
+   * policy spread stays the default; this prop overrides its maxWidth
+   * for callers whose content is wider by design. Undefined keeps the
+   * constrained cap.
+   */
+  panelMaxWidth?: number;
   /** Outer style pass-through (applied to the sheet panel). */
   style?: StyleProp<ViewStyle>;
 }
@@ -74,6 +82,7 @@ export function MobileSheet({
   children,
   accentColor,
   testID,
+  panelMaxWidth,
   style,
 }: MobileSheetProps) {
   const { colors } = useAppTheme();
@@ -121,6 +130,7 @@ export function MobileSheet({
             styles.sheet,
             isBottom ? styles.sheetBottom : styles.sheetTop,
             { backgroundColor: colors.card },
+            ...(panelMaxWidth != null ? [{ maxWidth: panelMaxWidth }] : []),
             style,
           ]}
         >

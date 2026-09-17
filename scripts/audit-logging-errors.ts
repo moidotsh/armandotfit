@@ -47,10 +47,14 @@ const EXCLUDE_DIRS = new Set([
   '__tests__',
   '__mocks__',
   'scripts',
-  'archive-v1',
 ]);
 
 const SOURCE_EXTS = ['.ts', '.tsx', '.js', '.jsx'];
+
+// Path prefixes that should never be walked. `supabase/functions` is Deno-side
+// code with different conventions (console.* logging, https:// imports) —
+// client-side audits don't apply.
+const EXCLUDE_PATH_PREFIXES = ['supabase/functions'];
 
 function isExcluded(absPath: string): boolean {
   const rel = relative(ROOT, absPath);
@@ -59,6 +63,9 @@ function isExcluded(absPath: string): boolean {
   if (rel.startsWith('..')) return true;
   const parts = rel.split('/');
   if (parts.some((p) => EXCLUDE_DIRS.has(p))) return true;
+  for (const prefix of EXCLUDE_PATH_PREFIXES) {
+    if (rel === prefix || rel.startsWith(prefix + '/')) return true;
+  }
   return false;
 }
 

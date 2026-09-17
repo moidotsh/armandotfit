@@ -11,6 +11,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { theme } from '../../constants';
 import { useAppTheme } from '../../context';
 import { addDays, parseLocalDate } from '../../utils/date-helpers';
 import type { ActivityGridDatum } from '../../utils/activityGrid';
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
   chip: {
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 999,
+    borderRadius: theme.shapes.tag,
     borderWidth: 1,
     minWidth: 44,
     alignItems: 'center',

@@ -2,12 +2,9 @@
 // Hook to measure actual container dimensions for responsive components.
 // Returns width/height + size category + constrained/short flags.
 //
-// Forked from qep-tracker's hook of the same name. Arqavellum's version drops
-// the `useResponsiveContextOptional` dependency (qep-tracker has a
-// ResponsiveContext that pools ResizeObservers; arqavellum doesn't ship that
-// by default — consumers adding per-screen ResizeObserver pooling re-add
-// it as a customization). Standalone ResizeObserver here is fine for the
-// typical PWA where each MobilePremium screen owns its container.
+// Standalone ResizeObserver (no shared pool). Fine for the typical PWA
+// where each MobilePremium screen owns its container. Consumers adding
+// per-screen ResizeObserver pooling should wrap this hook.
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { isWeb, hasWindow, measureElement } from '../utils';
@@ -19,7 +16,6 @@ import {
   isContainerShort,
 } from '../constants';
 
-// Re-export for backwards compatibility with qep-tracker-flavored imports.
 export type { ContainerMeasurement };
 
 /**

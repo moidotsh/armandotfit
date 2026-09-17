@@ -3,13 +3,19 @@
 // hairline + glow + tint; every color reference resolves to
 // `useAppTheme().colors.*` (the live palette for the active colorScheme).
 // Light is default; dark flips automatically via the ThemeProvider.
+//
+// Width ownership: the surface FILLS its container (`width: '100%'`). The
+// centered mobile column comes from the layer above — the screen body
+// (SB1 / SCREEN_BODY_STYLE) or the portal panel (SB2) — never from the
+// surface itself, so a consumer may widen its scaffold column without
+// every card marooning at the mobile cap.
 
 import React, { useMemo } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { isWeb } from '../../utils';
 import { useAndroidChromeBlurFix } from '../../hooks';
+import { theme } from '../../constants';
 import { useAppTheme } from '../../context';
-import { MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 
 export interface MobileSurfaceProps {
   children?: React.ReactNode;
@@ -25,6 +31,13 @@ export interface MobileSurfaceProps {
   disableBorder?: boolean;
   /** Padding inside the surface. Default 20. */
   padding?: number | string;
+  /**
+   * Style for the content flow view (gap, alignItems, justifyContent, …).
+   * Layout props here order the surface's children; padding and radius have
+   * dedicated props. Historically this style sat on the outer paint view,
+   * where flow props like `gap` silently did nothing (children live in the
+   * inner content view).
+   */
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -33,7 +46,7 @@ export function MobileSurface({
   children,
   accentColor,
   tintStrength = 0.04,
-  borderRadius = 20,
+  borderRadius = theme.shapes.surface,
   disableGradient = false,
   disableGlow = false,
   disableBlur = false,
@@ -109,7 +122,6 @@ export function MobileSurface({
         borderStyle,
         materialStyle,
         { backgroundColor: colors.card },
-        style,
       ]}
     >
       {gradientStyle ? (
@@ -130,7 +142,9 @@ export function MobileSurface({
           ]}
         />
       ) : null}
-      <View style={styles.content}>{children}</View>
+      {/* Consumer style lands here — flow props (gap, alignItems) order the
+          children; the outer view only paints and clips. */}
+      <View style={[styles.content, style]}>{children}</View>
     </View>
   );
 }
@@ -139,7 +153,11 @@ const styles = StyleSheet.create({
   surface: {
     position: 'relative',
     overflow: 'hidden',
-    ...MOBILE_CONTENT_WIDTH_STYLE,
+    // Fill the container. SB2-surface (audit-mobile-content-width.ts)
+    // guards this: the surface must not re-assert the content-width
+    // policy — the column belongs to the scaffold body (SB1) or the
+    // portal panel (SB2-portal), not to every card.
+    width: '100%',
   },
   innerHairline: {
     position: 'absolute',

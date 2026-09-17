@@ -126,7 +126,7 @@ export function MobileSelect({
           <Text
             style={[
               styles.triggerLabel,
-              { color: selected ? colors.text : colors.textColors.tertiary },
+              { color: selected ? colors.text : colors.textSecondary },
             ]}
             numberOfLines={1}
           >
@@ -238,6 +238,9 @@ const styles = StyleSheet.create({
   group: {
     gap: 6,
     ...MOBILE_CONTENT_WIDTH_STYLE,
+    // Fill the slot: the width policy centers cross-axis, which in a row
+    // pair vertically floats the shorter field off the top edge.
+    alignSelf: 'stretch',
     marginBottom: 16,
   },
   triggerWrap: {
@@ -246,7 +249,7 @@ const styles = StyleSheet.create({
   trigger: {
     height: 54,
     borderWidth: 1.5,
-    borderRadius: 14,
+    borderRadius: theme.shapes.control,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -306,7 +309,7 @@ const styles = StyleSheet.create({
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: theme.shapes.tile,
     borderWidth: 1,
     paddingVertical: 14,
     paddingHorizontal: 14,

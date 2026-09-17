@@ -126,7 +126,11 @@ export function MobileHeader({
             ) : null}
 
             {title ? (
-              <Text style={[NAV_TITLE_STYLE, { color: colors.text }]} numberOfLines={1}>
+              <Text
+                style={[NAV_TITLE_STYLE, { color: colors.text }]}
+                numberOfLines={1}
+                accessibilityRole="header"
+              >
                 {title}
               </Text>
             ) : null}

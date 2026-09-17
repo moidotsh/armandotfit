@@ -4,6 +4,8 @@
 // the relative source (`./errors`).
 
 export * from './platform';
+export * from './routeTransition';
+export * from './i18n';
 export * from './logger';
 export * from './errors';
 export * from './api-client';

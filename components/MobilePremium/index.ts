@@ -4,6 +4,23 @@
 // '@components/MobilePremium'`.
 
 export { MobileAtmosphere } from './MobileAtmosphere';
+export { InkPanel } from './InkPanel';
+export { inkSurface, INK_GRAIN_BACKGROUND } from './grain';
+export { RouteCurtain } from './RouteCurtain';
+export { LangToggle } from './LangToggle';
+export type { LangToggleProps } from './LangToggle';
+export {
+  AbsorbProvider,
+  AbsorbTopBar,
+  AbsorbSpacer,
+  AbsorbStation,
+  AbsorbChromeNeutral,
+  useAbsorbFg,
+  useAbsorbBar,
+  compositeWash,
+  dimmedOver,
+} from './MobileAbsorbBar';
+export type { AbsorbFillLayer, AbsorbTone } from './MobileAbsorbBar';
 export type { MobileAtmosphereProps, MobileAtmosphereSurface } from './MobileAtmosphere';
 
 export { MobileSurface } from './MobileSurface';
@@ -39,6 +56,8 @@ export type { MobileStepperProps } from './MobileStepper';
 export { MobileSelect } from './MobileSelect';
 export type { MobileSelectProps, MobileSelectOption } from './MobileSelect';
 
+export { CheckBox } from './CheckBox';
+export type { CheckBoxProps } from './CheckBox';
 export { MobileCheckboxItem } from './MobileCheckboxItem';
 export type { MobileCheckboxItemProps } from './MobileCheckboxItem';
 
@@ -55,6 +74,8 @@ export { FilterChip } from './FilterChip';
 export type { FilterChipProps, FilterChipAccessibilityRole } from './FilterChip';
 
 export { FilterChipGroup } from './FilterChipGroup';
+export { SearchField } from './SearchField';
+export type { SearchFieldProps } from './SearchField';
 export type { FilterChipGroupProps } from './FilterChipGroup';
 
 export { DisclosureRow } from './DisclosureRow';
@@ -82,6 +103,12 @@ export type {
 
 export { OfflineBanner } from './OfflineBanner';
 export type { OfflineBannerProps, OfflineBannerVariant } from './OfflineBanner';
+
+export { MobileAnnouncementBar } from './MobileAnnouncementBar';
+export type { MobileAnnouncementBarProps } from './MobileAnnouncementBar';
+
+export { MobileFootnote } from './MobileFootnote';
+export type { MobileFootnoteProps } from './MobileFootnote';
 
 export { CarouselTutorial } from './CarouselTutorial';
 export type { CarouselTutorialProps, TutorialSlide } from './CarouselTutorial';

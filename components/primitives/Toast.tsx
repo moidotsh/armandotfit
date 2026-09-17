@@ -13,7 +13,7 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { createPortal } from 'react-dom';
 import { CheckCircle2, XCircle, AlertTriangle, Info, X } from '@tamagui/lucide-icons-2';
 import { useToast, type Toast as ToastType, useAppTheme } from '../../context';
-import { MOBILE_DIALOG_WIDTH_STYLE } from '../../constants';
+import { MOBILE_DIALOG_WIDTH_STYLE, theme } from '../../constants';
 
 const ToastIcon = ({ type }: { type: ToastType['type'] }) => {
   const { colors } = useAppTheme();
@@ -37,6 +37,16 @@ interface ToastItemProps {
 function ToastItem({ toast, onDismiss }: ToastItemProps) {
   const { colors } = useAppTheme();
 
+  // The surface language follows `theme.toast.style` (the theme override
+  // point, beside shapes/atmosphere): 'card' is the bordered card with
+  // colored icons; 'chit' is the ink treatment — the announcement
+  // strip's strong tone, floating. The chit inverts like every ink
+  // surface: `colors.text` plate in light, bone in dark; paper
+  // (`colors.background`) is its type.
+  const chit = theme.toast.style === 'chit';
+  const ink = colors.text;
+  const paper = colors.background;
+
   // Type tint at 15% opacity for the LEFT accent stripe only — keeps
   // type identification without compromising readability. The body
   // uses the opaque card surface so the toast stays legible over any
@@ -56,41 +66,37 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
 
   return (
     <View
+      accessibilityLiveRegion="polite"
       style={[
         styles.toast,
-        {
-          backgroundColor: colors.card,
-          borderColor: borderByType[toast.type],
-          borderLeftColor: stripeByType[toast.type],
-          borderLeftWidth: 3,
-          // Opaque card needs an elevation cue so it reads as a floating
-          // surface, not a flat inline card. Uses the same dark slate
-          // base as every other shadow in the design system (matches
-          // mobilePremium.surfaceGlow in constants/theme.ts).
-          boxShadow: '0 4px 12px rgba(15, 23, 42, 0.12)',
-        },
+        chit
+          ? { backgroundColor: ink, borderColor: ink }
+          : {
+              backgroundColor: colors.card,
+              borderColor: borderByType[toast.type],
+              borderLeftColor: stripeByType[toast.type],
+              borderLeftWidth: 3,
+              // Opaque card needs an elevation cue so it reads as a floating
+              // surface, not a flat inline card. Uses the same dark slate
+              // base as every other shadow in the design system (matches
+              // mobilePremium.surfaceGlow in constants/theme.ts).
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.12)',
+            },
       ]}
     >
-      <ToastIcon type={toast.type} />
-      <Text style={[styles.message, { color: colors.text }]} numberOfLines={3}>
+      {chit ? (
+        // The house dot — one 7px status dot carries the semantic tint;
+        // the ink plate has no room for a colored icon triad.
+        <View style={[styles.statusDot, { backgroundColor: colors.status[toast.type] }]} />
+      ) : (
+        <ToastIcon type={toast.type} />
+      )}
+      <Text
+        style={chit ? [styles.messageChit, { color: paper }] : [styles.message, { color: colors.text }]}
+        numberOfLines={3}
+      >
         {toast.message}
       </Text>
-      {toast.action ? (
-        <Pressable
-          onPress={() => {
-            toast.action?.onPress();
-            onDismiss(toast.id);
-          }}
-          hitSlop={8}
-          style={styles.actionButton}
-          accessibilityRole="button"
-          accessibilityLabel={toast.action.label}
-        >
-          <Text style={[styles.actionLabel, { color: colors.brand }]} numberOfLines={1}>
-            {toast.action.label}
-          </Text>
-        </Pressable>
-      ) : null}
       <Pressable
         onPress={() => onDismiss(toast.id)}
         hitSlop={8}
@@ -98,7 +104,7 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
         accessibilityRole="button"
         accessibilityLabel="Dismiss notification"
       >
-        <X size={14} color={colors.textColors.muted} />
+        <X size={14} color={chit ? `${paper}B3` : colors.textColors.muted} />
       </Pressable>
     </View>
   );
@@ -153,7 +159,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    borderRadius: 12,
+    // The shape family token — a consumer retuning `theme.shapes` retunes
+    // the toast with every other control, no component edit.
+    borderRadius: theme.shapes.control,
     borderWidth: 1,
     paddingLeft: 12,
     paddingRight: 8,
@@ -174,24 +182,27 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     lineHeight: 18,
   },
-  actionButton: {
-    // 44pt inclusive tap target per HIG; label sits at the compact
-    // rhythm of the rest of the toast. Shrink-resistant so a long
-    // label truncates instead of pushing the close button off-card.
-    minWidth: 44,
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
+  // The chit's message: a transient system line reads as ledger output —
+  // receipt mono when `fonts.mono` is declared, tabular, one size down.
+  messageChit: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 17,
+    letterSpacing: 0.2,
+    fontFamily: theme.fonts.mono,
+    fontVariant: ['tabular-nums'],
   },
-  actionLabel: {
-    fontSize: 14,
-    fontWeight: '600',
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    flexShrink: 0,
   },
   closeButton: {
     width: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: theme.shapes.control,
     alignItems: 'center',
     justifyContent: 'center',
   },

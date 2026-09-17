@@ -11,10 +11,10 @@
  *         Suppress with `// s12-exempt`.
  *
  *   SE2 — no direct `@react-native-async-storage/async-storage` imports
- *         outside the allowlist (`stores/storage.ts`), and every allowed
+ *         outside the allowlist (`utils/storage.ts`), and every allowed
  *         import must carry a `// asyncstorage-exempt: <reason>` comment
  *         at the import line. Ensures all storage access is funnelled
- *         through the `stores/storage` wrapper.
+ *         through the `utils/storage` wrapper.
  *
  *   S10 — no `Alert.alert(` / `showAlert(` calls whose same or next 5
  *         lines reference `error.message` / `err.message` / `e.message`
@@ -43,10 +43,14 @@ const EXCLUDE_DIRS = new Set([
   '__tests__',
   '__mocks__',
   'scripts',
-  'archive-v1',
 ]);
 
 const SOURCE_EXTS = ['.ts', '.tsx', '.js', '.jsx'];
+
+// Path prefixes that should never be walked. `supabase/functions` is Deno-side
+// code with different conventions (console.* logging, https:// imports) —
+// client-side audits don't apply.
+const EXCLUDE_PATH_PREFIXES = ['supabase/functions'];
 
 function isExcluded(absPath: string): boolean {
   const rel = relative(ROOT, absPath);
@@ -55,6 +59,9 @@ function isExcluded(absPath: string): boolean {
   if (rel.startsWith('..')) return true;
   const parts = rel.split('/');
   if (parts.some((p) => EXCLUDE_DIRS.has(p))) return true;
+  for (const prefix of EXCLUDE_PATH_PREFIXES) {
+    if (rel === prefix || rel.startsWith(prefix + '/')) return true;
+  }
   return false;
 }
 
@@ -170,7 +177,7 @@ function auditS12(files: string[]): Violation[] {
 // Both must pass; failing either is a violation.
 
 const SE2_ALLOWLIST = new Set<string>([
-  'stores/storage.ts',
+  'utils/storage.ts',
 ]);
 
 const SE2_IMPORT_REGEX =
@@ -196,7 +203,7 @@ function auditSE2(files: string[]): Violation[] {
           file: rel,
           line: i + 1,
           message:
-            'direct AsyncStorage import outside allowlist — use stores/storage wrapper, or add to allowlist + `// asyncstorage-exempt: <reason>`',
+            'direct AsyncStorage import outside allowlist — use utils/storage wrapper, or add to allowlist + `// asyncstorage-exempt: <reason>`',
         });
         return;
       }

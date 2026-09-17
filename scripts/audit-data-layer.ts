@@ -5,7 +5,7 @@
  * Data layer integrity audit. Enforces three of the CODE_GARDENING Prompt 2
  * checks that can be statically verified:
  *
- *   S9  — no direct Supabase client usage in app/hooks/components. All
+ *   S9  — no direct Supabase client usage in app/hooks/components/context. All
  *         backend access must go through utils/supabase/**, services/**, or
  *         lib/react-query/**. Flags both `@supabase/supabase-js` imports and
  *         `supabase.{from,auth,rpc,channel,storage,functions}` calls.
@@ -47,10 +47,9 @@ const EXCLUDE_DIRS = new Set([
   '__tests__',
   '__mocks__',
   'scripts',
-  'archive-v1',
 ]);
 
-const EXCLUDE_PATH_PREFIXES: string[] = [];
+const EXCLUDE_PATH_PREFIXES: string[] = ['supabase/functions'];
 
 const SOURCE_EXTS = ['.ts', '.tsx', '.js', '.jsx'];
 
@@ -103,13 +102,13 @@ interface Violation {
   message: string;
 }
 
-// ── S9: direct Supabase usage in app/hooks/components ─────────────────
+// ── S9: direct Supabase usage in app/hooks/components/context ─────────
 //
-// Only these three client-facing trees are scanned. Files in utils/supabase/,
+// Only these four client-facing trees are scanned. Files in utils/supabase/,
 // services/, and lib/react-query/ ARE the service layer — scanning them
 // would be noise.
 
-const S9_SCAN_DIRS = ['app', 'hooks', 'components'];
+const S9_SCAN_DIRS = ['app', 'hooks', 'components', 'context'];
 
 // Allowed folders where supabase usage is permitted.
 const S9_ALLOWED_PREFIXES = [

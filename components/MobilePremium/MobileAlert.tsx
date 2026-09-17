@@ -18,8 +18,9 @@
 import React from 'react';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { AlertCircle, CheckCircle2, Info, AlertTriangle } from '@tamagui/lucide-icons-2';
+import { theme } from '../../constants';
 import { useAppTheme } from '../../context';
-import { MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
+import { hapticNotificationSuccess } from '../../utils/haptics';
 
 export type MobileAlertType = 'error' | 'warning' | 'success' | 'info';
 export type MobileAlertVariant = 'success' | 'warning' | 'error' | 'info';
@@ -75,6 +76,13 @@ export function MobileAlert({
   const resolvedType = type ?? variant ?? 'info';
   const resolvedMessage = message ?? body;
 
+  // Success alerts ARE the celebration path — the confirmation haptic
+  // lives here (once per mount) so every consumer's success signal feels
+  // the same instead of each call site remembering to fire one.
+  React.useEffect(() => {
+    if (resolvedType === 'success') hapticNotificationSuccess();
+  }, [resolvedType]);
+
   const accentMap: Record<MobileAlertType, { accent: string; Icon: typeof Info }> = {
     error: { accent: colors.status.error, Icon: AlertCircle },
     warning: { accent: colors.status.warning, Icon: AlertTriangle },
@@ -124,7 +132,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    ...MOBILE_CONTENT_WIDTH_STYLE,
+    // Inline block: fills its container, like MobileSurface — the column
+    // is owned by the layer above (SB1 screen body / portal panel).
+    width: '100%',
   },
   iconCircle: {
     width: 24,

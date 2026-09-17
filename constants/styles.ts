@@ -106,6 +106,18 @@ export type ContentWidthMode = 'constrained' | 'fluid';
 export const CONTENT_WIDTH_MODE: ContentWidthMode = 'constrained';
 
 /**
+ * Desktop layout policy. 'multi-column' lets screens lift the mobile
+ * body cap (ScreenScaffold's `bodyMaxWidth`) and branch on the desktop
+ * breakpoint for multi-column layouts; 'mobile-only' shelves every
+ * lift — the constrained mobile column is the layout at ANY viewport
+ * width, and the per-screen lift call sites stay in place untouched
+ * for when the desktop layouts come back. Flipping this one constant
+ * re-enables them all.
+ */
+export type DesktopLayoutMode = 'mobile-only' | 'multi-column';
+export const DESKTOP_LAYOUT_MODE: DesktopLayoutMode = 'mobile-only';
+
+/**
  * Constrained-mode cap for full-width mobile content: sheets, anchored
  * panels, full-width form rows, the screen body. Internal to the
  * policy-derived styles below — component code SHOULD reference

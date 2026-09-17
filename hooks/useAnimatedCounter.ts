@@ -2,10 +2,8 @@
 // Animates a displayed numeric string from an old value to a new value
 // using requestAnimationFrame and an ease-out cubic curve.
 //
-// Originally forked from qep-tracker's hook of the same name — that file
-// had no qep-tracker-specific dependencies, so the port is verbatim minus
-// the domain-specific `formatGoalPercent` helper (consumers add their own
-// format functions for their domain).
+// Domain-agnostic: callers pass their own format function (e.g., formatting
+// the displayed numeric string). The hook handles only the animation curve.
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 

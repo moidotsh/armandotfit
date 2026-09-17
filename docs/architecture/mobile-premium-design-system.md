@@ -1,5 +1,7 @@
 # MobilePremium Design System
 
+> **armandotfit consumer note.** This doc is the shell's design-system reference, synced from arqavellum. armandotfit runs it in the **ink dialect** (`DIALECT = 'ink'` in `constants/theme.ts`) with the ember palette — every dialect-relative statement ('the starter default', glass-vs-ink contrasts) reads with ink as the active family. Canonical hex values live in armandotfit's `constants/theme.ts`, not here.
+
 **Canonical location:** `docs/architecture/mobile-premium-design-system.md`
 **Kit source:** `components/MobilePremium/`
 **Shared layer:** `components/premium/shared/` (motion primitives + atmosphere palettes)
@@ -63,7 +65,7 @@ vertical gradient, a hairline inner border, a soft outer glow, and a
 faint accent tint. The surface's color identity comes from the
 atmosphere behind it and the tint — **no thick accent bars.**
 
-One surface per screen. `maxWidth: 420`, `borderRadius: 20`. Centered.
+One surface per screen. `width: '100%'`, `borderRadius: theme.shapes.surface` (16 by default). The surface fills its container — the centered mobile column comes from the screen body (SB1) or the portal panel (SB2), never from the surface itself, so a widened scaffold column widens its cards with it.
 
 #### 2.3.1 Light-mode surface mechanics
 
@@ -117,6 +119,18 @@ The legacy "card with a 3px accent bar on top" pattern is rejected.
 The surface's identity comes from the atmosphere behind it and the
 optional `accentColor` prop on `MobileSurface`, which tints the
 background subtly. No thick painted bars.
+
+#### 2.3.2 Shape tokens (`theme.shapes`)
+
+The kit's corner language is one semantic family in `constants/theme.ts` — the single re-skin point for shape:
+
+- `surface` (16) — cards + section surfaces (`MobileSurface`, `StatCard`, `MobileAlert`)
+- `sheet` (20) — portal panels (calendar/dialog bodies)
+- `control` (14) — inputs, buttons, selects
+- `tile` (12) — selection rows, option containers, thumbnails
+- `tag` (999) — chips, tags, badges (full round)
+
+Primitives read the tokens (not literals), so a consumer flattening the language — e.g. a sleek, monochrome retail feel — overrides the family once (`surface: 8, control: 8, tile: 6, tag: 4`) and every primitive follows. The raw `theme.borderRadius` scale (`small`/`medium`/`large`/`pill`) remains for ad-hoc shapes. Micro-radii (hairlines, grabbers, progress bars, focus rings) stay literal on purpose — they're chrome, not shape language.
 
 ### 2.4 Reduced motion by default
 
@@ -176,26 +190,26 @@ via the path alias, or `../MobilePremium` relatively).
 
 | Component | Purpose |
 |---|---|
-| `MobileAtmosphere` | Drifting color-field background. Takes a `surface` prop (see §5). |
+| `MobileAtmosphere` | Drifting color-field background. Takes a `surface` prop (see §5). Whether the orbs render defaults to the theme's atmosphere style (`theme.atmosphere.style`, §5.1) — `showOrbs` is the explicit per-callsite override. |
 
 ### Surface
 
 | Component | Purpose |
 |---|---|
-| `MobileSurface` | The single material surface. `maxWidth: 420`, `borderRadius: 20`. Optional `accentColor` tints the background. |
+| `MobileSurface` | The single material surface. `width: '100%'`, `borderRadius: theme.shapes.surface` (16) — fills its container (SB2-surface forbids a self-cap). Optional `accentColor` tints the background. |
 
 ### Inputs
 
 | Component | Purpose |
 |---|---|
-| `MobileInput` | Text input with label, optional helper / error slot, and focus ring. |
+| `MobileInput` | Text input with label, optional helper / error slot, and focus ring. Optional `onSubmitEditing` + `returnKeyType` expose the submit path (Enter / return key) for search boxes, chat composers, and quick-add fields. |
 | `MobileSelect` | Bottom-sheet selector with a 54px trigger. Takes a `sheetRenderer` slot for the sheet content. Both the trigger (`group` style) and the portal sheet panel spread `...MOBILE_CONTENT_WIDTH_STYLE` so the sheet stays in the 420pt centered column on any viewport — SB2-portal enforces the spread on the panel by naming convention. |
 
 ### Buttons
 
 | Component | Purpose |
 |---|---|
-| `MobilePrimaryButton` | One per screen. 54px tall. Brand color slot. `loading` swaps the label to "Please wait…". `disabled` dims (no disabled label — surface the reason in `MobileActionFooter.progressText` instead). `variant="ghost"` for low-emphasis secondary actions. |
+| `MobilePrimaryButton` | One per screen. 54px tall (`size="sm"` for a 36pt inline action in rows/headers — hugs content, no column cap). Brand color slot. `loading` swaps the label to "Please wait…". `disabled` swaps the fill for the theme's disabled wash and the label ink for the theme's primary `text` color at 0.85 opacity — the label stays AA-readable at first glance (forms open pristine-and-invalid by design); no disabled label, surface the reason in `MobileActionFooter.progressText` instead. `variant="ghost"` for low-emphasis secondary actions. |
 
 ### Layout
 
@@ -203,9 +217,16 @@ via the path alias, or `../MobilePremium` relatively).
 |---|---|
 | `MobileHeader` | 44px header (36–48 total with safe-area top). Back chevron, optional dismiss, compact title, accent dot. Optional `eyebrow` for context labels above the title. |
 | `MobileHomeHeader` | Home-screen header that puts the brand on the same row as the menu trigger. 36px brand row (brand text + optional `menuButton` + optional `rightAction`) + optional normal-case `subtitle` below. `paddingHorizontal: 20`, `maxWidth: 420`, `alignSelf: 'center'`. Pairs with `MobileNavDrawer` in cutout mode — when the drawer opens, the transparent cap at the top of the drawer panel lets this header's brand + menu button show through at the same position. The `drawerGlassCap` slot hosts a `MobileNavDrawerGlassCap` so the cutout pattern composes without hand-positioning. The `menuButton` slot is a `React.ReactNode`; the kit ships `HamburgerButton` as the standard trigger. |
-| `MobileNavDrawer` | Left-side hamburger drawer. Shell-level mechanism (slide / scrim / items / active-highlight / badge) — branding, items, and footer are consumer-supplied. Two brand-persistence modes via the `brandPersistence` prop: **`'slideout'`** (default) — panel covers full screen height; brand lives in the `header` slot. **`'cutout'`** — panel leaves a transparent cutout at its top so the home header's brand + hamburger stay visible at the same position; the scrim starts at the panel's right edge and runs to the window edge at all heights, and the consumer renders `MobileNavDrawerGlassCap` over the cutout for the continuous-glass read. The `header` prop is ignored in cutout mode. Two anchor modes via the `anchor` prop: **`'window'`** (default) — panel slides from x=0 of the window. **`'column'`** — panel slides from the left edge of the centered 420pt column (computed from `useWindowDimensions`), so the drawer stays attached to centered content on any viewport. Defaults are picked by `APP_LAYOUT.navDrawerBrandPersistence` and `APP_LAYOUT.navDrawerAnchor` in `constants/layout.ts`. Slides with an iOS-sheet curve (`cubic-bezier(0.32, 0.72, 0, 1)`) behind a frosted-glass scrim (web backdrop-blur via `mobilePremium.navScrimBackdropBlur`; Android Chrome falls back to the milder `androidChromeSurfaceBlur` at higher opacity because it renders `saturate()` poorly). The panel carries a right-edge depth shadow (`mobilePremium.navPanelShadow`) placed on the panel — not the scrim — so its upward bleed lands off-screen instead of darkening the brand cutout. Active row gets a 3px brand strip on the left edge + brand-tinted background + bolder label; inactive rows pick up a hover background on pointer devices. `prefers-reduced-motion` collapses the slide to instant. |
-| `HamburgerButton` | The standard `MobileHomeHeader.menuButton` trigger. Swaps Menu↔X with a coordinated rotate+crossfade (200ms) driven by `isOpen`, so the swap reads as a mechanical transformation coordinated with the drawer's slide. Pairs with the cutout mode, where the trigger stays at the same x/y while the drawer slides in. |
+| `MobileNavDrawer` | Left-side hamburger drawer. Shell-level mechanism (slide / scrim / items / active-highlight / badge) — branding, items, and footer are consumer-supplied. An optional `topContent` element renders ABOVE the item list (just under the header / cutout area, outside the items' scroll) for consumer-supplied account identity or context strips. Two brand-persistence modes via the `brandPersistence` prop: **`'slideout'`** (default) — panel covers full screen height; brand lives in the `header` slot. **`'cutout'`** — panel leaves a transparent cutout at its top so the home header's brand + hamburger stay visible at the same position; the scrim starts at the panel's right edge and runs to the window edge at all heights, and the consumer renders `MobileNavDrawerGlassCap` over the cutout for the continuous-glass read. The `header` prop is ignored in cutout mode. Two anchor modes via the `anchor` prop: **`'window'`** (default) — panel slides from x=0 of the window. **`'column'`** — panel slides from the left edge of the centered 420pt column (computed from `useWindowDimensions`), so the drawer stays attached to centered content on any viewport. Defaults are picked by `APP_LAYOUT.navDrawerBrandPersistence` and `APP_LAYOUT.navDrawerAnchor` in `constants/layout.ts`. Slides with an iOS-sheet curve (`cubic-bezier(0.32, 0.72, 0, 1)`) behind a frosted-glass scrim (web backdrop-blur via `mobilePremium.navScrimBackdropBlur`; Android Chrome falls back to the milder `androidChromeSurfaceBlur` at higher opacity because it renders `saturate()` poorly). The panel carries a right-edge depth shadow (`mobilePremium.navPanelShadow`) placed on the panel — not the scrim — so its upward bleed lands off-screen instead of darkening the brand cutout. Active row gets a 3px brand strip on the left edge + brand-tinted background + bolder label; inactive rows pick up a hover background on pointer devices. `prefers-reduced-motion` collapses the slide to instant. The `atmosphereShowOrbs` prop toggles the body atmosphere's drifting orbs; it defaults to the theme's atmosphere style (`theme.atmosphere.style`, §5.1) — pass an explicit boolean only to override the theme for this drawer alone. |
+| `InkPanel` | Inverted-surface primitive — text-color plate + print grain + optional brand edge rule. Composed by `MobileNavDrawer` when `theme.drawer.style` is `ink`; available to any consumer surface that speaks the same language. The grain itself is exported (`inkSurface(background)` / `INK_GRAIN_BACKGROUND` from the kit barrel) for consumer-built ink surfaces that are not a whole panel — spread `inkSurface(colors.text)` on a View and the surface carries the same tooth. |
+| `MobileAbsorbBar` (`AbsorbProvider` / `AbsorbTopBar` / `AbsorbSpacer` / `AbsorbStation` / `AbsorbChromeNeutral`) | The absorbing top bar — a paper strip pinned over the scroll whose colour rises like dye as strong surfaces (STATIONS) cross it: damped fill + live SVG-wave meniscus (born flat, growing with the fill), chrome flipping to its readable companion (a host renders chrome three times — neutral base + two inert contrast copies, each masked to one of the meniscus's two counter-drifting waves: one CSS animation drives one `mask-position-x`, so no single mask tracks both curves, and the copies' union is the true visible crest — a single-wave mask lets the base copy show through wherever the second wave crests above the first; each mask's solid field repeats in x so the drift can never bare the clip's right edge, each mask band anchors where its own wave's squashed box sits (a clip-top anchor floated the shorter wave's mask above its crest — the fill's colour riding the humps over opaque chrome), and the engine seeks each clip's running animation to its strip's live phase at engagement and every station handoff (animations start at mount and the strips' mounts never coincide with the clips', so an unaligned mask is x-shifted off its crest); `MobileHomeHeader.textColorOverride` is the single-copy seam and the showcase's `AbsorbBarDemo` hosts the full pattern), docking corners squaring as cards submerge. Stations register the colour a card READS (`compositeWash`/`dimmedOver` flatten alpha tints and dimmed cards). Web-only motion (rAF engine, never re-rendering React on scroll); reduced motion stills the waves; jsdom/native collapse to the static strip. The showcase demos a scroll container with wash/ink/brand/paper stations. |
+| `RouteCurtain` | The ink dialect's navigation transition (§5.5) — root-mounted, driven by `theme.transition.style = 'curtain'` through `utils/routeTransition.ts`'s phase machine + NavigationHelper's `withRouteCurtain` seam. Not a per-screen primitive: it mounts once above the stack and never renders inside a scaffold, so it has no showcase section (the visual source of truth is declaring the dialect and navigating). Unmounted entirely under the 'none' default; `data-testid="route-curtain"` for walkers. |
 | `MobileNavDrawerGlassCap` | Glass cap rendered by the consumer's home header (via `MobileHomeHeader.drawerGlassCap`) over the nav drawer's brand cutout. Crossfades in AND slides with the panel using the same 300ms iOS-sheet easing so the cutout reads as one continuous drawer surface. Replicates the scrim treatment (backgroundDeep at scrim alpha + backdrop blur + right hairline; Android Chrome fallback included). `anchor`/`columnWidth`/`width`/`height` props must match the drawer's so the cap lands exactly over the panel's cutout. `pointerEvents: 'none'` — taps reach the hamburger/X behind it. |
+| `MobileAnnouncementBar` | Owner-authored announcement strip — the one-line broadcast surface ("Pickup Friday 17–19h", "Drop 004 opens Friday"). Purely presentational like `OfflineBanner`: the consumer owns the message, mount/unmount, and any dismissed-once persistence. Optional inline action (`actionLabel` + `onAction`) and optional dismiss control (`onDismiss` — the X only renders when the handler is provided; `dismissA11yLabel` localizes it). `tone="strong"` inverts the strip onto the mode's ink — for the one fact that outranks everything else on the page; caller owns when it applies. `accessibilityLiveRegion="polite"`. The message picks up `fonts.mono` when a mono face is declared. |
+| `MobileFootnote` | Page-tail colophon: hairline top rule, centered muted small-print `lines`, optional `children` slot above them for link rows (policies, contact, hours). Purely presentational — the quiet close of a surface. |
+| `LangToggle` | The i18n seam's one-gesture pill (see CLAUDE.md invariant 14): a segmented two-language chip reading/writing the persisted lang store — the active language inverted (ink segment, paper type), tablist semantics, `labels` overrides for consumers whose chrome says more than a code, mono face when one is declared. One tap re-renders every mounted catalog surface in place. |
+| `HamburgerButton` | The standard `MobileHomeHeader.menuButton` trigger. Swaps Menu↔X with a coordinated rotate+crossfade (200ms) driven by `isOpen`, so the swap reads as a mechanical transformation coordinated with the drawer's slide. Pairs with the cutout mode, where the trigger stays at the same x/y while the drawer slides in. |
+| `AppShellHeader` (composed) | The one-drawer pattern pre-assembled in `components/composed/`: `MobileHomeHeader` (brand from `APP_DISPLAY_NAME`) + `HamburgerButton` + `MobileNavDrawerGlassCap` + `MobileNavDrawer` in the `APP_LAYOUT` persistence/anchor defaults, cap and drawer both locked to `MOBILE_CONTENT_MAX_WIDTH`. Consumers pass `items` (navigateTo* helpers from the navigation barrel) plus optional `subtitle` / `rightAction` / `footer` / `atmosphere` slots — no hand-wiring of the cap/anchor/columnWidth triple. Belongs to the home surface only; child screens carry the `> [title]` `MobileHeader`. |
 | `MobileActionFooter` | Sticky bottom action area. Holds the primary + optional secondary. 76–92px total with safe-area bottom. |
 | `MobileStepRail` | 2px horizontal progress rail for multi-step flows. Sits between header and content. |
 | `MobileSectionEyebrow` | Small uppercase label that leads a section inside a `MobileSurface`. Replaces a card-title row without spending vertical budget on a full title chrome. |
@@ -216,6 +237,7 @@ via the path alias, or `../MobilePremium` relatively).
 | Component | Purpose |
 |---|---|
 | `MobileAlert` | Inline alert with a 24px icon circle. `variant: 'success' \| 'warning' \| 'error' \| 'info'`. |
+| `Toast` (primitives) | The transient-message surface (`ToastContainer`, mounted by the shell). Two surface languages read `theme.toast.style` (§5.3): `'card'` — bordered card, colored icon, left stripe (the glass default); `'chit'` — the ink plate with paper type, one 7px status dot, receipt-mono message when `fonts.mono` is declared, flat air. Items carry `accessibilityLiveRegion="polite"`; the card radius reads `theme.shapes.control`. |
 | `EmptyState` | The canonical empty-state primitive. Domain-neutral: consumer supplies title, optional message, optional icon, and optional action. The action renders through `MobilePrimaryButton` so the tap target + variant language (primary/secondary/ghost) match the rest of the kit — pick the variant by context (primary when EmptyState is the screen's main content, secondary/ghost when nested). Compact mode trims the vertical rhythm for nested use. No preset copy, no icon library, no variant codes — those stay consumer-side. |
 | `OfflineBanner` | Pinned connectivity / sync banner. Three variants carry distinct semantics: `'offline'` (error red — device is offline; optional pending count), `'syncing'` (brand — online and flushing pending work), `'sync-failed'` (warning amber — a sync attempt failed; pair with `actionLabel="Retry"` + `onAction`). Purely presentational: the consumer owns network state, queue state, and mount/unmount. No store subscription, no polling, no auto-hide. Respects its parent's layout — does not pin itself to the screen. Uses `accessibilityLiveRegion="polite"` so screen readers announce state changes; the `status` role is omitted because RN's `AccessibilityRole` enum does not include it. |
 | `StatCard` | Small card showing one labeled metric — `label`, large `value`, optional `subtitle`, optional `icon`, optional `accentColor`. Three variants: `'plain'` (default card surface), `'accent'` (brand-tinted background), `'outline'` (hairline border). Three sizes: `'sm'`, `'md'`, `'lg'` (control padding + value font size). Optional `onPress` turns the card into a Pressable with `role="button"`; without `onPress` it is a non-interactive View with `role="text"`. Press feedback via `usePressedStyle` (scale + opacity; opacity-only under reduced motion). |
@@ -239,12 +261,14 @@ via the path alias, or `../MobilePremium` relatively).
 
 | Component | Purpose |
 |---|---|
-| `MobileCheckboxItem` | Premium checkbox row with animated check. |
+| `CheckBox` | The bare checkbox indicator (animated check) for rich rows that own their press target. |
+| `MobileCheckboxItem` | Premium checkbox row with animated check (composes `CheckBox`). |
 | `MobileSelectionList` | Radio / multi-select row list for wizard steps. Accent tint on selection, hairline border, 44px min tap target. |
 | `MobileStepper` | Large-value +/- stepper. |
 | `SegmentedControl` | Pill-track segmented control with two explicit a11y variants. `variant="selection"` — radiogroup/radio for mutually-exclusive value pickers (period, scope, density). `variant="tabs"` — tablist/tab for content-region switching. The two variants share visual treatment but carry distinct a11y contracts — pick by content semantics, not by visual preference. The `tabs` variant does NOT wire `aria-controls` via a shell-managed id; the consumer owns matching panel composition and platform-specific panel association end-to-end (the shell ships the tablist + tab semantics only). `chromeless` drops the track fill for inline affordances inside a hero surface. No slide animation in v1 — the active state changes instantly. |
 | `FilterChip` | Interactive pill primitive — one chip with label, optional icon, selected state, tap handler. Accessibility state MUST match the chosen role: `accessibilityRole="button"` (default) → `accessibilityState.selected`; `"radio"` or `"checkbox"` → `accessibilityState.checked`. The component maps the role to the correct state key; the consumer picks the role by the semantic use case (single-select cluster → radio; multi-select cluster → checkbox; standalone toggle → button). Never set both `selected` and `checked`. |
-| `FilterChipGroup` | Purely presentational flex container for FilterChip children. Does NOT render a ScrollView, does NOT own horizontal scroll when `wrap: false`, does NOT own sticky placement, does NOT carry an a11y role of its own. Consumers that need horizontal overflow wrap the group in their own `<ScrollView horizontal>`; consumers that need sticky placement use `stickyHeaderIndices` on native or `position: sticky` on web. Strict scope: a shared primitive that tried to own any of these would either lie about its contract or grow an unbounded surface. |
+| `FilterChipGroup` | Layout container for FilterChip children. **One row is the default** (`oneRow`, default true): chips share a single row that scrolls horizontally when it overflows — a chip row wrapping onto a second line breaks the vertical rhythm of everything stacked beneath it. `oneRow={false}` restores flex-wrap for genuinely wrapping clusters. The group still owns no sticky placement, no search slot, no filters state, and no a11y role of its own; semantic grouping (e.g. `role="radiogroup"`) belongs to the consumer's wrapper. |
+| `SearchField` | Compact pill search input on the FilterChip geometry — same 36px height, pill radius, 13px type, card/border treatment, plus the kit's animated focus ring, a leading search icon, and a clear button. The counterpart to a chip row: revealed by a chip or shown inline, it reads as one family with the chips beside it. The consumer owns the query state and what searching does. |
 | `DisclosureRow` | Expand/collapse row with consumer-supplied header + content. v1 motion contract: **instant content + rotating chevron** — content appears/disappears with no height animation; chevron rotates 180° on open over 200ms via `Animated.timing`, snapping under `prefers-reduced-motion`. Height animation is a Batch B concern gated on a Reanimated adoption decision plus a measurement helper that doesn't exist today. Header wrapper carries `role="button"` + `accessibilityState={{ expanded }}`; chevron is decorative (`accessibilityElementsHidden`). Supports controlled (`open` + `onOpenChange`) and uncontrolled (`defaultOpen`) usage. |
 | `DatePickerField` | Single-date picker. Public API carries dates as **YYYY-MM-DD strings end-to-end** — no `Date` object crosses the boundary (constructing `new Date('YYYY-MM-DD')` lands at midnight UTC, which shifts backward one day for users in negative UTC offsets; local-component extraction is used whenever a Date is produced transiently for the calendar grid or the native spinner). Every platform renders the same styled Pressable trigger; pressing it opens `MobileSheet` hosting the platform-appropriate picker: **web** renders `<CalendarGrid>` (a domain-neutral month grid with min/max enforcement, a today affordance, and a clear highlight on the current value); **native** renders `@react-native-community/datetimepicker` (8.4.4, first source consumer) in `display="spinner"` mode — the only mode that renders consistently across iOS and Android without further platform branching. Web sheet has Cancel + Done actions that commit / discard the user's in-flight selection. Supports `min` / `max` (YYYY-MM-DD); `helperText` / `errorText` slots mirror `MobileInput`. |
 | `CalendarGrid` | Month-grid calendar used by DatePickerField on web (and available as a standalone primitive). Renders a 7-column grid with month navigation (Previous / Next), day-of-week headers, the current value highlighted in the accent color, a Today affordance, and min/max enforcement that disables out-of-range day cells. Dates cross the boundary as YYYY-MM-DD strings; internally a transient local Date is constructed via `new Date(y, m-1, d)` so negative-UTC-offset users never see their selection shift backward. Accessibility contract: container `accessibilityRole="list"` (RN's `AccessibilityRole` enum does not include `grid` / `row` — "list" is the closest cross-platform role; consumers wanting strict WAI-ARIA grid semantics on web can layer host-level `aria-role="grid"` / `aria-role="row"` attributes themselves, same pattern documented for `tabpanel` in the showcase's SegmentedControl `variant="tabs"` demo), each day cell `role="button"` with `accessibilityState={{ selected, disabled }}` and a "Weekday, Month D, YYYY" label for screen-reader users. No animation in v1 — the MobileSheet that hosts the grid owns the enter/exit motion. |
@@ -393,7 +417,29 @@ When a screen transitions between surfaces (e.g. onboarding step
 changes), `MobileAtmosphere` crossfades the palettes automatically.
 Under reduced motion, it snaps.
 
-### 5.1 Customizing palettes as a consumer
+### 5.1 The atmosphere style is a theme token
+
+Whether the orbs render at all is an atmosphere-**language** decision,
+and it is declared once — `theme.atmosphere.style` in
+`constants/theme.ts`, the same override-point discipline as
+`theme.shapes`:
+
+- `'aurora'` (default) — the drifting color-field orbs over the base
+  tint: the starter's premium read.
+- `'flat'` — base tint + vignette only, no orbs: the editorial/retail
+  read for a consumer whose design language wants calm paper. Orb
+  drift stops too (nothing left to animate).
+
+Every `MobileAtmosphere` — scaffolds, the nav drawer's body, the auth
+screens, any hand-rolled placement — follows the declaration with no
+per-callsite prop threading. `MobileAtmosphere`'s `showOrbs` prop and
+`MobileNavDrawer`'s `atmosphereShowOrbs` remain as **explicit
+per-callsite overrides** (the dev showcase uses one to demo the flat
+read under the starter's aurora theme); day-to-day screens never pass
+them. A consumer on the flat language flips one token and the whole
+app, including screens it forgot about, settles.
+
+### 5.2 Customizing palettes as a consumer
 
 The 7 semantics are domain-agnostic, but the hues are not binding. A
 consumer whose brand is warm-toned may prefer warmer orb hues for
@@ -401,6 +447,105 @@ consumer whose brand is warm-toned may prefer warmer orb hues for
 `components/premium/shared/atmospherePalettes.ts` directly — the file
 is the source of truth, no override mechanism needed (copy-then-customize
 model).
+
+### 5.3 The toast surface is a theme token
+
+Transient system messages are a surface **language** decision too, and
+follow the same one-declaration discipline — `theme.toast.style` in
+`constants/theme.ts`, preset by `theme.dialect` ('card' for glass,
+'chit' for ink), literal-overridable:
+
+- `'card'` (default) — the bordered card: colored icon per type, left
+  accent stripe, elevation shadow.
+- `'chit'` — the ink chit: the mode's ink plate (`colors.text`, bone in
+  dark) with paper type, ONE 7px status dot carrying the semantic tint,
+  receipt-mono message (12px/700, tabular figures) when `theme.fonts.mono`
+  is declared, flat air — no shadow, no stripe, no icon triad.
+
+### 5.4 Type families (`theme.fonts`)
+
+The optional display pair follows the same override-point discipline:
+`theme.fonts.display` (poster titles, hero figures, totals) and
+`theme.fonts.mono` (ledger figures — prices, stock, dates, metrics,
+eyebrows). Both default to `undefined`: the starter renders the
+platform sans everywhere, `mobileTitle`/`mobileEyebrow` only pick a
+family up when one is declared, and the toast chit / announcement
+message read `fonts.mono` the same way — declaring the axis never moves
+the default look. Body/UI text deliberately stays the platform sans for
+legibility.
+
+Self-hosting recipe (web): font files in `public/fonts/` (woff2 first),
+the `@font-face` block in an id'd `<style>` in `index.html`, restored
+at runtime from `app/_layout.tsx` (static export strips `<head>`
+styles), plus `<link rel="preload" as="font" crossorigin>` lines — the
+build-time injector (`scripts/inject-critical-web.ts`) copies both the
+style block and the preloads into every exported route. The native
+extension loads the same files through expo-font. The full recipe (with
+the mirror-trio discipline: index.html, root layout, injector) lives in
+the `TypeFaces` block of `constants/theme.ts`.
+
+### 5.5 The route curtain (`theme.transition.style`)
+
+Navigation motion is a dialect decision, declared once —
+`theme.transition.style` in `constants/theme.ts`, preset by
+`theme.dialect` ('none' for glass, 'curtain' for ink):
+
+- `'none'` (default) — the machinery stays retired. `withRouteCurtain`
+  passes every navigation straight through and the overlay never
+  mounts; wiring costs nothing.
+- `'curtain'` — `RouteCurtain` (root-mounted, above the stack) plays
+  printed matter, not a fade: an ink plate (`colors.text` + the
+  `inkSurface` grain) sweeps over the outgoing page with a paper
+  chaser trailing; the platen rule draws in the brand accent, an
+  eyebrow rises, and the destination stamps on in the display face
+  (letterpress overshoot); the plate lifts — up drilling in, down
+  backing out — rule leading, paper chasing it off.
+
+Mechanics worth knowing (all in `utils/routeTransition.ts`):
+
+- **Fixed-beat navigation.** The router fires a set 170ms after the
+  cover begins — navigation never depends on an animation frame
+  ticking.
+- **Snap mode.** Navigations the helper didn't intercept (browser
+  back, URL entry) get the same reveal from the overlay's path watch:
+  the render that swaps the route renders the plate already covering,
+  so the swap frame is never visible.
+- **The stamp never invents copy.** `routeCurtainCopy` echoes the
+  route registry (`navigation/routeMetadata.ts` — the same map
+  Copy-for-AI reads; one registry, two consumers), then the shell
+  routes' own header titles, then the wordmark.
+- **Safety valves.** A cover whose path never moved reveals anyway
+  (520ms); a reveal whose panel callback was lost still ends (life
+  ceiling). The app never strands under a curtain.
+- **Retirement paths.** Web-only, never in DOM tests, never under
+  `prefers-reduced-motion` — all three collapse to plain navigation.
+
+#### The boot plate (opt-in FCP cover)
+
+The curtain's cold-boot sibling: a pre-JS ink cover painted by pure
+CSS before any script arrives, lifted by the handshake the root layout
+sets (`markBootReady()` → `<html data-boot-ready>` — already wired).
+Paste this id'd pair into `index.html`; the build-time injector copies
+id'd styles AND scripts into every exported route automatically:
+
+```html
+<!-- Boot plate — pre-JS cover, lifted by data-boot-ready (root layout). -->
+<style id="arq-boot-css">
+  html:not([data-boot-ready]) body::after{content:'';position:fixed;inset:0;z-index:2147483000;background:#0F172A}
+  @media (prefers-color-scheme: dark){html:not([data-boot-ready]) body::after{background:#F1F5F9}}
+  @media (prefers-reduced-motion: reduce){html:not([data-boot-ready]) body::after{display:none}}
+</style>
+<script id="arq-boot-js">
+  // CSS failsafe: if JS never arrives, lift the plate after 4.6s.
+  setTimeout(function(){document.documentElement.dataset.bootReady='1'},4600);
+</script>
+```
+
+The plate color is the mode's ink (`colors.text` — dark slate in
+light, bone in dark; the media query mirrors both). Elaborate on the
+geometry (paper chaser, lift animation) in the CSS if the dialect
+wants it — the contract is just the two ids and the
+`data-boot-ready` handshake.
 
 ---
 
@@ -573,17 +718,40 @@ heuristic in `MobileActionFooter`). The `ScrollView` content padding
 
 Atmosphere palette stops are 6–10% alpha against `theme.colors.light.backgroundDeep`
 (`#F1F5F9`). Foreground text uses `colors.text` (`#0F172A`),
-`colors.textSecondary` (`#475569`), `colors.textMuted` (`#64748B`).
-The weakest combo (`textMuted` on a dim atmosphere region) is the
-floor — if you're tempted to go dimmer, don't.
+`colors.textSecondary` (`#475569`), `colors.textMuted` (`#5D6B7E`).
 
-WCAG AA contrast ratios (computed against the light surface):
+The discipline is **measured AA on the darkest surface the token rides**,
+not on white: a token that passes on `card` can fail on `backgroundDeep`
+(`textMuted`'s previous slate `#64748B` measured 4.34:1 there — under the
+4.5:1 bar — and the 500-level status hues measured 2.2–3.8:1 as small text
+anywhere). When retuning a palette, recompute every text-bearing token
+against `backgroundDeep` (light) / `card` (dark) in the same change.
+
+WCAG AA contrast ratios (computed against the light surfaces):
 
 | Foreground | On `background` (#FFFFFF) | On `backgroundDeep` (#F1F5F9) |
 |---|---|---|
-| `text` (#0F172A) | 16.9:1 ✓ AAA | 15.2:1 ✓ AAA |
-| `textSecondary` (#475569) | 8.3:1 ✓ AAA | 7.4:1 ✓ AAA |
-| `textMuted` (#64748B) | 5.0:1 ✓ AA | 4.5:1 ✓ AA |
+| `text` (#0F172A) | 17.9:1 ✓ AAA | 16.3:1 ✓ AAA |
+| `textSecondary` (#475569) | 7.6:1 ✓ AAA | 6.9:1 ✓ AAA |
+| `textMuted` (#5D6B7E) | 5.4:1 ✓ AA | 5.0:1 ✓ AA |
+| `brandText` (#4F46E5) | 6.3:1 ✓ AA | 5.7:1 ✓ AA |
+| `status.success` (#047857) | 5.5:1 ✓ AA | 5.0:1 ✓ AA |
+| `status.warning` (#B45309) | 5.0:1 ✓ AA | 4.6:1 ✓ AA |
+| `status.error` (#B91C1C) | 6.5:1 ✓ AA | 5.9:1 ✓ AA |
+| `status.info` (#2563EB) | 5.2:1 ✓ AA | 4.7:1 ✓ AA |
+
+Two slot rules follow from the same math:
+
+- **`brandText` is the AA text companion of `brand`.** `brand` is a
+  fill/large-type slot — 3:1 covers fills, borders, and display type
+  (≥19px bold / ≥24px). Small brand text (10–15px labels, eyebrows,
+  links) reads `brandText`, which consumers with a saturated brand hue
+  darken (brighten in dark mode) until it clears 4.5:1. The starter's
+  indigo passes both ways, so both slots ship the same hue family.
+- **`textOnBrand` follows the fill, not the habit.** A brand bright
+  enough that white no longer clears AA on it overrides `textOnBrand`
+  to a near-black ink — labels must read on the fill they actually sit
+  on.
 
 ### 9.5 Screen-reader labels
 
@@ -594,6 +762,11 @@ Surface that forms the logical announce unit), not at every leaf.
 
 - **Composite card labels** — the card-level `Pressable` gets a single
   `accessibilityLabel` that packs title + status + meta.
+- **Heading semantics ship in the kit** — `MobileHeader`'s nav title and
+  `MobileSectionEyebrow` declare `accessibilityRole="header"` themselves:
+  eyebrows are the section headings of every screen, so screen-reader users
+  jump eyebrow-to-eyebrow with no per-screen wiring. Don't add competing
+  header roles at the leaf level.
 - **Hero groups** — wrap the icon-chip + title + subtitle row in a
   `View` with `accessible={true}` + `accessibilityRole="header"`.
 - **List landmarks** — the grid / stack root gets
@@ -603,12 +776,16 @@ Surface that forms the logical announce unit), not at every leaf.
 - **Invisible tap zones** — overlay Pressables that exist only to
   capture taps MUST carry `accessibilityRole="button"` +
   `accessibilityLabel` + `accessibilityHint`.
+- **Transient messages announce themselves** — `Toast` items carry
+  `accessibilityLiveRegion="polite"`; `MobileAnnouncementBar` and
+  `OfflineBanner` already did. A consumer's custom transient surfaces
+  follow the same pattern instead of stealing focus.
 
 ---
 
 ## 10. Audit compliance notes
 
-The pre-commit gate enforces 12 structural audits + `tsc --noEmit` +
+The pre-commit gate enforces 13 structural audits + `tsc --noEmit` +
 two structural eslint rules (`S6`, `S8`). Full reference in
 `CLAUDE.md` → "Pre-commit checks." The audits that bite most often
 when writing MobilePremium work:

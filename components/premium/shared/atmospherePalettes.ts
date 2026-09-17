@@ -1,11 +1,10 @@
 // components/premium/shared/atmospherePalettes.ts
 // Shared atmosphere palette definitions for the light-mode premium kit.
 //
-// FORKED FROM qep-tracker — the seven surface semantics carry over verbatim
-// (auth/setup/training/goal/instructions/privacy/analytics are domain-
-// agnostic and every consumer benefits), but every palette stop is retuned
-// for light surfaces:
-//   • Backgrounds are pale tints (cream, ice, lavender) instead of black.
+// Seven surface semantics (auth/setup/training/goal/instructions/privacy/
+// analytics) — domain-agnostic, every consumer benefits. Every palette stop
+// is tuned for light surfaces:
+//   • Backgrounds are pale tints (cream, ice, lavender).
 //   • Saturation is softer (looks richer against a bright surface).
 //   • Luminance is higher (orbs glow softly instead of cutting through dark).
 //   • Orb opacity is lower (5-10% alpha instead of 10-15%).

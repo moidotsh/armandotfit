@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 20,
+    borderRadius: theme.shapes.sheet,
   },
   monthLabel: {
     flex: 1,
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     marginVertical: 1,
   },
   dayCellButton: {
-    borderRadius: 20,
+    borderRadius: theme.shapes.sheet,
   },
   dayLabel: {
     fontSize: 14,
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginHorizontal: 4,
     height: 40,
-    borderRadius: 12,
+    borderRadius: theme.shapes.tile,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',

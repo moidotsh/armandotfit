@@ -3,10 +3,8 @@
 // boilerplate. Three flavors: one-shot fade-in, one-shot fade-out, and a
 // toggleable fade for show/hide UI.
 //
-// Forked from qep-tracker's hook of the same name. The source had no
-// qep-tracker-specific dependencies — ported verbatim. `useNativeDriver`
-// is `!isWeb` because native animation offloading is free on iOS/Android
-// but janks on React Native Web.
+// `useNativeDriver` is `!isWeb` because native animation offloading is
+// free on iOS/Android but janks on React Native Web.
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Animated, Easing } from 'react-native';

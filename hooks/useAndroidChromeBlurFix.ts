@@ -2,8 +2,8 @@
 // Detects Android Chrome so MobileSurface can swap to a near-solid
 // background + milder blur (Android Chrome falsely reports backdrop-filter
 // support while rendering saturate() poorly). Arqavellum ships a conservative
-// stub — consumers with significant Android traffic should port the full
-// detection logic from qep-tracker.
+// stub — consumers with significant Android traffic should replace this
+// with a fuller detection scheme.
 
 import { useMemo } from 'react';
 import { Platform } from 'react-native';

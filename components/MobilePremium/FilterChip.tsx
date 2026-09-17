@@ -22,6 +22,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Pressable, usePressedStyle } from '../premium/shared';
+import { theme } from '../../constants';
 import { useAppTheme } from '../../context';
 
 export type FilterChipAccessibilityRole = 'button' | 'radio' | 'checkbox';
@@ -75,6 +76,8 @@ export function FilterChip({
       accessibilityRole={accessibilityRole}
       accessibilityState={a11yState}
       accessibilityLabel={accessibilityLabel ?? label}
+      // 36px visual — hitSlop lifts the effective target to the 44px floor.
+      hitSlop={8}
       style={({ pressed }) => [
         styles.chip,
         {

@@ -1,9 +1,11 @@
 # PWA Installability
 
+> **armandotfit consumer note.** Synced from arqavellum; delivery here is the same two-layer contract (build-time `inject-critical-web` + runtime injection), plus armandotfit's ink boot plate in `index.html` (lifted by `markBootReady()`). Icons are the ember/ink barbell marks — regenerate via the scratch generator, don't hand-edit.
+
 **Canonical location:** `docs/architecture/pwa-installability.md`
 **Status:** Active. Arqavellum ships manifest + SW + runtime meta-tag injection + placeholder icons. Consumers override the icons and brand colors.
 
-This doc is the single source of truth for **what makes a arqavellum-derived
+This doc is the single source of truth for **what makes an arqavellum-derived
 app installable** as a PWA. It covers the installability criteria, the
 build-pipeline gotcha that motivates the runtime injection block, and
 the procedure for changing the home-screen icon.
@@ -80,8 +82,36 @@ DevTools is empty and installability silently fails. The browser falls
 back to "Add to Home Screen" which creates a Chrome shortcut with the
 address bar visible, defeating the whole point.
 
-The fix is runtime injection (§3). The runtime injection is what
-actually ships the tags to the browser.
+The fix is delivery in two layers: **export-time injection**
+(`scripts/inject-critical-web.ts`, §3a) copies the tags into every
+exported route HTML at build time so the deployed first frame carries
+them at parse time, and **runtime injection** (§3) restores them after
+hydration (dev server, and any path the export strip still misses).
+
+---
+
+## 3a. Export-time injection (the critical-HTML injector)
+
+`scripts/inject-critical-web.ts` runs after `expo export` (chained into
+`build:web` and `vercel-build`) and copies, from `index.html` — the
+single source of truth — into every `dist/**/*.html <head>`:
+
+- The PWA tags: both `theme-color` metas, the manifest / apple-touch-icon
+  / icon links, and the `apple-mobile-web-app-*` metas. Correct
+  theme-color at browser-chrome paint, PWA metas present before any
+  script runs.
+- Every id'd `<style>` block (the `global-scrollbar-css` shell CSS; a
+  consumer's self-hosted `@font-face` block rides the same mechanism).
+- Every `<link rel="preload" as="font">` for self-hosted faces — the
+  starter ships none; a consumer who adds fonts + preloads to
+  `index.html` gets them in every exported route for free, so the first
+  frame renders in the real faces instead of swapping them in after
+  hydration.
+
+Every injection is idempotent (keyed on tag presence / style id), so
+re-running over a patched dist is a no-op. The mirror set is
+`index.html` (declaration) → this script (export-time delivery) →
+`app/_layout.tsx` (runtime restore) — change them together.
 
 ---
 
@@ -171,10 +201,17 @@ Gating rationale:
   `removeEventListener` cleanup so audit R4b's listener-pairing rule
   holds and StrictMode's double-mount in dev doesn't double-register.
 
-The SW itself is `public/sw.js` — a passthrough (no caching). Chrome's
-installability check only requires a fetch handler to be registered;
-calling `fetch()` with the original request satisfies this without
-altering network behavior.
+The SW itself is `public/sw.js` — cache-aware: cache-first for
+content-hashed build assets (pure — a background refresh of immutable
+URLs is pure waste) plus the self-hosted fonts/icons
+(stale-while-revalidate for the unhashed ones), network-first for route
+HTML (deploys land on the next visit; offline falls back to the
+last-known shell), and NO `respondWith` for anything else — a blanket
+passthrough handler measurably defeats Safari/WebKit's HTTP cache (the
+full compressed bundle re-downloaded on every warm load), so the
+browser's native cache owns everything the SW doesn't explicitly cache.
+Chrome's installability check only needs a fetch listener to be
+registered.
 
 ---
 
@@ -244,6 +281,8 @@ The fastest verification path post-deploy:
 - **Override theme-color split.** Edit the two `theme-color` meta
   injections in `app/_layout.tsx`. Arqavellum splits desktop/mobile; a
   consumer can collapse to one or use different brand tints.
-- **Add offline caching.** Replace `public/sw.js` with a cache-aware
-  service worker (Workbox, etc.). Don't extend the passthrough in
-  place — naive caching risks stale bundles after Vercel deploys.
+- **Add offline caching.** Already shipped — `public/sw.js` is the
+  cache-aware SW (see §4). Consumers extending further should keep the
+  deploy-safety rules — hashed assets cache-first, navigations
+  network-first — and must NOT reintroduce a blanket
+  `respondWith(fetch())` passthrough (it defeats WebKit's HTTP cache).

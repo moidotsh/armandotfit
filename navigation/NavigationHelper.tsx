@@ -5,7 +5,7 @@
 // `hooks/useAuthNavigation.ts`). Every other file in the app navigates
 // through the helpers exported from this file — that way the call sites
 // read as intent (`replaceWithLogin()`) rather than mechanism
-// (`router.replace('/login')`), and a global navigation change (e.g.
+// (`replace('/login')`), and a global navigation change (e.g.
 // swizzling every push with a transition) lands in one place.
 //
 // Naming convention:
@@ -19,8 +19,17 @@
 // extending this file or by adding a sibling (e.g. `DomainNavigation.tsx`
 // re-exported from `navigation/index.tsx`).
 
-import { router, Router } from 'expo-router';
+import { router, Router, type Href } from 'expo-router';
+import { withRouteCurtain } from '../utils';
 import { useAuthStore } from '../stores';
+
+// Every navigation routes through `withRouteCurtain` — the route-curtain
+// seam declared by `theme.transition.style`. Inert under 'none' (no
+// behavior change); under 'curtain' (the ink dialect's preset) the plate
+// covers before the swap and the destination stamps on.
+const push = (path: string | Href) => withRouteCurtain(() => router.push(path as never), 'up');
+const replace = (path: string | Href) => withRouteCurtain(() => router.replace(path as never), 'up');
+const back = () => withRouteCurtain(() => back(), 'down');
 
 /**
  * Shell navigation paths. Consumers add their own routes to a sibling
@@ -40,12 +49,7 @@ export enum NavigationPath {
   EXERCISE_DETAIL = 'exercise-detail',
   PROGRESSION = 'progression',
   ANALYTICS = 'analytics',
-  WORKOUT_PROGRAMS = 'workout-programs',
   SPLIT_SELECTION = 'split-selection',
-  EQUIPMENT_INVENTORY = 'equipment-inventory',
-  PLAN_PREVIEW = 'plan-preview',
-  PLAN_REPLACEMENT = 'plan-replacement',
-  SETUP_PRESETS = 'setup-presets',
 }
 
 /**
@@ -69,34 +73,29 @@ export const navigationHierarchy: Record<string, NavigationPath> = {
   [NavigationPath.EXERCISE_DETAIL]: NavigationPath.EXERCISE_DATABASE,
   [NavigationPath.PROGRESSION]: NavigationPath.HOME,
   [NavigationPath.ANALYTICS]: NavigationPath.HOME,
-  [NavigationPath.WORKOUT_PROGRAMS]: NavigationPath.HOME,
   [NavigationPath.SPLIT_SELECTION]: NavigationPath.HOME,
-  [NavigationPath.EQUIPMENT_INVENTORY]: NavigationPath.SETTINGS,
-  [NavigationPath.PLAN_PREVIEW]: NavigationPath.WORKOUT_PROGRAMS,
-  [NavigationPath.PLAN_REPLACEMENT]: NavigationPath.PLAN_PREVIEW,
-  [NavigationPath.SETUP_PRESETS]: NavigationPath.SETTINGS,
 };
 
 // ─── Push helpers (drill in) ────────────────────────────────────────────
 
 export function navigateToHome() {
-  router.push('/');
+  push('/');
 }
 
 export function navigateToLogin() {
-  router.push('/login');
+  push('/login');
 }
 
 export function navigateToRegister() {
-  router.push('/register');
+  push('/register');
 }
 
 export function navigateToForgotPassword() {
-  router.push('/forgot-password');
+  push('/forgot-password');
 }
 
 export function navigateToSettings() {
-  router.push('/settings');
+  push('/settings');
 }
 
 /**
@@ -104,7 +103,7 @@ export function navigateToSettings() {
  * linked from any user-facing surface by default.
  */
 export function navigateToPremiumShowcase() {
-  router.push('/dev/premium');
+  push('/dev/premium');
 }
 
 // ─── armandotfit domain navigation ────────────────────────────────────
@@ -112,95 +111,54 @@ export function navigateToPremiumShowcase() {
 /** Open an existing workout session detail, or start a new one (no id). */
 export function navigateToWorkoutDetail(workoutId?: string) {
   if (workoutId) {
-    router.push({ pathname: '/workout-detail', params: { id: workoutId } });
+    push({ pathname: '/workout-detail', params: { id: workoutId } });
   } else {
-    router.push('/workout-detail');
+    push('/workout-detail');
   }
 }
 
 /** Open the exercise library browse screen. */
 export function navigateToExerciseDatabase() {
-  router.push('/exercise-database');
+  push('/exercise-database');
 }
 
-/** Open a specific exercise's detail card. */
-export function navigateToExerciseDetail(exerciseId: string) {
-  router.push({ pathname: '/exercise-detail', params: { id: exerciseId } });
+/** Open a specific exercise's detail card (catalog slug keyed). */
+export function navigateToExerciseDetail(exerciseSlug: string) {
+  push({ pathname: '/exercise-detail', params: { slug: exerciseSlug } });
 }
 
 /** Open the progression dashboard (PR tracking + volume trends). */
 export function navigateToProgression() {
-  router.push('/progression');
+  push('/progression');
 }
 
 /** Open the analytics screen (charts + history). */
 export function navigateToAnalytics() {
-  router.push('/analytics');
+  push('/analytics');
 }
 
-/** Open the workout programs/templates browser. */
-export function navigateToWorkoutPrograms() {
-  router.push('/workout-programs');
-}
 
 /** Open the split-selection flow (Full Body vs AM/PM, day-of-week). */
 export function navigateToSplitSelection() {
-  router.push('/split-selection');
+  push('/split-selection');
 }
 
-/** Open the equipment capability inventory (Phase 2 onboarding wizard). */
-export function navigateToEquipmentInventory() {
-  router.push('/equipment-inventory');
-}
 
-/**
- * Open the Phase 3 plan preview for a variant. Generates the plan
- * in-memory from the user's equipment inventory + the variant's
- * catalog data. Carries the variant slug as a query param.
- */
-export function navigateToPlanPreview(variantSlug: string) {
-  router.push({ pathname: '/plan-preview', params: { variant: variantSlug } });
-}
 
-/**
- * Open the Phase 3 plan replacement screen for a single slot. Carries
- * the slot + plan identifiers + the template exercise id as query params.
- */
-export function navigateToPlanReplacement(params: {
-  planId: string;
-  planSlotId: string;
-  templateExerciseId: string;
-}) {
-  router.push({
-    pathname: '/plan-replacement',
-    params: {
-      planId: params.planId,
-      planSlotId: params.planSlotId,
-      templateExerciseId: params.templateExerciseId,
-    },
-  });
-}
 
-/**
- * Open the Phase 6 setup-presets management route (full CRUD: create,
- * edit, retire, un-retire, delete). Reached from settings.
- */
-export function navigateToSetupPresets() {
-  router.push('/setup-presets');
-}
 
 // ─── Replace helpers (redirects) ────────────────────────────────────────
 
 export function replaceWithHome() {
-  router.replace('/');
+  replace('/');
 }
 
 export function replaceWithLogin() {
-  router.replace('/login');
+  replace('/login');
 }
 
 export function replaceWithRegister() {
-  router.replace('/register');
+  replace('/register');
 }
 
 /**
@@ -210,16 +168,16 @@ export function replaceWithRegister() {
  * redirect-from-deep-link case.
  */
 export function replaceWithForgotPassword() {
-  router.replace('/forgot-password');
+  replace('/forgot-password');
 }
 
 // ─── Back navigation ────────────────────────────────────────────────────
 
 /**
- * Safe back navigation — prefers `router.back()` when there's history to
+ * Safe back navigation — prefers `back()` when there's history to
  * go back to, otherwise falls back to home (if authenticated) or login.
  *
- * Use this instead of `router.back()` anywhere a user can hit "back"
+ * Use this instead of `back()` anywhere a user can hit "back"
  * without a guaranteed parent route (deep links, refreshed PWA tabs).
  *
  * Reads auth state via `useAuthStore.getState()` (non-reactive) so the
@@ -228,15 +186,15 @@ export function replaceWithForgotPassword() {
  */
 export function safeGoBack() {
   if (router.canGoBack()) {
-    router.back();
+    back();
     return;
   }
 
   const { status } = useAuthStore.getState();
   if (status === 'authenticated') {
-    router.replace('/');
+    replace('/');
   } else {
-    router.replace('/login');
+    replace('/login');
   }
 }
 
@@ -254,14 +212,14 @@ export function goBack(currentPath: NavigationPath | string) {
   if (Object.values(NavigationPath).includes(currentPath as NavigationPath)) {
     const parentPath = navigationHierarchy[currentPath] || NavigationPath.HOME;
     if (parentPath === NavigationPath.HOME) {
-      router.push('/');
+      push('/');
       return;
     }
-    router.push(`/${parentPath}`);
+    push(`/${parentPath}`);
     return;
   }
 
-  router.push('/');
+  push('/');
 }
 
 // Re-export the underlying router instance + type for consumers that

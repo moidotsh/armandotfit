@@ -8,22 +8,29 @@
       PWA / Add to Home Screen configuration.
 
       This file is the source-of-truth DECLARATION of which PWA tags the
-      app expects to ship with. The runtime DELIVERY mechanism is the
-      web-bootstrap useEffect in app/_layout.tsx (ensureMeta / ensureLink)
-      — Expo Web's static export (`expo export --platform web`) strips
-      every tag below from <head> except <link rel="icon"> when generating
-      dist/index.html, and the runtime injection block restores them.
+      app expects to ship with. Two DELIVERY mechanisms restore them:
 
-      The two are a deliberate mirror pair — keep them in sync in the
-      same change. The theme-color values here are arqavellum's defaults
-      (light surface for desktop, brand indigo for mobile); consumers
-      who override the `brand` slot should update both this file and
-      the matching lines in app/_layout.tsx so the deployed HTML and
-      the runtime injection agree.
+      1. scripts/inject-critical-web.ts — runs after `expo export` and
+         copies the tags below (plus the id'd <style> blocks and any
+         font preload links) into every exported dist/**/*.html <head>,
+         so the DEPLOYED first frame carries them at parse time.
+
+      2. The runtime injection in app/_layout.tsx (ensureMeta /
+         ensureLink / ensureStyle) — restores the same set after
+         hydration (dev server, and any path the export strip still
+         misses).
+
+      Expo Web's static export strips every tag below from <head>
+      except <link rel="icon"> when generating dist/index.html. The
+      three places are a deliberate mirror set — keep them in sync in
+      the same change. The theme-color values are armandotfit's ember
+      palette (warm paper surface for desktop, ember brand for mobile);
+      update this file, the injector's extraction, and app/_layout.tsx
+      together so the deployed HTML and the runtime injection agree.
       Full design + debugging checklist: docs/architecture/pwa-installability.md.
     -->
-    <meta name="theme-color" content="#F1F5F9" media="(min-width: 701px)" />
-    <meta name="theme-color" content="#4F46E5" media="(max-width: 700px)" />
+    <meta name="theme-color" content="#F4F0EA" media="(min-width: 701px)" />
+    <meta name="theme-color" content="#E8590C" media="(max-width: 700px)" />
 
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icons/192.png" />
@@ -31,17 +38,59 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Armandotfit" />
+    <meta name="apple-mobile-web-app-title" content="armandotfit" />
 
-    <title>Armandotfit</title>
-    <style>
+    <title>armandotfit</title>
+
+    <!--
+      The ink boot plate — the pre-JS cover. armandotfit's design
+      language is the ink dialect, so the first painted frame is the
+      warm ink plate (#231B15) with the name stamped on it in paper
+      type, not a white flash. The root layout lifts it via
+      markBootReady() → html[data-boot-ready] as soon as React mounts
+      (see utils/routeTransition.ts); reduced-motion users keep it as a
+      static cover that simply disappears on lift. Pure CSS + one
+      attribute — no script needed.
+    -->
+    <style id="ink-boot-plate">
+      html:not([data-boot-ready]) body {
+        background: #231b15;
+      }
+      html:not([data-boot-ready]) #root::before {
+        content: 'armandotfit';
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #231b15;
+        color: #f4f0ea;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: lowercase;
+        z-index: 9999;
+      }
+      html[data-boot-ready] #root::before {
+        content: none;
+      }
+    </style>
+
+    <!--
+      The global shell CSS — keyed by id so the injector and the runtime
+      injection share one key. Consumers self-hosting fonts: declare the
+      @font-face block in an id'd <style> here and add the matching
+      <link rel="preload" as="font" crossorigin> lines — the injector
+      carries both into every exported route.
+    -->
+    <style id="global-scrollbar-css">
       html,
       body,
       #root {
         height: 100%;
         margin: 0;
         padding: 0;
-        background: #f1f5f9;
+        background: #f4f0ea;
       }
       #root {
         display: flex;

@@ -25,9 +25,10 @@
  *         active / ...), it is flagged. The window is approximate — regex
  *         can't brace-match — so triage handles misfires.
  *
- * This repo does not ship the R1 RPC `verify_session` audit (that's a
- * separate `audit-rpc-auth.ts` for PIN-based auth — this repo uses
- * email/password by default; re-add it if switching to PIN auth).
+ * Arqavellum does not ship the R1 RPC `verify_session` audit (that's a
+ * separate `audit-rpc-auth.ts` for PIN-based auth — arqavellum uses
+ * email/password by default; a consumer re-adds it if they switch to
+ * PIN auth).
  *
  * Suppress R4 with `// r4-exempt` and R1 with `// r1-exempt` (300-char
  * lookback before the reported match).
@@ -54,10 +55,14 @@ const EXCLUDE_DIRS = new Set([
   '__tests__',
   '__mocks__',
   'scripts',
-  'archive-v1',
 ]);
 
 const SOURCE_EXTS = ['.ts', '.tsx', '.js', '.jsx'];
+
+// Path prefixes that should never be walked. `supabase/functions` is Deno-side
+// code with different conventions (console.* logging, https:// imports) —
+// client-side audits don't apply.
+const EXCLUDE_PATH_PREFIXES = ['supabase/functions'];
 
 function isExcluded(absPath: string): boolean {
   const rel = relative(ROOT, absPath);
@@ -66,6 +71,9 @@ function isExcluded(absPath: string): boolean {
   if (rel.startsWith('..')) return true;
   const parts = rel.split('/');
   if (parts.some((p) => EXCLUDE_DIRS.has(p))) return true;
+  for (const prefix of EXCLUDE_PATH_PREFIXES) {
+    if (rel === prefix || rel.startsWith(prefix + '/')) return true;
+  }
   return false;
 }
 

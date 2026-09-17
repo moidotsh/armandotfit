@@ -3,8 +3,9 @@
 // boilerplate. Four flavors: scale-in, scale-out, button-press scale,
 // and a pop-in overshoot-settle.
 //
-// Forked from qep-tracker's hook of the same name. The source had no
-// qep-tracker-specific dependencies — ported verbatim.
+// Reusable scale animation hooks to eliminate useRef(new Animated.Value(...))
+// boilerplate. Four flavors: scale-in, scale-out, button-press scale,
+// and a pop-in overshoot-settle.
 
 import { useRef, useEffect, useCallback } from 'react';
 import { Animated, Easing } from 'react-native';

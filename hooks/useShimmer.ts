@@ -7,10 +7,8 @@
 // `prefers-reduced-motion: reduce` set — the placeholder stays visible
 // as a flat block without the pulse.
 //
-// Standalone hook (not coupled to any feature module). The qep-tracker
-// anti-pattern of co-locating this inside a Feed component is what we're
-// avoiding — a general-purpose animation shouldn't drag a feature
-// dependency into every consumer.
+// Standalone hook (not coupled to any feature module). A general-purpose
+// animation shouldn't drag a feature dependency into every consumer.
 
 import { useEffect, useRef } from 'react';
 import { Animated } from 'react-native';

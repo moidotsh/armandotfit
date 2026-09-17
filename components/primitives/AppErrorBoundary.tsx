@@ -84,9 +84,9 @@ export class AppErrorBoundary extends Component<Props, State> {
       marginBottom: 20,
     };
     const buttonStyle: React.CSSProperties = {
-      // s7-exempt — theme-free fallback (armandotfit brand orange)
+      // s7-exempt — theme-free fallback (arqavellum default brand)
       color: '#ffffff',
-      backgroundColor: '#FF9500',
+      backgroundColor: '#4f46e5',
       padding: '8px 16px',
       fontSize: 14,
       fontWeight: 500,

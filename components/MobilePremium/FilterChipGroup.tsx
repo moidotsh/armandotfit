@@ -1,56 +1,54 @@
 // components/MobilePremium/FilterChipGroup.tsx
-// Purely presentational layout container for FilterChip children. Wraps N
-// chips in a flex row; that's it. The group deliberately does NOT:
+// Layout container for FilterChip children. One row is the default: chips
+// share a single row that scrolls horizontally when it overflows — a chip
+// row that wraps onto a second line breaks the vertical rhythm of
+// everything stacked beneath it. `oneRow={false}` restores flex-wrap for
+// genuinely wrapping clusters.
 //
-//   • render a ScrollView
-//   • own horizontal scroll when `wrap: false` — `wrap: false` only changes
-//     flex behavior; chips lay out in one row and may overflow the
-//     container. Consumers wrap the group in their own `<ScrollView
-//     horizontal>` when they need horizontal overflow.
-//   • own sticky placement — consumers render the group outside their
-//     ScrollView, or use `stickyHeaderIndices` on native, or
-//     `position: sticky` on web. All consumer decisions.
-//   • own a search slot, filters state, or any business logic
-//   • carry an a11y role of its own — presentational only. The semantic
-//     grouping (e.g. `role="radiogroup"` for a single-select cluster) is
-//     owned by the consumer's surrounding wrapper if needed.
-//
-// Why the strict scope: scroll behavior, sticky placement, and overflow
-// handling all have platform-specific shapes (RN ScrollView vs web
-// overflow-x vs CSS sticky). A shared primitive that tried to own any of
-// them would either lie about its contract or grow an unbounded surface.
-// Consumers who need overflow wrap this group in the platform primitive
-// they already use for overflow.
+// Still purely presentational: no sticky placement, no search slot, no
+// filters state, and no a11y role of its own — the semantic grouping
+// (e.g. `role="radiogroup"` for a single-select cluster) is owned by the
+// consumer's surrounding wrapper if needed.
 
 import React from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 export interface FilterChipGroupProps {
   /** Typically a row of FilterChip, but accepts any children. */
   children: React.ReactNode;
-  /**
-   * Default true: chips flex-wrap to additional rows. false: chips lay out
-   * in a single row and may overflow the container. The group does NOT
-   * render or own a ScrollView in either mode.
-   */
-  wrap?: boolean;
+  /** Default true: chips share one scrollable row. false: chips flex-wrap. */
+  oneRow?: boolean;
   /** Gap between children. Default 8. */
   gap?: number;
   testID?: string;
+  /** Outer style. In oneRow mode it styles the scroll container. */
   style?: StyleProp<ViewStyle>;
 }
 
 export function FilterChipGroup({
   children,
-  wrap = true,
+  oneRow = true,
   gap = 8,
   testID,
   style,
 }: FilterChipGroupProps) {
+  if (oneRow) {
+    return (
+      <ScrollView
+        testID={testID}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={style}
+        contentContainerStyle={[styles.row, { gap, minWidth: '100%' }]}
+      >
+        {children}
+      </ScrollView>
+    );
+  }
   return (
     <View
       testID={testID}
-      style={[styles.row, { flexWrap: wrap ? 'wrap' : 'nowrap', gap }, style]}
+      style={[styles.row, { flexWrap: 'wrap', gap }, style]}
     >
       {children}
     </View>

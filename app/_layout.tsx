@@ -1,44 +1,53 @@
 // app/_layout.tsx
-// Root layout. Provider stack + PWA bootstrap.
+// Root layout. Provider stack + PWA bootstrap + route-curtain mount.
 //
 // Provider stack (outer → inner):
-//   TamaguiProvider(defaultTheme=colorScheme) → ThemeProvider →
-//   SafeAreaProvider → AuthProvider → ToastProvider → QueryProvider → Stack
+//   ThemeProvider → SafeAreaProvider → RootGestureProvider →
+//   AuthProvider → AuthGuard → ToastProvider → QueryProvider → Stack
 //   + <ToastContainer/> (sibling of Stack, picks up toasts from anywhere)
+//   + <RouteCurtain/> (the ink dialect's navigation transition; mounted
+//     only when theme.transition.style = 'curtain', web-only, never
+//     under reduced motion, never in DOM tests)
 //
-// ThemeProvider sits INSIDE TamaguiProvider so the dynamic `defaultTheme`
-// (Tamagui's own light/dark) tracks the resolved colorScheme. Both stay
-// in sync — provider order is load-bearing.
+// No TamaguiProvider: the shell themes itself (MobilePremium reads the
+// theme context directly) and metro.config.js resolves @tamagui helpers
+// to a passthrough shim — zero Tamagui components ship.
 //
-// Two web-only useEffect blocks are load-bearing:
-//
-//   1. PWA runtime injection — Expo Web's static export strips every
+// Three web-only effects are load-bearing:
+//   1. Boot-plate handshake — lifts the pre-JS ink cover painted by the
+//      id'd <style> in index.html (markBootReady sets data-boot-ready).
+//   2. PWA runtime injection — Expo Web's static export strips every
 //      PWA-related tag from <head> except <link rel="icon">. This block
 //      restores the manifest link, apple-touch-icon, apple-mobile-web-app-*
-//      metas, and both theme-color metas at runtime. See
-//      docs/architecture/pwa-installability.md §2-3.
-//
-//   2. Service worker registration — Android Chrome's installability
-//      criteria require a registered SW with a fetch handler. Production-
-//      only, gated on `isWeb` + `'serviceWorker' in navigator`. See
-//      docs/architecture/pwa-installability.md §4.
+//      metas, and both theme-color metas at runtime. The build-time
+//      injector (scripts/inject-critical-web.ts) covers the exported
+//      files; this covers dev + anything the strip still misses.
+//   3. Service worker registration — Android Chrome's installability
+//      criteria require a registered SW with a fetch handler.
 
 import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
-import { TamaguiProvider } from 'tamagui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import config from '../tamagui.config';
+import { RootGestureProvider } from '../components/composed';
+import { APP_DISPLAY_NAME, APP_LAYOUT } from '../constants';
 import { isWeb, hasDocument, hasWindow } from '../utils/platform';
 import { logger } from '../utils';
+import { curtainEnabled, markBootReady } from '../utils/routeTransition';
 import { initializeNetworkListeners } from '../stores';
 import { AuthProvider, ToastProvider, ThemeProvider, useAppTheme } from '../context';
 import { AuthGuard, ToastContainer, AppErrorBoundary } from '../components/primitives';
 import { QueryProvider } from '../lib/react-query';
-import { SCREEN_BODY_STYLE } from '../constants';
+import { RouteCurtain, OfflineBanner } from '../components/MobilePremium';
+import { Z_INDEX } from '../constants';
+import { useIsOnline } from '../stores';
+
+// The curtain mounts only when the transition axis declares it — under
+// the starter's 'none' preset this is false and nothing mounts.
+const CURTAIN_ON = curtainEnabled();
 
 function RootShell() {
   const { colorScheme, colors } = useAppTheme();
+  const isOnline = useIsOnline();
 
   // Network listener — web online/offline events. The cleanup is paired
   // so audit R4b's listener-pairing rule holds.
@@ -47,24 +56,19 @@ function RootShell() {
     return cleanup;
   }, []);
 
+  // Boot-plate handshake (web only): lift the pre-JS ink cover pasted
+  // into index.html. Setting data-boot-ready is a no-op when no boot CSS
+  // exists.
+  useEffect(() => {
+    if (!isWeb || !hasDocument()) return;
+    markBootReady();
+  }, []);
+
   // PWA runtime injection + service worker registration. Both gated on
   // isWeb — native has no document or navigator.serviceWorker.
   useEffect(() => {
     if (!isWeb || !hasDocument() || !hasWindow()) return;
 
-    // Inject PWA / Add-to-Home-Screen tags. Expo Web's static export
-    // (`expo export --platform web`) strips everything in <head> except
-    // <link rel="icon"> when generating dist/index.html — the manifest
-    // link, apple-touch-icon, apple-mobile-web-app-* metas, and both
-    // theme-color metas all disappear. Without these in the deployed
-    // HTML, Chrome Android registers the service worker (registered
-    // below) but shows an empty Manifest tab in DevTools and never
-    // promotes "Add to Home Screen" to "Install app" — the install
-    // flows fall back to a browser shortcut with an address bar.
-    //
-    // Each tag is guarded with an existence check so React StrictMode's
-    // double-mount in dev doesn't append duplicates. The theme-color
-    // metas pull from the LIVE palette so they follow colorScheme.
     const ensureMeta = (name: string, content: string, media?: string) => {
       const selector = `meta[name="${name}"]${media ? `[media="${media}"]` : ''}`;
       if (document.querySelector(selector)) return;
@@ -88,16 +92,10 @@ function RootShell() {
     ensureMeta('apple-mobile-web-app-capable', 'yes');
     ensureMeta('mobile-web-app-capable', 'yes');
     ensureMeta('apple-mobile-web-app-status-bar-style', colorScheme === 'dark' ? 'black' : 'default');
-    ensureMeta('apple-mobile-web-app-title', 'armandotfit');
+    ensureMeta('apple-mobile-web-app-title', APP_DISPLAY_NAME);
     ensureMeta('theme-color', colors.background, '(min-width: 701px)');
     ensureMeta('theme-color', colors.brand, '(max-width: 700px)');
 
-    // Inject the global scrollbar-hiding CSS at runtime. The same Expo
-    // Web export/dev-server strip that removes PWA tags also drops the
-    // inline <style> block from index.html — without this injection the
-    // desktop scrollbar is always visible on the centered 420pt column.
-    // Idempotent: keyed on id="global-scrollbar-css" so React StrictMode
-    // double-mount doesn't duplicate.
     const ensureStyle = (id: string, css: string) => {
       if (document.getElementById(id)) return;
       const el = document.createElement('style');
@@ -110,16 +108,6 @@ function RootShell() {
       '*::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}',
     );
 
-    // Register the installability-enabling service worker (passthrough,
-    // no caching). Android Chrome's PWA installability criteria require
-    // a registered SW with a fetch handler; without it, "Add to Home
-    // Screen" on Android Chrome creates a browser shortcut that opens
-    // WITH the address bar visible. See public/sw.js for the SW itself.
-    //
-    // Production-only (the SW install/activate lifecycle across refreshes
-    // is one less thing to debug when dev doesn't register one). The
-    // load listener is paired with a removeEventListener cleanup so the
-    // audit-R4b pairing rule holds.
     if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) {
       return;
     }
@@ -133,39 +121,45 @@ function RootShell() {
       return;
     }
     window.addEventListener('load', register, { once: true });
-    // Note: cleanup for the load listener is in the parent effect's
-    // cleanup phase below. The runtime-injected tags are intentionally
-    // not cleaned up — they persist across the page lifetime.
     return () => {
       window.removeEventListener('load', register);
     };
   }, [colorScheme, colors]);
 
   return (
-    <TamaguiProvider config={config} defaultTheme={colorScheme}>
-      <SafeAreaProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <AuthProvider>
-            <AuthGuard>
-              <ToastProvider>
-                <QueryProvider>
-                  <Stack
-                    screenOptions={{
-                      headerShown: false,
-                      contentStyle: {
-                        ...SCREEN_BODY_STYLE,
-                        backgroundColor: colors.backgroundDeep,
-                      },
-                    }}
+    <SafeAreaProvider>
+      <RootGestureProvider>
+        <AuthProvider>
+          <AuthGuard enabled={APP_LAYOUT.authGuard}>
+            <ToastProvider>
+              <QueryProvider>
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    // No width policy here: the body column is owned by
+                    // each screen (SB1 — ScreenScaffold or
+                    // SCREEN_BODY_STYLE on the route itself).
+                    contentStyle: {
+                      backgroundColor: colors.backgroundDeep,
+                    },
+                  }}
+                />
+                <ToastContainer />
+                {!isOnline ? (
+                  <OfflineBanner
+                    variant="offline"
+                    message="Offline — sets keep logging, save when back online"
+                    style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: Z_INDEX.toast - 1 }}
+                    testID="offline-banner"
                   />
-                  <ToastContainer />
-                </QueryProvider>
-              </ToastProvider>
-            </AuthGuard>
-          </AuthProvider>
-        </GestureHandlerRootView>
-      </SafeAreaProvider>
-    </TamaguiProvider>
+                ) : null}
+                {CURTAIN_ON ? <RouteCurtain /> : null}
+              </QueryProvider>
+            </ToastProvider>
+          </AuthGuard>
+        </AuthProvider>
+      </RootGestureProvider>
+    </SafeAreaProvider>
   );
 }
 

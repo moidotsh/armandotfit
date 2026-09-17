@@ -46,10 +46,9 @@ const EXCLUDE_DIRS = new Set([
   '__tests__',
   '__mocks__',
   'scripts',
-  'archive-v1',
 ]);
 
-const EXCLUDE_PATH_PREFIXES: string[] = [];
+const EXCLUDE_PATH_PREFIXES: string[] = ['supabase/functions'];
 
 const SOURCE_EXTS = ['.ts', '.tsx', '.js', '.jsx'];
 

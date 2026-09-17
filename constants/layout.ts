@@ -14,6 +14,14 @@ export type NavDrawerAnchor = 'window' | 'column';
 
 export const APP_LAYOUT = {
   /**
+   * Wall authenticated surfaces behind auth. armandotfit owns real
+   * per-user training history — every route except login/register/
+   * forgot-password is authenticated. (The starter ships this false;
+   * this consumer flips it true.)
+   */
+  authGuard: true as boolean,
+
+  /**
    * How the nav drawer handles the brand area when open.
    *
    * - 'cutout': the panel + scrim start below the home header so the

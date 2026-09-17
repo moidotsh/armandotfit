@@ -4,10 +4,9 @@
 // and a few common booleans (isMobile, isTablet, etc.) from the live
 // window size.
 //
-// Fork point: qep-tracker's `useResponsive` is a much heavier wrapper
-// around a ResponsiveContext (pooled ResizeObserver). Arqavellum is PWA-first
-// — each screen owns its own container measurement via useContainerQuery,
-// and useResponsive handles the window-level layout question alone.
+// Intentionally thin: PWA-first means each screen owns its container
+// measurement via useContainerQuery. This hook handles the window-level
+// layout question alone, not container layout.
 
 import { useWindowDimensions } from 'react-native';
 import {

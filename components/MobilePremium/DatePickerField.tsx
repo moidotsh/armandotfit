@@ -260,6 +260,9 @@ const styles = StyleSheet.create({
   group: {
     gap: 6,
     ...MOBILE_CONTENT_WIDTH_STYLE,
+    // Fill the slot: the width policy centers cross-axis, which in a row
+    // pair vertically floats the shorter field off the top edge.
+    alignSelf: 'stretch',
     marginBottom: 16,
   },
   triggerWrap: {

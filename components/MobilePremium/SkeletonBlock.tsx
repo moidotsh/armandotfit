@@ -4,9 +4,9 @@
 // as content) and pulses opacity via useShimmer. Uses Animated.View (not
 // ActivityIndicator) so the C4 audit doesn't apply by construction.
 //
-// Pair with the composed skeletons (DashboardSkeleton, WorkoutListSkeleton
-// in armandotfit; consumers compose their own) for screen-level loading
-// states. The primitive stays domain-agnostic — every consumer gets the
+// Pair with consumer-composed skeletons (e.g. a `DashboardSkeleton` or
+// `ListSkeleton` composed primitive) for screen-level loading states.
+// The primitive stays domain-agnostic — every consumer gets the
 // same block + the same pulse, and composes per-screen shapes locally.
 
 import React, { memo } from 'react';

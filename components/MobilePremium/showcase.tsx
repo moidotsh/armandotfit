@@ -15,6 +15,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Link } from 'expo-router';
 import { Sun, Moon, Monitor, Mail, Lock, Eye, EyeOff, Settings, Bell, Info, ChevronRight, Home, Package, TrendingUp, Search } from '@tamagui/lucide-icons-2';
 import { theme, APP_LAYOUT, SCREEN_BODY_STYLE } from '../../constants';
 import { useAppTheme, useToast, type ColorSchemePreference } from '../../context';
@@ -34,6 +35,7 @@ import {
 // imports remain preferable for tree-shaking and to keep the
 // showcase's dependency surface explicit.
 import { MobileAtmosphere } from './MobileAtmosphere';
+import { InkPanel } from './InkPanel';
 import { MobileSurface } from './MobileSurface';
 import { MobileHeader } from './MobileHeader';
 import { MobileHomeHeader } from './MobileHomeHeader';
@@ -45,6 +47,7 @@ import { MobileSettingsRow } from './MobileSettingsRow';
 import { MobileSectionEyebrow } from './MobileSectionEyebrow';
 import { MobileStepper } from './MobileStepper';
 import { MobileCheckboxItem } from './MobileCheckboxItem';
+import { CheckBox } from './CheckBox';
 import { MobileSelectionList } from './MobileSelectionList';
 import { MobileStepRail } from './MobileStepRail';
 import { MobileDialog } from './MobileDialog';
@@ -53,9 +56,17 @@ import { MobileNavDrawer } from './MobileNavDrawer';
 import type { MobileNavDrawerItem } from './MobileNavDrawer';
 import { MobileNavDrawerGlassCap } from './MobileNavDrawerGlassCap';
 import { HamburgerButton } from './HamburgerButton';
+import { RouteCurtain } from './RouteCurtain';
+import { LangToggle } from './LangToggle';
+import {
+  createStringsCatalog,
+  useLangStore,
+  useRouteTransitionStore,
+} from '../../utils';
 import { SkeletonBlock } from './SkeletonBlock';
 import { SegmentedControl } from './SegmentedControl';
 import { FilterChip } from './FilterChip';
+import { SearchField } from './SearchField';
 import { FilterChipGroup } from './FilterChipGroup';
 import { DisclosureRow } from './DisclosureRow';
 import { EmptyState } from './EmptyState';
@@ -63,6 +74,17 @@ import { StatCard } from './StatCard';
 import { Avatar } from './Avatar';
 import { SegmentedProgress } from './SegmentedProgress';
 import { OfflineBanner } from './OfflineBanner';
+import { MobileAnnouncementBar } from './MobileAnnouncementBar';
+import { MobileFootnote } from './MobileFootnote';
+import {
+  AbsorbProvider,
+  AbsorbTopBar,
+  AbsorbSpacer,
+  AbsorbStation,
+  AbsorbChromeNeutral,
+  useAbsorbBar,
+  compositeWash,
+} from './MobileAbsorbBar';
 import { CarouselTutorial } from './CarouselTutorial';
 import { Wizard } from './Wizard';
 import { ProgressRing } from './ProgressRing';
@@ -71,6 +93,8 @@ import { DatePickerField } from './DatePickerField';
 import { RevealMask } from './RevealMask';
 import { LoadingOverlay } from '../primitives';
 import { ActivityGridPreview } from './ActivityGridPreview';
+import { CopyForAiButton } from './CopyForAiButton';
+import { buildAiPayload } from '../../utils/buildAiPayload';
 import { PALETTES, type AtmosphereSurface } from '../premium/shared';
 
 const SURFACES: AtmosphereSurface[] = [
@@ -168,11 +192,15 @@ function ToastDemo() {
 
 function AnimationDemo() {
   const { colors } = useAppTheme();
-  const fadeIn = useFadeIn({ animateOnMount: false, duration: 600 });
-  const scaleIn = useScaleIn({ animateOnMount: false, duration: 600, useSpring: true });
-  const popIn = usePopIn({ animateOnMount: false });
+  // Animate on mount: the resting state must be the settled grid — with
+  // mount animation off, the fade/scale/pop cards rest invisible and the
+  // translateY card rests displaced into the surface's clipped corner.
+  // Replay re-runs the same choreography on demand.
+  const fadeIn = useFadeIn({ animateOnMount: true, duration: 600 });
+  const scaleIn = useScaleIn({ animateOnMount: true, duration: 600, useSpring: true });
+  const popIn = usePopIn({ animateOnMount: true });
   const shake = useShake({ intensity: 8, cycles: 3 });
-  const translateY = useTranslateY({ animateOnMount: false, initialValue: 24, duration: 500 });
+  const translateY = useTranslateY({ animateOnMount: true, initialValue: 24, duration: 500 });
 
   const [counterTarget, setCounterTarget] = useState('0');
   const counter = useAnimatedCounter(counterTarget);
@@ -360,15 +388,234 @@ function ContainerVariantDemo() {
   );
 }
 
+
+// ── The theme-axes playground ───────────────────────────────────────────
+// Dev-only previewer: mutates the LIVE theme object so both languages of
+// each render-read axis (atmosphere, toast) can be previewed in place.
+// The declaration in constants/theme.ts stays the consumer's single
+// point; this panel is a previewer, not a second declaration site, and
+// everything resets on reload.
+
+function ThemeAxesDemo() {
+  const { colors } = useAppTheme();
+  const { showToast } = useToast();
+  const [atmoStyle, setAtmoStyle] = useState(theme.atmosphere.style);
+  const [toastStyle, setToastStyle] = useState(theme.toast.style);
+
+  const axisRow = (label: string, value: string) => (
+    <View key={label} style={styles.axisRow}>
+      <Text style={[styles.axisLabel, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[styles.axisValue, { color: colors.text }]}>{value}</Text>
+    </View>
+  );
+
+  return (
+    <MobileSurface>
+      <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 12 }]}>
+        One declaration — theme.dialect — presets the whole surface-language family:
+        atmosphere, drawer, toast, transition. Each axis can also be written literally
+        for deliberately mixed taste. Live previews below; the rest of the panel reads
+        the current declaration.
+      </Text>
+
+      {axisRow('theme.dialect', "'glass' — the starter preset")}
+      {axisRow(
+        'theme.drawer.style',
+        `'${theme.drawer.style}' — both languages demo under Drawer below`,
+      )}
+      {axisRow(
+        'theme.transition.style',
+        `'${theme.transition.style}' — the curtain demo below drives the machinery directly`,
+      )}
+      {axisRow(
+        'theme.shapes',
+        `surface ${theme.shapes.surface} · sheet ${theme.shapes.sheet} · control ${theme.shapes.control} · tile ${theme.shapes.tile} · tag ${theme.shapes.tag === 999 ? '999 (round)' : theme.shapes.tag}`,
+      )}
+      {axisRow(
+        'theme.fonts',
+        theme.fonts.display != null || theme.fonts.mono != null
+          ? 'declared — the printed-matter pair is live'
+          : 'platform sans (declare display/mono for the poster/receipt pair)',
+      )}
+
+      <View style={styles.axisToggleRow}>
+        <Text style={[styles.axisLabel, { color: colors.textMuted }]}>atmosphere</Text>
+        {/* Bounded slot: the control fills its container width, so a row
+            slot must flex it or the track overflows the card. */}
+        <View style={styles.axisToggleControl}>
+          <SegmentedControl
+            variant="selection"
+            segments={[
+              { label: 'Aurora', value: 'aurora' },
+              { label: 'Flat', value: 'flat' },
+            ]}
+            value={atmoStyle}
+            onChange={(v: 'aurora' | 'flat') => {
+              theme.atmosphere.style = v;
+              setAtmoStyle(v);
+            }}
+            accessibilityLabel="Atmosphere language"
+          />
+        </View>
+      </View>
+      <Text style={[styles.axisHint, { color: colors.textMuted }]}>
+        Watch the drifting orbs behind this page stop and start — every MobileAtmosphere
+        follows the one declaration.
+      </Text>
+
+      <View style={styles.axisToggleRow}>
+        <Text style={[styles.axisLabel, { color: colors.textMuted }]}>toast</Text>
+        <View style={styles.axisToggleControl}>
+          <SegmentedControl
+            variant="selection"
+            segments={[
+              { label: 'Card', value: 'card' },
+              { label: 'Chit', value: 'chit' },
+            ]}
+            value={toastStyle}
+            onChange={(v: 'card' | 'chit') => {
+              theme.toast.style = v;
+              setToastStyle(v);
+              showToast('success', `Toast surface: ${v === 'chit' ? 'the ink chit' : 'the bordered card'}.`);
+            }}
+            accessibilityLabel="Toast surface language"
+          />
+        </View>
+      </View>
+      <Text style={[styles.axisHint, { color: colors.textMuted }]}>
+        The toggle emits a live toast — the ink chit is the announcement strip's strong
+        tone, floating: ink plate, one status dot, receipt mono when fonts.mono is declared.
+      </Text>
+
+      <View style={[styles.axisRow, { marginTop: 14 }]}>
+        <Text style={{ color: colors.brand, fontSize: 24, fontWeight: '800' }}>
+          brand
+        </Text>
+        <Text style={{ color: colors.textMuted, fontSize: 12, marginLeft: 8, flex: 1 }}>
+          fills, borders, display type (≥19px bold) — a 3:1 slot
+        </Text>
+      </View>
+      <View style={styles.axisRow}>
+        <Text style={{ color: colors.brandText, fontSize: 13, fontWeight: '700' }}>
+          brandText
+        </Text>
+        <Text style={{ color: colors.textMuted, fontSize: 12, marginLeft: 8, flex: 1 }}>
+          10–15px labels, eyebrows, links — the AA companion (a saturated brand darkens
+          it in light mode until it clears 4.5:1)
+        </Text>
+      </View>
+    </MobileSurface>
+  );
+}
+
+// ── The route curtain demo ──────────────────────────────────────────────
+// theme.transition.style = 'curtain' (the ink dialect's preset) plays this
+// on every navigation in the real app; under the starter's 'none' the
+// overlay never mounts. The buttons drive the machinery directly so the
+// move is visible under any theme.
+
+function CurtainDemo() {
+  const { colors } = useAppTheme();
+  const begin = useRouteTransitionStore((s) => s.beginSnapReveal);
+  return (
+    <MobileSurface>
+      <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 12 }]}>
+        The ink plate sweeping navigation — cover, platen rule + eyebrow + stamp, then the
+        lift with a paper chaser trailing. The stamp echoes the route registry's title;
+        safety valves end every cycle. Reduced motion never mounts it.
+      </Text>
+      <View style={styles.toastRow}>
+        <Pressable
+          onPress={() => begin('up')}
+          style={[styles.toastChip, { backgroundColor: colors.text, borderColor: colors.text }]}
+          accessibilityRole="button"
+          accessibilityLabel="Play the curtain reveal up"
+        >
+          <Text style={[styles.toastChipLabel, { color: colors.background }]}>Reveal up</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => begin('down')}
+          style={[styles.toastChip, { backgroundColor: colors.text, borderColor: colors.text }]}
+          accessibilityRole="button"
+          accessibilityLabel="Play the curtain reveal down"
+        >
+          <Text style={[styles.toastChipLabel, { color: colors.background }]}>Reveal down</Text>
+        </Pressable>
+        <Link
+          href="/not-a-real-route"
+          style={[styles.toastChip, { borderColor: colors.border }]}
+          accessibilityLabel="Open the not-found page"
+        >
+          <Text style={[styles.toastChipLabel, { color: colors.brandText }]}>Not-found page</Text>
+        </Link>
+      </View>
+      <RouteCurtain />
+    </MobileSurface>
+  );
+}
+
+// ── The i18n seam demo ──────────────────────────────────────────────────
+const LANG_DEMO = createStringsCatalog(
+  {
+    greeting: 'Welcome to the kit',
+    cta: 'Start browsing',
+    note: 'One tap re-renders every mounted surface — the catalog is typed, so a missing translation is a compile error.',
+  },
+  {
+    fr: {
+      greeting: 'Bienvenue dans le kit',
+      cta: 'Parcourir',
+      note: 'Un geste re-rend chaque surface montée — le catalogue est typé, une traduction manquante est une erreur de compilation.',
+    },
+  },
+);
+
+function LangDemo() {
+  const { colors } = useAppTheme();
+  const t = LANG_DEMO.useT();
+  const lang = useLangStore((s) => s.lang);
+  return (
+    <MobileSurface>
+      <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 12 }]}>
+        The typed bilingual catalog over the persisted lang store — the shell's opt-in i18n
+        seam. Content is not chrome: catalogs carry UI strings only.
+      </Text>
+      <LangToggle />
+      <View style={{ marginTop: 14 }}>
+        <Text style={[theme.typography.mobileTitle, { color: colors.text, fontSize: 20 }]}>
+          {t.greeting}
+        </Text>
+        <Text style={[styles.bodyText, { color: colors.textSecondary, marginTop: 6 }]}>
+          {t.cta}. {t.note}
+        </Text>
+        <Text style={[styles.axisHint, { color: colors.textMuted, marginTop: 8 }]}>
+          live lang: {lang} · persisted per browser · mirrors fall back to the source
+          language
+        </Text>
+      </View>
+    </MobileSurface>
+  );
+}
+
 export function Showcase() {
   const { colors } = useAppTheme();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // The drawer demo's surface language — flipped by the segmented control
+  // via the component's showcase-only `drawerStyle` override (the theme's
+  // drawer.style stays the single consumer declaration point).
+  const [demoDrawerStyle, setDemoDrawerStyle] = useState<'sheet' | 'ink'>('sheet');
+  // The header pairing follows: on the ink plate the masthead rides it.
+  const demoOnPlate = drawerOpen && demoDrawerStyle === 'ink';
   const [stepperValue, setStepperValue] = useState(5);
   const [checked, setChecked] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>('option-a');
   const [multiSelectedIds, setMultiSelectedIds] = useState<string[]>(['feature-1']);
   const [inputValue, setInputValue] = useState('');
+  const [multiNote, setMultiNote] = useState('');
+  const [submitValue, setSubmitValue] = useState('');
+  const [lastSubmitted, setLastSubmitted] = useState<string | null>(null);
+  const [searchValue, setSearchValue] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [selectValue, setSelectValue] = useState('monthly');
   const [segSelection, setSegSelection] = useState<'7d' | '30d' | '90d'>('30d');
@@ -394,30 +641,32 @@ export function Showcase() {
     return () => clearTimeout(t);
   }, [showLoading]);
 
+  // Icons follow the surface: paper on the ink plate, text on the sheet.
+  const demoIconColor = demoDrawerStyle === 'ink' ? colors.background : colors.text;
   const drawerItems: MobileNavDrawerItem[] = [
     {
       id: '/',
       label: 'Home',
-      icon: <Home size={18} color={colors.text} />,
+      icon: <Home size={18} color={demoIconColor} />,
       onPress: () => {},
     },
     {
       id: '/items',
       label: 'Items',
-      icon: <Package size={18} color={colors.text} />,
+      icon: <Package size={18} color={demoIconColor} />,
       onPress: () => {},
     },
     {
       id: '/progress',
       label: 'Progress',
-      icon: <TrendingUp size={18} color={colors.text} />,
+      icon: <TrendingUp size={18} color={demoIconColor} />,
       badge: 3,
       onPress: () => {},
     },
     {
       id: '/settings',
       label: 'Settings',
-      icon: <Settings size={18} color={colors.text} />,
+      icon: <Settings size={18} color={demoIconColor} />,
       onPress: () => {},
     },
   ];
@@ -458,26 +707,62 @@ export function Showcase() {
         </View>
 
         <View style={styles.section}>
-          <MobileSectionEyebrow>Home Header (brand + subtitle row)</MobileSectionEyebrow>
-          {/* Live cutout-drawer demo: the HamburgerButton swaps to X, the
-              glass cap slides over the brand cutout, and the drawer below
-              opens in APP_LAYOUT's configured mode. */}
+          <MobileSectionEyebrow>Drawer — sheet vs ink (theme.drawer.style)</MobileSectionEyebrow>
+          {/* Live cutout-drawer demo, both surface languages through one
+              hamburger. 'sheet' (default): frosted scrim + blur, atmosphere
+              body, hairline edge, the iOS slide curve — the glass cap
+              completes the cutout. 'ink': the InkPanel plate (print grain +
+              full-height brand rule), flat dim scrim, the out-cubic curve,
+              and the on-plate masthead — the real header stacks above the
+              plate and bleeds to the background color while the subtitle
+              and right-side chrome go invisible holding their space. */}
+          <SegmentedControl
+            variant="selection"
+            segments={[
+              { label: 'Sheet (default)', value: 'sheet' },
+              { label: 'Ink', value: 'ink' },
+            ]}
+            value={demoDrawerStyle}
+            onChange={setDemoDrawerStyle}
+            accessibilityLabel="Drawer surface language"
+          />
+          <View style={styles.spacer} />
           <MobileHomeHeader
             brand="Showcase"
             subtitle="Welcome back, visitor"
+            onPlate={demoOnPlate}
             menuButton={
               <HamburgerButton
                 isOpen={drawerOpen}
                 onPress={() => setDrawerOpen((prev) => !prev)}
+                color={demoOnPlate ? colors.background : undefined}
+                openLabel="Ouvrir le menu"
+                closeLabel="Fermer le menu"
               />
             }
-            drawerGlassCap={<MobileNavDrawerGlassCap open={drawerOpen} />}
+            drawerGlassCap={
+              demoDrawerStyle === 'sheet' ? (
+                <MobileNavDrawerGlassCap open={drawerOpen} />
+              ) : undefined
+            }
           />
+          <Text style={[styles.bodyText, { color: colors.textSecondary, marginTop: 8 }]}>
+            One hamburger, two materials. Sheet slides on the iOS curve under a frosted scrim;
+            ink sweeps the plate on the out-cubic with the masthead bleeding onto it — the
+            subtitle and any right-side chrome go invisible and hold their space, so nothing
+            shifts and nothing straddles the plate&apos;s rule. Consumers set the row face via
+            itemLabelStyle (e.g. a ledger mono) and declare the language once in the theme.
+          </Text>
         </View>
 
         <View style={styles.section}>
           <MobileSectionEyebrow>Theme</MobileSectionEyebrow>
           <ThemeSelector />
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Theme axes — the dialect family</MobileSectionEyebrow>
+          <ThemeAxesDemo />
         </View>
 
         <MobileStepRail current={2} total={5} accentColor={colors.brand} />
@@ -518,6 +803,45 @@ export function Showcase() {
               </View>
             </View>
           ))}
+          {/* InkPanel — the inverted-surface primitive (theme.drawer.style
+              'ink' composes it; any ink-language consumer surface can).
+              Text-color plate + print grain + brand edge rule. */}
+          <View style={[styles.atmosphereContainer, { height: 88 }]}>
+            <InkPanel rule>
+              <View style={{ flex: 1, justifyContent: 'center', paddingLeft: 16 }}>
+                <Text
+                  style={[
+                    styles.bodyText,
+                    theme.typography.mobileFieldLabel,
+                    { color: colors.background },
+                  ]}
+                >
+                  InkPanel (plate + grain + rule)
+                </Text>
+              </View>
+            </InkPanel>
+          </View>
+
+          {/* The atmosphere-language override point, demonstrated: the
+              theme declares 'aurora' or 'flat' once and every surface
+              follows. This row pins the flat read with the explicit
+              prop so both styles stay visible under any theme. */}
+          <View style={styles.atmosphereRow}>
+            <View style={styles.atmosphereContainer}>
+              <MobileAtmosphere surface="analytics" showVignette={false} showOrbs={false} />
+              <View style={[styles.atmosphereLabel, { backgroundColor: colors.card }]}>
+                <Text
+                  style={[
+                    styles.bodyText,
+                    theme.typography.mobileFieldLabel,
+                    { color: colors.text },
+                  ]}
+                >
+                  flat (theme.atmosphere.style)
+                </Text>
+              </View>
+            </View>
+          </View>
         </View>
 
         <View style={styles.section}>
@@ -577,6 +901,48 @@ export function Showcase() {
               onRightIconPress={() => setShowPassword((s) => !s)}
               maxLength={64}
             />
+            <MobileInput
+              label="Quick note"
+              value={submitValue}
+              onChangeText={setSubmitValue}
+              placeholder="Type and press Enter…"
+              returnKeyType="send"
+              onSubmitEditing={() => {
+                const trimmed = submitValue.trim();
+                if (trimmed.length === 0) return;
+                setLastSubmitted(trimmed);
+                setSubmitValue('');
+              }}
+              helperText={
+                lastSubmitted != null ? `Sent: ${lastSubmitted}` : 'Enter submits the field.'
+              }
+              maxLength={80}
+            />
+            <MobileInput
+              label="Long note (multiline)"
+              value={multiNote}
+              onChangeText={setMultiNote}
+              placeholder="Paste a description — the field grows to four rows and scrolls internally once full…"
+              multiline
+              numberOfLines={4}
+              maxLength={400}
+            />
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Search</MobileSectionEyebrow>
+          <MobileSurface>
+            <SearchField
+              value={searchValue}
+              onChangeText={setSearchValue}
+              placeholder="Search foods, stores, tags…"
+            />
+            <FilterChipGroup>
+              <FilterChip label="Search" selected={searchValue.length > 0} onPress={() => {}} />
+              <FilterChip label="Filters" selected={false} onPress={() => {}} />
+              <FilterChip label="Add item" selected={false} onPress={() => {}} />
+            </FilterChipGroup>
           </MobileSurface>
         </View>
 
@@ -631,6 +997,12 @@ export function Showcase() {
               checked={checked}
               onToggle={() => setChecked((c) => !c)}
             />
+            <View style={styles.bareCheckboxRow}>
+              <CheckBox checked={checked} />
+              <Text style={[styles.bareCheckboxLabel, { color: colors.textColors.tertiary }]}>
+                Bare indicator — the row owns the press
+              </Text>
+            </View>
           </MobileSurface>
         </View>
 
@@ -699,6 +1071,62 @@ export function Showcase() {
         <View style={styles.section}>
           <MobileSectionEyebrow>Toast (auto-dismissing alerts)</MobileSectionEyebrow>
           <ToastDemo />
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Route curtain (theme.transition.style)</MobileSectionEyebrow>
+          <CurtainDemo />
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Language toggle (the i18n seam)</MobileSectionEyebrow>
+          <LangDemo />
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Copy for AI (dev helper)</MobileSectionEyebrow>
+          <MobileSurface>
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 12 }]}>
+              Builds a plain-text payload (app, route, title, timestamp, visible content) and
+              copies it to the clipboard. One tap takes the current screen into an AI chat
+              without a screenshot.
+            </Text>
+            <CopyForAiButton
+              variant="subtle"
+              testID="showcase-copy-for-ai-subtle"
+              payload={buildAiPayload({
+                appName: 'arqavellum',
+                route: '/dev/premium',
+                title: 'Showcase',
+                contextLabel: 'Design system reference',
+                params: { section: 'copy-for-ai' },
+                visibleContent: [
+                  '- Kit: MobilePremium',
+                  '- Atmospheres: 7',
+                  '- Hooks: animation + layout + clipboard',
+                ].join('\n'),
+              })}
+            />
+            <View style={styles.spacer} />
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 12 }]}>
+              Ghost variant — for the compact MobileHeader nav-mode row.
+            </Text>
+            <MobileHeader
+              title="Showcase"
+              accentColor={colors.brand}
+              onBack={() => {}}
+              navRightAction={
+                <CopyForAiButton
+                  testID="showcase-copy-for-ai-ghost"
+                  payload={buildAiPayload({
+                    appName: 'arqavellum',
+                    route: '/dev/premium',
+                    title: 'Showcase',
+                  })}
+                />
+              }
+            />
+          </MobileSurface>
         </View>
 
         <View style={styles.section}>
@@ -860,20 +1288,32 @@ export function Showcase() {
             </FilterChipGroup>
             <View style={styles.spacer} />
             <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
-              wrap: false inside a consumer-supplied horizontal ScrollView
+              One row (default) — overflows scroll instead of wrapping
             </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <FilterChipGroup wrap={false}>
-                {['tag-a', 'tag-b', 'tag-c', 'tag-d', 'tag-e', 'tag-f'].map((t) => (
-                  <FilterChip
-                    key={t}
-                    label={t}
-                    selected={false}
-                    onPress={() => {}}
-                  />
-                ))}
-              </FilterChipGroup>
-            </ScrollView>
+            <FilterChipGroup>
+              {['tag-a', 'tag-b', 'tag-c', 'tag-d', 'tag-e', 'tag-f'].map((t) => (
+                <FilterChip
+                  key={t}
+                  label={t}
+                  selected={false}
+                  onPress={() => {}}
+                />
+              ))}
+            </FilterChipGroup>
+            <View style={styles.spacer} />
+            <Text style={[styles.bodyText, { color: colors.textSecondary, marginBottom: 8 }]}>
+              oneRow: false — chips flex-wrap
+            </Text>
+            <FilterChipGroup oneRow={false}>
+              {['tag-a', 'tag-b', 'tag-c', 'tag-d', 'tag-e', 'tag-f'].map((t) => (
+                <FilterChip
+                  key={t}
+                  label={t}
+                  selected={false}
+                  onPress={() => {}}
+                />
+              ))}
+            </FilterChipGroup>
           </MobileSurface>
         </View>
 
@@ -1040,6 +1480,29 @@ export function Showcase() {
             actionLabel="Retry"
             onAction={() => {}}
           />
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Announcement bar</MobileSectionEyebrow>
+          <MobileAnnouncementBar
+            message="Pickup Friday 17–19h — details under Visit."
+            actionLabel="Details"
+            onAction={() => {}}
+            onDismiss={() => {}}
+          />
+          <View style={styles.spacer} />
+          <MobileAnnouncementBar
+            tone="strong"
+            message="Last day — the drop closes tonight at 22:00."
+            onDismiss={() => {}}
+          />
+          <View style={styles.spacer} />
+          <MobileFootnote lines={['All prices CAD. Examples shown for layout.', 'Starter shell — replace this fine print.']} />
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Absorbing top bar (web motion)</MobileSectionEyebrow>
+          <AbsorbBarDemo />
         </View>
 
         <View style={styles.section}>
@@ -1303,6 +1766,7 @@ export function Showcase() {
         atmosphere="analytics"
         anchor={APP_LAYOUT.navDrawerAnchor}
         brandPersistence={APP_LAYOUT.navDrawerBrandPersistence}
+        drawerStyle={demoDrawerStyle}
         header={
           <View>
             <Text style={[theme.typography.mobileEyebrow, { color: colors.textMuted }]}>
@@ -1318,7 +1782,141 @@ export function Showcase() {
   );
 }
 
+
+// ── The absorbing top bar demo ──────────────────────────────────────────
+// A scroll container with coloured stations rising into a pinned strip.
+// Web (dev) plays the liquid; jsdom/native render the inert static bar —
+// the engine gates itself, the demo needs no environment check.
+
+const ABSORB_DEMO_BAR_H = 56;
+
+function AbsorbDemoChrome() {
+  const { colors } = useAppTheme();
+  const absorb = useAbsorbBar();
+  useEffect(() => {
+    absorb.reportBarHeight(ABSORB_DEMO_BAR_H);
+    // reportBarHeight is stable; the demo bar height is a constant.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // The production host pattern, exercised for real: the chrome renders
+  // THREE times — the neutral base copy (the readable one), plus two
+  // inert contrast copies, each masked to one of the meniscus's two
+  // counter-drifting waves. One CSS animation drives one
+  // mask-position-x, so no single mask tracks both curves — the copies'
+  // union is the visible crest, and the base copy never shows through
+  // wherever the second wave crests above the first.
+  const makeClipRef = (which: 'a' | 'b', base: string) => (el: View | null) => {
+    absorb.attachChromeClip(which, el);
+    if (typeof HTMLElement !== 'undefined' && el instanceof HTMLElement) {
+      el.classList.remove(`${base}-enter`, `${base}-exit`);
+      el.classList.add(absorb.clipExit ? `${base}-exit` : `${base}-enter`);
+    }
+  };
+  const clipRefA = makeClipRef('a', 'arq-absorb-mask');
+  const clipRefB = makeClipRef('b', 'arq-absorb-mask-b');
+  const fg = absorb.tone.fg;
+  const title = (color: string) => (
+    <Text style={[styles.absorbChromeTitle, { color }]}>The bar drinks the page</Text>
+  );
+  return (
+    <View style={styles.absorbChrome} pointerEvents="none">
+      {/* The base copy — always neutral, always the readable one. */}
+      <AbsorbChromeNeutral>{title(colors.text)}</AbsorbChromeNeutral>
+      {/* The contrast copies — clipped to each wave's mask, inert.
+          Identical renders: the union of their masks is what reads. */}
+      {fg != null
+        ? ([
+            { which: 'a', ref: clipRefA, testID: 'absorb-demo-clip-a' },
+            { which: 'b', ref: clipRefB, testID: 'absorb-demo-clip-b' },
+          ] as const).map(({ which, ref, testID }) => (
+            <View key={which} style={StyleSheet.absoluteFill} pointerEvents="none">
+              <View
+                testID={testID}
+                ref={ref}
+                style={[styles.absorbClip, absorb.clipExit ? styles.absorbClipExit : null]}
+              >
+                <View
+                  style={
+                    absorb.clipExit
+                      ? styles.absorbClipContentExit
+                      : styles.absorbClipContentEnter
+                  }
+                >
+                  {title(fg)}
+                </View>
+              </View>
+            </View>
+          ))
+        : null}
+    </View>
+  );
+}
+
+function AbsorbBarDemo() {
+  const { colors } = useAppTheme();
+  return (
+    <View style={styles.absorbDemo}>
+      <AbsorbProvider>
+        <ScrollView
+          style={styles.absorbScroll}
+          contentContainerStyle={styles.absorbContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <AbsorbSpacer />
+          <AbsorbStation color={compositeWash(colors.brandMuted, colors.background)}>
+            <View style={[styles.absorbCard, { backgroundColor: colors.brandMuted }]}>
+              <Text style={[styles.absorbCardText, { color: colors.text }]}>
+                An announcement wash — the strip's tint, composited over the
+                page colour (what the bar absorbs is the colour the card READS,
+                not the raw token).
+              </Text>
+            </View>
+          </AbsorbStation>
+          <AbsorbStation color={colors.text}>
+            <View style={[styles.absorbCard, { backgroundColor: colors.text }]}>
+              <Text style={[styles.absorbCardText, { color: colors.background }]}>
+                An ink plate — the fill owns the row and the chrome flips to its
+                readable companion as the ripple splits the letters.
+              </Text>
+            </View>
+          </AbsorbStation>
+          <AbsorbStation color={colors.brand}>
+            <View style={[styles.absorbCard, { backgroundColor: colors.brand }]}>
+              <Text style={[styles.absorbCardText, { color: colors.textOnBrand }]}>
+                A brand card — docking corners square as the card submerges into
+                the pool, and restore as it leaves.
+              </Text>
+            </View>
+          </AbsorbStation>
+          <AbsorbStation color={colors.card}>
+            <View style={[styles.absorbCard, { backgroundColor: colors.card }]}>
+              <Text style={[styles.absorbCardText, { color: colors.text }]}>
+                A plain paper card — no station, no fill; scroll it through and
+                the strip returns to the page's paper.
+              </Text>
+            </View>
+          </AbsorbStation>
+          <View style={styles.absorbTail} />
+        </ScrollView>
+        <AbsorbTopBar />
+        <AbsorbDemoChrome />
+      </AbsorbProvider>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  bareCheckboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 44,
+  },
+  bareCheckboxLabel: {
+    fontSize: 13,
+  },
   shell: {
     flex: 1,
   },
@@ -1333,6 +1931,116 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 16,
     marginBottom: 4,
+  },
+  axisRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+    paddingVertical: 5,
+  },
+  axisLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    minWidth: 132,
+  },
+  axisValue: {
+    fontSize: 12.5,
+    flex: 1,
+  },
+  axisHint: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    marginTop: 6,
+    marginBottom: 8,
+  },
+  axisToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginTop: 10,
+  },
+  axisToggleControl: {
+    flex: 1,
+    minWidth: 0,
+  },
+  absorbDemo: {
+    position: 'relative',
+    height: 380,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  absorbScroll: {
+    flex: 1,
+  },
+  absorbContent: {
+    padding: 16,
+    gap: 12,
+  },
+  absorbCard: {
+    borderRadius: 12,
+    padding: 18,
+    minHeight: 96,
+    justifyContent: 'center',
+  },
+  absorbCardText: {
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '600',
+  },
+  absorbChrome: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 56,
+    zIndex: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  absorbChromeTitle: {
+    position: 'absolute',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  // The contrast copies' clip windows — engine-written height, anchored
+  // to the strip's floor while entering and its top while exiting; the
+  // content stays pinned to the strip's edge so only the window moves.
+  absorbClip: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 0,
+    overflow: 'hidden',
+  },
+  absorbClipExit: {
+    top: 0,
+    bottom: 'auto',
+  },
+  absorbClipContentEnter: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: ABSORB_DEMO_BAR_H,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  absorbClipContentExit: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: ABSORB_DEMO_BAR_H,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  absorbTail: {
+    height: 120,
   },
   spacer: {
     height: 12,
@@ -1351,13 +2059,13 @@ const styles = StyleSheet.create({
   },
   atmosphereRow: {
     marginBottom: 12,
-    borderRadius: 16,
+    borderRadius: theme.shapes.surface,
     overflow: 'hidden',
   },
   atmosphereContainer: {
     height: 120,
     position: 'relative',
-    borderRadius: 16,
+    borderRadius: theme.shapes.surface,
     overflow: 'hidden',
   },
   atmosphereLabel: {
@@ -1378,7 +2086,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 999,
+    borderRadius: theme.shapes.tag,
     borderWidth: 1,
   },
   themeChipLabel: {
@@ -1393,7 +2101,7 @@ const styles = StyleSheet.create({
   toastChip: {
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 999,
+    borderRadius: theme.shapes.tag,
     borderWidth: 1,
   },
   toastChipLabel: {
@@ -1409,7 +2117,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 100,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: theme.shapes.tile,
   },
   animLabel: {
     fontSize: 11,
@@ -1442,7 +2150,7 @@ const styles = StyleSheet.create({
   },
   shakeCard: {
     padding: 12,
-    borderRadius: 12,
+    borderRadius: theme.shapes.tile,
   },
   variantRow: {
     marginBottom: 12,
@@ -1456,7 +2164,7 @@ const styles = StyleSheet.create({
   tabPanel: {
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: theme.shapes.tile,
   },
   disclosureHeader: {
     fontSize: 14,
@@ -1504,7 +2212,7 @@ const styles = StyleSheet.create({
   revealWrap: {
     paddingVertical: 20,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: theme.shapes.tile,
   },
   revealText: {
     fontSize: 14,

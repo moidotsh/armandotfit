@@ -41,6 +41,12 @@ export interface MobileInputProps {
   value: string;
   /** Callback when text changes. */
   onChangeText: (text: string) => void;
+  /** Called when the field loses focus (commit-on-blur drafts). */
+  onBlur?: () => void;
+  /** Called when the field is submitted (Enter / return key). */
+  onSubmitEditing?: () => void;
+  /** Return-key hint (web Enter / native return key). */
+  returnKeyType?: 'done' | 'go' | 'next' | 'search' | 'send';
   /** Placeholder text. */
   placeholder?: string;
   /** Error message — rendered in a dedicated slot beneath the input. Alias of `error`. */
@@ -75,6 +81,14 @@ export interface MobileInputProps {
   editable?: boolean;
   /** Make the whole input area trigger `onPress` (e.g. for non-editable selectors). */
   onPress?: () => void;
+  /**
+   * Multiline entry (longer pastes — descriptions, notes): the field
+   * grows to `numberOfLines` rows and scrolls internally once full.
+   * Single-line (default) keeps the fixed 54px control height.
+   */
+  multiline?: boolean;
+  /** Rows shown when `multiline` (default 4). */
+  numberOfLines?: number;
   /** Test ID. */
   testID?: string;
   /** Outer style pass-through. */
@@ -98,6 +112,9 @@ export function MobileInput({
   label,
   value,
   onChangeText,
+  onBlur,
+  onSubmitEditing,
+  returnKeyType,
   placeholder,
   errorText,
   error,
@@ -115,6 +132,8 @@ export function MobileInput({
   accentColor,
   editable = true,
   onPress,
+  multiline = false,
+  numberOfLines = 4,
   testID,
   style,
 }: MobileInputProps) {
@@ -175,21 +194,34 @@ export function MobileInput({
                 color: colors.text,
               },
               icon ? { paddingLeft: 50 } : null,
+              // Multiline trades the fixed control height for a row-count
+              // box (22px line + 32px padding — the same metrics the 54px
+              // single-line height is built from) and anchors type at the top.
+              multiline
+                ? { height: 22 * numberOfLines + 32, textAlignVertical: 'top' as const }
+                : null,
             ]}
             value={value}
             onChangeText={onChangeText}
             placeholder={placeholder}
-            placeholderTextColor={colors.textColors.tertiary}
+            placeholderTextColor={colors.textSecondary}
             secureTextEntry={secureTextEntry}
             autoCapitalize={autoCapitalize}
             autoCorrect={autoCorrect}
             keyboardType={keyboardType}
             autoComplete={autoComplete as any}
+            onSubmitEditing={onSubmitEditing}
+            returnKeyType={returnKeyType}
             autoFocus={autoFocus}
             maxLength={maxLength}
             editable={!!editable && !isClickable}
+            multiline={multiline}
+            numberOfLines={multiline ? numberOfLines : undefined}
             onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onBlur={() => {
+              setIsFocused(false);
+              onBlur?.();
+            }}
           />
           {/* Focus ring — Animated.View because opacity is an Animated.Value. */}
           <Animated.View pointerEvents="none" style={ringStyle} />
@@ -222,6 +254,9 @@ const styles = StyleSheet.create({
   group: {
     gap: 6,
     ...MOBILE_CONTENT_WIDTH_STYLE,
+    // Fill the slot: the width policy centers cross-axis, which in a row
+    // pair vertically floats the shorter field off the top edge.
+    alignSelf: 'stretch',
     marginBottom: 16,
   },
   inputContainer: {
@@ -229,11 +264,11 @@ const styles = StyleSheet.create({
   },
   inputInner: {
     position: 'relative',
-    borderRadius: 14,
+    borderRadius: theme.shapes.control,
   },
   input: {
     borderWidth: 1.5,
-    borderRadius: 14,
+    borderRadius: theme.shapes.control,
     padding: 16,
     paddingRight: 50,
     fontSize: 16,
