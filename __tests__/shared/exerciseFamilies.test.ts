@@ -40,4 +40,33 @@ describe('movement families (display-only)', () => {
     // (Remove + Add) — recorded here so the list is deliberate.
     console.log('families without swap candidates:', [...without]);
   });
+
+  it('every entry carries a modality', () => {
+    for (const entry of SYSTEM_EXERCISES) {
+      expect(entry.modality, entry.slug).toBeDefined();
+    }
+  });
+
+  it('the modality lattice: split families cover multiple modalities', () => {
+    // The substitution contract — every split family offers alternatives
+    // across equipment modalities. Deliberate exceptions recorded below.
+    const EXCEPTIONS = new Set(['dorsi-flexion']); // genuinely machine/band-only
+    const families = new Set<string>();
+    for (const day of TWO_A_DAY_SPLITS) {
+      for (const slot of [...day.am, ...day.pm]) {
+        const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise as ExerciseKey];
+        families.add(entry!.family!);
+      }
+    }
+    for (const family of families) {
+      const modalities = new Set(
+        SYSTEM_EXERCISES.filter((e) => e.family === family).map((e) => e.modality),
+      );
+      if (EXCEPTIONS.has(family)) {
+        expect(modalities.size).toBeGreaterThanOrEqual(1);
+        continue;
+      }
+      expect(modalities.size, family).toBeGreaterThanOrEqual(2);
+    }
+  });
 });

@@ -25,6 +25,8 @@ export interface SwapExerciseSheetProps {
   testID?: string;
 }
 
+const MODALITY_ORDER = ['floor', 'dumbbell', 'barbell', 'machine', 'cable'] as const;
+
 export function SwapExerciseSheet({
   exerciseSlug,
   open,
@@ -39,6 +41,12 @@ export function SwapExerciseSheet({
         (e) => e.family === current.family && e.slug !== current.slug,
       )
     : [];
+  // Grouped by modality — the substitution axis: floor / dumbbell /
+  // barbell / machine / cable options for the same movement role.
+  const byModality = MODALITY_ORDER.map((modality) => ({
+    modality,
+    entries: alternatives.filter((e) => e.modality === modality),
+  })).filter((group) => group.entries.length > 0);
 
   return (
     <MobileSheet
@@ -54,7 +62,12 @@ export function SwapExerciseSheet({
             any exercise from the library instead — or type a custom one.
           </Text>
         ) : (
-          alternatives.map((alt) => {
+          byModality.map(({ modality, entries }) => (
+          <View key={modality} style={styles.modalityGroup}>
+            <Text style={[styles.modalityLabel, { color: colors.brand }]}>
+              {modality.toUpperCase()}
+            </Text>
+            {entries.map((alt) => {
             const attrs = formatExerciseAttributes(alt);
             return (
               <Pressable
@@ -81,8 +94,9 @@ export function SwapExerciseSheet({
                 </View>
                 <Text style={[styles.cta, { color: colors.brand }]}>Swap</Text>
               </Pressable>
-            );
-          })
+            );})}
+          </View>
+          ))
         )}
       </View>
     </MobileSheet>
@@ -92,6 +106,14 @@ export function SwapExerciseSheet({
 const styles = StyleSheet.create({
   body: { paddingBottom: 12 },
   empty: { fontSize: 13, lineHeight: 18, paddingVertical: 12 },
+  modalityGroup: { marginBottom: 8 },
+  modalityLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginTop: 8,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
