@@ -75,6 +75,8 @@ export {
   MAX_SPLIT_DAY,
   DAY_OF_WEEK_LABELS,
   getNextSplitDay,
+  suggestNextSplitDay,
+  suggestSessionWindow,
   parseDayId,
   isRestDay,
   getUpcomingDays,

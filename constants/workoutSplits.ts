@@ -87,7 +87,43 @@ export function getNextSplitDay(lastDay: number | null | undefined): number {
   if (!lastDay || lastDay < MIN_SPLIT_DAY || lastDay > MAX_SPLIT_DAY) {
     return MIN_SPLIT_DAY;
   }
-  return ((lastDay - MIN_SPLIT_DAY) % MAX_SPLIT_DAY) + MIN_SPLIT_DAY + 1;
+  // 4 → 1: modulo over the cycle, NOT (last - min) % max + min + 1 —
+  // that form returns 5 for day 4, which has no programmed slots and
+  // renders an empty picker + empty active session.
+  return (lastDay % MAX_SPLIT_DAY) + MIN_SPLIT_DAY;
+}
+
+/**
+ * The day-of-split to suggest right now. If any session was already
+ * logged today (local time), THAT day is still the day — the AM/PM
+ * pair belongs to one split-day, so the PM launch after the morning
+ * session must not advance the cycle. Otherwise the classic
+ * next-after-last-completed walk applies. Sessions newest-first.
+ */
+export function suggestNextSplitDay(
+  sessions: ReadonlyArray<{ startedAt: string; splitDay: number | null }>,
+  now: Date = new Date(),
+): number {
+  const today = toLocalDayKey(now);
+  const todays = sessions.find(
+    (s) => toLocalDayKey(new Date(s.startedAt)) === today && s.splitDay != null,
+  );
+  if (todays?.splitDay != null) return todays.splitDay;
+  return getNextSplitDay(sessions.find((s) => s.splitDay != null)?.splitDay ?? null);
+}
+
+/** Local calendar key ('YYYY-MM-DD') — a session counts for its day. */
+function toLocalDayKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/**
+ * The session window to suggest right now: mornings default to AM,
+ * afternoons/evenings to PM. Purely an initial pick — the user
+ * toggles freely in the picker.
+ */
+export function suggestSessionWindow(now: Date = new Date()): SessionMode {
+  return now.getHours() < 15 ? 'am' : 'pm';
 }
 
 /**

@@ -20,3 +20,6 @@ export {
   type DraftSet,
 } from './workoutStore';
 export { useExerciseStore } from './exerciseStore';
+
+// Remembered split defaults (persisted) — the launcher/picker open with these.
+export { useSplitPreferenceStore } from './splitPreferenceStore';

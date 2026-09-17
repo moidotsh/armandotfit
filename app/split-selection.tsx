@@ -31,13 +31,17 @@ import { SplitExerciseRow } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, safeGoBack } from '../navigation';
 import { useProfile, useRecentWorkouts, useAiPayload } from '../hooks';
-import { useWorkoutStore } from '../stores';
+import { useWorkoutStore, useSplitPreferenceStore } from '../stores';
 import {
   WORKOUT_SPLIT_LIST,
   SESSION_MODE_LIST,
   DAY_OF_WEEK_LABELS,
   getUpcomingWorkoutSlots,
   getNextSplitDay,
+  suggestNextSplitDay,
+  suggestSessionWindow,
+  MIN_SPLIT_DAY,
+  MAX_SPLIT_DAY,
   SCREEN_BODY_STYLE,
   type SessionMode,
   type UpcomingWorkoutSlot,
@@ -67,27 +71,43 @@ export default function SplitSelectionScreen() {
   const recentQuery = useRecentWorkouts(1);
 
   const restDays = profileQuery.data?.restDays ?? [];
-  const lastSplitDay = recentQuery.data?.[0]?.splitDay ?? null;
 
-  const [splitChoice, setSplitChoice] = useState<string>('oneADay');
-  const [sessionChoice, setSessionChoice] = useState<string>('am');
+  // Open pre-configured: the remembered split (persisted) + the
+  // time-of-day window. Every session start re-writes the preference —
+  // the last choice is the next default.
+  const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
+  const preferredMode = useSplitPreferenceStore((s) => s.sessionMode);
+  const setPreference = useSplitPreferenceStore((s) => s.setPreference);
+
+  const [splitChoice, setSplitChoice] = useState<string>(preferredSplit);
+  const [sessionChoice, setSessionChoice] = useState<string>(preferredMode);
   const [selectedIsoDate, setSelectedIsoDate] = useState<string | null>(null);
 
   const split = splitChoice as PreferredSplit;
   const session = sessionChoice as SessionMode;
   const isTwoADay = split === 'twoADay';
 
+  // The suggested day: today's logged day sticks (AM then PM share it);
+  // otherwise the classic next-after-last walk. getUpcomingWorkoutSlots
+  // derives its walk start from getNextSplitDay(lastCompletedDay), so we
+  // feed it the day BEFORE the suggestion to land on it exactly.
+  const recent = recentQuery.data ?? [];
+  const suggestedDay = useMemo(() => suggestNextSplitDay(recent), [recent]);
+  const walkStartDay = suggestedDay === MIN_SPLIT_DAY
+    ? MAX_SPLIT_DAY
+    : suggestedDay - 1;
+
   const aiPayload = useAiPayload({
     visibleContent: [
       `- Split: ${splitChoice === 'oneADay' ? '1-a-day' : 'AM/PM'}`,
-      `- Next day-of-split: ${getNextSplitDay(lastSplitDay)}`,
+      `- Next day-of-split: ${suggestedDay}`,
       `- Rest days configured: ${restDays.length}`,
     ].join('\n'),
   });
 
   const slots = useMemo(
-    () => getUpcomingWorkoutSlots(7, restDays, lastSplitDay),
-    [restDays, lastSplitDay],
+    () => getUpcomingWorkoutSlots(7, restDays, walkStartDay),
+    [restDays, walkStartDay],
   );
 
   // Selected slot = explicit pick if valid, else first non-rest day in
@@ -105,13 +125,14 @@ export default function SplitSelectionScreen() {
   // The split-day to seed. Rest-day picks fall back to getNextSplitDay
   // so the draft always has a valid 1..4 value even if the user tapped a
   // deactivated rest slot.
-  const draftDay =
-    selectedSlot?.splitDay ?? getNextSplitDay(lastSplitDay);
+  const draftDay = selectedSlot?.splitDay ?? suggestedDay;
 
   // Preview the day's programmed slots (coarse identity + Rx + tags).
   const previewSlots = getSlotsForDay(split, draftDay, session);
 
   const handleStart = () => {
+    // Remember the choices — the next launch opens pre-configured.
+    setPreference({ splitType: split, sessionMode: session });
     startSession({
       splitType: split,
       day: draftDay,

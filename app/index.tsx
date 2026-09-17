@@ -34,7 +34,14 @@ import {
 } from '../components/composed';
 import { EmptyState } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
-import { theme, APP_LAYOUT, MOBILE_CONTENT_MAX_WIDTH, SCREEN_BODY_STYLE } from '../constants';
+import {
+  theme,
+  APP_LAYOUT,
+  MOBILE_CONTENT_MAX_WIDTH,
+  SCREEN_BODY_STYLE,
+  suggestNextSplitDay,
+  suggestSessionWindow,
+} from '../constants';
 import {
   navigateToSettings,
   navigateToWorkoutDetail,
@@ -44,6 +51,8 @@ import {
   navigateToSplitSelection,
   navigateToHome,
 } from '../navigation';
+import { getSlotsForDay, getDayTitle } from '../shared/exercises';
+import { useSplitPreferenceStore } from '../stores';
 import {
   useDashboardSummary,
   useRecentWorkouts,
@@ -57,10 +66,22 @@ export default function HomeScreen() {
   const recentQuery = useRecentWorkouts(5);
   const activePathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
 
   const summary = summaryQuery.data;
   const streak = summary?.streak;
   const recent = recentQuery.data ?? [];
+
+  // THE FUNNEL ENTRY: what the app opens with. Day suggestion sticks to
+  // today's logged day (AM then PM share it), the window follows the
+  // clock, the split is the remembered program.
+  const suggestedDay = recent.length > 0 ? suggestNextSplitDay(recent) : 1;
+  const suggestedWindow = suggestSessionWindow();
+  const suggestedCount = getSlotsForDay(preferredSplit, suggestedDay, suggestedWindow).length;
+  const launcherTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;
+  const launcherSub = preferredSplit === 'twoADay'
+    ? `${launcherTitle} · ${suggestedWindow.toUpperCase()} · ${suggestedCount} exercises`
+    : `${launcherTitle} · ${suggestedCount} exercises`;
 
   const aiPayload = useAiPayload(
     summary
@@ -141,8 +162,24 @@ export default function HomeScreen() {
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Streak + weekly goal */}
+        {/* THE launcher — one prominent path into today's session. */}
         <MobileSectionEyebrow>Today</MobileSectionEyebrow>
+        <MobileSurface padding={20}>
+          <Text style={[styles.launcherTitle, { color: colors.text }]}>
+            Start today's session
+          </Text>
+          <Text style={[styles.launcherSub, { color: colors.textSecondary }]}>
+            {launcherSub} — picked for you, adjust in one tap
+          </Text>
+          <View style={{ height: 12 }} />
+          <MobilePrimaryButton onPress={navigateToSplitSelection} testID="home-launcher-start">
+            Start {preferredSplit === 'twoADay' ? `${suggestedWindow.toUpperCase()} ` : ''}workout
+          </MobilePrimaryButton>
+        </MobileSurface>
+
+        {/* Streak + weekly goal */}
+        <View style={{ height: 16 }} />
+        <MobileSectionEyebrow>This week</MobileSectionEyebrow>
         {summaryQuery.isLoading ? (
           <DashboardSkeleton />
         ) : (
@@ -181,18 +218,18 @@ export default function HomeScreen() {
         <MobileSectionEyebrow>Quick actions</MobileSectionEyebrow>
         <View style={styles.actionsRow}>
           <MobilePrimaryButton
-            variant="primary"
-            onPress={navigateToSplitSelection}
-            style={styles.actionButton}
-          >
-            Start workout
-          </MobilePrimaryButton>
-          <MobilePrimaryButton
             variant="ghost"
             onPress={navigateToExerciseDatabase}
             style={styles.actionButton}
           >
             Exercises
+          </MobilePrimaryButton>
+          <MobilePrimaryButton
+            variant="ghost"
+            onPress={navigateToProgression}
+            style={styles.actionButton}
+          >
+            Progression
           </MobilePrimaryButton>
         </View>
 
@@ -313,6 +350,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 4,
   },
+  launcherTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.2 },
+  launcherSub: { fontSize: 13, lineHeight: 18, marginTop: 4 },
   statLabel: { fontSize: 13, fontWeight: '500' },
   statValue: { fontSize: 15, fontWeight: '600' },
   actionsRow: { flexDirection: 'row', gap: 8 },
