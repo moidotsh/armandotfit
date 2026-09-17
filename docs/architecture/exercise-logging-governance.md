@@ -112,8 +112,10 @@ deleted alternatives graph:
   exercise's identity in place (position, Rx label, and logged set rows
   survive; tags reset — the slot's suggested tags belonged to the
   original exercise). The program in `splits.ts` never changes.
-- **No alternatives graph, no eligibility engine** — the swap sheet
-  lists same-family catalog entries; the empty state (single-entry
+- **No alternatives graph, no eligibility engine** — the inline
+  expansion (`AlternativesExpansion`) lists same-family catalog entries
+  grouped by modality beneath the tapped row — the row itself is the
+  control, no modal sheet, no per-row swap labels; the empty state (single-entry
   families, custom exercises) points at Remove + Add, which can bring
   in anything, including a typed custom exercise.
 - **Standing overrides are BUILT (promoted by owner decision,

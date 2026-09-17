@@ -18,7 +18,7 @@ import {
   CopyForAiButton,
   type MobileSelectionOption,
 } from '../components/MobilePremium';
-import { SwapExerciseSheet } from '../components/composed';
+import { AlternativesExpansion } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAiPayload, } from '../hooks';
@@ -28,6 +28,7 @@ import {
   TWO_A_DAY_SPLITS,
   ONE_A_DAY_SPLITS,
   SYSTEM_EXERCISES_BY_SLUG,
+  getSlotsForDay,
   type SessionWindow,
 } from '../shared/exercises';
 import { SCREEN_BODY_STYLE, WORKOUT_SPLIT_LIST } from '../constants';
@@ -55,7 +56,7 @@ export default function ProgramScreen() {
   const setOverride = useProgramOverrideStore((s) => s.setOverride);
   const clearOverride = useProgramOverrideStore((s) => s.clearOverride);
 
-  const [swapCtx, setSwapCtx] = useState<{ key: string; slug: string } | null>(null);
+  const [openKey, setOpenKey] = useState<string | null>(null);
 
   const days = split === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
   const overriddenCount = Object.keys(overrides).length;
@@ -82,48 +83,66 @@ export default function ProgramScreen() {
     const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
     const name = entry?.name ?? slot.exercise;
     const isOverridden = key in overrides;
+    const isOpen = openKey === key;
 
     return (
-      <View
-        key={key}
-        style={[styles.slotRow, { borderBottomColor: colors.border }]}
-      >
-        <Text style={[styles.slotIndex, { color: colors.brand }]}>{position}</Text>
-        <View style={styles.slotMain}>
-          <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={2}>
-            {name}
-            {isOverridden ? (
-              <Text style={{ color: colors.textSecondary }}> · swapped</Text>
-            ) : null}
+      <View key={key}>
+        <Pressable
+          onPress={() => setOpenKey(isOpen ? null : key)}
+          accessibilityRole="button"
+          accessibilityLabel={
+            isOpen ? `Hide alternatives for ${name}` : `Alternatives for ${name}`
+          }
+          style={({ pressed }) => [
+            styles.slotRow,
+            {
+              borderBottomColor: colors.border,
+              borderLeftColor: isOverridden ? colors.brand : 'transparent',
+            },
+            pressed ? { opacity: 0.7 } : null,
+          ]}
+        >
+          <Text style={[styles.slotIndex, { color: colors.brand }]}>{position}</Text>
+          <View style={styles.slotMain}>
+            <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={2}>
+              {name}
+            </Text>
+            <Text style={[styles.slotMeta, { color: colors.textSecondary }]}>
+              {rxLabel(slot.sets, slot.reps)}
+              {slot.suggestedTags.length > 0 ? ` · ${slot.suggestedTags.join(' · ')}` : ''}
+            </Text>
+          </View>
+          <Text style={[styles.chevron, { color: colors.textSecondary }]}>
+            {isOpen ? '⌃' : '⌄'}
           </Text>
-          <Text style={[styles.slotMeta, { color: colors.textSecondary }]}>
-            {rxLabel(slot.sets, slot.reps)}
-            {slot.suggestedTags.length > 0 ? ` · ${slot.suggestedTags.join(' · ')}` : ''}
-          </Text>
-        </View>
-        <View style={styles.slotCtas}>
-          <Pressable
-            onPress={() => setSwapCtx({ key, slug: slot.exercise })}
-            accessibilityRole="button"
-            accessibilityLabel={`Swap ${name}`}
-            hitSlop={8}
-          >
-            <Text style={[styles.cta, { color: colors.brand }]}>Swap</Text>
-          </Pressable>
-          {isOverridden ? (
-            <Pressable
-              onPress={() => {
-                clearOverride(key);
-                showToast('success', 'Back to the programmed exercise');
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={`Reset ${name} to programmed`}
-              hitSlop={8}
-            >
-              <Text style={[styles.cta, { color: colors.textSecondary }]}>Reset</Text>
-            </Pressable>
-          ) : null}
-        </View>
+        </Pressable>
+        {isOpen ? (
+          <AlternativesExpansion
+            currentSlug={slot.exercise}
+            programmed={
+              isOverridden
+                ? {
+                    slug: getSlotsForDay(split, day, window)[position - 1].exercise,
+                    name:
+                      SYSTEM_EXERCISES_BY_SLUG[
+                        getSlotsForDay(split, day, window)[position - 1].exercise
+                      ]?.name ?? '',
+                  }
+                : null
+            }
+            onRestore={() => {
+              clearOverride(key);
+              setOpenKey(null);
+              showToast('success', 'Back to the programmed exercise');
+            }}
+            onSelect={(next) => {
+              setOverride(key, { slug: next.exerciseSlug, name: next.exerciseName });
+              setOpenKey(null);
+              showToast('success', next.exerciseName);
+            }}
+            testID={`alternatives-${key}`}
+          />
+        ) : null}
       </View>
     );
   };
@@ -201,20 +220,6 @@ export default function ProgramScreen() {
           </MobilePrimaryButton>
         ) : null}
       </ScrollView>
-      <SwapExerciseSheet
-        exerciseSlug={swapCtx?.slug ?? ''}
-        open={swapCtx !== null}
-        onOpenChange={(next) => {
-          if (!next) setSwapCtx(null);
-        }}
-        onSwap={(next) => {
-          if (swapCtx) {
-            setOverride(swapCtx.key, { slug: next.exerciseSlug, name: next.exerciseName });
-            showToast('success', `Standing swap: ${next.exerciseName}`);
-          }
-        }}
-        testID="program-swap-sheet"
-      />
     </SafeAreaView>
   );
 }
@@ -237,11 +242,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     gap: 10,
     borderBottomWidth: 1,
+    borderLeftWidth: 3,
+    paddingLeft: 8,
   },
+  chevron: { fontSize: 14, fontWeight: '600' },
   slotIndex: { fontSize: 13, fontWeight: '700', minWidth: 18 },
   slotMain: { flex: 1, gap: 2 },
   slotName: { fontSize: 14, fontWeight: '600' },
   slotMeta: { fontSize: 12, lineHeight: 16 },
-  slotCtas: { flexDirection: 'row', gap: 12 },
-  cta: { fontSize: 12, fontWeight: '600' },
 });
