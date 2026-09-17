@@ -6,6 +6,7 @@
 
 export {
   useRecentWorkouts,
+  useRecentSessionDetails,
   useWorkoutDetail,
 } from './useWorkouts';
 export { useExercises, useExerciseDetail } from './useExercises';

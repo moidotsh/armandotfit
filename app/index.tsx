@@ -57,7 +57,7 @@ import { getSlotsForDay, getDayTitle } from '../shared/exercises';
 import { useSplitPreferenceStore } from '../stores';
 import {
   useDashboardSummary,
-  useRecentWorkouts,
+  useRecentSessionDetails,
   useAiPayload,
 } from '../hooks';
 
@@ -65,7 +65,7 @@ export default function HomeScreen() {
   const { session, signOut } = useAuth();
   const { colors } = useAppTheme();
   const summaryQuery = useDashboardSummary();
-  const recentQuery = useRecentWorkouts(5);
+  const recentQuery = useRecentSessionDetails(5);
   const activePathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
@@ -73,7 +73,6 @@ export default function HomeScreen() {
   const summary = summaryQuery.data;
   const streak = summary?.streak;
   const recent = recentQuery.data ?? [];
-
   // THE FUNNEL ENTRY: what the app opens with. Day suggestion sticks to
   // today's logged day (AM then PM share it), the window follows the
   // clock, the split is the remembered program.
@@ -216,7 +215,7 @@ export default function HomeScreen() {
           </MobileSurface>
         )}
 
-        {/* Quick actions */}
+        {/* Quick actions — one 2×2 grid, no duplicates. */}
         <View style={{ height: 16 }} />
         <MobileSectionEyebrow>Quick actions</MobileSectionEyebrow>
         <View style={styles.actionsRow}>
@@ -229,10 +228,26 @@ export default function HomeScreen() {
           </MobilePrimaryButton>
           <MobilePrimaryButton
             variant="ghost"
+            onPress={navigateToProgram}
+            style={styles.actionButton}
+          >
+            Program
+          </MobilePrimaryButton>
+        </View>
+        <View style={styles.actionsRow}>
+          <MobilePrimaryButton
+            variant="ghost"
             onPress={navigateToProgression}
             style={styles.actionButton}
           >
             Progression
+          </MobilePrimaryButton>
+          <MobilePrimaryButton
+            variant="ghost"
+            onPress={navigateToAnalytics}
+            style={styles.actionButton}
+          >
+            Analytics
           </MobilePrimaryButton>
         </View>
 
@@ -260,33 +275,6 @@ export default function HomeScreen() {
             ))}
           </View>
         )}
-
-        {/* Secondary navigation */}
-        <View style={{ height: 16 }} />
-        <MobileSectionEyebrow>Explore</MobileSectionEyebrow>
-        <View style={styles.actionsRow}>
-          <MobilePrimaryButton
-            variant="ghost"
-            onPress={navigateToProgram}
-            style={styles.actionButton}
-          >
-            Program
-          </MobilePrimaryButton>
-          <MobilePrimaryButton
-            variant="ghost"
-            onPress={navigateToProgression}
-            style={styles.actionButton}
-          >
-            Progression
-          </MobilePrimaryButton>
-          <MobilePrimaryButton
-            variant="ghost"
-            onPress={navigateToAnalytics}
-            style={styles.actionButton}
-          >
-            Analytics
-          </MobilePrimaryButton>
-        </View>
       </ScrollView>
       <MobileNavDrawer
         open={drawerOpen}
@@ -360,8 +348,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 4,
   },
-  launcherTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.2 },
-  launcherSub: { fontSize: 13, lineHeight: 18, marginTop: 4 },
+  launcherTitle: {
+    fontSize: theme.fontSize.large,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+  launcherSub: { ...theme.typography.mobileSubtitle, marginTop: 4 },
   streakRow: { flexDirection: 'row', alignItems: 'center', gap: 20 },
   streakHero: { flex: 1 },
   streakFigure: {

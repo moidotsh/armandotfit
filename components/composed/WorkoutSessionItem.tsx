@@ -1,24 +1,46 @@
 // components/composed/WorkoutSessionItem.tsx
 // Reusable list row for a training session (home dashboard's recent list
-// and analytics history). Wraps the date + day-of-split pattern.
+// and analytics history). A receipt line: date + day-of-split on the
+// title row, the session's shape (lifts · sets · tonnage) muted beneath.
+// All derived from the session at read time — nothing stored.
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MobileSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
-import type { TrainingSession } from '../../shared/types';
+import { formatVolume, sumVolume } from '../../services';
+import type { LoggedExerciseWithSets, TrainingSession } from '../../shared/types';
 
 export interface WorkoutSessionItemProps {
-  session: Pick<TrainingSession, 'id' | 'startedAt' | 'splitDay'>;
+  session: Pick<TrainingSession, 'id' | 'startedAt' | 'splitDay'> & {
+    /** Expanded exercises — when provided, the row shows its shape. */
+    exercises?: LoggedExerciseWithSets[];
+  };
   onPress: (id: string) => void;
 }
 
 export function WorkoutSessionItem({ session, onPress }: WorkoutSessionItemProps) {
   const { colors } = useAppTheme();
+
+  // AM and PM are separate session rows; the start hour restores which
+  // window this row was. 12:00 boundary — a noon session reads as PM.
+  const hour = new Date(session.startedAt).getHours();
+  const windowLabel = hour < 12 ? 'AM' : 'PM';
+
+  const lifts = session.exercises?.length ?? 0;
+  const setCount =
+    session.exercises?.reduce((sum, e) => sum + e.sets.length, 0) ?? 0;
+  const tonnage = sumVolume(session.exercises?.flatMap((e) => e.sets) ?? []);
+  const shape =
+    lifts > 0
+      ? [`${lifts} lift${lifts === 1 ? '' : 's'}`, `${setCount} sets`, `${formatVolume(tonnage)} kg`].join(' · ')
+      : null;
+
   return (
     <Pressable
       onPress={() => onPress(session.id)}
       accessibilityRole="button"
+      accessibilityLabel={`Session ${new Date(session.startedAt).toLocaleDateString()}, ${shape ?? 'details'}`}
     >
       <MobileSurface padding={14}>
         <View style={styles.row}>
@@ -29,10 +51,18 @@ export function WorkoutSessionItem({ session, onPress }: WorkoutSessionItemProps
               day: 'numeric',
             })}
           </Text>
-          <Text style={[styles.meta, { color: colors.textSecondary }]}>
-            {session.splitDay != null ? `day ${session.splitDay}` : 'ad-hoc'}
-          </Text>
+          <View style={styles.metaRow}>
+            <Text style={[styles.window, { color: colors.textColors.tertiary }]}>
+              {windowLabel}
+            </Text>
+            <Text style={[styles.meta, { color: colors.textSecondary }]}>
+              {session.splitDay != null ? `Day ${session.splitDay}` : 'Ad-hoc'}
+            </Text>
+          </View>
         </View>
+        {shape ? (
+          <Text style={[styles.shape, { color: colors.textSecondary }]}>{shape}</Text>
+        ) : null}
       </MobileSurface>
     </Pressable>
   );
@@ -44,6 +74,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   date: { fontSize: 14, fontWeight: '600' },
-  meta: { fontSize: 12 },
+  window: { fontSize: 11, fontWeight: '600', letterSpacing: 0.8 },
+  meta: { fontSize: 12, fontVariant: ['tabular-nums'] },
+  shape: {
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 4,
+    fontVariant: ['tabular-nums'],
+  },
 });

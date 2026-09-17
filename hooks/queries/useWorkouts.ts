@@ -23,6 +23,25 @@ export function useRecentWorkouts(limit = 10) {
   });
 }
 
+/**
+ * Recent sessions with exercises + sets expanded — the read path for
+ * surfaces that show per-session volume/lift counts (home's recent list).
+ * Same service as the headers-only read; just the nested variant.
+ */
+export function useRecentSessionDetails(limit = 10) {
+  const userId = useAuthStore((s) => s.userId);
+  return useQuery({
+    queryKey: [...queryKeys.workouts.recent(limit), 'details'],
+    queryFn: async () => {
+      if (!userId) return [] as SessionWithDetails[];
+      const res = await WorkoutService.getRecentWithDetails(userId, limit);
+      if (!res.success) throw res.error;
+      return res.data;
+    },
+    enabled: !!userId,
+  });
+}
+
 /** Full session detail (header + exercises + sets). */
 export function useWorkoutDetail(
   id: ID | null | undefined,
