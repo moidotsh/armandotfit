@@ -1,7 +1,8 @@
 // components/composed/SplitExerciseRow.tsx
 // Read-only row for the split-selection preview: coarse exercise name,
-// programmed Rx, suggested tags, and equipment/muscle display hints from
-// the local catalog. Rx comes from the PROGRAM slot (splits.ts), not the
+// programmed Rx (tabular figures, right-aligned), suggested tags, and a
+// single quiet attribute line (primary muscles · equipment) from the
+// local catalog. Rx comes from the PROGRAM slot (splits.ts), not the
 // exercise's catalog defaults.
 
 import React from 'react';
@@ -31,6 +32,13 @@ export function SplitExerciseRow({ slot, index }: SplitExerciseRowProps) {
   const title = exercise?.name ?? slot.exercise;
   const attrs = exercise ? formatExerciseAttributes(exercise) : null;
 
+  // One quiet attribute line: primary muscles, then equipment. Labels
+  // would double the line count; the midline keeps the two groups apart.
+  const attrParts = [
+    attrs?.primaryMuscleLabel ?? null,
+    attrs?.equipmentLabel ?? null,
+  ].filter(Boolean) as string[];
+
   return (
     <MobileSurface padding={12}>
       <View style={styles.headerRow}>
@@ -51,14 +59,9 @@ export function SplitExerciseRow({ slot, index }: SplitExerciseRowProps) {
           {slot.suggestedTags.join(' · ')}
         </Text>
       ) : null}
-      {attrs?.equipmentLabel ? (
-        <Text style={[styles.attributeLine, { color: colors.textSecondary }]}>
-          Equipment: {attrs.equipmentLabel}
-        </Text>
-      ) : null}
-      {attrs?.primaryMuscleLabel ? (
-        <Text style={[styles.attributeLine, { color: colors.textSecondary }]}>
-          Primary: {attrs.primaryMuscleLabel}
+      {attrParts.length > 0 ? (
+        <Text style={[styles.attributeLine, { color: colors.textColors.tertiary }]}>
+          {attrParts.join(' · ')}
         </Text>
       ) : null}
     </MobileSurface>
@@ -71,8 +74,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  index: { fontSize: 13, fontWeight: '700', minWidth: 18 },
+  index: { fontSize: 13, fontWeight: '700', minWidth: 18, fontVariant: ['tabular-nums'] },
   title: { fontSize: 14, fontWeight: '600', flex: 1 },
-  setsHint: { fontSize: 12, fontWeight: '500' },
+  setsHint: {
+    fontSize: 12,
+    fontWeight: '500',
+    fontVariant: ['tabular-nums'],
+  },
   attributeLine: { fontSize: 12, lineHeight: 16, marginTop: 4 },
 });

@@ -44,6 +44,7 @@ import {
   MIN_SPLIT_DAY,
   MAX_SPLIT_DAY,
   SCREEN_BODY_STYLE,
+  theme,
   type SessionMode,
   type UpcomingWorkoutSlot,
 } from '../constants';
@@ -135,11 +136,15 @@ export default function SplitSelectionScreen() {
   const handleStart = () => {
     // Remember the choices — the next launch opens pre-configured.
     setPreference({ splitType: split, sessionMode: session });
+    // The session starts NOW: draft.date defaults to the current instant
+    // (startSession), which is what the elapsed timer + started_at save.
+    // The picked day rides on `day` (split_day), not on the timestamp —
+    // passing the slot's midnight would log a pre-midnight start and
+    // read as hours of elapsed training.
     startSession({
       splitType: split,
       day: draftDay,
       sessionMode: session,
-      date: selectedSlot?.date.toISOString(),
     });
     navigateToWorkoutDetail();
   };
@@ -311,21 +316,21 @@ const styles = StyleSheet.create({
     // Center the last row so a 7-day window renders as 4 + 3 with the
     // 3 centered, not left-aligned.
     justifyContent: 'center',
-    gap: 6,
+    gap: 8,
   },
   dayTile: {
-    // 4 per row max so 7 days wraps to 4 + 3. The 24% width leaves room
-    // for the 6px gap between tiles without forcing a tighter wrap.
-    width: '24%',
-    aspectRatio: 0.85,
-    borderRadius: 10,
+    // 4 per row max so 7 days wraps to 4 + 3. The 23% width leaves room
+    // for the 8px gap between tiles without forcing a tighter wrap.
+    width: '23%',
+    aspectRatio: 0.78,
+    borderRadius: 12,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 6,
   },
   dayTileRest: {
-    opacity: 0.5,
+    opacity: 0.45,
   },
   dayDow: {
     fontSize: 10,
@@ -334,21 +339,23 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   dayDate: {
-    fontSize: 16,
+    fontSize: theme.fontSize.medium,
     fontWeight: '700',
-    marginTop: 2,
+    marginTop: 3,
+    fontVariant: ['tabular-nums'],
   },
   daySlotLabel: {
     fontSize: 10,
     fontWeight: '600',
-    marginTop: 2,
+    marginTop: 3,
+    fontVariant: ['tabular-nums'],
   },
   restHint: {
-    fontSize: 11,
-    lineHeight: 14,
-    marginTop: 8,
+    fontSize: theme.fontSize.xs,
+    lineHeight: 16,
+    marginTop: 10,
     textAlign: 'center',
   },
-  emptyText: { fontSize: 13, lineHeight: 18 },
+  emptyText: { fontSize: theme.fontSize.xs, lineHeight: 18 },
   listStack: { gap: 8 },
 });
