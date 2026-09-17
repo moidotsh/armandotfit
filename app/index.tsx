@@ -23,7 +23,6 @@ import {
   MobilePrimaryButton,
   MobileSectionEyebrow,
   MobileNavDrawer,
-  MobileNavDrawerGlassCap,
   HamburgerButton,
   CopyForAiButton,
   type MobileNavDrawerItem,
@@ -35,7 +34,7 @@ import {
 } from '../components/composed';
 import { EmptyState } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
-import { theme, APP_LAYOUT, SCREEN_BODY_STYLE } from '../constants';
+import { theme, APP_LAYOUT, MOBILE_CONTENT_MAX_WIDTH, SCREEN_BODY_STYLE } from '../constants';
 import {
   navigateToSettings,
   navigateToWorkoutDetail,
@@ -81,37 +80,37 @@ export default function HomeScreen() {
     {
       id: '/',
       label: 'Home',
-      icon: <Home size={18} color={colors.text} />,
+      icon: <Home size={18} color={colors.background} />,
       onPress: navigateToHome,
     },
     {
       id: '/split-selection',
       label: 'Start workout',
-      icon: <PlusCircle size={18} color={colors.text} />,
+      icon: <PlusCircle size={18} color={colors.background} />,
       onPress: navigateToSplitSelection,
     },
     {
       id: '/exercise-database',
       label: 'Exercises',
-      icon: <Dumbbell size={18} color={colors.text} />,
+      icon: <Dumbbell size={18} color={colors.background} />,
       onPress: navigateToExerciseDatabase,
     },
     {
       id: '/progression',
       label: 'Progression',
-      icon: <TrendingUp size={18} color={colors.text} />,
+      icon: <TrendingUp size={18} color={colors.background} />,
       onPress: navigateToProgression,
     },
     {
       id: '/analytics',
       label: 'Analytics',
-      icon: <BarChart2 size={18} color={colors.text} />,
+      icon: <BarChart2 size={18} color={colors.background} />,
       onPress: navigateToAnalytics,
     },
     {
       id: '/settings',
       label: 'Settings',
-      icon: <Settings size={18} color={colors.text} />,
+      icon: <Settings size={18} color={colors.background} />,
       onPress: navigateToSettings,
     },
   ];
@@ -127,13 +126,14 @@ export default function HomeScreen() {
         subtitle={
           session?.email ? `Welcome back, ${session.email.split('@')[0]}` : 'Welcome'
         }
+        onPlate={drawerOpen}
         menuButton={
           <HamburgerButton
             isOpen={drawerOpen}
             onPress={() => setDrawerOpen((prev) => !prev)}
+            color={drawerOpen ? colors.background : undefined}
           />
         }
-        drawerGlassCap={<MobileNavDrawerGlassCap open={drawerOpen} />}
         rightAction={<CopyForAiButton variant="subtle" payload={aiPayload} testID="dashboard-copy-for-ai" />}
       />
       <ScrollView
@@ -249,6 +249,13 @@ export default function HomeScreen() {
         atmosphere="training"
         brandPersistence={APP_LAYOUT.navDrawerBrandPersistence}
         anchor={APP_LAYOUT.navDrawerAnchor}
+        columnWidth={MOBILE_CONTENT_MAX_WIDTH}
+        itemLabelStyle={{
+          fontFamily: theme.fonts.mono,
+          fontSize: 12,
+          letterSpacing: 1.2,
+          textTransform: 'uppercase',
+        }}
         header={
           APP_LAYOUT.navDrawerBrandPersistence === 'slideout' ? (
             <View style={styles.drawerHeader}>
@@ -263,10 +270,10 @@ export default function HomeScreen() {
                     pressed ? { opacity: 0.6 } : null,
                   ]}
                 >
-                  <X size={22} color={colors.text} />
+                  <X size={22} color={colors.background} />
                 </Pressable>
                 <Text
-                  style={[theme.typography.mobileTitle, { color: colors.text }]}
+                  style={[theme.typography.mobileTitle, { color: colors.background }]}
                   numberOfLines={1}
                 >
                   armandotfit
@@ -275,7 +282,7 @@ export default function HomeScreen() {
               <Text
                 style={[
                   theme.typography.mobileSubtitle,
-                  { color: colors.textSecondary, marginTop: 4 },
+                  { color: `${colors.background}B3`, marginTop: 4 },
                 ]}
                 numberOfLines={1}
               >
