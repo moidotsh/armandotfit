@@ -185,36 +185,31 @@ export default function HomeScreen() {
           </MobilePrimaryButton>
         </MobileSurface>
 
-        {/* Streak + weekly goal */}
+        {/* Streak hero — big figure treatment */}
         <View style={{ height: 16 }} />
         <MobileSectionEyebrow>This week</MobileSectionEyebrow>
         {summaryQuery.isLoading ? (
           <DashboardSkeleton />
         ) : (
           <MobileSurface padding={20}>
-            <View>
-              <View style={styles.rowBetween}>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                  Current streak
+            <View style={styles.streakRow}>
+              <View style={styles.streakHero}>
+                <Text style={[styles.streakFigure, { color: colors.brand }]}>
+                  {streak?.current ?? 0}
                 </Text>
-                <Text style={[styles.statValue, { color: colors.brand }]}>
-                  {streak?.current ?? 0} days
-                </Text>
-              </View>
-              <View style={styles.rowBetween}>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                  Best streak
-                </Text>
-                <Text style={[styles.statValue, { color: colors.text }]}>
-                  {streak?.best ?? 0} days
+                <Text style={[styles.streakUnit, { color: colors.textSecondary }]}>
+                  day streak
                 </Text>
               </View>
-              <View style={styles.rowBetween}>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                  This week
+              <View style={styles.streakSide}>
+                <Text style={[styles.sideValue, { color: colors.text }]}>
+                  best {streak?.best ?? 0}
                 </Text>
-                <Text style={[styles.statValue, { color: colors.text }]}>
-                  {summary?.thisWeekSessions ?? 0} sessions
+                <Text style={[styles.sideValue, { color: colors.text }]}>
+                  {summary?.thisWeekSessions ?? 0} this week
+                </Text>
+                <Text style={[styles.sideValue, { color: colors.textSecondary }]}>
+                  {summary?.totalSessions ?? 0} all time
                 </Text>
               </View>
             </View>
@@ -367,6 +362,24 @@ const styles = StyleSheet.create({
   },
   launcherTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.2 },
   launcherSub: { fontSize: 13, lineHeight: 18, marginTop: 4 },
+  streakRow: { flexDirection: 'row', alignItems: 'center', gap: 20 },
+  streakHero: { flex: 1 },
+  streakFigure: {
+    fontSize: 56,
+    fontWeight: '800',
+    letterSpacing: -2,
+    lineHeight: 56,
+    fontVariant: ['tabular-nums'],
+  },
+  streakUnit: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginTop: 4,
+  },
+  streakSide: { gap: 4, alignItems: 'flex-end' },
+  sideValue: { fontSize: 13, fontWeight: '500', fontVariant: ['tabular-nums'] },
   statLabel: { fontSize: 13, fontWeight: '500' },
   statValue: { fontSize: 15, fontWeight: '600' },
   actionsRow: { flexDirection: 'row', gap: 8 },

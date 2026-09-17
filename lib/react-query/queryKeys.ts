@@ -44,6 +44,8 @@ export const queryKeys = {
     /** Most-recent tags per exercise-name list (session-start prefill). */
     lastTags: (namesKey: string) =>
       [...queryKeys.workouts.all, 'last-tags', namesKey] as const,
+    /** Personal bests per exercise across history (computed at read). */
+    personalBests: () => [...queryKeys.workouts.all, 'personal-bests'] as const,
   },
 
   /** Dashboard summary + chart data. */

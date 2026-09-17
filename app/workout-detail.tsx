@@ -51,6 +51,12 @@ import {
 import { useWorkoutStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots } from '../services';
 import { getSlotsForDay, getDayTitle, TAG_VOCABULARY_SEED } from '../shared/exercises';
+import {
+  isSetFilled,
+  sumVolume,
+  formatVolume,
+  formatElapsed,
+} from '../services';
 import { SCREEN_BODY_STYLE } from '../constants';
 
 export default function WorkoutDetailScreen() {
@@ -134,6 +140,24 @@ export default function WorkoutDetailScreen() {
       hydrateFromSplit(slots);
     }
   }, [draft, hydrateFromSplit, programOverrides]);
+
+  // Live session stats: elapsed, filled sets, tonnage. One interval,
+  // paired cleanup (R4a).
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNowTick(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const sessionSets = draft
+    ? draft.exercises.reduce(
+        (n, e) => n + e.sets.filter(isSetFilled).length,
+        0,
+      )
+    : 0;
+  const sessionKg = draft
+    ? draft.exercises.reduce((n, e) => n + sumVolume(e.sets), 0)
+    : 0;
+  const elapsed = draft?.date ? formatElapsed(draft.date, nowTick) : '00:00';
 
   // "What did I use last time" — the caller's most recent tags per
   // exercise replace the program's suggested prefill exactly once per
@@ -351,6 +375,23 @@ export default function WorkoutDetailScreen() {
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={[styles.statsStrip, { borderBottomColor: colors.border }]}>
+          <View style={styles.stat}>
+            <Text style={[styles.statValue, { color: colors.brand }]}>{elapsed}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>elapsed</Text>
+          </View>
+          <View style={styles.stat}>
+            <Text style={[styles.statValue, { color: colors.text }]}>{sessionSets}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>sets</Text>
+          </View>
+          <View style={styles.stat}>
+            <Text style={[styles.statValue, { color: colors.text }]}>
+              {formatVolume(sessionKg)}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>kg</Text>
+          </View>
+        </View>
+
         <MobileSectionEyebrow>
           {draft.exercises.length} exercise{draft.exercises.length === 1 ? '' : 's'}
         </MobileSectionEyebrow>
@@ -431,6 +472,10 @@ export default function WorkoutDetailScreen() {
                       Target {ex.targetRx}
                     </Text>
                   ) : null}
+                  <Text style={[styles.progressLine, { color: colors.textSecondary }]}>
+                    {ex.sets.filter(isSetFilled).length}/{ex.sets.length} sets
+                    {sumVolume(ex.sets) > 0 ? ` · ${formatVolume(sumVolume(ex.sets))} kg` : ''}
+                  </Text>
                   {/* Realization tags — the single context surface. */}
                   <TagChips
                     tags={ex.tags}
@@ -466,7 +511,15 @@ export default function WorkoutDetailScreen() {
                     </Text>
                   )}
                   <Pressable
-                    onPress={() => addSetToDraft(ex.localId)}
+                    onPress={() => {
+                      // Weight carry-forward: the last filled weight
+                      // pre-fills the new set — logging repeats far more
+                      // than it changes.
+                      const lastFilled = [...ex.sets]
+                        .reverse()
+                        .find(isSetFilled);
+                      addSetToDraft(ex.localId, { weight: lastFilled?.weight ?? null });
+                    }}
                     accessibilityRole="button"
                     accessibilityLabel={`Add set to ${ex.exerciseName}`}
                     hitSlop={6}
@@ -539,6 +592,17 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   rxLine: { fontSize: 12, marginTop: 2 },
+  progressLine: { fontSize: 11, marginTop: 2 },
+  statsStrip: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    marginBottom: 4,
+    borderBottomWidth: 1,
+  },
+  stat: { alignItems: 'center', flex: 1 },
+  statValue: { fontSize: 22, fontWeight: '700', letterSpacing: -0.3, fontVariant: ['tabular-nums'] },
+  statLabel: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 2 },
   tagsLine: { fontSize: 12, lineHeight: 16, marginBottom: 6 },
   exerciseNameWrap: {
     flexDirection: 'row',

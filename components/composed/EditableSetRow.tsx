@@ -39,6 +39,8 @@ export function EditableSetRow({
   onRemove,
 }: EditableSetRowProps) {
   const { colors } = useAppTheme();
+  // A filled set is a done set — the index takes the ink mark.
+  const filled = weight !== null && reps !== null;
   // Local string state mirrors the incoming numeric values so the
   // input can hold "100|" while typing without round-tripping through
   // the store on every keystroke.
@@ -61,8 +63,13 @@ export function EditableSetRow({
 
   return (
     <View style={styles.row}>
-      <Text style={[styles.setPosition, { color: colors.textSecondary }]}>
-        {position}
+      <Text
+        style={[
+          styles.setPosition,
+          { color: filled ? colors.brand : colors.textSecondary },
+        ]}
+      >
+        {filled ? '✓' : position}
       </Text>
 
       <TextInput

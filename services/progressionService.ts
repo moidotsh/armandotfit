@@ -10,6 +10,7 @@ import type {
   ProgressionSummary,
   StreakInfo,
 } from '../shared/types';
+import { e1rm } from './sessionMath';
 
 /** Local calendar date ('YYYY-MM-DD') of an ISO timestamp. */
 function localDate(iso: string): string {
@@ -67,6 +68,53 @@ function weekStart(): string {
   const day = (d.getDay() + 6) % 7; // Mon = 0
   d.setDate(d.getDate() - day);
   return dateStr(d);
+}
+
+/** One exercise's personal-best line — computed at read, never stored. */
+export interface PersonalBest {
+  exerciseName: string;
+  /** Best set by e1RM. */
+  bestWeight: number;
+  bestReps: number;
+  bestE1rm: number;
+  /** ISO of the session holding the best. */
+  bestAt: string;
+}
+
+/**
+ * Personal bests from history: for every exercise with logged sets, the
+ * best set ranked by Epley e1RM. Tag-blind by design (the governance's
+ * visible-filtering rule) — filters are a future read-time concern.
+ */
+export function computePersonalBests(
+  sessions: ReadonlyArray<{
+    startedAt: string;
+    exercises: ReadonlyArray<{
+      exerciseName: string;
+      sets: ReadonlyArray<{ reps: number; weight: number }>;
+    }>;
+  }>,
+): PersonalBest[] {
+  const best = new Map<string, PersonalBest>();
+  for (const session of sessions) {
+    for (const ex of session.exercises) {
+      if (!ex.exerciseName) continue;
+      for (const set of ex.sets) {
+        const estimate = e1rm(set.weight, set.reps);
+        const current = best.get(ex.exerciseName);
+        if (!current || estimate > current.bestE1rm) {
+          best.set(ex.exerciseName, {
+            exerciseName: ex.exerciseName,
+            bestWeight: set.weight,
+            bestReps: set.reps,
+            bestE1rm: estimate,
+            bestAt: session.startedAt,
+          });
+        }
+      }
+    }
+  }
+  return [...best.values()].sort((a, b) => b.bestE1rm - a.bestE1rm);
 }
 
 export class ProgressionService {

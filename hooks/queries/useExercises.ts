@@ -30,6 +30,9 @@ export function useExercises(filter?: CatalogFilter): LocalQueryResult {
   if (filter?.exerciseType) {
     data = data.filter((e) => e.exerciseType === filter.exerciseType);
   }
+  if (filter?.modality) {
+    data = data.filter((e) => e.modality === filter.modality);
+  }
   return { data, isLoading: false };
 }
 

@@ -4,10 +4,15 @@
 // userId threaded via the auth store.
 
 import { useQuery } from '@tanstack/react-query';
-import { ProgressionService, AnalyticsService } from '../../services';
+import { ProgressionService, AnalyticsService, WorkoutService, computePersonalBests } from '../../services';
 import { queryKeys } from '../../lib/react-query';
 import { useAuthStore } from '../../stores';
-import type { ProgressionSummary, StreakInfo, DayActivity } from '../../shared/types';
+import type {
+  ProgressionSummary,
+  StreakInfo,
+  DayActivity,
+  SessionWithDetails,
+} from '../../shared/types';
 
 const EMPTY_SUMMARY: ProgressionSummary = {
   streak: { current: 0, best: 0 },
@@ -56,6 +61,21 @@ export function useAnalyticsHistory(daysBack = 30) {
       const res = await AnalyticsService.getDailyActivity(userId, daysBack);
       if (!res.success) throw res.error;
       return res.data;
+    },
+    enabled: !!userId,
+  });
+}
+
+/** Personal bests across history — computed at read from full details. */
+export function usePersonalBests() {
+  const userId = useAuthStore((s) => s.userId);
+  return useQuery<import('../../services').PersonalBest[]>({
+    queryKey: queryKeys.workouts.personalBests(),
+    queryFn: async () => {
+      if (!userId) return [];
+      const res = await WorkoutService.getRecentWithDetails(userId, 100);
+      if (!res.success) throw res.error;
+      return computePersonalBests(res.data);
     },
     enabled: !!userId,
   });

@@ -13,6 +13,7 @@ export {
   useDashboardSummary,
   useStreaks,
   useAnalyticsHistory,
+  usePersonalBests,
 } from './useProgression';
 export { useProfile } from './useProfile';
 export { useLastUsedTags } from './useLastUsedTags';

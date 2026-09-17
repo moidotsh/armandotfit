@@ -35,6 +35,8 @@ export interface CatalogFilter {
   search?: string;
   category?: string;
   exerciseType?: string;
+  /** Equipment modality: floor / dumbbell / barbell / machine / cable. */
+  modality?: string;
 }
 
 interface ExerciseBrowseState {

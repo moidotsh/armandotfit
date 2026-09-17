@@ -4,6 +4,19 @@
 // services (S9).
 
 export { WorkoutService } from './workoutService';
-export { ProgressionService, computeStreaks } from './progressionService';
+export {
+  ProgressionService,
+  computeStreaks,
+  computePersonalBests,
+  type PersonalBest,
+} from './progressionService';
 export { AnalyticsService } from './analyticsService';
 export { slotKey, resolveSlots } from './programService';
+export {
+  e1rm,
+  isSetFilled,
+  setVolume,
+  sumVolume,
+  formatVolume,
+  formatElapsed,
+} from './sessionMath';

@@ -14,13 +14,33 @@ import {
   CopyForAiButton,
   SearchField,
   EmptyState,
+  FilterChip,
+  FilterChipGroup,
 } from '../components/MobilePremium';
 import { ExerciseListItem } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises, useAiPayload } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
+import type { SystemExerciseData } from '../shared/exercises';
 import { SCREEN_BODY_STYLE } from '../constants';
+
+/** Group the catalog by display category, in display order. */
+const CATEGORY_ORDER = ['Chest', 'Back', 'Shoulders', 'Arms', 'Upper Leg', 'Lower Leg', 'Abs'];
+function groupedByCategory(entries: SystemExerciseData[]) {
+  const groups = new Map<string, SystemExerciseData[]>();
+  for (const e of entries) {
+    const list = groups.get(e.category) ?? [];
+    list.push(e);
+    groups.set(e.category, list);
+  }
+  return [...groups.entries()]
+    .sort(
+      (a, b) =>
+        CATEGORY_ORDER.indexOf(a[0]) - CATEGORY_ORDER.indexOf(b[0]),
+    )
+    .map(([category, list]) => ({ category, entries: list }));
+}
 
 export default function ExerciseDatabaseScreen() {
   const { colors } = useAppTheme();
@@ -68,6 +88,21 @@ export default function ExerciseDatabaseScreen() {
           accessibilityLabel="Search exercises"
           testID="exercise-search-field"
         />
+        <View style={{ height: 10 }} />
+        <FilterChipGroup>
+          {['floor', 'dumbbell', 'barbell', 'machine', 'cable'].map((m) => (
+            <FilterChip
+              key={m}
+              label={m === 'floor' ? 'Bodyweight' : m === 'dumbbell' ? 'DB' : m === 'barbell' ? 'BB' : m[0].toUpperCase() + m.slice(1)}
+              selected={filter.modality === m}
+              onPress={() =>
+                setFilter({ modality: filter.modality === m ? undefined : m })
+              }
+              accessibilityLabel={`Filter by ${m}`}
+            />
+          ))}
+        </FilterChipGroup>
+
         {isSessionActive ? (
           <>
             <View style={{ height: 12 }} />
@@ -111,12 +146,22 @@ export default function ExerciseDatabaseScreen() {
           />
         ) : (
           <FlatList
-            data={query.data}
-            keyExtractor={(e) => e.slug}
+            data={groupedByCategory(query.data ?? [])}
+            keyExtractor={(item) => item.category}
             renderItem={({ item }) => (
-              <ExerciseListItem exercise={item} onPress={navigateToExerciseDetail} />
+              <View>
+                <View style={{ height: 4 }} />
+                <MobileSectionEyebrow>
+                  {item.category} · {item.entries.length}
+                </MobileSectionEyebrow>
+                <View style={{ height: 8 }} />
+                {item.entries.map((e) => (
+                  <View key={e.slug} style={{ marginBottom: 8 }}>
+                    <ExerciseListItem exercise={e} onPress={navigateToExerciseDetail} />
+                  </View>
+                ))}
+              </View>
             )}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
           />

@@ -19,12 +19,13 @@ import {
 import { LoadingSpinner } from '../components/primitives';
 import { useAppTheme } from '../context';
 import { safeGoBack, navigateToAnalytics } from '../navigation';
-import { useDashboardSummary, useAiPayload } from '../hooks';
+import { useDashboardSummary, usePersonalBests, useAiPayload } from '../hooks';
 import { SCREEN_BODY_STYLE } from '../constants';
 
 export default function ProgressionScreen() {
   const { colors } = useAppTheme();
   const summaryQuery = useDashboardSummary();
+  const pbQuery = usePersonalBests();
   const summary = summaryQuery.data;
 
   const aiPayload = useAiPayload(
@@ -105,6 +106,33 @@ export default function ProgressionScreen() {
             </MobileSurface>
 
             <View style={{ height: 16 }} />
+            {pbQuery.data && pbQuery.data.length > 0 ? (
+              <>
+                <View style={{ height: 16 }} />
+                <MobileSectionEyebrow>Personal bests</MobileSectionEyebrow>
+                <MobileSurface padding={16}>
+                  {pbQuery.data.slice(0, 10).map((pb) => (
+                    <View
+                      key={pb.exerciseName}
+                      style={styles.rowBetween}
+                    >
+                      <Text
+                        style={[styles.pbName, { color: colors.text }]}
+                        numberOfLines={1}
+                      >
+                        {pb.exerciseName}
+                      </Text>
+                      <Text
+                        style={[styles.pbValue, { color: colors.brand }]}
+                      >
+                        {pb.bestWeight}×{pb.bestReps}
+                      </Text>
+                    </View>
+                  ))}
+                </MobileSurface>
+              </>
+            ) : null}
+
             <MobileSectionEyebrow>This week</MobileSectionEyebrow>
             <MobileSurface padding={20}>
               <View style={styles.rowBetween}>
@@ -140,4 +168,6 @@ const styles = StyleSheet.create({
   },
   label: { fontSize: 13, fontWeight: '500' },
   value: { fontSize: 15, fontWeight: '600' },
+  pbName: { fontSize: 13, fontWeight: '500', flex: 1, marginRight: 12 },
+  pbValue: { fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
 });
