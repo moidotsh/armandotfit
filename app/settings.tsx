@@ -110,7 +110,7 @@ export default function SettingsScreen() {
           />
         </MobileSurface>
 
-        <MobileSectionEyebrow flush={false}>Appearance</MobileSectionEyebrow>
+        <MobileSectionEyebrow rule flush={false}>Appearance</MobileSectionEyebrow>
         <MobileSurface padding={0}>
           {PREFERENCE_ORDER.map((pref, i) => {
             const isActive = preference === pref;
@@ -155,7 +155,7 @@ export default function SettingsScreen() {
           })}
         </MobileSurface>
 
-        <MobileSectionEyebrow flush={false}>Training</MobileSectionEyebrow>
+        <MobileSectionEyebrow rule flush={false}>Training</MobileSectionEyebrow>
         <MobileSurface padding={12}>
           <View style={styles.restDayRow}>
             {DAY_OF_WEEK_LABELS.map((d) => {
@@ -189,7 +189,7 @@ export default function SettingsScreen() {
             })}
           </View>
         </MobileSurface>
-        <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
+        <Text style={[styles.sectionHint, { color: colors.textMuted }]}>
           Rest days are visually deactivated in the workout-day picker. The
           day-of-split suggestion ignores them — it only advances when you
           log a session.
@@ -197,7 +197,7 @@ export default function SettingsScreen() {
 
         {pwaPrompt.shouldShow ? (
           <>
-            <MobileSectionEyebrow flush={false}>Install</MobileSectionEyebrow>
+            <MobileSectionEyebrow rule flush={false}>Install</MobileSectionEyebrow>
             <MobileSurface padding={0}>
               <MobileSettingsRow
                 label="Install app"
@@ -214,14 +214,14 @@ export default function SettingsScreen() {
                 isLast
               />
             </MobileSurface>
-            <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
+            <Text style={[styles.sectionHint, { color: colors.textMuted }]}>
               Install armandotfit on your home screen for the full-screen,
               offline-tolerant gym experience.
             </Text>
           </>
         ) : null}
 
-        <MobileSectionEyebrow flush={false}>Reference</MobileSectionEyebrow>
+        <MobileSectionEyebrow rule flush={false}>Reference</MobileSectionEyebrow>
         <MobileSurface padding={0}>
           {devSurfaces ? (
             <MobileSettingsRow
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   bodyContent: {
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: 4,
     paddingBottom: 60,
   },
   restDayRow: {

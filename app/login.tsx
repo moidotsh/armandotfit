@@ -2,14 +2,18 @@
 // Email + password login. Wires AuthService.signIn via useAuth.
 // On success, the central AuthGuard in app/_layout.tsx routes to
 // home — no per-screen redirect effect needed.
+//
+// The auth page speaks the logbook voice: the wordmark in the display
+// face + the screen title at poster scale lead; the form rides the
+// page's one sheet beneath.
 
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   MobileAtmosphere,
   MobileSurface,
-  MobileHeader,
   MobileInput,
   MobilePrimaryButton,
   MobileActionFooter,
@@ -17,11 +21,12 @@ import {
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
 import { navigateToRegister, navigateToForgotPassword } from '../navigation';
-import { SCREEN_BODY_STYLE, APP_DISPLAY_NAME, theme } from '../constants';
+import { MOBILE_CONTENT_WIDTH_STYLE, SCREEN_BODY_STYLE, theme } from '../constants';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
   const { colors } = useAppTheme();
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +46,14 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={[styles.shell, { backgroundColor: colors.backgroundDeep }]} edges={['top', 'bottom']}>
       <MobileAtmosphere surface="auth" />
-      <MobileHeader title="Welcome back" eyebrow="Sign in" />
+      <View style={[styles.brandBlock, { paddingTop: insets.top + 24 }]}>
+        <Text style={[styles.wordmark, { color: colors.textMuted }]}>
+          armandotfit
+        </Text>
+        <Text style={[styles.title, { color: colors.text }]}>
+          Welcome back
+        </Text>
+      </View>
       <View style={styles.body}>
         <MobileSurface padding={20}>
           <MobileInput
@@ -62,14 +74,17 @@ export default function LoginScreen() {
             secureTextEntry
             autoComplete="current-password"
           />
-          <View style={{ height: 12 }} />
-          <Text
-            accessibilityRole="link"
+          <View style={{ height: 4 }} />
+          <Pressable
             onPress={navigateToForgotPassword}
-            style={[styles.link, { color: colors.brand }]}
+            accessibilityRole="link"
+            accessibilityLabel="Forgot password"
+            style={styles.linkBox}
           >
-            Forgot password?
-          </Text>
+            <Text style={[styles.link, { color: colors.brand }]}>
+              Forgot password?
+            </Text>
+          </Pressable>
           {error ? (
             <View style={{ height: 12 }} />
           ) : null}
@@ -78,16 +93,18 @@ export default function LoginScreen() {
 
         <View style={{ height: 16 }} />
         <Text style={[styles.help, { color: colors.textSecondary }]}>
-          New to {APP_DISPLAY_NAME}?{' '}
-          <Text
-            accessibilityRole="link"
-            onPress={navigateToRegister}
-            style={{ color: colors.brand, fontWeight: '600' }}
-          >
+          New here?
+        </Text>
+        <Pressable
+          onPress={navigateToRegister}
+          accessibilityRole="link"
+          accessibilityLabel="Create an account"
+          style={styles.helpLinkBox}
+        >
+          <Text style={[styles.helpLink, { color: colors.brand }]}>
             Create an account
           </Text>
-          .
-        </Text>
+        </Pressable>
       </View>
       <MobileActionFooter>
         <MobilePrimaryButton
@@ -106,17 +123,44 @@ const styles = StyleSheet.create({
   shell: {
     flex: 1,
   },
+  brandBlock: {
+    ...MOBILE_CONTENT_WIDTH_STYLE,
+    paddingHorizontal: 20,
+    gap: 4,
+  },
+  wordmark: {
+    fontFamily: theme.fonts.display,
+    fontSize: 20,
+    fontWeight: '800',
+    lineHeight: 24,
+    letterSpacing: -0.3,
+  },
+  title: {
+    ...theme.typography.mobileTitle,
+  },
   body: {
     ...SCREEN_BODY_STYLE,
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: 20,
+  },
+  linkBox: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
   },
   link: {
     ...theme.typography.mobileAction,
-    textAlign: 'right',
   },
   help: {
     ...theme.typography.mobileSubtitle,
     textAlign: 'center',
+  },
+  helpLinkBox: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  helpLink: {
+    ...theme.typography.mobileAction,
   },
 });
