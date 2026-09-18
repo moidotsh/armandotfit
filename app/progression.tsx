@@ -1,8 +1,8 @@
 // app/progression.tsx
-// Progression dashboard. Surfaces streaks + lifetime totals so the user
-// can see how their training has accumulated. Volume-trend charts +
-// per-exercise PR tracking land in a-Phase 5; this route ships the
-// numerical summary first.
+// Progression dashboard. One summary card — current streak, this week,
+// lifetime sessions as figures with a quiet meta line (best streak, last
+// session) — then the personal-best ledger. All computed at read from
+// raw sessions; nothing stored. Volume-trend charts land in a-Phase 5.
 
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -15,10 +15,11 @@ import {
   MobilePrimaryButton,
   MobileActionFooter,
   CopyForAiButton,
+  EmptyState,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { useAppTheme } from '../context';
-import { safeGoBack, navigateToAnalytics } from '../navigation';
+import { safeGoBack, navigateToAnalytics, navigateToSplitSelection } from '../navigation';
 import { useDashboardSummary, usePersonalBests, useAiPayload } from '../hooks';
 import { SCREEN_BODY_STYLE } from '../constants';
 
@@ -27,6 +28,7 @@ export default function ProgressionScreen() {
   const summaryQuery = useDashboardSummary();
   const pbQuery = usePersonalBests();
   const summary = summaryQuery.data;
+  const isEmpty = (summary?.totalSessions ?? 0) === 0;
 
   const aiPayload = useAiPayload(
     summary
@@ -40,6 +42,12 @@ export default function ProgressionScreen() {
         }
       : undefined,
   );
+
+  const figures = [
+    { value: summary?.streak.current ?? 0, label: 'day streak', brand: true },
+    { value: summary?.thisWeekSessions ?? 0, label: 'this week', brand: false },
+    { value: summary?.totalSessions ?? 0, label: 'all time', brand: false },
+  ];
 
   return (
     <SafeAreaView
@@ -60,44 +68,41 @@ export default function ProgressionScreen() {
       >
         {summaryQuery.isLoading ? (
           <LoadingSpinner />
+        ) : isEmpty ? (
+          <EmptyState
+            title="Nothing to progress yet"
+            message="Log your first session and your streak, totals, and personal bests start here."
+            action={{ label: 'Start workout', onPress: navigateToSplitSelection }}
+            testID="progression-empty"
+          />
         ) : (
           <>
-            <MobileSectionEyebrow>Streaks</MobileSectionEyebrow>
+            <MobileSectionEyebrow>Summary</MobileSectionEyebrow>
             <MobileSurface padding={20}>
-              <View style={styles.rowBetween}>
-                <Text style={[styles.label, { color: colors.textSecondary }]}>
-                  Current
-                </Text>
-                <Text style={[styles.value, { color: colors.brand }]}>
-                  {summary?.streak.current ?? 0} days
-                </Text>
+              <View style={styles.figureRow}>
+                {figures.map((f) => (
+                  <View key={f.label} style={styles.figureCell}>
+                    <Text
+                      style={[
+                        styles.figureValue,
+                        { color: f.brand ? colors.brand : colors.text },
+                      ]}
+                    >
+                      {f.value}
+                    </Text>
+                    <Text style={[styles.figureLabel, { color: colors.textSecondary }]}>
+                      {f.label}
+                    </Text>
+                  </View>
+                ))}
               </View>
-              <View style={styles.rowBetween}>
-                <Text style={[styles.label, { color: colors.textSecondary }]}>
-                  Best
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+              <View style={styles.metaRow}>
+                <Text style={[styles.metaText, { color: colors.textSecondary }]}>
+                  Best streak {summary?.streak.best ?? 0}
                 </Text>
-                <Text style={[styles.value, { color: colors.text }]}>
-                  {summary?.streak.best ?? 0} days
-                </Text>
-              </View>
-            </MobileSurface>
-
-            <View style={{ height: 16 }} />
-            <MobileSectionEyebrow>Totals</MobileSectionEyebrow>
-            <MobileSurface padding={20}>
-              <View style={styles.rowBetween}>
-                <Text style={[styles.label, { color: colors.textSecondary }]}>
-                  Sessions logged
-                </Text>
-                <Text style={[styles.value, { color: colors.text }]}>
-                  {summary?.totalSessions ?? 0}
-                </Text>
-              </View>
-              <View style={styles.rowBetween}>
-                <Text style={[styles.label, { color: colors.textSecondary }]}>
-                  Last session
-                </Text>
-                <Text style={[styles.value, { color: colors.text }]}>
+                <Text style={[styles.metaText, { color: colors.textSecondary }]}>
+                  Last session{' '}
                   {summary?.lastSessionDate
                     ? new Date(summary.lastSessionDate).toLocaleDateString()
                     : '—'}
@@ -105,7 +110,6 @@ export default function ProgressionScreen() {
               </View>
             </MobileSurface>
 
-            <View style={{ height: 16 }} />
             {pbQuery.data && pbQuery.data.length > 0 ? (
               <>
                 <View style={{ height: 16 }} />
@@ -123,7 +127,7 @@ export default function ProgressionScreen() {
                         {pb.exerciseName}
                       </Text>
                       <Text
-                        style={[styles.pbValue, { color: colors.brand }]}
+                        style={[styles.pbValue, { color: colors.brandText }]}
                       >
                         {pb.bestWeight}×{pb.bestReps}
                       </Text>
@@ -132,18 +136,6 @@ export default function ProgressionScreen() {
                 </MobileSurface>
               </>
             ) : null}
-
-            <MobileSectionEyebrow>This week</MobileSectionEyebrow>
-            <MobileSurface padding={20}>
-              <View style={styles.rowBetween}>
-                <Text style={[styles.label, { color: colors.textSecondary }]}>
-                  Sessions
-                </Text>
-                <Text style={[styles.value, { color: colors.text }]}>
-                  {summary?.thisWeekSessions ?? 0}
-                </Text>
-              </View>
-            </MobileSurface>
           </>
         )}
       </ScrollView>
@@ -160,14 +152,32 @@ const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
+  figureRow: { flexDirection: 'row' },
+  figureCell: { flex: 1, alignItems: 'center', gap: 2 },
+  figureValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+    fontVariant: ['tabular-nums'],
+  },
+  figureLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  divider: { height: 1, marginVertical: 14 },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  metaText: { fontSize: 12, fontVariant: ['tabular-nums'] },
   rowBetween: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 6,
   },
-  label: { fontSize: 13, fontWeight: '500' },
-  value: { fontSize: 15, fontWeight: '600' },
   pbName: { fontSize: 13, fontWeight: '500', flex: 1, marginRight: 12 },
   pbValue: { fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
 });
