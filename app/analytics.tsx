@@ -1,10 +1,11 @@
 // app/analytics.tsx
-// Analytics — the consistency field is the story (docs/architecture/
-// count-thesis.md §7): square-cut cells at four levels with today
-// outlined, riding the ruled field; the weekly bars stop apologizing —
-// real bar weight, mono values, ledger rows. Range via segmented
-// control. Daily-aggregate history + weekly bucketing all computed at
-// read.
+// THE FORM TABLE (broadsheet-thesis §7): the consistency field is the
+// story — square-cut cells at four INK levels with today outlined in
+// the record red (the one red mark on the field), riding the ruled
+// page; the weekly bars stop apologizing — real bar weight in ink,
+// agate values, ledger rows. Range via segmented control (agate
+// markings). Daily-aggregate history + weekly bucketing all computed
+// at read.
 
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -74,6 +75,15 @@ export default function AnalyticsScreen() {
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* THE HEADLINE — the form table's nameplate; the grid beneath
+            is the data, in ink. */}
+        <Text style={[styles.headlineKicker, { color: colors.textMuted }]}>
+          {`${sessionsInRange} SESSION${sessionsInRange === 1 ? '' : 'S'} · LAST ${range} DAYS`}
+        </Text>
+        <Text style={[styles.headline, { color: colors.text }]}>
+          THE FORM TABLE
+        </Text>
+        <View style={{ height: 12 }} />
         <SegmentedControl<Range>
           variant="selection"
           segments={[
@@ -143,7 +153,7 @@ export default function AnalyticsScreen() {
                           styles.barFill,
                           {
                             width: `${Math.max(w.sessions > 0 ? 8 : 0, (w.sessions / maxWorkouts) * 100)}%`,
-                            backgroundColor: colors.brand,
+                            backgroundColor: colors.text,
                           },
                         ]}
                       />
@@ -166,6 +176,15 @@ const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32 },
+  headlineKicker: {
+    ...theme.typography.mobileEyebrow,
+  },
+  headline: {
+    ...theme.typography.mobileDisplay,
+    fontSize: 40,
+    lineHeight: 42,
+    marginTop: 6,
+  },
   emptyText: { ...theme.typography.mobileMeta, marginTop: 12 },
   barList: {
     gap: 12,

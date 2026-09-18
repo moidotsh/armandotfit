@@ -18,6 +18,7 @@
 
 import React, { useMemo } from 'react';
 import { ActivityGrid, type ActivityGridDatum } from '../MobilePremium';
+import { useAppTheme } from '../../context';
 import type { DayActivity } from '../../shared/types';
 
 export interface TrainingConsistencyGridProps {
@@ -42,6 +43,7 @@ export function TrainingConsistencyGrid({
   accessibilityLabel,
   testID,
 }: TrainingConsistencyGridProps) {
+  const { colors } = useAppTheme();
   const gridData = useMemo<ActivityGridDatum[]>(
     () => data.map((d) => ({ date: d.date, value: d.sessions })),
     [data],
@@ -54,6 +56,12 @@ export function TrainingConsistencyGrid({
       endDate={endDate}
       onCellPress={onDayPress}
       accessibilityLabel={accessibilityLabel ?? 'Training consistency'}
+      // THE BROADSHEET's form table: density is INK, not accent — the
+      // one red mark on the field is today's outlined cell (the record
+      // law: red marks the living position).
+      levelColor={colors.text}
+      todayISO={new Date().toISOString().slice(0, 10)}
+      todayBorderColor={colors.brand}
       testID={testID}
     />
   );

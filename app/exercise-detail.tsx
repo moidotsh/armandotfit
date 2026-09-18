@@ -1,19 +1,20 @@
 // app/exercise-detail.tsx
-// The reference page for a catalog exercise (count-thesis §7): the
-// name anchors as a statement, instructions read as body on the field,
-// equipment rides as marking chips — and MUSCLES draw as STROKES:
-// primary muscles at four struck strokes, secondary at two ghosts.
-// Metadata as data-viz in the tally language: what the lift trains, at
-// a glance. When a draft session is active, an "Add to active session"
-// CTA wires to addExerciseToDraft (coarse identity + slug); when not,
-// a quiet line says so.
+// The reference page for a catalog exercise (broadsheet-thesis §7):
+// the name anchors as THE HEADLINE (display scale, Rokkitt), the type
+// rides above as the agate kicker, LAST TIME rides beneath in agate —
+// the number you're walking in to beat — instructions read as body on
+// the field, equipment rides as marking chips, and MUSCLES draw as
+// MEASURED BARS: a prime mover fills the track in ink, an assistant
+// fills 40% — what the lift trains, at a glance, measurable in pixels.
+// When a draft session is active, an "Add to active session" CTA wires
+// to addExerciseToDraft (coarse identity + slug); when not, a quiet
+// line says so.
 
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  TallyStrip,
   MobileAtmosphere,
   MobileHeader,
   MobileSectionEyebrow,
@@ -97,12 +98,13 @@ export default function ExerciseDetailScreen() {
           </Text>
         ) : (
           <>
-            {/* The reference page: the name is the anchor — display
-                scale, type riding above as the mono eyebrow. */}
+            {/* The reference page: the name is the anchor — the page's
+                one display-scale element, type riding above as the
+                agate kicker. */}
             <Text style={[styles.typeEyebrow, { color: colors.textMuted }]}>
               {(EXERCISE_TYPE_DISPLAY[exercise.exerciseType] ?? '').toUpperCase()}
             </Text>
-            <Text style={[styles.headline, { color: colors.text }]}>
+            <Text style={[styles.headline, { color: colors.text }]} numberOfLines={2}>
               {exercise.name}
             </Text>
             {lastTime ? (
@@ -138,9 +140,11 @@ export default function ExerciseDetailScreen() {
                       <Text style={[styles.targetName, { color: colors.text }]}>
                         {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
                       </Text>
-                      {/* Muscle strokes — the tally as data-viz: four
-                          struck marks for a prime mover. */}
-                      <TallyStrip struck={4} size="sm" />
+                      {/* The measure — a prime mover fills the track in
+                          ink (pixel-probe: bar width ≈ track width). */}
+                      <View style={[styles.targetTrack, { backgroundColor: colors.mobilePremium.hairlineBorder }]}>
+                        <View style={[styles.targetBar, { backgroundColor: colors.text }]} />
+                      </View>
                       <Text style={[styles.targetWeight, { color: colors.text }]}>
                         PRIME
                       </Text>
@@ -155,8 +159,11 @@ export default function ExerciseDetailScreen() {
                       <Text style={[styles.targetName, { color: colors.textSecondary }]}>
                         {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
                       </Text>
-                      {/* Two ghost strokes for an assistant mover. */}
-                      <TallyStrip struck={0} ghost={2} size="sm" />
+                      {/* An assistant fills 40% — the measure carries
+                          the hierarchy, not the color. */}
+                      <View style={[styles.targetTrack, { backgroundColor: colors.mobilePremium.hairlineBorder }]}>
+                        <View style={[styles.targetBar, styles.targetBarSecondary, { backgroundColor: colors.textSecondary }]} />
+                      </View>
                       <Text style={[styles.targetWeight, { color: colors.textMuted }]}>
                         ASSIST
                       </Text>
@@ -227,7 +234,7 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileEyebrow,
   },
   headline: {
-    ...theme.typography.mobileTitle,
+    ...theme.typography.mobileDisplay,
     marginBottom: 4,
   },
   lastLine: {
@@ -252,7 +259,7 @@ const styles = StyleSheet.create({
   targetTrack: {
     flex: 1,
     height: 8,
-    borderRadius: 4,
+    borderRadius: 2,
     overflow: 'hidden',
   },
   targetBar: {
@@ -270,7 +277,7 @@ const styles = StyleSheet.create({
   },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
-    borderRadius: 999,
+    borderRadius: theme.shapes.tag,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderWidth: 1,

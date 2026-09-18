@@ -92,6 +92,15 @@ export default function SettingsScreen() {
         hideAccentDot
       />
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
+        {/* THE HEADLINE — the colophon's nameplate. Nothing here needs
+            to win; the page just states its name and serves its rows. */}
+        <Text style={[styles.headlineKicker, { color: colors.textMuted }]}>
+          {`${session?.email ?? '—'}`}
+        </Text>
+        <Text style={[styles.headline, { color: colors.text }]}>
+          THE COLOPHON
+        </Text>
+        <View style={{ height: 12 }} />
         <MobileSurface padding={0}>
           <MobileSettingsRow label="Email" value={session?.email ?? '—'} />
           <MobileSettingsRow
@@ -150,7 +159,7 @@ export default function SettingsScreen() {
         </MobileSurface>
 
         <MobileSectionEyebrow rule flush={false}>Training</MobileSectionEyebrow>
-        <MobileSurface padding={12}>
+        <MobileSurface padding={8}>
           <View style={styles.restDayRow}>
             {DAY_OF_WEEK_LABELS.map((d) => {
               const isRest = restDayIds.includes(String(d.id));
@@ -243,16 +252,26 @@ const styles = StyleSheet.create({
   body: {
     ...SCREEN_BODY_STYLE,
   },
+  headlineKicker: {
+    ...theme.typography.mobileEyebrow,
+  },
+  headline: {
+    ...theme.typography.mobileDisplay,
+    fontSize: 40,
+    lineHeight: 42,
+    marginTop: 6,
+  },
   bodyContent: {
     paddingHorizontal: 16,
-    paddingTop: 4,
+    paddingTop: 12,
     paddingBottom: 60,
   },
   // The rest-day MEASURE — seven marks; a rest day is a struck mark
-  // (count-thesis §7). Square-cut, mono letters.
+  // (broadsheet §7: selection is ink inversion, never brand). Square-
+  // cut, agate letters.
   restDayRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 4,
   },
   restDayTile: {
     flex: 1,

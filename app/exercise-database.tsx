@@ -108,7 +108,16 @@ export default function ExerciseDatabaseScreen() {
       testID="library-body"
       header={
         <View style={styles.headerRow}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Exercises</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.headerEyebrow, { color: colors.textMuted }]}>
+              {`${SYSTEM_EXERCISES.length} LIFTS · THE CATALOG IS LOCAL`}
+            </Text>
+            {/* THE HEADLINE — the index's nameplate. The search field
+                beneath is the instrument; sections carry the scan. */}
+            <Text style={[styles.headerTitle, { color: colors.text }]}>
+              THE INDEX
+            </Text>
+          </View>
         </View>
       }
     >
@@ -219,13 +228,20 @@ export default function ExerciseDatabaseScreen() {
 const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'space-between',
-    height: 52,
+    minHeight: 60,
     paddingHorizontal: 20,
+    paddingTop: 4,
+  },
+  headerEyebrow: {
+    ...theme.typography.mobileEyebrow,
+    marginBottom: 2,
   },
   headerTitle: {
-    ...theme.typography.mobileTitle,
+    ...theme.typography.mobileDisplay,
+    fontSize: 40,
+    lineHeight: 42,
   },
   body: {
     flex: 1,

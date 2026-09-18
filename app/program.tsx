@@ -1,13 +1,14 @@
 // app/program.tsx
-// My Program — the split as a document (count-thesis §7): days are
-// chapters (mono DAY 01 kicker + Rokkitt title + planned-sets
-// figure in mono), and each chapter head PINS while its slots scroll
-// under it — the reader always knows which day they're reading. Slots
-// are the same numbered ledger rows the funnel preview speaks — one
-// slot language everywhere. Plan-time Swap: a standing per-slot
-// substitution (persisted client-side; the authored program in
-// splits.ts is never edited). Swapped slots carry their Rx forward,
-// mark with a 2px strike rule, and reset with one tap.
+// My Program — THE ROTATION (broadsheet-thesis §7): the split as a
+// document with a nameplate headline; days are chapters (agate DAY 01
+// kicker + Rokkitt subhead + planned-sets figure in agate), and each
+// chapter head PINS while its slots scroll under it — the reader
+// always knows which day they're reading. Slots are the same numbered
+// ledger rows the funnel preview speaks — one slot language
+// everywhere. Plan-time Swap: a standing per-slot substitution
+// (persisted client-side; the authored program in splits.ts is never
+// edited). Swapped slots carry their Rx forward, mark with a 2px
+// strike rule, and reset with one tap.
 
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -236,7 +237,11 @@ export default function ProgramScreen() {
             <Text style={[styles.headerEyebrow, { color: colors.textMuted }]}>
               {split === 'oneADay' ? 'FULL BODY · 4 DAYS' : 'AM/PM · 4 DAYS'}
             </Text>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>Program</Text>
+            {/* THE HEADLINE — the rotation is a document; this is its
+                nameplate. Day chapters are subheads beneath it. */}
+            <Text style={[styles.headerTitle, { color: colors.text }]}>
+              THE ROTATION
+            </Text>
           </View>
         </View>
       }
@@ -295,7 +300,9 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   headerTitle: {
-    ...theme.typography.mobileTitle,
+    ...theme.typography.mobileDisplay,
+    fontSize: 40,
+    lineHeight: 42,
   },
   dayHeadWrap: {
     // The sticky chapter head — page-colored so slots scroll under it.
@@ -319,9 +326,7 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
   },
   dayTitle: {
-    ...theme.typography.mobileDisplay,
-    fontSize: 34,
-    lineHeight: 36,
+    ...theme.typography.mobileTitle,
     flex: 1,
   },
   daySets: {

@@ -177,6 +177,9 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     letterSpacing: 0,
+    // Selection labels are markings — when the consumer declares a
+    // mono face, segments speak it (agate discipline).
+    fontFamily: theme.fonts.mono,
   },
 });
 

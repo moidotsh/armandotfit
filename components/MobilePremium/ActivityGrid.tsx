@@ -94,6 +94,21 @@ export interface ActivityGridProps {
   maxRows?: number;
   /** Group label for the grid (announced once by screen readers). */
   accessibilityLabel: string;
+  /**
+   * Base color for the level ramp (levels 1–4 render as this color at
+   * increasing alpha; level 0 stays the muted track tone). Defaults to
+   * the theme brand — consumers whose design language reads data as
+   * ink density pass their text color instead.
+   */
+  levelColor?: string;
+  /**
+   * 'YYYY-MM-DD'. When set, that date cell also carries a 2px border in
+   * `todayBorderColor` — the "you are here" affordance. Defaults to
+   * `levelColor`.
+   */
+  todayISO?: string;
+  /** Border color for the today cell; defaults to `levelColor`. */
+  todayBorderColor?: string;
   /** Tap handler for date cells only. When omitted, cells are non-interactive. */
   onCellPress?: (datum: ActivityGridDatum) => void;
   testID?: string;
@@ -120,6 +135,9 @@ export function ActivityGrid({
   minGap,
   maxRows,
   accessibilityLabel,
+  levelColor,
+  todayISO,
+  todayBorderColor,
   onCellPress,
   testID,
   style,
@@ -181,7 +199,8 @@ export function ActivityGrid({
     columns,
   });
 
-  const levelFills = useLevelFills(colors.brand, colors.cardAlt);
+  const levelFills = useLevelFills(levelColor ?? colors.brand, colors.cardAlt);
+  const todayBorder = todayBorderColor ?? levelColor ?? colors.brand;
 
   if (isInvalidRange) {
     return (
@@ -271,6 +290,10 @@ export function ActivityGrid({
             backgroundColor: fill,
             borderRadius: theme.shapes.tile,
           };
+          if (todayISO && dateStr === todayISO) {
+            cellStyle.borderWidth = 2;
+            cellStyle.borderColor = todayBorder;
+          }
 
           if (onCellPress) {
             return (
