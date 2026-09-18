@@ -24,7 +24,12 @@ import { ChevronLeft } from '@tamagui/lucide-icons-2';
 import { MobileAtmosphere, type MobileAtmosphereSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
 import { useWorkoutStore } from '../../stores';
-import { SCREEN_BODY_STYLE, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
+import {
+  SCREEN_BODY_STYLE,
+  MOBILE_CONTENT_WIDTH_STYLE,
+  PAGE_GUTTER,
+  BLOCK_GAP,
+} from '../../constants';
 import { SessionStrip } from './SessionStrip';
 
 export interface DeskShellProps {
@@ -128,7 +133,14 @@ export function DeskShell({
 const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 32 },
+  // THE QUIET PAGE air law: the 20px gutter, and the block rhythm's
+  // baseline — top-level blocks carry BLOCK_GAP (40) above them
+  // (screens wrap their blocks with `blockGap`); the tail breathes.
+  bodyContent: {
+    paddingHorizontal: PAGE_GUTTER,
+    paddingTop: 8,
+    paddingBottom: 2 * BLOCK_GAP,
+  },
   headerWithBack: {
     flexDirection: 'row',
     alignItems: 'flex-end',

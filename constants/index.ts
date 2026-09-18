@@ -64,6 +64,10 @@ export { DESKTOP_LAYOUT_MODE } from './styles';
 export { APP_LAYOUT } from './layout';
 export type { NavDrawerBrandPersistence, NavDrawerAnchor } from './layout';
 
+// THE QUIET PAGE air law (gutter/block rhythm/row gap/statement halo)
+// — consumer-owned design constants, probe-enforced (P-AIR-1).
+export { PAGE_GUTTER, BLOCK_GAP, ROW_GAP, HALO } from './quiet';
+
 // Workout split metadata (decoupled from theme for SOC). The day→exercise
 // assignments live in shared/exercises/splits.ts because they're typed
 // against the ExerciseKey union there.

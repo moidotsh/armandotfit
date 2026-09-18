@@ -73,14 +73,12 @@ function valueStyleFor(size: FigureSize) {
 function unitStyleFor(size: FigureSize) {
   switch (size) {
     case 'hero':
-      return { fontSize: 24, paddingBottom: 12 } as const;
     case 'display':
-      return { fontSize: 17, paddingBottom: 8 } as const;
+      return { fontSize: 12, paddingBottom: 6 } as const;
     case 'sm':
-      return { fontSize: 10, paddingBottom: 1 } as const;
     case 'md':
     default:
-      return { fontSize: 13, paddingBottom: 4 } as const;
+      return { fontSize: 12, paddingBottom: 2 } as const;
   }
 }
 

@@ -31,22 +31,26 @@ describe('theme', () => {
   });
 
   it('exports typography tokens', () => {
-    // THE BROADSHEET scale (docs/architecture/broadsheet-thesis.md
-    // §2.2): statements in Rokkitt (28 · 34 · 42 · 72), agate figures
-    // in Azeret Mono always tabular by construction (14 · 26 · 56),
-    // words in the platform sans. The counter is the agate face's one
-    // display size.
-    expect(theme.typography.mobileTitle.fontSize).toBe(28);
+    // THE QUIET PAGE ramp (docs/architecture/quiet-page-thesis.md
+    // §3.2): five sizes total — 48 (the call) · 34 (the statement) ·
+    // 22 (the subhead) · 15 (the row/verb/reading) · 12 (the
+    // whisper). Statements in Rokkitt, every working figure in Azeret
+    // Mono (tabular by construction), reading in the platform sans.
+    // The counter is the agate face's one display size.
+    expect(theme.typography.mobileTitle.fontSize).toBe(22);
     expect(theme.typography.mobileTitle.fontFamily).toBe(theme.fonts.display);
-    expect(theme.typography.mobileHero.fontSize).toBe(72);
-    expect(theme.typography.mobileHero.fontFamily).toBe(theme.fonts.display);
-    expect(theme.typography.mobileDisplay.fontSize).toBe(42);
+    expect(theme.typography.mobileDisplay.fontSize).toBe(34);
+    expect(theme.typography.mobileDisplay.fontFamily).toBe(theme.fonts.display);
+    // The hero rank is retired — no size of its own, just the statement.
+    expect(theme.typography.mobileHero.fontSize).toBe(34);
     expect(theme.typography.mobileAction.fontWeight).toBe('700');
-    expect(theme.typography.mobileCounter.fontSize).toBe(56);
+    expect(theme.typography.mobileCounter.fontSize).toBe(48);
     expect(theme.typography.mobileCounter.fontFamily).toBe(theme.fonts.mono);
     expect(theme.typography.mobileCounter.fontVariant).toEqual(['tabular-nums']);
+    expect(theme.typography.mobileFigure.fontSize).toBe(15);
     expect(theme.typography.mobileFigure.fontVariant).toEqual(['tabular-nums']);
     expect(theme.typography.mobileFigure.fontFamily).toBe(theme.fonts.mono);
+    expect(theme.typography.mobileLedger.fontSize).toBe(12);
     expect(theme.typography.mobileLedger.fontVariant).toEqual(['tabular-nums']);
   });
 });
