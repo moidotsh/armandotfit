@@ -16,7 +16,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
-import { Sun, Moon, Monitor, Mail, Lock, Eye, EyeOff, Settings, Bell, Info, ChevronRight, Home, Package, TrendingUp, Search } from '@tamagui/lucide-icons-2';
+import { Sun, Moon, Monitor, Mail, Lock, Eye, EyeOff, Settings, Bell, Info, ChevronRight, Home, Package, TrendingUp, Search, Play, CalendarDays, BarChart2, Dumbbell } from '@tamagui/lucide-icons-2';
 import { theme, APP_LAYOUT, SCREEN_BODY_STYLE } from '../../constants';
 import { useAppTheme, useToast, type ColorSchemePreference } from '../../context';
 import {
@@ -45,6 +45,7 @@ import { MobileInput } from './MobileInput';
 import { MobileAlert } from './MobileAlert';
 import { MobileSettingsRow } from './MobileSettingsRow';
 import { MobileSectionEyebrow } from './MobileSectionEyebrow';
+import { MobileTabBar } from './MobileTabBar';
 import { MobileStepper } from './MobileStepper';
 import { MobileCheckboxItem } from './MobileCheckboxItem';
 import { CheckBox } from './CheckBox';
@@ -754,6 +755,15 @@ export function Showcase() {
             shifts and nothing straddles the plate&apos;s rule. Consumers set the row face via
             itemLabelStyle (e.g. a ledger mono) and declare the language once in the theme.
           </Text>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow>Tab bar — the raised signal action</MobileSectionEyebrow>
+          {/* The Desk's bottom chrome: four flanking tabs + the raised
+              center action (START/RESUME-style). Active tab = ink label +
+              2px signal notch; `active` runs the resume pulse (ambient,
+              collapsed under reduced motion). The bar owns no routing. */}
+          <TabBarDemo />
         </View>
 
         <View style={styles.section}>
@@ -1925,6 +1935,37 @@ function AbsorbBarDemo() {
         <AbsorbTopBar />
         <AbsorbDemoChrome />
       </AbsorbProvider>
+    </View>
+  );
+}
+
+function TabBarDemo() {
+  const { colors } = useAppTheme();
+  const [active, setActive] = React.useState('home');
+  const [resume, setResume] = React.useState(false);
+  const icon = (I: any, on: boolean) => <I size={19} color={on ? colors.text : colors.textMuted} />;
+  const items = [
+    { id: 'home', label: 'TODAY', icon: icon(Home, active === 'home'), onPress: () => setActive('home') },
+    { id: 'library', label: 'LIBRARY', icon: icon(Dumbbell, active === 'library'), onPress: () => setActive('library') },
+    { id: 'progress', label: 'PROGRESS', icon: icon(TrendingUp, active === 'progress'), onPress: () => setActive('progress') },
+    { id: 'program', label: 'PROGRAM', icon: icon(CalendarDays, active === 'program'), onPress: () => setActive('program') },
+  ] as const;
+  return (
+    <View style={{ marginTop: 12 }}>
+      <MobileTabBar
+        items={items as never}
+        activeId={active}
+        centerAction={{
+          label: resume ? 'Resume session' : 'Start workout',
+          active: resume,
+          icon: <Play size={22} color={colors.textOnBrand} />,
+          onPress: () => setResume((v) => !v),
+        }}
+        testID="showcase-tab-bar"
+      />
+      <Text style={[styles.bodyText, { color: colors.textSecondary, marginTop: 8 }]}>
+        Tap the center action to toggle the resume pulse.
+      </Text>
     </View>
   );
 }

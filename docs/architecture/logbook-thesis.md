@@ -1,10 +1,10 @@
-# The Logbook Thesis — the 2026 redesign
+# The Logbook Thesis — the 2026 redesign (RETIRED)
 
-**Status:** Active. This is the design thesis for the full UI/UX rebuild.
-`constants/theme.ts` carries its tokens; the showcase carries its
-primitives; `docs/architecture/mobile-premium-design-system.md` describes
-the shell kit it rides. When this doc and the tokens disagree, the tokens
-win — fix the doc in the same change.
+**Status:** Retired by `signal-thesis.md` (the 2026-10 blank-slate
+redesign). Kept as the historical record of the logbook system; its
+taste is rescinded, its §7 map served as the feature inventory for the
+SIGNAL rebuild. `constants/theme.ts` and the showcase now carry the
+SIGNAL tokens; when that doc and the tokens disagree, the tokens win.
 
 ---
 
