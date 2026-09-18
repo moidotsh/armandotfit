@@ -14,6 +14,7 @@ import {
   MobileHeader,
   MobileSectionEyebrow,
   CopyForAiButton,
+  SegmentedControl,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { TrainingConsistencyGrid } from '../components/composed';
@@ -25,8 +26,6 @@ import { addDays } from '../utils';
 import { SCREEN_BODY_STYLE } from '../constants';
 
 type Range = 7 | 30 | 90;
-
-const RANGE_OPTIONS: Range[] = [7, 30, 90];
 
 function toISODate(d: Date): string {
   const y = d.getFullYear();
@@ -82,23 +81,19 @@ export default function AnalyticsScreen() {
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.rangeRow}>
-          {RANGE_OPTIONS.map((r) => (
-            <Text
-              key={r}
-              style={[
-                styles.rangeChip,
-                {
-                  color: r === range ? colors.brand : colors.textSecondary,
-                  borderColor: r === range ? colors.brand : 'transparent',
-                },
-              ]}
-              onPress={() => setRange(r)}
-            >
-              {r}d
-            </Text>
-          ))}
-        </View>
+        <SegmentedControl<Range>
+          variant="selection"
+          size="sm"
+          segments={[
+            { value: 7, label: '7d' },
+            { value: 30, label: '30d' },
+            { value: 90, label: '90d' },
+          ]}
+          value={range}
+          onChange={setRange}
+          accessibilityLabel="Analytics range"
+          testID="analytics-range"
+        />
 
         <View style={{ height: 16 }} />
         <MobileSectionEyebrow>Training consistency</MobileSectionEyebrow>
@@ -126,7 +121,11 @@ export default function AnalyticsScreen() {
             </Text>
           ) : (
             weekly.map((w) => (
-              <View key={w.weekStart} style={styles.barRow}>
+              <View
+                key={w.weekStart}
+                style={styles.barRow}
+                accessibilityLabel={`Week of ${new Date(w.weekStart).toLocaleDateString()}: ${w.sessions} sessions`}
+              >
                 <Text style={[styles.barLabel, { color: colors.textSecondary }]}>
                   {new Date(w.weekStart).toLocaleDateString(undefined, {
                     month: 'short',
@@ -165,16 +164,6 @@ const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
-  rangeRow: { flexDirection: 'row', gap: 12 },
-  rangeChip: {
-    fontSize: 13,
-    fontWeight: '600',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
   emptyText: { fontSize: 13, lineHeight: 18 },
   barRow: {
     flexDirection: 'row',
@@ -182,8 +171,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     gap: 8,
   },
-  barLabel: { fontSize: 11, minWidth: 56 },
+  barLabel: { fontSize: 11, minWidth: 56, fontVariant: ['tabular-nums'] },
   barTrack: { flex: 1, height: 10, borderRadius: 5, overflow: 'hidden' },
   barFill: { height: '100%' },
-  barValue: { fontSize: 12, fontWeight: '600', minWidth: 20 },
+  barValue: { fontSize: 12, fontWeight: '600', minWidth: 20, fontVariant: ['tabular-nums'] },
 });
