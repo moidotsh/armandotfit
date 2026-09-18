@@ -84,6 +84,9 @@ export type { DisclosureRowProps } from './DisclosureRow';
 export { EmptyState } from './EmptyState';
 export type { EmptyStateProps, EmptyStateAction } from './EmptyState';
 
+export { Figure } from './Figure';
+export type { FigureProps, FigureSize, FigureTone, FigureAlign } from './Figure';
+
 export { StatCard } from './StatCard';
 export type { StatCardProps, StatCardVariant, StatCardSize } from './StatCard';
 

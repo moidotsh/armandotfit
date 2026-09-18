@@ -70,6 +70,7 @@ import { SearchField } from './SearchField';
 import { FilterChipGroup } from './FilterChipGroup';
 import { DisclosureRow } from './DisclosureRow';
 import { EmptyState } from './EmptyState';
+import { Figure } from './Figure';
 import { StatCard } from './StatCard';
 import { Avatar } from './Avatar';
 import { SegmentedProgress } from './SegmentedProgress';
@@ -1406,6 +1407,27 @@ export function Showcase() {
         </View>
 
         <View style={styles.section}>
+          <MobileSectionEyebrow>Figures — the labeled number, no chrome</MobileSectionEyebrow>
+          <MobileSurface>
+            <View style={styles.figureRow}>
+              <Figure value="2" label="day streak" size="display" tone="brand" />
+              <View style={styles.figureGap} />
+              <Figure value="4,250" label="kg this week" />
+              <View style={styles.figureGap} />
+              <Figure value="12" label="sets" align="right" />
+            </View>
+            <View style={styles.spacer} />
+            <View style={styles.figureRow}>
+              <Figure value="00:41" label="elapsed" size="sm" />
+              <View style={styles.figureGap} />
+              <Figure value="6" label="lifts" size="sm" align="center" />
+              <View style={styles.figureGap} />
+              <Figure value="6,695" label="tonnage" size="sm" align="right" />
+            </View>
+          </MobileSurface>
+        </View>
+
+        <View style={styles.section}>
           <MobileSectionEyebrow>Stat cards</MobileSectionEyebrow>
           <View style={styles.statRow}>
             <StatCard
@@ -2171,6 +2193,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 20,
   },
+  figureRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  figureGap: { width: 8 },
   statRow: {
     flexDirection: 'row',
     gap: 8,
