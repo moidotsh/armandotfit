@@ -104,6 +104,7 @@ export function SegmentedControl<T>({
       {segments.map((segment) => {
         const active = segment.value === value;
         const segmentState = variant === 'tabs' ? { selected: active } : { checked: active };
+        const visualHeight = chromeless && size === 'md' ? height - 8 : height - (chromeless ? 0 : 8);
         return (
           <Pressable
             key={String(segment.value)}
@@ -111,43 +112,47 @@ export function SegmentedControl<T>({
             accessibilityRole={segmentRole as any}
             accessibilityState={segmentState}
             accessibilityLabel={segment.accessibilityLabel ?? segment.label}
-            // The sm track insets segments 4px vertically (28px visual) —
-            // hitSlop restores a 44px effective target with zero visual change.
-            hitSlop={size === 'sm' ? 8 : 4}
+            // The pressable FILLS the track height: RN-web does not expand
+            // the DOM hit area for hitSlop (measured), so the touch-target
+            // floor is the box itself. The visual pill rides inside.
             style={({ pressed }) => [
               {
                 flex: fullWidth ? 1 : 0,
-                height: chromeless && size === 'md' ? height - 8 : height - (chromeless ? 0 : 8),
+                height,
                 alignItems: 'center',
                 justifyContent: 'center',
-                paddingHorizontal: 12,
-                borderRadius: (height - (chromeless ? 0 : 8)) / 2,
-                backgroundColor: active
-                  ? colors.brand
-                  : chromeless
-                    ? 'transparent'
-                    : 'transparent',
                 opacity: pressed ? 0.7 : 1,
               },
               pressed ? pressedStyle : null,
             ]}
           >
-            <Text
-              style={[
-                styles.label,
-                {
-                  color: active
-                    ? colors.textOnBrand
-                    : chromeless
-                      ? colors.text
-                      : colors.textSecondary,
-                  fontWeight: active ? '600' : '500',
-                },
-              ]}
-              numberOfLines={1}
+            <View
+              style={{
+                height: visualHeight,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 12,
+                borderRadius: visualHeight / 2,
+                backgroundColor: active ? colors.brand : 'transparent',
+              }}
             >
-              {segment.label}
-            </Text>
+              <Text
+                style={[
+                  styles.label,
+                  {
+                    color: active
+                      ? colors.textOnBrand
+                      : chromeless
+                        ? colors.text
+                        : colors.textSecondary,
+                    fontWeight: active ? '600' : '500',
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {segment.label}
+              </Text>
+            </View>
           </Pressable>
         );
       })}
