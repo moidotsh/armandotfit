@@ -51,6 +51,9 @@ export default function SettingsScreen() {
   const { showToast } = useToast();
   const accent = colors.brand;
   const pwaPrompt = usePwaPrompt();
+  // The showcase route only exists where dev surfaces do — linking it
+  // from a production build would land on the stubbed blank route.
+  const devSurfaces = process.env.EXPO_PUBLIC_DEV_SURFACES === '1';
 
   // Rest-days multi-select state. Reads from the profile cache; mutates
   // via the patch-profile mutation, which optimistically updates the
@@ -220,12 +223,14 @@ export default function SettingsScreen() {
 
         <MobileSectionEyebrow flush={false}>Reference</MobileSectionEyebrow>
         <MobileSurface padding={0}>
-          <MobileSettingsRow
-            label="Design System Showcase"
-            value="View"
-            onPress={navigateToPremiumShowcase}
-          />
-          <MobileSettingsRow label="Version" value="0.1.0" isLast />
+          {devSurfaces ? (
+            <MobileSettingsRow
+              label="Design System Showcase"
+              value="View"
+              onPress={navigateToPremiumShowcase}
+            />
+          ) : null}
+          <MobileSettingsRow label="Version" value="0.1.0" isLast={!devSurfaces} />
         </MobileSurface>
       </ScrollView>
       <MobileActionFooter>
