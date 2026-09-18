@@ -1,18 +1,16 @@
 // app/exercise-database.tsx
-// Exercise library browse. Search + modality chips + tap-through to
-// detail. The catalog is local (data.ts — sole display source);
-// filtering is client-side. Unfiltered browse leads with a "Recently
-// logged" section (distinct names from the last sessions, recency
-// order) — the shortest path back to what the user actually lifts.
-// Sections group by display category with sticky headers so scrolling
-// a long list keeps its place.
+// The Library — a tab destination on the DeskShell. Search + equipment
+// chips (the gym walked as zones: BB/DB/machine/cable/bodyweight) +
+// tap-through to detail. The catalog is local (data.ts — sole display
+// source); filtering is client-side. Unfiltered browse leads with a
+// "Recently logged" section (distinct names from the last sessions,
+// recency order) — the shortest path back to what the user actually
+// lifts. Sections group by display category with sticky headers so
+// scrolling a long list keeps its place.
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { SectionList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  MobileAtmosphere,
-  MobileHeader,
   MobileInput,
   MobileSurface,
   MobileSectionEyebrow,
@@ -22,13 +20,13 @@ import {
   FilterChip,
   FilterChipGroup,
 } from '../components/MobilePremium';
-import { ExerciseListItem } from '../components/composed';
+import { DeskShell, ExerciseListItem } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
-import { navigateToExerciseDetail, safeGoBack } from '../navigation';
+import { navigateToExerciseDetail } from '../navigation';
 import { useExercises, useRecentSessionDetails, useAiPayload } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import { SYSTEM_EXERCISES, type SystemExerciseData } from '../shared/exercises';
-import { SCREEN_BODY_STYLE, theme } from '../constants';
+import { theme } from '../constants';
 
 /** Group the catalog by display category, in display order. */
 const CATEGORY_ORDER = ['Chest', 'Back', 'Shoulders', 'Arms', 'Upper Leg', 'Lower Leg', 'Abs'];
@@ -111,17 +109,18 @@ export default function ExerciseDatabaseScreen() {
   });
 
   return (
-    <SafeAreaView
-      style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
-      edges={['top', 'bottom']}
+    <DeskShell
+      surface="training"
+      activeTab="/exercise-database"
+      noScroll
+      testID="library-body"
+      header={
+        <View style={styles.headerRow}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Exercises</Text>
+          <CopyForAiButton payload={aiPayload} testID="exercise-database-copy-for-ai" />
+        </View>
+      }
     >
-      <MobileAtmosphere surface="training" />
-      <MobileHeader
-        title="Exercises"
-        eyebrow="Library"
-        onBack={safeGoBack}
-        navRightAction={<CopyForAiButton payload={aiPayload} testID="exercise-database-copy-for-ai" />}
-      />
       <View style={styles.body}>
         <SearchField
           value={filter.search ?? ''}
@@ -222,16 +221,25 @@ export default function ExerciseDatabaseScreen() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </DeskShell>
   );
 }
 
 const styles = StyleSheet.create({
-  shell: { flex: 1 },
-  body: {
-    ...SCREEN_BODY_STYLE,
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 52,
     paddingHorizontal: 20,
-    paddingTop: 12,
+  },
+  headerTitle: {
+    ...theme.typography.mobileTitle,
+  },
+  body: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 8,
   },
   listContent: { paddingBottom: 32 },
   sectionHeader: {

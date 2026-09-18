@@ -12,7 +12,7 @@
 // reads the workout store — no prop threading from every screen.
 
 import React from 'react';
-import { ScrollView, StyleSheet, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native';
+import { ScrollView, StyleSheet, View, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Home, Dumbbell, TrendingUp, CalendarDays, Play } from '@tamagui/lucide-icons-2';
 import {
@@ -46,6 +46,14 @@ export interface DeskShellProps {
   /** Passed to the ScrollView. */
   showsVerticalScrollIndicator?: boolean;
   /**
+   * Render the children directly instead of inside the shell's
+   * ScrollView — for screens whose body is its own scroller (a
+   * SectionList/FlatList). Width policy still applies.
+   */
+  noScroll?: boolean;
+  /** Passed to the ScrollView — sticky chapter heads etc. */
+  stickyHeaderIndices?: number[] | undefined;
+  /**
    * Scroll-event handoff for screens running scroll-driven
    * choreography on the body (Animated.event; attach only when motion
    * is allowed). Passed straight to the ScrollView.
@@ -62,6 +70,8 @@ export function DeskShell({
   contentContainerStyle,
   showsVerticalScrollIndicator = false,
   onScroll,
+  noScroll = false,
+  stickyHeaderIndices,
   testID,
 }: DeskShellProps) {
   const { colors } = useAppTheme();
@@ -89,16 +99,23 @@ export function DeskShell({
     >
       <MobileAtmosphere surface={surface} />
       {header}
-      <ScrollView
-        testID={testID}
-        style={styles.body}
-        contentContainerStyle={contentContainerStyle ?? styles.bodyContent}
-        showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-        onScroll={onScroll}
-        scrollEventThrottle={onScroll ? 16 : undefined}
-      >
-        {children}
-      </ScrollView>
+      {noScroll ? (
+        <View testID={testID} style={styles.body}>
+          {children}
+        </View>
+      ) : (
+        <ScrollView
+          testID={testID}
+          style={styles.body}
+          contentContainerStyle={contentContainerStyle ?? styles.bodyContent}
+          showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+          onScroll={onScroll}
+          scrollEventThrottle={onScroll ? 16 : undefined}
+          stickyHeaderIndices={stickyHeaderIndices}
+        >
+          {children}
+        </ScrollView>
+      )}
       <MobileTabBar
         items={[
           tab('/', 'TODAY', Home, navigateToHome),

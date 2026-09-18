@@ -139,12 +139,6 @@ export default function HomeScreen() {
   const heroTranslate = scrollY.interpolate({ inputRange: [0, 140], outputRange: [0, -24] });
   const heroOpacity = scrollY.interpolate({ inputRange: [0, 140], outputRange: [1, 0.35] });
 
-  const startLabel = isSessionActive
-    ? 'RESUME SESSION'
-    : preferredSplit === 'twoADay'
-      ? `START ${suggestedWindow.toUpperCase()} WORKOUT`
-      : 'START WORKOUT';
-
   return (
     <DeskShell
       surface="training"
@@ -159,6 +153,7 @@ export default function HomeScreen() {
         {`TODAY · ${suggestedWindow === 'am' ? 'AM' : 'PM'} WINDOW`}
       </MobileSectionEyebrow>
       <Animated.View
+        testID="home-masthead-row"
         style={[
           styles.todayRow,
           reduced
@@ -188,14 +183,13 @@ export default function HomeScreen() {
         <Text style={[styles.firstLift, { color: colors.text }]} numberOfLines={1}>
           First up — {firstLift}
         </Text>
-      ) : null}
-      <MobilePrimaryButton
-        onPress={isSessionActive ? () => navigateToWorkoutDetail() : navigateToSplitSelection}
-        style={styles.launcher}
-        testID="home-launcher-start"
-      >
-        {startLabel}
-      </MobilePrimaryButton>
+      ) : (
+        <Text style={[styles.firstLift, { color: colors.textMuted }]} numberOfLines={2}>
+          {isSessionActive
+            ? 'Session in progress — resume from the bar below.'
+            : 'Start from the bar below when you hit the floor.'}
+        </Text>
+      )}
 
       {/* This week — figures on steel, no cards. */}
       <MobileSectionEyebrow rule flush={false}>

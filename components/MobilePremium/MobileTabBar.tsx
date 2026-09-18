@@ -216,6 +216,10 @@ const styles = StyleSheet.create({
   },
   centerSlot: {
     width: 84,
+    // Stretch the full row height so the raised button's negative top
+    // offsets from the ROW's top edge (a content-height slot would sit
+    // at the flex-end bottom and sink the button into the bar).
+    alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingBottom: 6,

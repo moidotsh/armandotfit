@@ -1,9 +1,11 @@
 // app/exercise-detail.tsx
-// Detail card for a catalog exercise: instructions, tips, muscles,
-// equipment. Muscles + equipment read as attribute chips — primary
-// chips carry a border, secondary ones ride muted. When a draft session
-// is active, an "Add to active session" CTA wires to addExerciseToDraft
-// (coarse identity + slug); when not, a quiet line says so.
+// The reference page for a catalog exercise (signal-thesis §7): the
+// name anchors, instructions read as body on steel, equipment rides as
+// chips — and MUSCLES draw as TARGET BARS: primary muscles at full
+// signal bars, secondary at 40% steel. Metadata as data-viz: what the
+// lift trains, at a glance. When a draft session is active, an "Add to
+// active session" CTA wires to addExerciseToDraft (coarse identity +
+// slug); when not, a quiet line says so.
 
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -109,37 +111,48 @@ export default function ExerciseDetailScreen() {
                   Muscles worked
                 </MobileSectionEyebrow>
                 <View>
-                  <View style={styles.chipWrap}>
-                    {exercise.primaryMuscles.map((m) => (
+                  {exercise.primaryMuscles.map((m) => (
+                    <View
+                      key={m}
+                      style={styles.targetRow}
+                      accessibilityLabel={`Primary muscle ${MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}`}
+                    >
+                      <Text style={[styles.targetName, { color: colors.text }]}>
+                        {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
+                      </Text>
                       <View
-                        key={m}
-                        style={[
-                          styles.chip,
-                          styles.chipPrimary,
-                          { borderColor: colors.border, backgroundColor: colors.glass.inputBackground },
-                        ]}
-                        accessibilityLabel={`Primary muscle ${MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}`}
+                        style={[styles.targetTrack, { backgroundColor: colors.mobilePremium.railTrack }]}
                       >
-                        <Text style={[styles.chipText, { color: colors.text }]}>
-                          {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
-                        </Text>
+                        <View
+                          style={[styles.targetBar, { backgroundColor: colors.brand }]}
+                        />
                       </View>
-                    ))}
-                    {exercise.secondaryMuscles.map((m) => (
+                      <Text style={[styles.targetWeight, { color: colors.brandText }]}>
+                        PRIME
+                      </Text>
+                    </View>
+                  ))}
+                  {exercise.secondaryMuscles.map((m) => (
+                    <View
+                      key={m}
+                      style={styles.targetRow}
+                      accessibilityLabel={`Secondary muscle ${MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}`}
+                    >
+                      <Text style={[styles.targetName, { color: colors.textSecondary }]}>
+                        {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
+                      </Text>
                       <View
-                        key={m}
-                        style={styles.chip}
-                        accessibilityLabel={`Secondary muscle ${MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}`}
+                        style={[styles.targetTrack, { backgroundColor: colors.mobilePremium.railTrack }]}
                       >
-                        <Text style={[styles.chipText, { color: colors.textSecondary }]}>
-                          {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
-                        </Text>
+                        <View
+                          style={[styles.targetBar, styles.targetBarSecondary, { backgroundColor: colors.textMuted }]}
+                        />
                       </View>
-                    ))}
-                  </View>
-                  <Text style={[styles.chipLegend, { color: colors.textMuted }]}>
-                    Tinted are primary; the rest assist.
-                  </Text>
+                      <Text style={[styles.targetWeight, { color: colors.textMuted }]}>
+                        ASSIST
+                      </Text>
+                    </View>
+                  ))}
                 </View>
               </>
             )}
@@ -154,7 +167,7 @@ export default function ExerciseDetailScreen() {
                     {exercise.equipment.map((e, i) => (
                       <View
                         key={`${e}-${i}`}
-                        style={[styles.chip, styles.chipPrimary, { borderColor: colors.border, backgroundColor: colors.glass.inputBackground }]}
+                        style={[styles.chip, { borderColor: colors.border, backgroundColor: colors.glass.inputBackground }]}
                       >
                         <Text style={[styles.chipText, { color: colors.text }]}>
                           {equipmentLabel(e)}
@@ -211,14 +224,43 @@ const styles = StyleSheet.create({
   bodyText: { ...theme.typography.mobileBody },
   tips: { ...theme.typography.mobileMeta, fontStyle: 'italic', marginTop: 10 },
   missing: { ...theme.typography.mobileMeta },
+  targetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 40,
+  },
+  targetName: {
+    ...theme.typography.mobileItemTitle,
+    fontSize: 15,
+    width: 108,
+  },
+  targetTrack: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  targetBar: {
+    width: '100%',
+    height: '100%',
+  },
+  targetBarSecondary: {
+    width: '40%',
+  },
+  targetWeight: {
+    ...theme.typography.mobileEyebrow,
+    fontSize: 9,
+    width: 44,
+    textAlign: 'right',
+  },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
+    borderWidth: 1,
   },
-  chipPrimary: { borderWidth: 1 },
   chipText: { ...theme.typography.mobileTag },
-  chipLegend: { ...theme.typography.mobileMeta, marginTop: 10 },
   sessionHint: { ...theme.typography.mobileMeta, textAlign: 'center' },
 });

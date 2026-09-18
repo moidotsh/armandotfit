@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   wordmark: {
-    fontFamily: theme.fonts.display,
+    fontFamily: theme.fonts.displayCondensed ?? theme.fonts.display,
     fontSize: 20,
     fontWeight: '800' as const,
     lineHeight: 24,

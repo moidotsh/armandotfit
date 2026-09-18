@@ -1,8 +1,8 @@
 // app/split-selection.tsx
-// Pre-workout setup, set as a logbook page (docs/architecture/
-// logbook-thesis.md §7): the picked day inverts on a 7-day strip —
-// selection is inversion, not borders — and the plan previews as a
-// numbered ledger. Three picks, in order:
+// The FUNNEL (signal-thesis §7): three picks, in order, and GO. The
+// picked day inverts on a 7-day strip — the selected tile rides the
+// FOCUS register (dark in both modes: selection is inversion, not
+// borders) — and the plan previews as a numbered ledger.
 //   1. Split archetype (oneADay / twoADay) — segmented control.
 //   2. Workout day — a rolling 7-day strip. Each non-rest day carries
 //      its day-of-split (1..4), derived from the user's last logged
@@ -206,7 +206,7 @@ export default function SplitSelectionScreen() {
                 style={({ pressed }) => [
                   styles.dayTile,
                   isSelected
-                    ? { backgroundColor: colors.text }
+                    ? { backgroundColor: colors.focus.background }
                     : isRest
                       ? [
                           styles.dayTileRest,
@@ -220,7 +220,7 @@ export default function SplitSelectionScreen() {
                 <Text
                   style={[
                     styles.dayDow,
-                    { color: isSelected ? colors.brandOnInk : colors.textMuted },
+                    { color: isSelected ? colors.focus.signal : colors.textMuted },
                   ]}
                 >
                   {dowLabel}
@@ -228,7 +228,12 @@ export default function SplitSelectionScreen() {
                 <Text
                   style={[
                     styles.dayDate,
-                    { color: isSelected ? colors.background : colors.text },
+                    {
+                      color: isSelected ? colors.focus.text : colors.text,
+                      fontFamily: isSelected
+                        ? theme.fonts.displayCondensed
+                        : undefined,
+                    },
                   ]}
                 >
                   {dateNum}
@@ -238,7 +243,7 @@ export default function SplitSelectionScreen() {
                     styles.daySlotLabel,
                     {
                       color: isSelected
-                        ? colors.brandOnInk
+                        ? colors.focus.muted
                         : isRest
                           ? colors.textColors.tertiary
                           : colors.textSecondary,

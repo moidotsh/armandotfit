@@ -1,27 +1,24 @@
 // app/program.tsx
-// My Program — the split as a document (docs/architecture/
-// logbook-thesis.md §7): days are chapters (mono DAY 01 + Archivo
-// title + planned-sets figure), slots are the same numbered ledger rows
-// the split-selection preview speaks — one slot language everywhere.
-// Plan-time Swap: a standing per-slot substitution (persisted
-// client-side; the authored program in splits.ts is never edited).
-// Swapped slots carry their Rx forward, mark with a 2px brand rule, and
-// reset with one tap.
+// My Program — the split as a document (signal-thesis §7): days are
+// chapters (mono DAY 01 + Saira title + planned-sets figure in the
+// condensed face), and each chapter head PINS while its slots scroll
+// under it — the reader always knows which day they're reading. Slots
+// are the same numbered ledger rows the funnel preview speaks — one
+// slot language everywhere. Plan-time Swap: a standing per-slot
+// substitution (persisted client-side; the authored program in
+// splits.ts is never edited). Swapped slots carry their Rx forward,
+// mark with a 2px signal rule, and reset with one tap.
 
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
 import {
-  MobileAtmosphere,
-  MobileHeader,
   MobileSectionEyebrow,
   MobilePrimaryButton,
   SegmentedControl,
   CopyForAiButton,
 } from '../components/MobilePremium';
-import { InkRail, SwapGlyph } from '../components/composed';
+import { DeskShell, InkRail, SwapGlyph } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
-import { safeGoBack } from '../navigation';
 import { useAiPayload } from '../hooks';
 import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots, slotKey } from '../services';
@@ -34,7 +31,7 @@ import {
   type MuscleSlug,
   type SessionWindow,
 } from '../shared/exercises';
-import { SCREEN_BODY_STYLE, WORKOUT_SPLIT_LIST, theme } from '../constants';
+import { WORKOUT_SPLIT_LIST, theme } from '../constants';
 import type { PreferredSplit } from '../shared/types';
 
 const SPLIT_SEGMENTS = WORKOUT_SPLIT_LIST.map((s) => ({ value: s.id, label: s.label }));
@@ -141,58 +138,52 @@ export default function ProgramScreen() {
     return { sets, lifts };
   };
 
-  return (
-    <SafeAreaView
-      style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
-      edges={['top', 'bottom']}
-    >
-      <MobileAtmosphere surface="analytics" />
-      <MobileHeader
-        title="My Program"
-        eyebrow={
-          split === 'oneADay' ? 'Full body · 4 days' : 'AM/PM · 4 days'
-        }
-        onBack={safeGoBack}
-        navRightAction={
-          <CopyForAiButton payload={aiPayload} testID="program-copy-for-ai" />
-        }
-      />
-      <ScrollView
-        style={styles.body}
-        contentContainerStyle={styles.bodyContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <SegmentedControl<string>
-          variant="selection"
-          segments={SPLIT_SEGMENTS}
-          value={splitChoice}
-          onChange={setSplitChoice}
-          accessibilityLabel="Split archetype"
-          testID="program-split"
-        />
+  // The scroll is a flat child list; day heads are the sticky members
+  // (stickyHeaderIndices — position: sticky on web, verified pinning).
+  const scrollChildren: React.ReactElement[] = [];
+  const stickyIndices: number[] = [];
+  scrollChildren.push(
+    <SegmentedControl<string>
+      key="split"
+      variant="selection"
+      segments={SPLIT_SEGMENTS}
+      value={splitChoice}
+      onChange={setSplitChoice}
+      accessibilityLabel="Split archetype"
+      testID="program-split"
+    />,
+  );
 
-        {days.map((day, di) => {
-          const volume = dayVolume(day.day);
-          const windows: SessionWindow[] =
-            split === 'twoADay' ? ['am', 'pm'] : ['single'];
-          return (
-            <View key={day.day} style={styles.dayBlock}>
-              {/* Day chapter head: mono number, Archivo title, sets figure. */}
-              <View style={styles.dayHead}>
-                <Text style={[styles.dayNumber, { color: colors.brandText }]}>
-                  {`DAY ${String(day.day).padStart(2, '0')}`}
-                </Text>
-                <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
-                  {day.title}
-                </Text>
-                <Text style={[styles.daySets, { color: colors.text }]}>
-                  {`${volume.sets}`}
-                  <Text style={[styles.daySetsUnit, { color: colors.textMuted }]}>
-                    {' sets'}
-                  </Text>
-                </Text>
-              </View>
-              {windows.map((window) => {
+  days.forEach((day, di) => {
+    const volume = dayVolume(day.day);
+    const windows: SessionWindow[] =
+      split === 'twoADay' ? ['am', 'pm'] : ['single'];
+    // The chapter head is its own sticky child; the chapter body follows.
+    stickyIndices.push(scrollChildren.length);
+    scrollChildren.push(
+      <View
+        key={`h-${day.day}`}
+        style={[styles.dayHeadWrap, { backgroundColor: colors.backgroundDeep }]}
+      >
+        <View style={styles.dayHead}>
+          <Text style={[styles.dayNumber, { color: colors.brandText }]}>
+            {`DAY ${String(day.day).padStart(2, '0')}`}
+          </Text>
+          <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
+            {day.title}
+          </Text>
+          <Text style={[styles.daySets, { color: colors.text }]}>
+            {`${volume.sets}`}
+            <Text style={[styles.daySetsUnit, { color: colors.textMuted }]}>
+              {' sets'}
+            </Text>
+          </Text>
+        </View>
+      </View>,
+    );
+    scrollChildren.push(
+      <View key={`b-${day.day}`} style={styles.dayBlock}>
+        {windows.map((window) => {
                 const count = resolveSlots(split, day.day, window, overrides).length;
                 return (
                   <View key={window} style={styles.windowBlock}>
@@ -218,29 +209,50 @@ export default function ProgramScreen() {
                       : null}
                   </View>
                 );
-              })}
-              {di === days.length - 1 ? null : (
-                <View
-                  style={[styles.dayRule, { backgroundColor: colors.mobilePremium.hairlineBorder }]}
-                />
-              )}
-            </View>
-          );
         })}
+        {di === days.length - 1 ? null : (
+          <View
+            style={[styles.dayRule, { backgroundColor: colors.mobilePremium.hairlineBorder }]}
+          />
+        )}
+      </View>,
+    );
+  });
 
-        {overriddenCount > 0 ? (
-          <MobilePrimaryButton
-            variant="ghost"
-            onPress={() => {
-              Object.keys(overrides).forEach(clearOverride);
-              showToast('success', 'All substitutions cleared');
-            }}
-            testID="program-reset-all"
-          >
-            Clear all substitutions ({overriddenCount})
-          </MobilePrimaryButton>
-        ) : null}
-      </ScrollView>
+  if (overriddenCount > 0) {
+    scrollChildren.push(
+      <MobilePrimaryButton
+        key="reset"
+        variant="ghost"
+        onPress={() => {
+          Object.keys(overrides).forEach(clearOverride);
+          showToast('success', 'All substitutions cleared');
+        }}
+        testID="program-reset-all"
+      >
+        Clear all substitutions ({overriddenCount})
+      </MobilePrimaryButton>,
+    );
+  }
+
+  return (
+    <DeskShell
+      surface="analytics"
+      activeTab="/program"
+      stickyHeaderIndices={stickyIndices}
+      header={
+        <View style={styles.headerRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.headerEyebrow, { color: colors.textMuted }]}>
+              {split === 'oneADay' ? 'FULL BODY · 4 DAYS' : 'AM/PM · 4 DAYS'}
+            </Text>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>Program</Text>
+          </View>
+          <CopyForAiButton payload={aiPayload} testID="program-copy-for-ai" />
+        </View>
+      }
+    >
+      {scrollChildren}
       {pickerFor ? (() => {
       const [sp, d, w, pos] = pickerFor.split(':');
       const slots = resolveSlots(sp as PreferredSplit, Number(d), w as never, overrides);
@@ -276,17 +288,32 @@ export default function ProgramScreen() {
         />
       ) : null;
     })() : null}
-    </SafeAreaView>
+    </DeskShell>
   );
 }
 
 const styles = StyleSheet.create({
-  shell: { flex: 1 },
-  body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32 },
-  dayBlock: {
-    marginTop: 24,
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 60,
+    paddingHorizontal: 20,
+    paddingTop: 4,
   },
+  headerEyebrow: {
+    ...theme.typography.mobileEyebrow,
+    marginBottom: 2,
+  },
+  headerTitle: {
+    ...theme.typography.mobileTitle,
+  },
+  dayHeadWrap: {
+    // The sticky chapter head — page-colored so slots scroll under it.
+    paddingTop: 24,
+    marginBottom: 4,
+  },
+  dayBlock: {},
   dayHead: {
     flexDirection: 'row',
     alignItems: 'flex-end',

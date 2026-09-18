@@ -1,29 +1,25 @@
 // app/progression.tsx
-// Progression — the emotional number first (docs/architecture/
-// logbook-thesis.md §7): the current streak is the hero figure, the
-// totals ride beside and beneath it as figures on paper, and personal
-// bests close the page as a mono ledger. All computed at read from raw
-// sessions; nothing stored.
+// Progress — a tab destination on the DeskShell (signal-thesis §7):
+// the emotional number first — the current streak as the hero figure
+// in the signal tone — the totals beside it as figures on steel, and
+// personal bests closing the page as a mono ledger. All computed at
+// read from raw sessions; nothing stored.
 
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
 import {
-  MobileAtmosphere,
-  MobileHeader,
   MobileSectionEyebrow,
   MobilePrimaryButton,
-  MobileActionFooter,
   CopyForAiButton,
   EmptyState,
   Figure,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { QueryErrorNote } from '../components/composed';
+import { DeskShell, QueryErrorNote } from '../components/composed';
 import { useAppTheme } from '../context';
-import { safeGoBack, navigateToAnalytics, navigateToSplitSelection } from '../navigation';
+import { navigateToAnalytics, navigateToSplitSelection } from '../navigation';
 import { useDashboardSummary, usePersonalBests, useAiPayload } from '../hooks';
-import { SCREEN_BODY_STYLE, theme } from '../constants';
+import { theme } from '../constants';
 
 export default function ProgressionScreen() {
   const { colors } = useAppTheme();
@@ -46,22 +42,16 @@ export default function ProgressionScreen() {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
-      edges={['top', 'bottom']}
+    <DeskShell
+      surface="goal"
+      activeTab="/progression"
+      header={
+        <View style={styles.headerRow}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Progress</Text>
+          <CopyForAiButton payload={aiPayload} testID="progression-copy-for-ai" />
+        </View>
+      }
     >
-      <MobileAtmosphere surface="goal" />
-      <MobileHeader
-        title="Progression"
-        eyebrow="Lifetime"
-        onBack={safeGoBack}
-        navRightAction={<CopyForAiButton payload={aiPayload} testID="progression-copy-for-ai" />}
-      />
-      <ScrollView
-        style={styles.body}
-        contentContainerStyle={styles.bodyContent}
-        showsVerticalScrollIndicator={false}
-      >
         {summaryQuery.isLoading ? (
           <LoadingSpinner />
         ) : summaryQuery.isError ? (
@@ -149,20 +139,25 @@ export default function ProgressionScreen() {
             ) : null}
           </>
         )}
-      </ScrollView>
-      <MobileActionFooter>
-        <MobilePrimaryButton variant="ghost" onPress={navigateToAnalytics}>
-          View analytics
-        </MobilePrimaryButton>
-      </MobileActionFooter>
-    </SafeAreaView>
+      <MobilePrimaryButton variant="ghost" onPress={navigateToAnalytics} style={styles.analyticsLink}>
+        View analytics
+      </MobilePrimaryButton>
+    </DeskShell>
   );
 }
 
 const styles = StyleSheet.create({
-  shell: { flex: 1 },
-  body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 32 },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 52,
+    paddingHorizontal: 20,
+  },
+  headerTitle: {
+    ...theme.typography.mobileTitle,
+  },
+  analyticsLink: { marginTop: 24 },
   heroRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
