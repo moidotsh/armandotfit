@@ -59,10 +59,12 @@ focal scale; a tally replaces a set-list).
    with no load and no record carries ZERO hue. Status hues appear
    only in toasts and inline errors.
 4. **FURNITURE SHOUTS, CONTENT SPEAKS.** The board's fixed furniture
-   (verbs, labels, eyebrows, section marks) sets in CAPS — always
-   ≤3 words, Archivo, tracked +0.8. Content (exercise names, notes,
-   program titles) sets in sentence case. `textTransform` carries the
-   caps; `textContent` stays raw.
+   (verbs, labels, eyebrows, section marks) is AUTHORED IN CAPS —
+   always ≤3 words, Archivo, tracked +0.8; `textContent` IS the caps
+   (probed directly — no `textTransform` theater). Content (exercise
+   names, notes, program titles) sets with `textTransform: none` and
+   keeps its natural capitals ("Bulgarian Split Squat") — the board
+   never shouts content.
 5. **THE MAP IS ABOVE.** The live session is ONE scrollable document:
    the session map sits above the current station (scroll up to see
    the whole day at once — native scroll, zero JS), the station

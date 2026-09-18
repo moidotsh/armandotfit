@@ -1,21 +1,24 @@
 // app/workout-detail.tsx
-// Two screens (docs/architecture/quiet-page-thesis.md §6):
+// Two screens (docs/architecture/board-thesis.md §7):
 //
 //   ?id=  the RECEIPT — a Desk page. "That was N kg": tonnage is the
-//         statement, one fact whisper carries the date/window/counts,
-//         exercises read as quiet ledgers, delete behind a two-step
-//         footer.
+//         FIGURE-STATEMENT (Spline at counter scale — a figure IS
+//         the statement here), one fact whisper carries the
+//         date/window/counts, exercises read as ledgers with drawn
+//         plate stacks per set, delete behind a two-step footer.
 //
-//   none  the FLOOR — the live report. One exercise at a time (one
-//         STATION), its name at the statement scale, the next set
-//         pre-armed at carry-forward weight as THE CALL (`100 × 10`,
-//         agate at counter scale) — one thumb / one tap on LOG SET
-//         locks the line in. The chromeless header is a clock with two
-//         ways out (‹ minimize, FINISH); the station marks answer
-//         "where am I"; totals wait in the finish sheet — mid-set,
-//         nothing counts anything for you. The Floor follows the
-//         user's mode — the register difference is density and scale,
-//         not a second color scheme.
+//   none  the FLOOR — the live report, the flagship. ONE scrollable
+//         document: THE SESSION MAP sits ABOVE the station (pull up
+//         to read the whole day — native scroll, zero JS), the
+//         station follows (name statement, TARGET whisper, SWAP /
+//         REMOVE furniture), THE TALLY crosses sets off like a
+//         whiteboard (done gates in ink, the live gate breathing
+//         record-orange), the ledger audits in drawn stacks, and
+//         THE LOGGER — the app's one physical object, carrying the
+//         system's one shadow — docks below it all: the load DRAWS
+//         as a plate stack, the reps speak as Spline digits, and
+//         LOG SET is the heaviest ink on the page. The chromeless
+//         header is ‹ minimize · MAP · the clock · FINISH.
 //
 // The draft hydrates from the program slots (local data — no fetch);
 // draft set rows exist only once logged (the armed-set model). A
@@ -42,15 +45,15 @@ import {
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import {
-  DeskShell,
+  BoardShell,
   SetRow,
+  StageSetRow,
   TagChips,
   InkRail,
   SwapGlyph,
   QueryErrorNote,
-  CallBoard,
-  StationStrip,
-  StageSetRow,
+  TheLogger,
+  TallyGates,
   NextStation,
 } from '../components/composed';
 import { useToast } from '../context';
@@ -76,8 +79,14 @@ import {
   formatVolume,
   formatElapsed,
 } from '../services';
-import { SCREEN_BODY_STYLE, theme, MOBILE_CONTENT_WIDTH_STYLE, BLOCK_GAP, QUIET } from '../constants';
-import { useReducedMotion } from '../components/premium/shared';
+import {
+  SCREEN_BODY_STYLE,
+  theme,
+  MOBILE_CONTENT_WIDTH_STYLE,
+  BLOCK_GAP,
+  BOARD,
+  PAGE_GUTTER,
+} from '../constants';
 
 /** The armed set's editable values. */
 interface Armed {
@@ -198,8 +207,8 @@ export default function WorkoutDetailScreen() {
   // exercise NAME, the TOP set of the most recent session that has
   // it — the highest weight loaded (ties resolve to the later set),
   // with the reps done at that weight. The first-set prefill for the
-  // armed slab: you walk in matched to what your best loaded last
-  // time, not to whatever the session happened to end on.
+  // logger: you walk in matched to what your best loaded last time,
+  // not to whatever the session happened to end on.
   const recentForPrefill = useRecentSessionDetails(10);
   const lastPerformance = useMemo(() => {
     const map = new Map<string, { weight: number; reps: number }>();
@@ -266,7 +275,7 @@ export default function WorkoutDetailScreen() {
       ? session.exercises.reduce((n, e) => n + sumVolume(e.sets), 0)
       : 0;
     return (
-      <DeskShell
+      <BoardShell
         surface="training"
         onBack={safeGoBack}
         testID="receipt-scroll"
@@ -283,8 +292,9 @@ export default function WorkoutDetailScreen() {
           <LoadingSpinner />
         ) : (
           <>
-            {/* THE STATEMENT — tonnage. The receipt's one sentence is
-                "that was N kg"; the fact line carries the rest. */}
+            {/* THE FIGURE-STATEMENT — tonnage. The receipt's one
+                sentence is "that was N kg"; the fact line carries
+                the rest. */}
             <View>
               <Text style={[styles.receiptStatement, { color: colors.text }]}>
                 {`${formatVolume(totalKg)} kg`}
@@ -357,11 +367,11 @@ export default function WorkoutDetailScreen() {
             </View>
           </>
         )}
-      </DeskShell>
+      </BoardShell>
     );
   }
 
-  // ── Live-logging mode — the STAGE, the Floor ──────────────────────
+  // ── Live-logging mode — the FLOOR ─────────────────────────────────
   if (!draft) {
     // The redirect effect will fire; render a placeholder meanwhile.
     return (
@@ -377,7 +387,7 @@ export default function WorkoutDetailScreen() {
   }
 
   return (
-    <Stage
+    <Floor
       // Stage props (all the live-mode state above flows through).
       draft={draft}
       elapsed={elapsed}
@@ -406,9 +416,9 @@ export default function WorkoutDetailScreen() {
   );
 }
 
-// ── The Stage (the Floor) ──────────────────────────────────────────────
+// ── The Floor ──────────────────────────────────────────────────────────
 
-interface StageProps {
+interface FloorProps {
   draft: NonNullable<ReturnType<typeof useWorkoutStore.getState>['draft']>;
   elapsed: string;
   sessionSets: number;
@@ -431,7 +441,7 @@ interface StageProps {
   lastTagsQuery: { data: Map<string, string[]> | undefined };
 }
 
-function Stage(props: StageProps) {
+function Floor(props: FloorProps) {
   const {
     draft,
     elapsed,
@@ -455,8 +465,6 @@ function Stage(props: StageProps) {
   } = props;
   const { colors } = useAppTheme();
   const { showToast } = useToast();
-  const reduced = useReducedMotion();
-  const insets = { top: 0 };
 
   const [stationIndex, setStationIndex] = useState(0);
   const [finishOpen, setFinishOpen] = useState(false);
@@ -466,24 +474,55 @@ function Stage(props: StageProps) {
     Record<string, Armed>
   >({});
 
+  // THE MAP — one document, the map above the station. The scroller
+  // opens AT the station (scrolled past the map); the MAP chip and
+  // the map's rows are the two ways to move.
+  const scrollRef = useRef<ScrollView>(null);
+  const mapHeightRef = useRef(0);
+  const userScrolledRef = useRef(false);
+  const [mapHeight, setMapHeight] = useState(0);
+  const [scrollerH, setScrollerH] = useState(0);
+  useEffect(() => {
+    if (mapHeight <= 0) return;
+    // Re-jump on every growth: the map first lays out before slot
+    // hydration fills its rows (and again when the self-hosted faces
+    // settle), so the opening position follows the FINAL height. A
+    // user who scrolled meanwhile owns the position.
+    const jump = () => {
+      if (!userScrolledRef.current) {
+        scrollRef.current?.scrollTo({ y: mapHeightRef.current, animated: false });
+      }
+    };
+    jump();
+    const t = setTimeout(jump, 650);
+    return () => clearTimeout(t);
+  }, [mapHeight]);
+
   const exercises = draft.exercises;
   const index = Math.min(stationIndex, Math.max(0, exercises.length - 1));
   const exercise = exercises[index] ?? null;
 
-  // The program's own ask for this station: the LOW end of the target
-  // rep range ("3x8-10" -> 8) — the default a fresh exercise arms to.
+  // The program's own ask for this station: the SET count and the LOW
+  // end of the rep range ("4×8-10" -> 4 sets, 8 reps) — the tally
+  // draws the ask; the default arms to its low end.
+  const targetRx = exercise?.targetRx ?? null;
+  const targetSets = useMemo(() => {
+    const head = targetRx?.split('×')[0]?.trim();
+    const n = head ? parseInt(head, 10) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  }, [targetRx]);
   const targetRepsLow = useMemo(() => {
-    const hint = exercise?.targetRx?.split('×')[1]?.trim();
+    const hint = targetRx?.split('×')[1]?.trim();
     if (!hint) return null;
     const low = parseInt(hint.split(/[\u2013\u2014-]/)[0], 10);
     return Number.isFinite(low) && low > 0 ? low : null;
-  }, [exercise?.targetRx]);
+  }, [targetRx]);
 
   // The armed set for the current station: whatever the user has set,
   // else carry-forward from this exercise's last logged set, else the
   // previous session's TOP set for this exercise name, else fresh
   // ground — reps default to the target range's low end (the
-  // program's ask), weight stays a blank line until the bar loads.
+  // program's ask), weight stays a blank sleeve until the bar loads.
   const armed: Armed = useMemo(() => {
     const explicit = armedByExercise[exercise?.localId ?? ''];
     if (explicit) return explicit;
@@ -503,7 +542,7 @@ function Stage(props: StageProps) {
     setArmedByExercise((prev) => ({ ...prev, [exercise.localId]: next }));
   };
 
-  const repsHint = exercise?.targetRx?.split('×')[1]?.trim() ?? null;
+  const repsHint = targetRx?.split('×')[1]?.trim() ?? null;
 
   const handleLog = () => {
     if (!exercise) return;
@@ -541,292 +580,378 @@ function Stage(props: StageProps) {
 
   const dayTitle = getDayTitle(draft.splitType, draft.day);
 
+  // The tally's ask: the program's set count when present, extended
+  // as extra sets land; a free draw when the station has no Rx.
+  const tallyTotal = targetSets > 0
+    ? Math.max(targetSets, exercise ? exercise.sets.length + 1 : 1)
+    : exercise
+      ? Math.max(exercise.sets.length + 1, 1)
+      : 1;
+
   return (
     <SafeAreaView
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
       edges={['top', 'bottom']}
     >
-      {/* The stage rides the mobile column like every Desk screen —
+      {/* The Floor rides the mobile column like every Desk screen —
           the page field bleeds full-viewport, the content does not. */}
       <View style={[styles.stageColumn, MOBILE_CONTENT_WIDTH_STYLE]}>
-      {/* Stage header — minimize, the clock, finish. The Floor's
-          chromeless header: one number running, two words to leave
-          by. Totals wait in the finish sheet. */}
-      <View style={styles.stageHeader} testID="stage-header">
-        <Pressable
-          onPress={replaceWithHome}
-          accessibilityRole="button"
-          accessibilityLabel="Minimize session"
-          style={({ pressed }) => [styles.iconButton, pressed ? { opacity: 0.6 } : null]}
-          testID="stage-minimize"
-        >
-          <ChevronLeft size={24} color={colors.text} />
-        </Pressable>
-        <View style={styles.stageHeaderCenter}>
-          <Text style={[styles.stageClock, { color: colors.text }]} numberOfLines={1}>
-            {elapsed}
-          </Text>
+        {/* Floor header — minimize, the map, the clock, finish. One
+            number running, three words to move by. */}
+        <View style={styles.stageHeader} testID="stage-header">
+          <Pressable
+            onPress={replaceWithHome}
+            accessibilityRole="button"
+            accessibilityLabel="Minimize session"
+            style={({ pressed }) => [styles.iconButton, pressed ? { opacity: 0.6 } : null]}
+            testID="stage-minimize"
+          >
+            <ChevronLeft size={24} color={colors.text} />
+          </Pressable>
+          <Pressable
+            onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+            accessibilityRole="button"
+            accessibilityLabel="Show session map"
+            style={({ pressed }) => [styles.iconButton, pressed ? { opacity: 0.6 } : null]}
+            testID="stage-map"
+          >
+            <Text style={[styles.headerWord, { color: colors.text }]}>MAP ▲</Text>
+          </Pressable>
+          <View style={styles.stageHeaderCenter}>
+            <Text style={[styles.stageClock, { color: colors.text }]} numberOfLines={1}>
+              {elapsed}
+            </Text>
+          </View>
+          <Pressable
+            onPress={() => {
+              setConfirmDiscard(false);
+              setFinishOpen(true);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Finish session"
+            style={({ pressed }) => [
+              styles.finishButton,
+              pressed ? { opacity: 0.6 } : null,
+            ]}
+            testID="stage-finish"
+          >
+            <Text style={[styles.headerWord, { color: colors.text }]}>
+              FINISH
+            </Text>
+          </Pressable>
         </View>
-        <Pressable
-          onPress={() => {
-            setConfirmDiscard(false);
-            setFinishOpen(true);
+
+        {/* THE FLOOR — one document: the map above, the station
+            below, the logger docked out of the scroller. */}
+        <ScrollView
+          ref={scrollRef}
+          style={styles.stationScroll}
+          contentContainerStyle={styles.stationContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          onScrollBeginDrag={() => {
+            userScrolledRef.current = true;
           }}
-          accessibilityRole="button"
-          accessibilityLabel="Finish session"
-          style={({ pressed }) => [
-            styles.finishButton,
-            pressed ? { opacity: 0.6 } : null,
-          ]}
-          testID="stage-finish"
+          onLayout={(e) => setScrollerH(Math.floor(e.nativeEvent.layout.height))}
+          testID="floor-scroll"
         >
-          <Text style={[styles.finishLabel, { color: colors.text }]}>
-            FINISH
-          </Text>
-        </Pressable>
-      </View>
-
-      {/* Station strip — position + navigation. */}
-      <StationStrip
-        stations={exercises.map((ex, i) => ({
-          key: ex.localId,
-          position: i + 1,
-          done: ex.sets.length > 0,
-        }))}
-        currentIndex={index}
-        onSelect={setStationIndex}
-        testID="stage-station-strip"
-      />
-
-      {/* The station. */}
-      <ScrollView
-        style={styles.stationScroll}
-        contentContainerStyle={styles.stationContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {exercise ? (
-          <>
-            <View style={styles.stationHead}>
-              <Text
-                style={[styles.stationName, { color: colors.text }]}
-                numberOfLines={2}
-                testID="stage-station-name"
-              >
-                {exercise.exerciseName}
-              </Text>
-              <View style={styles.stationMeta}>
-                {exercise.targetRx ? (
-                  <Text style={[styles.stationRx, { color: colors.textMuted }]}>
-                    {`TARGET ${exercise.targetRx}`}
-                  </Text>
-                ) : null}
-                <SwapGlyph
-                  onPress={() => setPickerFor(exercise.localId)}
-                  label={exercise.exerciseName}
-                />
+          {/* THE SESSION MAP — the whole day at a glance, framed by
+              the 2px rule pair (THE BOARD block). Pull up (or tap
+              MAP) to read it; every row is a jump. */}
+          <View
+            style={[styles.mapBlock, { borderColor: colors.text }]}
+            onLayout={(e) => {
+              const h = Math.ceil(e.nativeEvent.layout.height);
+              mapHeightRef.current = h;
+              setMapHeight(h);
+            }}
+            testID="floor-map"
+          >
+            <Text style={[styles.mapTitle, { color: colors.textMuted }]}>
+              {`${dayTitle ? `${dayTitle} · ` : ''}${exercises.length} STATIONS`}
+            </Text>
+            {exercises.map((ex, i) => {
+              const isCurrent = i === index;
+              const done = ex.sets.length;
+              return (
                 <Pressable
+                  key={ex.localId}
                   onPress={() => {
-                    removeExerciseFromDraft(exercise.localId);
-                    setStationIndex((i) => Math.max(0, i - 1));
+                    setStationIndex(i);
+                    scrollRef.current?.scrollTo({ y: mapHeightRef.current, animated: true });
                   }}
                   accessibilityRole="button"
-                  accessibilityLabel={`Remove ${exercise.exerciseName} from session`}
-                  style={({ pressed }) => [styles.removeCta, pressed ? { opacity: 0.6 } : null]}
+                  accessibilityLabel={`Station ${i + 1}, ${ex.exerciseName}, ${done} sets logged. Go to station`}
+                  style={({ pressed }) => [
+                    styles.mapRow,
+                    pressed ? { opacity: 0.6 } : null,
+                  ]}
+                  testID={`floor-map-row-${i}`}
                 >
-                  <Text style={[styles.removeLabel, { color: colors.textMuted }]}>
-                    REMOVE
+                  <Text
+                    style={[
+                      styles.mapIndex,
+                      { color: isCurrent ? colors.brandText : colors.textMuted },
+                    ]}
+                  >
+                    {String(i + 1).padStart(2, '0')}
                   </Text>
-                </Pressable>
-              </View>
-            </View>
-
-            {/* Tags — one whisper line; the editor opens one tap
-                deeper (tags prefill from last time; mid-set editing
-                is the exception, not the default). */}
-            <Pressable
-              onPress={() => setTagsOpen((o) => !o)}
-              accessibilityRole="button"
-              accessibilityLabel={
-                exercise.tags.length > 0
-                  ? `Edit tags — ${exercise.tags.join(', ')}`
-                  : 'Add tags'
-              }
-              style={({ pressed }) => [styles.tagsToggle, pressed ? { opacity: 0.6 } : null]}
-            >
-              <Text style={[styles.tagsToggleText, { color: colors.textMuted }]} numberOfLines={1}>
-                {exercise.tags.length > 0 ? exercise.tags.join(' · ') : '+ TAGS'}
-              </Text>
-            </Pressable>
-            {tagsOpen ? (
-              <TagChips
-                tags={exercise.tags}
-                suggestions={TAG_VOCABULARY_SEED.filter(
-                  (t) => !exercise.tags.includes(t),
-                ).slice(0, 3)}
-                onToggleTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
-                onAddTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
-                register="desk"
-                testID={`tag-chips-${exercise.localId}`}
-              />
-            ) : null}
-
-            {/* The ledger — every row a logged set, scoreboard-legible. */}
-            {exercise.sets.length > 0 ? (
-              <View style={styles.ledger}>
-                {exercise.sets.map((s) => (
-                  <StageSetRow
-                    key={s.localId}
-                    position={s.position}
-                    weight={s.weight ?? 0}
-                    reps={s.reps ?? 0}
-                    onRemove={() => removeSetFromDraft(exercise.localId, s.localId)}
-                    testID={`stage-set-row-${s.position}`}
+                  <Text
+                    style={[styles.mapName, { color: isCurrent ? colors.text : colors.textSecondary }]}
+                    numberOfLines={1}
+                  >
+                    {ex.exerciseName}
+                  </Text>
+                  <TallyGates
+                    done={done}
+                    total={Math.max(done, 1)}
+                    scale="row"
+                    testID={`floor-map-tally-${i}`}
                   />
-                ))}
-              </View>
-            ) : (
-              <Text style={[styles.ledgerEmpty, { color: colors.textMuted }]}>
-                No sets logged yet — the board below arms your first.
-              </Text>
-            )}
-
-            {index < exercises.length - 1 ? (
-              <NextStation
-                name={exercises[index + 1].exerciseName}
-                onPress={() => setStationIndex(index + 1)}
-                testID="stage-next-station"
-              />
-            ) : null}
-
-            <Pressable
-              onPress={navigateToExerciseDatabase}
-              accessibilityRole="button"
-              accessibilityLabel="Add exercise from library"
-              style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
-            >
-              <Text style={[styles.addExerciseLabel, { color: colors.textMuted }]}>
-                + ADD EXERCISE
-              </Text>
-            </Pressable>
-
-            {sessionError ? (
-              <Text style={[styles.errorText, { color: colors.alert }]}>
-                {sessionError}
-              </Text>
-            ) : null}
-          </>
-        ) : (
-          <View>
-            <Text style={[styles.ledgerEmpty, { color: colors.textMuted }]}>
-              No exercises in this session.
-            </Text>
-            <Pressable
-              onPress={navigateToExerciseDatabase}
-              accessibilityRole="button"
-              accessibilityLabel="Add exercise from library"
-              style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
-            >
-              <Text style={[styles.addExerciseLabel, { color: colors.textMuted }]}>
-                + ADD EXERCISE
-              </Text>
-            </Pressable>
+                </Pressable>
+              );
+            })}
           </View>
-        )}
-      </ScrollView>
 
-      {/* THE CALL BOARD — docked, never scrolls away. The armed set
-          (the call) + the one verb. */}
-      {exercise ? (
-        <CallBoard
-          setNumber={exercise.sets.length + 1}
-          weight={armed.weight}
-          reps={armed.reps}
-          repsHint={repsHint}
-          onLog={handleLog}
-          onChangeWeight={(weight) => setArmed({ ...armed, weight })}
-          onChangeReps={(reps) => setArmed({ ...armed, reps })}
-          testID="armed-set"
-        />
-      ) : null}
+          {/* THE STATION — its wrapper floors at the scroller's height
+              so the map can ALWAYS clear above the fold, even before
+              the ledger grows. */}
+          <View style={{ minHeight: scrollerH }}>
+          {exercise ? (
+            <>
+              <View style={styles.stationHead}>
+                <Text
+                  style={[styles.stationName, { color: colors.text }]}
+                  numberOfLines={2}
+                  testID="stage-station-name"
+                >
+                  {exercise.exerciseName}
+                </Text>
+                <View style={styles.stationMeta}>
+                  {targetRx ? (
+                    <Text style={[styles.stationRx, { color: colors.textMuted }]}>
+                      {`TARGET ${targetRx}`}
+                    </Text>
+                  ) : null}
+                  <SwapGlyph
+                    onPress={() => setPickerFor(exercise.localId)}
+                    label={exercise.exerciseName}
+                  />
+                  <Pressable
+                    onPress={() => {
+                      removeExerciseFromDraft(exercise.localId);
+                      setStationIndex((i) => Math.max(0, i - 1));
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove ${exercise.exerciseName} from session`}
+                    style={({ pressed }) => [styles.removeCta, pressed ? { opacity: 0.6 } : null]}
+                  >
+                    <Text style={[styles.furnitureWord, { color: colors.textMuted }]}>
+                      REMOVE
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
 
-      {/* Finish — the summary sheet. */}
-      <MobileDialog
-        visible={finishOpen}
-        onOpenChange={(open) => {
-          if (!open) setFinishOpen(false);
-        }}
-        title="Finish session"
-        testID="stage-finish-dialog"
-      >
-        <View style={styles.finishStats}>
-          <Figure value={elapsed} label="elapsed" tone="ink" size="sm" style={styles.finishStat} />
-          <Figure value={sessionSets} label={sessionSets === 1 ? 'set' : 'sets'} tone="ink" size="sm" style={styles.finishStat} />
-          <Figure
-            value={formatVolume(sessionKg)}
-            unit="kg"
-            label="moved"
-            tone="ink"
-            size="sm"
-            align="right"
-            style={styles.finishStat}
+              {/* THE TALLY — sets crossed off the board; the live
+                  gate breathes record-orange. */}
+              <View style={styles.tallyRow} testID="stage-tally">
+                <TallyGates
+                  done={exercise.sets.length}
+                  total={tallyTotal}
+                  live
+                  scale="counter"
+                  testID="stage-tally-gates"
+                />
+              </View>
+
+              {/* Tags — one whisper line; the editor opens one tap
+                  deeper (tags prefill from last time; mid-set editing
+                  is the exception, not the default). */}
+              <Pressable
+                onPress={() => setTagsOpen((o) => !o)}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  exercise.tags.length > 0
+                    ? `Edit tags — ${exercise.tags.join(', ')}`
+                    : 'Add tags'
+                }
+                style={({ pressed }) => [styles.tagsToggle, pressed ? { opacity: 0.6 } : null]}
+              >
+                <Text style={[styles.tagsToggleText, { color: colors.textMuted }]} numberOfLines={1}>
+                  {exercise.tags.length > 0 ? exercise.tags.join(' · ') : '+ TAGS'}
+                </Text>
+              </Pressable>
+              {tagsOpen ? (
+                <TagChips
+                  tags={exercise.tags}
+                  suggestions={TAG_VOCABULARY_SEED.filter(
+                    (t) => !exercise.tags.includes(t),
+                  ).slice(0, 3)}
+                  onToggleTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
+                  onAddTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
+                  register="desk"
+                  testID={`tag-chips-${exercise.localId}`}
+                />
+              ) : null}
+
+              {/* THE LEDGER — every row a logged set, drawn. */}
+              {exercise.sets.length > 0 ? (
+                <View style={styles.ledger}>
+                  {exercise.sets.map((s) => (
+                    <StageSetRow
+                      key={s.localId}
+                      position={s.position}
+                      weight={s.weight ?? 0}
+                      reps={s.reps ?? 0}
+                      onRemove={() => removeSetFromDraft(exercise.localId, s.localId)}
+                      testID={`stage-set-row-${s.position}`}
+                    />
+                  ))}
+                </View>
+              ) : (
+                <Text style={[styles.ledgerEmpty, { color: colors.textMuted }]}>
+                  No sets logged yet — the logger below arms your first.
+                </Text>
+              )}
+
+              {index < exercises.length - 1 ? (
+                <NextStation
+                  name={exercises[index + 1].exerciseName}
+                  onPress={() => setStationIndex(index + 1)}
+                  testID="stage-next-station"
+                />
+              ) : null}
+
+              <Pressable
+                onPress={navigateToExerciseDatabase}
+                accessibilityRole="button"
+                accessibilityLabel="Add exercise from library"
+                style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
+              >
+                <Text style={[styles.furnitureWord, { color: colors.textMuted }]}>
+                  + ADD EXERCISE
+                </Text>
+              </Pressable>
+
+              {sessionError ? (
+                <Text style={[styles.errorText, { color: colors.alert }]}>
+                  {sessionError}
+                </Text>
+              ) : null}
+            </>
+          ) : (
+            <View>
+              <Text style={[styles.ledgerEmpty, { color: colors.textMuted }]}>
+                No exercises in this session.
+              </Text>
+              <Pressable
+                onPress={navigateToExerciseDatabase}
+                accessibilityRole="button"
+                accessibilityLabel="Add exercise from library"
+                style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
+              >
+                <Text style={[styles.furnitureWord, { color: colors.textMuted }]}>
+                  + ADD EXERCISE
+                </Text>
+              </Pressable>
+            </View>
+          )}
+          </View>
+        </ScrollView>
+
+        {/* THE LOGGER — docked, never scrolls away, the app's one
+          physical object. The armed set + the one verb. */}
+        {exercise ? (
+          <TheLogger
+            setNumber={exercise.sets.length + 1}
+            weight={armed.weight}
+            reps={armed.reps}
+            repsHint={repsHint}
+            onLog={handleLog}
+            onChangeWeight={(weight) => setArmed({ ...armed, weight })}
+            onChangeReps={(reps) => setArmed({ ...armed, reps })}
+            testID="armed-set"
           />
-        </View>
-        <MobileInput
-          label="Notes"
-          value={draft.notes ?? ''}
-          onChangeText={setDraftNotes}
-          placeholder="How did it feel?"
-        />
-        <View style={{ height: 16 }} />
-        <MobilePrimaryButton
-          onPress={handleSave}
-          loading={isSaving}
-          disabled={sessionSets === 0}
-          testID="stage-save"
-        >
-          {sessionSets > 0
-            ? `Save session · ${sessionSets} set${sessionSets === 1 ? '' : 's'}`
-            : 'Log a set first'}
-        </MobilePrimaryButton>
-        <View style={{ height: 8 }} />
-        <MobilePrimaryButton
-          variant="ghost"
-          accentColor={colors.alert}
-          onPress={() => {
-            if (!confirmDiscard) {
-              setConfirmDiscard(true);
-              return;
-            }
-            setFinishOpen(false);
-            onDiscard();
-          }}
-          testID="stage-discard"
-        >
-          {confirmDiscard ? 'Tap again to discard' : 'Discard session'}
-        </MobilePrimaryButton>
-      </MobileDialog>
+        ) : null}
 
-      {/* Mid-workout swap — the swap bench over the stage. Catalog
-          exercises rank alternatives; custom-named lifts (no slug) have
-          nothing to rank and swap from the library instead. */}
-      {pickerExercise && pickerExercise.exerciseSlug ? (
-        <InkRail
-          currentSlug={pickerExercise.exerciseSlug}
-          open={pickerFor !== null}
-          onOpenChange={(next) => {
-            if (!next) setPickerFor(null);
+        {/* Finish — the summary sheet. */}
+        <MobileDialog
+          visible={finishOpen}
+          onOpenChange={(open) => {
+            if (!open) setFinishOpen(false);
           }}
-          onSwap={(next) => {
-            const target = pickerFor;
-            if (!target) return;
-            swapDraftExercise(target, next);
-            setPickerFor(null);
-            showToast('success', next.exerciseName);
-          }}
-          testID="live-swap-picker"
-        />
-      ) : null}
+          title="Finish session"
+          testID="stage-finish-dialog"
+        >
+          <View style={styles.finishStats}>
+            <Figure value={elapsed} label="elapsed" tone="ink" size="sm" style={styles.finishStat} />
+            <Figure value={sessionSets} label={sessionSets === 1 ? 'set' : 'sets'} tone="ink" size="sm" style={styles.finishStat} />
+            <Figure
+              value={formatVolume(sessionKg)}
+              unit="kg"
+              label="moved"
+              tone="ink"
+              size="sm"
+              align="right"
+              style={styles.finishStat}
+            />
+          </View>
+          <MobileInput
+            label="Notes"
+            value={draft.notes ?? ''}
+            onChangeText={setDraftNotes}
+            placeholder="How did it feel?"
+          />
+          <View style={{ height: 16 }} />
+          <MobilePrimaryButton
+            onPress={handleSave}
+            loading={isSaving}
+            disabled={sessionSets === 0}
+            testID="stage-save"
+          >
+            {sessionSets > 0
+              ? `Save session · ${sessionSets} set${sessionSets === 1 ? '' : 's'}`
+              : 'Log a set first'}
+          </MobilePrimaryButton>
+          <View style={{ height: 8 }} />
+          <MobilePrimaryButton
+            variant="ghost"
+            accentColor={colors.alert}
+            onPress={() => {
+              if (!confirmDiscard) {
+                setConfirmDiscard(true);
+                return;
+              }
+              setFinishOpen(false);
+              onDiscard();
+            }}
+            testID="stage-discard"
+          >
+            {confirmDiscard ? 'Tap again to discard' : 'Discard session'}
+          </MobilePrimaryButton>
+        </MobileDialog>
+
+        {/* Mid-workout swap — the swap bench over the floor. Catalog
+            exercises rank alternatives; custom-named lifts (no slug) have
+            nothing to rank and swap from the library instead. */}
+        {pickerExercise && pickerExercise.exerciseSlug ? (
+          <InkRail
+            currentSlug={pickerExercise.exerciseSlug}
+            open={pickerFor !== null}
+            onOpenChange={(next) => {
+              if (!next) setPickerFor(null);
+            }}
+            onSwap={(next) => {
+              const target = pickerFor;
+              if (!target) return;
+              swapDraftExercise(target, next);
+              setPickerFor(null);
+              showToast('success', next.exerciseName);
+            }}
+            testID="live-swap-picker"
+          />
+        ) : null}
       </View>
     </SafeAreaView>
   );
@@ -838,9 +963,9 @@ const styles = StyleSheet.create({
   },
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 120 },
+  bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 120 },
   bodyText: { ...theme.typography.mobileBody },
-  // ── Stage ──
+  // ── Floor ──
   stageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -856,12 +981,16 @@ const styles = StyleSheet.create({
   // The clock — the Floor's only running figure in the chrome.
   stageClock: {
     ...theme.typography.mobileFigure,
+    fontWeight: '700',
   },
   iconButton: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerWord: {
+    ...theme.typography.mobileEyebrow,
   },
   finishButton: {
     minHeight: 44,
@@ -870,21 +999,45 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 4,
   },
-  finishLabel: {
-    ...theme.typography.mobileEyebrow,
-  },
   stationScroll: { flex: 1 },
   stationContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: PAGE_GUTTER,
     paddingTop: 8,
     paddingBottom: 24,
+  },
+  // THE SESSION MAP — the board block: framed by the 2px rule pair.
+  mapBlock: {
+    borderTopWidth: 2,
+    borderBottomWidth: 2,
+    paddingVertical: 10,
+    gap: 2,
+  },
+  mapTitle: {
+    ...theme.typography.mobileEyebrow,
+    marginBottom: 6,
+  },
+  mapRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 44,
+  },
+  mapIndex: {
+    ...theme.typography.mobileLedger,
+    minWidth: 20,
+  },
+  mapName: {
+    ...BOARD.row,
+    fontWeight: '600',
+    flex: 1,
   },
   stationHead: {
     gap: 4,
     marginBottom: 2,
+    marginTop: BLOCK_GAP,
   },
   stationName: {
-    ...theme.typography.mobileTitleCondensed,
+    ...BOARD.statement,
   },
   stationMeta: {
     flexDirection: 'row',
@@ -896,13 +1049,17 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileEyebrow,
     flex: 1,
   },
+  furnitureWord: {
+    ...theme.typography.mobileEyebrow,
+  },
   removeCta: {
     height: 44,
     justifyContent: 'center',
     paddingHorizontal: 8,
   },
-  removeLabel: {
-    ...theme.typography.mobileEyebrow,
+  tallyRow: {
+    minHeight: 32,
+    justifyContent: 'center',
   },
   ledger: {
     marginTop: 6,
@@ -925,13 +1082,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 4,
   },
-  addExerciseLabel: {
-    ...theme.typography.mobileEyebrow,
-  },
   errorText: { ...theme.typography.mobileMeta, marginTop: 12 },
-  armedDock: {
-    borderTopWidth: 1,
-  },
   finishStats: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -940,13 +1091,13 @@ const styles = StyleSheet.create({
   finishStat: { flex: 1 },
   // ── Receipt (Desk) ──
   receiptBlock: {
-    ...QUIET.block,
+    ...BOARD.block,
   },
   receiptStatement: {
-    ...QUIET.statement,
+    ...theme.typography.mobileCounter,
   },
   receiptFact: {
-    ...QUIET.fact,
+    ...BOARD.fact,
   },
   receiptExHead: {
     flexDirection: 'row',

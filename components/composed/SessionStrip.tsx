@@ -1,17 +1,19 @@
 // components/composed/SessionStrip.tsx
 //
-// THE TICKER (broadsheet-thesis §6): while a session runs, a wire
-// plate pins under every Desk header — LIVE dot (the living pulse) ·
-// the running elapsed count in agate · RETURN →. One tap goes back to
-// the Floor, from anywhere. The session never hides and never falls
-// out of the thumb arc; this is what replaces the tab bar's center
-// action when the bar itself is gone.
+// THE TICKER (board-thesis §7): while a session runs, a slim plate
+// pins under every Desk header — LIVE pulse (the living breath, in
+// record-orange) · the running elapsed figure in Spline · the current
+// station · RETURN →. One tap goes back to the Floor, from anywhere.
+// The session never hides and never falls out of the thumb arc; this
+// is what replaces the tab bar's center action when the bar itself
+// is gone.
 //
 // The strip reads the workout store directly — no prop threading from
-// every screen. It renders the wire register (colors.focus.*): the
-// heaviest ink in the system, identical in both modes.
+// every screen. It follows the mode like every board surface (the
+// wire register stays reserved for interrupts: the chit and the
+// curtain).
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
 import { useWorkoutStore } from '../../stores';
@@ -24,6 +26,7 @@ export function SessionStrip() {
   const { colors } = useAppTheme();
   const reduced = useReducedMotion();
   const startedAt = useWorkoutStore((s) => s.sessionStartedAt);
+  const draft = useWorkoutStore((s) => s.draft);
   const [now, setNow] = useState(() => Date.now());
 
   // The living count ticks once per second — paired clear (R4a).
@@ -32,9 +35,10 @@ export function SessionStrip() {
     return () => clearInterval(t);
   }, []);
 
-  // The living pulse: the LIVE dot breathes (the only loop in the
-  // system). Reduced motion holds full opacity.
-  const pulse = React.useRef(new Animated.Value(1)).current;
+  // The living pulse: the LIVE dot breathes in record-orange (one of
+  // the brand hue's three appearances). Reduced motion holds full
+  // opacity.
+  const pulse = useRef(new Animated.Value(1)).current;
   useEffect(() => {
     if (reduced) {
       pulse.setValue(1);
@@ -51,26 +55,43 @@ export function SessionStrip() {
   }, [pulse, reduced]);
 
   const elapsed = startedAt ? formatElapsed(startedAt, now) : '00:00';
+  // The current station — the first exercise without a full house of
+  // logged sets, else the last.
+  const station =
+    draft && draft.exercises.length > 0
+      ? (draft.exercises.find((e) => e.sets.length === 0) ?? draft.exercises[draft.exercises.length - 1])
+          .exerciseName
+      : null;
 
   return (
     <Pressable
       onPress={() => replaceWithWorkoutDetail()}
       accessibilityRole="button"
-      accessibilityLabel={`Session in progress, ${elapsed} elapsed. Return to session`}
+      accessibilityLabel={`Session in progress, ${elapsed} elapsed${station ? `, at ${station}` : ''}. Return to session`}
       testID="session-strip"
       style={({ pressed }) => [
         styles.strip,
-        { backgroundColor: colors.focus.background, opacity: pressed ? 0.85 : 1 },
+        {
+          backgroundColor: colors.card,
+          borderTopColor: colors.mobilePremium.hairlineBorder,
+          borderBottomColor: colors.mobilePremium.hairlineBorder,
+          opacity: pressed ? 0.85 : 1,
+        },
       ]}
     >
       <View style={styles.left}>
         <Animated.View
-          style={[styles.dot, { backgroundColor: colors.focus.signal, opacity: pulse }]}
+          style={[styles.dot, { backgroundColor: colors.brand, opacity: pulse }]}
         />
-        <Text style={[styles.live, { color: colors.focus.signal }]}>LIVE</Text>
+        <Text style={[styles.live, { color: colors.brandText }]}>LIVE</Text>
+        <Text style={[styles.count, { color: colors.text }]}>{elapsed}</Text>
       </View>
-      <Text style={[styles.count, { color: colors.focus.text }]}>{elapsed}</Text>
-      <Text style={[styles.return, { color: colors.focus.text }]}>RETURN →</Text>
+      {station ? (
+        <Text style={[styles.station, { color: colors.textMuted }]} numberOfLines={1}>
+          {station}
+        </Text>
+      ) : null}
+      <Text style={[styles.return, { color: colors.text }]}>RETURN →</Text>
     </Pressable>
   );
 }
@@ -81,14 +102,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 6,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
   },
   left: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    minWidth: 72,
   },
   dot: {
     width: 8,
@@ -105,12 +128,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1,
   },
+  station: {
+    ...theme.typography.mobileLedger,
+    flex: 1,
+    textAlign: 'center',
+  },
   return: {
     ...theme.typography.mobileEyebrow,
     fontSize: 10,
     letterSpacing: 1.2,
-    minWidth: 72,
-    textAlign: 'right',
   },
 });
 
