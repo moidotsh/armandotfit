@@ -160,6 +160,16 @@ export function replaceWithHome() {
   replace('/');
 }
 
+/**
+ * Return to the live session by REPLACING the current entry — the
+ * session strip and resume paths must never stack a second stage on
+ * top of a hidden one (duplicate mounted screens grow the stack every
+ * minimize/return cycle).
+ */
+export function replaceWithWorkoutDetail() {
+  replace('/workout-detail');
+}
+
 export function replaceWithLogin() {
   replace('/login');
 }

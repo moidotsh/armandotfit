@@ -15,7 +15,7 @@ import React, { useEffect, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
 import { useWorkoutStore } from '../../stores';
-import { navigateToWorkoutDetail } from '../../navigation';
+import { replaceWithWorkoutDetail } from '../../navigation';
 import { theme } from '../../constants';
 import { formatElapsed } from '../../services';
 import { useReducedMotion } from '../premium/shared';
@@ -54,7 +54,7 @@ export function SessionStrip() {
 
   return (
     <Pressable
-      onPress={() => navigateToWorkoutDetail()}
+      onPress={() => replaceWithWorkoutDetail()}
       accessibilityRole="button"
       accessibilityLabel={`Session in progress, ${elapsed} elapsed. Return to session`}
       testID="session-strip"

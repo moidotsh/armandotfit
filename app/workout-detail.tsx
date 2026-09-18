@@ -1,16 +1,19 @@
 // app/workout-detail.tsx
-// Two screens, two registers (docs/architecture/signal-thesis.md §7):
+// Two screens (docs/architecture/count-thesis.md §7):
 //
 //   ?id=  the RECEIPT — a Desk page. Tonnage is the headline of
-//         history (display figure), exercises as ledger tables, delete
-//         behind a two-step footer.
+//         history (display statement), exercises as tally groups +
+//         mono set ledgers, delete behind a two-step footer.
 //
-//   none  the STAGE — the Floor. One exercise at a time (one
-//         STATION), the next set pre-armed at carry-forward weight,
-//         one thumb / one tap on LOG. The station strip answers "where
-//         am I"; the session strip (elapsed · sets · tonnage) answers
+//   none  the STAGE — the count at full size. One exercise at a time
+//         (one STATION), its sets as large tallies, the next set
+//         pre-armed at carry-forward weight — one thumb / one tap on
+//         LOG SET strikes the mark. The station rail answers "where am
+//         I"; the session count (elapsed · sets · tonnage) answers
 //         "how's it going"; everything else waits its turn. Finish
-//         opens the summary sheet: save once, at the end.
+//         opens the summary sheet: save once, at the end. The stage
+//         follows the user's mode — the register difference is density
+//         and scale, not a second color scheme.
 //
 // The draft hydrates from the program slots (local data — no fetch);
 // draft set rows exist only once logged (the armed-set model). A
@@ -38,6 +41,7 @@ import {
   MobileDialog,
   Figure,
   EmptyState,
+  TallyStrip,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import {
@@ -46,7 +50,7 @@ import {
   InkRail,
   SwapGlyph,
   QueryErrorNote,
-  ArmedSet,
+  CountBoard,
   StationStrip,
   StageSetRow,
 } from '../components/composed';
@@ -54,6 +58,7 @@ import { useToast } from '../context';
 import { useAppTheme } from '../context';
 import {
   navigateToExerciseDatabase,
+  replaceWithHome,
   navigateToSplitSelection,
   safeGoBack,
 } from '../navigation';
@@ -350,9 +355,10 @@ export default function WorkoutDetailScreen() {
                     <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
                       {ex.exerciseName || 'Exercise'}
                     </Text>
-                    <Text style={[styles.receiptExCount, { color: colors.textMuted }]}>
-                      {`${ex.sets.length} set${ex.sets.length === 1 ? '' : 's'}`}
-                    </Text>
+                    {/* The session's shape as marks — the receipt's
+                        tally group (decoration; the ledger carries the
+                        numbers as text). */}
+                    <TallyStrip struck={ex.sets.length} size="sm" />
                   </View>
                   {ex.tags.length > 0 ? (
                     <Text style={[styles.tagsLine, { color: colors.textMuted }]}>
@@ -399,7 +405,7 @@ export default function WorkoutDetailScreen() {
     // The redirect effect will fire; render a placeholder meanwhile.
     return (
       <SafeAreaView
-        style={[styles.shell, { backgroundColor: colors.focus.background }]}
+        style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
         edges={['top', 'bottom']}
       >
         <MobileHeader title="Starting session…" />
@@ -441,6 +447,13 @@ export default function WorkoutDetailScreen() {
 }
 
 // ── The Stage ──────────────────────────────────────────────────────────
+
+/** Parse the Rx set ceiling ("3×8–10" → 3) for the board's ghost slots. */
+function targetSetsFor(targetRx: string | null): number | null {
+  if (!targetRx) return null;
+  const n = parseInt(targetRx.split('×')[0] ?? '', 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
 
 interface StageProps {
   draft: NonNullable<ReturnType<typeof useWorkoutStore.getState>['draft']>;
@@ -588,26 +601,25 @@ function Stage(props: StageProps) {
 
   return (
     <SafeAreaView
-      style={[styles.shell, { backgroundColor: colors.focus.background }]}
+      style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
       edges={['top', 'bottom']}
     >
       {/* The stage rides the mobile column like every Desk screen —
-          the focus background bleeds full-viewport, the content does
-          not. */}
+          the page field bleeds full-viewport, the content does not. */}
       <View style={[styles.stageColumn, MOBILE_CONTENT_WIDTH_STYLE]}>
       {/* Stage header — minimize, the day, finish. */}
       <View style={styles.stageHeader} testID="stage-header">
         <Pressable
-          onPress={safeGoBack}
+          onPress={replaceWithHome}
           accessibilityRole="button"
           accessibilityLabel="Minimize session"
           style={({ pressed }) => [styles.iconButton, pressed ? { opacity: 0.6 } : null]}
           testID="stage-minimize"
         >
-          <ChevronLeft size={24} color={colors.focus.text} />
+          <ChevronLeft size={24} color={colors.text} />
         </Pressable>
         <View style={styles.stageHeaderCenter}>
-          <Text style={[styles.stageEyebrow, { color: colors.focus.muted }]} numberOfLines={1}>
+          <Text style={[styles.stageEyebrow, { color: colors.textMuted }]} numberOfLines={1}>
             {stageEyebrow}
           </Text>
         </View>
@@ -620,12 +632,12 @@ function Stage(props: StageProps) {
           accessibilityLabel="Finish session"
           style={({ pressed }) => [
             styles.finishButton,
-            { borderColor: colors.focus.signal },
+            { borderColor: colors.mobilePremium.hairlineBorderStrong },
             pressed ? { opacity: 0.6 } : null,
           ]}
           testID="stage-finish"
         >
-          <Text style={[styles.finishLabel, { color: colors.focus.signal }]}>
+          <Text style={[styles.finishLabel, { color: colors.brandText }]}>
             FINISH
           </Text>
         </Pressable>
@@ -633,13 +645,13 @@ function Stage(props: StageProps) {
 
       {/* Session strip — the instrument row. */}
       <View style={styles.sessionStrip} testID="stage-session-strip">
-        <Text style={[styles.sessionStat, { color: colors.focus.text }]}>
+        <Text style={[styles.sessionStat, { color: colors.text }]}>
           {elapsed}
         </Text>
-        <Text style={[styles.sessionStatMuted, { color: colors.focus.muted }]}>
+        <Text style={[styles.sessionStatMuted, { color: colors.textMuted }]}>
           {`${sessionSets} SET${sessionSets === 1 ? '' : 'S'}`}
         </Text>
-        <Text style={[styles.sessionStatMuted, { color: colors.focus.muted }]}>
+        <Text style={[styles.sessionStatMuted, { color: colors.textMuted }]}>
           {`${formatVolume(sessionKg)} KG`}
         </Text>
         <View style={{ flex: 1 }} />
@@ -669,7 +681,7 @@ function Stage(props: StageProps) {
             <>
               <View style={styles.stationHead}>
                 <Text
-                  style={[styles.stationName, { color: colors.focus.text }]}
+                  style={[styles.stationName, { color: colors.text }]}
                   numberOfLines={2}
                   testID="stage-station-name"
                 >
@@ -677,7 +689,7 @@ function Stage(props: StageProps) {
                 </Text>
                 <View style={styles.stationMeta}>
                   {exercise.targetRx ? (
-                    <Text style={[styles.stationRx, { color: colors.focus.muted }]}>
+                    <Text style={[styles.stationRx, { color: colors.textMuted }]}>
                       {`TARGET ${exercise.targetRx}`}
                     </Text>
                   ) : null}
@@ -694,7 +706,7 @@ function Stage(props: StageProps) {
                     accessibilityLabel={`Remove ${exercise.exerciseName} from session`}
                     style={({ pressed }) => [styles.removeCta, pressed ? { opacity: 0.6 } : null]}
                   >
-                    <Text style={[styles.removeLabel, { color: colors.focus.muted }]}>
+                    <Text style={[styles.removeLabel, { color: colors.textMuted }]}>
                       REMOVE
                     </Text>
                   </Pressable>
@@ -708,7 +720,7 @@ function Stage(props: StageProps) {
                 ).slice(0, 5)}
                 onToggleTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
                 onAddTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
-                register="focus"
+                register="desk"
                 testID={`tag-chips-${exercise.localId}`}
               />
 
@@ -727,8 +739,8 @@ function Stage(props: StageProps) {
                   ))}
                 </View>
               ) : (
-                <Text style={[styles.ledgerEmpty, { color: colors.focus.muted }]}>
-                  No sets logged yet — the armed set below is your first.
+                <Text style={[styles.ledgerEmpty, { color: colors.textMuted }]}>
+                  No sets logged yet — the board below arms your first.
                 </Text>
               )}
 
@@ -739,12 +751,12 @@ function Stage(props: StageProps) {
                   accessibilityLabel={`Next station: ${exercises[index + 1].exerciseName}`}
                   style={({ pressed }) => [
                     styles.nextStation,
-                    { backgroundColor: colors.focus.surface, borderColor: colors.focus.border },
+                    { backgroundColor: colors.cardAlt, borderColor: colors.mobilePremium.hairlineBorderStrong },
                     pressed ? { opacity: 0.7 } : null,
                   ]}
                   testID="stage-next-station"
                 >
-                  <Text style={[styles.nextStationLabel, { color: colors.focus.text }]}>
+                  <Text style={[styles.nextStationLabel, { color: colors.text }]}>
                     NEXT · {exercises[index + 1].exerciseName.toUpperCase()}
                   </Text>
                 </Pressable>
@@ -756,7 +768,7 @@ function Stage(props: StageProps) {
                 accessibilityLabel="Add exercise from library"
                 style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
               >
-                <Text style={[styles.addExerciseLabel, { color: colors.focus.muted }]}>
+                <Text style={[styles.addExerciseLabel, { color: colors.textMuted }]}>
                   + ADD EXERCISE
                 </Text>
               </Pressable>
@@ -769,7 +781,7 @@ function Stage(props: StageProps) {
             </>
           ) : (
             <View>
-              <Text style={[styles.ledgerEmpty, { color: colors.focus.muted }]}>
+              <Text style={[styles.ledgerEmpty, { color: colors.textMuted }]}>
                 No exercises in this session.
               </Text>
               <Pressable
@@ -778,7 +790,7 @@ function Stage(props: StageProps) {
                 accessibilityLabel="Add exercise from library"
                 style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
               >
-                <Text style={[styles.addExerciseLabel, { color: colors.focus.muted }]}>
+                <Text style={[styles.addExerciseLabel, { color: colors.textMuted }]}>
                   + ADD EXERCISE
                 </Text>
               </Pressable>
@@ -787,20 +799,21 @@ function Stage(props: StageProps) {
         </Animated.View>
       </ScrollView>
 
-      {/* THE ARMED SET — docked, never scrolls away. */}
+      {/* THE COUNT BOARD — docked, never scrolls away. The exercise's
+          measure (tallies) + the armed counter + the one verb. */}
       {exercise ? (
-        <View style={[styles.armedDock, { borderTopColor: colors.focus.border }]}>
-          <ArmedSet
-            setNumber={exercise.sets.length + 1}
-            weight={armed.weight}
-            reps={armed.reps}
-            repsHint={repsHint}
-            onLog={handleLog}
-            onChangeWeight={(weight) => setArmed({ ...armed, weight })}
-            onChangeReps={(reps) => setArmed({ ...armed, reps })}
-            testID="armed-set"
-          />
-        </View>
+        <CountBoard
+          setNumber={exercise.sets.length + 1}
+          struck={exercise.sets.length}
+          targetSets={targetSetsFor(exercise.targetRx)}
+          weight={armed.weight}
+          reps={armed.reps}
+          repsHint={repsHint}
+          onLog={handleLog}
+          onChangeWeight={(weight) => setArmed({ ...armed, weight })}
+          onChangeReps={(reps) => setArmed({ ...armed, reps })}
+          testID="armed-set"
+        />
       ) : null}
 
       {/* Finish — the summary sheet. */}
@@ -813,13 +826,13 @@ function Stage(props: StageProps) {
         testID="stage-finish-dialog"
       >
         <View style={styles.finishStats}>
-          <Figure value={elapsed} label="elapsed" tone="focus" size="sm" style={styles.finishStat} />
-          <Figure value={sessionSets} label="sets" tone="focus" size="sm" style={styles.finishStat} />
+          <Figure value={elapsed} label="elapsed" tone="ink" size="sm" style={styles.finishStat} />
+          <Figure value={sessionSets} label="sets" tone="ink" size="sm" style={styles.finishStat} />
           <Figure
             value={formatVolume(sessionKg)}
             unit="kg"
             label="moved"
-            tone="focus"
+            tone="ink"
             size="sm"
             align="right"
             style={styles.finishStat}
@@ -1009,8 +1022,6 @@ const styles = StyleSheet.create({
   errorText: { ...theme.typography.mobileMeta, marginTop: 12 },
   armedDock: {
     borderTopWidth: 1,
-    // The one shadow in the system — the slab earns its lift.
-    boxShadow: '0 -8px 24px rgba(0, 0, 0, 0.5)',
   },
   finishStats: {
     flexDirection: 'row',

@@ -1,10 +1,12 @@
 // components/composed/StageSetRow.tsx
 //
 // A logged set on the stage: position in mono, the figure pair
-// "100 × 10" in the condensed display position (scoreboard read — big
-// enough to verify at arm's length through glare), and a 44px remove
-// target. A row IS a completed set; there are no pending rows on the
-// stage (the armed slab is the next set).
+// "100 × 10" in mono counter digits (the count, legible at arm's
+// length through glare), and a 44px remove target. A row IS a
+// completed set; there are no pending rows on the stage (the count
+// board is the next set). Mode-following: the stage rides chalk or
+// iron per the user's preference — the register difference is scale,
+// not a second palette.
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -39,12 +41,12 @@ export function StageSetRow({
       accessibilityLabel={`Set ${position}: ${weight} kilograms, ${reps} reps`}
       style={styles.row}
     >
-      <Text style={[styles.position, { color: colors.focus.muted }]}>
+      <Text style={[styles.position, { color: colors.textMuted }]}>
         {String(position).padStart(2, '0')}
       </Text>
-      <Text style={[styles.figures, { color: colors.focus.text }]}>
+      <Text style={[styles.figures, { color: colors.text }]}>
         {weight}
-        <Text style={[styles.multiplier, { color: colors.focus.muted }]}> × </Text>
+        <Text style={[styles.multiplier, { color: colors.textMuted }]}> × </Text>
         {reps}
       </Text>
       {onRemove ? (
@@ -56,7 +58,7 @@ export function StageSetRow({
           style={({ pressed }) => [styles.remove, pressed ? { opacity: 0.6 } : null]}
           testID={`${testID ?? 'stage-set-row'}-remove`}
         >
-          <X size={16} color={colors.focus.muted} />
+          <X size={16} color={colors.textMuted} />
         </Pressable>
       ) : (
         <View style={styles.remove} />

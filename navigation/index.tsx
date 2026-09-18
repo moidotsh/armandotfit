@@ -20,6 +20,7 @@ export {
   navigateToProgram,
   navigateToSplitSelection,
   replaceWithHome,
+  replaceWithWorkoutDetail,
   replaceWithLogin,
   replaceWithRegister,
   replaceWithForgotPassword,

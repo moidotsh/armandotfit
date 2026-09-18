@@ -1,11 +1,12 @@
 // components/composed/StationStrip.tsx
 //
-// The station strip — the stage's position instrument (signal-thesis
-// §5): one pip per exercise, numbered 01·02·03·04. Done = signal fill
-// with ink numeral; current = raised surfaceAlt plate with the signal
-// numeral + a 2px signal underline; upcoming = muted outline. The
-// strip is how a mid-set glance answers "where am I" — and it is the
-// station navigator (tap to jump; every pip is a 44px target).
+// The station rail — the stage's position measure (count-thesis §7):
+// one square MARK per exercise, numbered 01·02·03·04, riding a
+// hairline rule. Done = solid content fill with page-colored numeral;
+// current = the strike fill (the orange mark — the station about to be
+// counted) with ink/chalk numeral; upcoming = hairline outline, muted.
+// The rail is how a mid-set glance answers "where am I" — and it is
+// the station navigator (tap to jump; every mark is a 44px target).
 
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -41,7 +42,7 @@ export function StationStrip({
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.row}
-      style={styles.scroller}
+      style={[styles.scroller, { borderBottomColor: colors.mobilePremium.hairlineBorder }]}
       testID={testID}
       accessibilityLabel={`Station ${currentIndex + 1} of ${stations.length}`}
     >
@@ -57,16 +58,16 @@ export function StationStrip({
             accessibilityLabel={`Go to station ${label}${isDone ? ', complete' : ''}`}
             accessibilityState={{ selected: isCurrent }}
             style={({ pressed }) => [
-              styles.pip,
+              styles.mark,
               {
                 backgroundColor: isDone
-                  ? colors.focus.signal
+                  ? colors.text
                   : isCurrent
-                    ? colors.focus.surfaceAlt
+                    ? colors.brand
                     : 'transparent',
                 borderColor: isCurrent
-                  ? colors.focus.signal
-                  : colors.focus.border,
+                  ? colors.brand
+                  : colors.mobilePremium.hairlineBorderStrong,
               },
               pressed ? { opacity: 0.7 } : null,
             ]}
@@ -74,21 +75,18 @@ export function StationStrip({
           >
             <Text
               style={[
-                styles.pipLabel,
+                styles.markLabel,
                 {
                   color: isDone
-                    ? colors.focus.onSignal
+                    ? colors.background
                     : isCurrent
-                      ? colors.focus.text
-                      : colors.focus.muted,
+                      ? colors.textOnBrand
+                      : colors.textMuted,
                 },
               ]}
             >
               {label}
             </Text>
-            {isCurrent ? (
-              <View style={[styles.pipUnderline, { backgroundColor: colors.focus.signal }]} />
-            ) : null}
           </Pressable>
         );
       })}
@@ -100,6 +98,7 @@ const styles = StyleSheet.create({
   scroller: {
     flexGrow: 0,
     flexShrink: 0,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   row: {
     flexDirection: 'row',
@@ -107,7 +106,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-  pip: {
+  mark: {
     minWidth: 48,
     height: 44,
     borderRadius: theme.shapes.control,
@@ -116,16 +115,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 6,
   },
-  pipLabel: {
+  markLabel: {
     ...theme.typography.mobileLedger,
     fontWeight: '600',
-  },
-  pipUnderline: {
-    position: 'absolute',
-    bottom: 4,
-    width: 14,
-    height: 2,
-    borderRadius: 1,
   },
 });
 

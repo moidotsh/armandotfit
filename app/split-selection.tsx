@@ -1,13 +1,16 @@
 // app/split-selection.tsx
-// The FUNNEL (signal-thesis §7): three picks, in order, and GO. The
-// picked day inverts on a 7-day strip — the selected tile rides the
-// FOCUS register (dark in both modes: selection is inversion, not
-// borders) — and the plan previews as a numbered ledger.
-//   1. Split archetype (oneADay / twoADay) — segmented control.
-//   2. Workout day — a rolling 7-day strip. Each non-rest day carries
-//      its day-of-split (1..4), derived from the user's last logged
-//      session via getNextSplitDay. Rest days render muted but stay
-//      tappable for override.
+// The FUNNEL — set the count (docs/architecture/count-thesis.md §7):
+// three picks, in order, and GO. The day measure leads: seven tiles,
+// each carrying its weekday marking above its DAY-OF-SPLIT numeral in
+// the display face — the count is the tile's voice. The picked tile
+// INVERTS (ink plate on chalk, chalk plate on iron — inversion is
+// selection; borders do not survive glare). The plan previews as a
+// numbered ledger — the same slot language as the program document.
+//   1. Workout day — a rolling 7-day measure. Each non-rest day
+//      carries its day-of-split (1..4), derived from the user's last
+//      logged session via getNextSplitDay. Rest days render muted but
+//      stay tappable for override.
+//   2. Split archetype (oneADay / twoADay) — segmented control.
 //   3. AM / PM — only for twoADay; AM and PM are separate session rows
 //      in the DB, so sessionMode lives on the draft as planning-time
 //      context, not as a column.
@@ -28,16 +31,16 @@ import {
   SegmentedControl,
 } from '../components/MobilePremium';
 import { useAppTheme } from '../context';
-import { navigateToWorkoutDetail, safeGoBack } from '../navigation';
+import { navigateToWorkoutDetail, replaceWithWorkoutDetail, safeGoBack } from '../navigation';
 import { useProfile, useRecentWorkouts } from '../hooks';
 import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
+import { useWorkoutStore as useWorkoutStoreForActive } from '../stores';
 import { resolveSlots } from '../services';
 import {
   WORKOUT_SPLIT_LIST,
   DAY_OF_WEEK_LABELS,
   getUpcomingWorkoutSlots,
   suggestNextSplitDay,
-  suggestSessionWindow,
   MIN_SPLIT_DAY,
   MAX_SPLIT_DAY,
   SCREEN_BODY_STYLE,
@@ -61,6 +64,7 @@ function splitDescription(id: string): string {
 export default function SplitSelectionScreen() {
   const { colors } = useAppTheme();
   const startSession = useWorkoutStore((s) => s.startSession);
+  const isSessionActive = useWorkoutStoreForActive((s) => s.isSessionActive);
 
   // Profile + recent sessions drive the day-of-split suggestion + the
   // rest-day map. Both fall back to safe defaults while loading so the
@@ -95,7 +99,6 @@ export default function SplitSelectionScreen() {
   const walkStartDay = suggestedDay === MIN_SPLIT_DAY
     ? MAX_SPLIT_DAY
     : suggestedDay - 1;
-
 
   const slots = useMemo(
     () => getUpcomingWorkoutSlots(7, restDays, walkStartDay),
@@ -153,11 +156,11 @@ export default function SplitSelectionScreen() {
     >
       <MobileAtmosphere surface="setup" />
       <MobileHeader
-        title="Start workout"
+        title="Start"
         eyebrow={
           selectedSlot
             ? `${selectedSlot.dayLabel} · ${selectedSlot.dateLabel}`
-            : 'Pick your split'
+            : 'Set the count'
         }
         onBack={safeGoBack}
       />
@@ -166,8 +169,58 @@ export default function SplitSelectionScreen() {
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Split archetype — a segmented control on paper, the one-line
-            description following the choice. */}
+        {/* THE DAY MEASURE — seven tiles; the day-of-split numeral is
+            the tile's voice. The pick inverts: ink plate on chalk,
+            chalk plate on iron. */}
+        <MobileSectionEyebrow rule flush={false}>
+          Workout day
+        </MobileSectionEyebrow>
+        <View style={styles.dayRow} testID="funnel-day-measure">
+          {slots.map((slot) => {
+            const isSelected = selectedSlot?.isoDate === slot.isoDate;
+            const isRest = slot.isRestDay;
+            const dowLabel = DAY_OF_WEEK_LABELS[slot.dayOfWeek].label.slice(0, 2).toUpperCase();
+            const dateNum = slot.date.getDate();
+            const numeral = isRest ? 'R' : String(slot.splitDay).padStart(2, '0');
+            // Inversion palette: the plate is the text color, the
+            // content is the page — one swap, both modes.
+            const plateBg = isSelected ? colors.text : isRest ? colors.glass.inputBackground : colors.card;
+            const markColor = isSelected ? colors.background : isRest ? colors.textColors.tertiary : colors.textMuted;
+            const numeralColor = isSelected ? colors.background : isRest ? colors.textMuted : colors.text;
+            return (
+              <Pressable
+                key={slot.isoDate}
+                onPress={() => setSelectedIsoDate(slot.isoDate)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`${dowLabel} ${dateNum}, ${isRest ? 'Rest' : `Day ${slot.splitDay}`}`}
+                style={({ pressed }) => [
+                  styles.dayTile,
+                  { backgroundColor: plateBg, borderRadius: theme.shapes.tile },
+                  pressed ? { opacity: 0.7 } : null,
+                ]}
+                testID={`day-tile-${slot.isoDate}`}
+              >
+                <Text style={[styles.dayDow, { color: markColor }]}>{dowLabel}</Text>
+                <Text
+                  style={[
+                    styles.dayNumeral,
+                    { color: numeralColor },
+                  ]}
+                >
+                  {numeral}
+                </Text>
+                <Text style={[styles.dayDate, { color: markColor }]}>{dateNum}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Text style={[styles.restHint, { color: colors.textMuted }]}>
+          Suggested from your last session. Rest days are configured in settings.
+        </Text>
+
+        {/* Split archetype — a segmented control; the one-line
+            description follows the choice. */}
         <MobileSectionEyebrow rule flush={false}>
           Split
         </MobileSectionEyebrow>
@@ -181,82 +234,6 @@ export default function SplitSelectionScreen() {
         />
         <Text style={[styles.splitDescription, { color: colors.textMuted }]}>
           {splitDescription(splitChoice)}
-        </Text>
-
-        {/* The week — one row of days; the pick inverts (ink plate).
-            Borders do not survive glare; inversion does. */}
-        <MobileSectionEyebrow rule flush={false}>
-          Workout day
-        </MobileSectionEyebrow>
-        <View style={styles.dayRow}>
-          {slots.map((slot) => {
-            const isSelected = selectedSlot?.isoDate === slot.isoDate;
-            const isRest = slot.isRestDay;
-            const dowLabel = DAY_OF_WEEK_LABELS[slot.dayOfWeek].label.slice(0, 2).toUpperCase();
-            const dateNum = slot.date.getDate();
-            const dayLabel = isRest ? 'RST' : `D${slot.splitDay}`;
-            return (
-              <Pressable
-                key={slot.isoDate}
-                onPress={() => setSelectedIsoDate(slot.isoDate)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={`${dowLabel} ${dateNum}, ${isRest ? 'Rest' : `Day ${slot.splitDay}`}`}
-                style={({ pressed }) => [
-                  styles.dayTile,
-                  isSelected
-                    ? { backgroundColor: colors.focus.background }
-                    : isRest
-                      ? [
-                          styles.dayTileRest,
-                          { backgroundColor: colors.glass.inputBackground },
-                        ]
-                      : { backgroundColor: colors.card },
-                  pressed ? { opacity: 0.7 } : null,
-                ]}
-                testID={`day-tile-${slot.isoDate}`}
-              >
-                <Text
-                  style={[
-                    styles.dayDow,
-                    { color: isSelected ? colors.focus.signal : colors.textMuted },
-                  ]}
-                >
-                  {dowLabel}
-                </Text>
-                <Text
-                  style={[
-                    styles.dayDate,
-                    {
-                      color: isSelected ? colors.focus.text : colors.text,
-                      fontFamily: isSelected
-                        ? theme.fonts.displayCondensed
-                        : undefined,
-                    },
-                  ]}
-                >
-                  {dateNum}
-                </Text>
-                <Text
-                  style={[
-                    styles.daySlotLabel,
-                    {
-                      color: isSelected
-                        ? colors.focus.muted
-                        : isRest
-                          ? colors.textColors.tertiary
-                          : colors.textSecondary,
-                    },
-                  ]}
-                >
-                  {dayLabel}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-        <Text style={[styles.restHint, { color: colors.textMuted }]}>
-          Suggested from your last session. Rest days are configured in settings.
         </Text>
 
         {/* Session window — AM/PM only exists in the two-a-day split. */}
@@ -279,8 +256,8 @@ export default function SplitSelectionScreen() {
           </>
         ) : null}
 
-        {/* The plan — numbered ledger rows on paper. The same slot
-            language as the program screen: one slot, one read. */}
+        {/* THE PLAN — numbered ledger rows. The same slot language as
+            the program document: one slot, one read. */}
         <MobileSectionEyebrow rule flush={false}>
           {previewSlots.length === 0
             ? 'No exercises planned'
@@ -325,7 +302,7 @@ export default function SplitSelectionScreen() {
                   ]}
                 >
                   <Text style={[styles.slotIndex, { color: colors.brandText }]}>
-                    {i + 1}
+                    {String(i + 1).padStart(2, '0')}
                   </Text>
                   <View style={styles.slotMain}>
                     <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
@@ -350,12 +327,21 @@ export default function SplitSelectionScreen() {
         <MobilePrimaryButton variant="ghost" onPress={safeGoBack}>
           Cancel
         </MobilePrimaryButton>
-        <MobilePrimaryButton
-          onPress={handleStart}
-          testID="split-selection-start-session"
-        >
-          Start session
-        </MobilePrimaryButton>
+        {isSessionActive ? (
+          <MobilePrimaryButton
+            onPress={replaceWithWorkoutDetail}
+            testID="split-selection-start-session"
+          >
+            RESUME SESSION
+          </MobilePrimaryButton>
+        ) : (
+          <MobilePrimaryButton
+            onPress={handleStart}
+            testID="split-selection-start-session"
+          >
+            GO
+          </MobilePrimaryButton>
+        )}
       </MobileActionFooter>
     </SafeAreaView>
   );
@@ -364,11 +350,7 @@ export default function SplitSelectionScreen() {
 const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 32 },
-  splitDescription: {
-    ...theme.typography.mobileMeta,
-    marginTop: 10,
-  },
+  bodyContent: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 32 },
   dayRow: {
     flexDirection: 'row',
     gap: 6,
@@ -376,16 +358,11 @@ const styles = StyleSheet.create({
   },
   dayTile: {
     flex: 1,
-    minHeight: 72,
-    borderRadius: theme.shapes.tile,
+    minHeight: 84,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    gap: 2,
-  },
-  dayTileRest: {
-    // Muted, not hidden — rest days stay tappable for override.
-    borderWidth: 0,
+    gap: 3,
   },
   dayDow: {
     fontSize: 10,
@@ -394,20 +371,25 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     lineHeight: 12,
   },
-  dayDate: {
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 22,
+  dayNumeral: {
+    fontFamily: theme.fonts.display,
+    fontSize: 26,
+    fontWeight: '800',
+    lineHeight: 28,
     fontVariant: ['tabular-nums'],
   },
-  daySlotLabel: {
+  dayDate: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '500',
     fontFamily: theme.fonts.mono,
-    letterSpacing: 0.8,
     lineHeight: 12,
+    fontVariant: ['tabular-nums'],
   },
   restHint: {
+    ...theme.typography.mobileMeta,
+    marginTop: 10,
+  },
+  splitDescription: {
     ...theme.typography.mobileMeta,
     marginTop: 10,
   },
@@ -427,7 +409,7 @@ const styles = StyleSheet.create({
   },
   slotIndex: {
     ...theme.typography.mobileLedger,
-    minWidth: 20,
+    minWidth: 22,
   },
   slotMain: { flex: 1, gap: 1 },
   slotName: { ...theme.typography.mobileItemTitle },

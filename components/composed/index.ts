@@ -4,7 +4,7 @@
 
 export { DeskShell, type DeskShellProps } from './DeskShell';
 export { SessionStrip } from './SessionStrip';
-export { ArmedSet, type ArmedSetProps } from './ArmedSet';
+export { CountBoard, type CountBoardProps } from './CountBoard';
 export { StationStrip, type StationStripProps, type StationDatum } from './StationStrip';
 export { StageSetRow, type StageSetRowProps } from './StageSetRow';
 export { SetRow, type SetRowProps } from './SetRow';

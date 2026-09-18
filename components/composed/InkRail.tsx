@@ -1,12 +1,12 @@
 // components/composed/InkRail.tsx
 // The SWAP BENCH — the substitution picker, invisible until needed. The
 // exercise row stays perfectly clean; one small ⇄ glyph sits in the
-// station meta. Tap it and the bench slides up on the FOCUS register
-// (a "doing" surface — choosing an exercise — dark in both modes, like
-// the stage and the chit): the current exercise marked in signal,
-// ranked alternatives as bench rows, and — the metadata play — a WHY
-// line per row: the shared muscles and equipment that earned the rank.
-// The programmed lift is one tap back. Tap a name, done.
+// station meta. Tap it and the bench slides up as a ruled sheet on the
+// field (mode-following — chalk or iron per the user's preference):
+// the current exercise marked in the strike tone, ranked alternatives
+// as ruled bench rows, and — the metadata play — a WHY line per row:
+// the shared muscles and equipment that earned the rank. The
+// programmed lift is one tap back. Tap a name, done.
 
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -44,7 +44,7 @@ export function SwapGlyph({ onPress, label }: { onPress: () => void; label: stri
       accessibilityLabel={`Change ${label}`}
       style={({ pressed }) => [styles.glyphBox, pressed ? { opacity: 0.6 } : null]}
     >
-      <Text style={[styles.glyph, { color: colors.focus.muted }]}>⇄</Text>
+      <Text style={[styles.glyph, { color: colors.textMuted }]}>⇄</Text>
     </Pressable>
   );
 }
@@ -124,8 +124,8 @@ export function InkRail({
       showCloseButton={false}
       testID={testID}
     >
-      <View style={[styles.plate, { backgroundColor: colors.focus.background }]}>
-        <Text style={[styles.plateEyebrow, { color: colors.focus.muted }]}>
+      <View style={[styles.plate, { backgroundColor: colors.card }]}>
+        <Text style={[styles.plateEyebrow, { color: colors.textMuted }]}>
           SWAP BENCH · RANKED BY MUSCLES + EQUIPMENT
         </Text>
         <View style={styles.list}>
@@ -151,9 +151,9 @@ export function InkRail({
               }
               style={({ pressed }) => [
                 styles.row,
-                { borderBottomColor: colors.focus.border },
+                { borderBottomColor: colors.mobilePremium.hairlineBorder },
                 item.isCurrent
-                  ? { backgroundColor: colors.focus.signalSoft }
+                  ? { backgroundColor: colors.brandSoft }
                   : null,
                 pressed ? { opacity: 0.6 } : null,
               ]}
@@ -165,15 +165,15 @@ export function InkRail({
                     styles.name,
                     {
                       color: item.isCurrent
-                        ? colors.focus.signal
-                        : colors.focus.text,
+                        ? colors.brandText
+                        : colors.text,
                     },
                   ]}
                 >
                   {item.isProgrammed ? `↺ ${item.name}` : item.name}
                 </Text>
                 {item.why ? (
-                  <Text numberOfLines={1} style={[styles.why, { color: colors.focus.muted }]}>
+                  <Text numberOfLines={1} style={[styles.why, { color: colors.textMuted }]}>
                     {item.why}
                   </Text>
                 ) : null}
@@ -181,7 +181,7 @@ export function InkRail({
               <Text
                 style={[
                   styles.meta,
-                  { color: item.isCurrent ? colors.focus.signal : colors.focus.muted },
+                  { color: item.isCurrent ? colors.brandText : colors.textMuted },
                 ]}
               >
                 {item.isCurrent ? 'CURRENT' : item.isProgrammed ? 'RESTORE' : ''}
