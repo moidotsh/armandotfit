@@ -24,7 +24,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useReducedMotion } from '../premium/shared';
-import { theme } from '../../constants';
+import { theme, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
 
 export interface MobileTabBarItem {
@@ -130,6 +130,7 @@ export function MobileTabBar({
       testID={testID}
       style={[
         styles.bar,
+        MOBILE_CONTENT_WIDTH_STYLE,
         {
           backgroundColor: colors.card,
           borderTopColor: colors.mobilePremium.hairlineBorder,
@@ -181,6 +182,9 @@ export function MobileTabBar({
 }
 
 const styles = StyleSheet.create({
+  // The bar caps to the mobile column on wide viewports (the same
+  // policy as MobileActionFooter); the raised center + pulse ring
+  // overflow the top — overflow stays visible.
   bar: {
     borderTopWidth: 1,
   },

@@ -74,7 +74,7 @@ import {
   formatVolume,
   formatElapsed,
 } from '../services';
-import { SCREEN_BODY_STYLE, theme, DURATION } from '../constants';
+import { SCREEN_BODY_STYLE, theme, DURATION, MOBILE_CONTENT_WIDTH_STYLE } from '../constants';
 import { useReducedMotion } from '../components/premium/shared';
 
 /** The armed set's editable values. */
@@ -626,6 +626,10 @@ function Stage(props: StageProps) {
       style={[styles.shell, { backgroundColor: colors.focus.background }]}
       edges={['top', 'bottom']}
     >
+      {/* The stage rides the mobile column like every Desk screen —
+          the focus background bleeds full-viewport, the content does
+          not. */}
+      <View style={[styles.stageColumn, MOBILE_CONTENT_WIDTH_STYLE]}>
       {/* Stage header — minimize, the day, finish. */}
       <View style={styles.stageHeader} testID="stage-header">
         <Pressable
@@ -912,11 +916,15 @@ function Stage(props: StageProps) {
           testID="live-swap-picker"
         />
       ) : null}
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  stageColumn: {
+    flex: 1,
+  },
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 32 },

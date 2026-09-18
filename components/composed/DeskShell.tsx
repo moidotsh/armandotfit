@@ -30,7 +30,7 @@ import {
   navigateToSplitSelection,
   navigateToWorkoutDetail,
 } from '../../navigation';
-import { SCREEN_BODY_STYLE } from '../../constants';
+import { SCREEN_BODY_STYLE, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 
 export interface DeskShellProps {
   /** Atmosphere surface flavor (kept for parity with ScreenScaffold). */
@@ -98,9 +98,11 @@ export function DeskShell({
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface={surface} />
-      {header}
+      {/* The header slot rides the same mobile column as the body and
+          the tab bar — nothing straddles the constraint on desktop. */}
+      <View style={MOBILE_CONTENT_WIDTH_STYLE}>{header}</View>
       {noScroll ? (
-        <View testID={testID} style={styles.body}>
+        <View testID={testID} style={[styles.body, MOBILE_CONTENT_WIDTH_STYLE]}>
           {children}
         </View>
       ) : (
