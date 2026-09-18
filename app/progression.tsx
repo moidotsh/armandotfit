@@ -1,15 +1,15 @@
 // app/progression.tsx
-// Progression dashboard. One summary card — current streak, this week,
-// lifetime sessions as figures with a quiet meta line (best streak, last
-// session) — then the personal-best ledger. All computed at read from
-// raw sessions; nothing stored. Volume-trend charts land in a-Phase 5.
+// Progression — the emotional number first (docs/architecture/
+// logbook-thesis.md §7): the current streak is the hero figure, the
+// totals ride beside and beneath it as figures on paper, and personal
+// bests close the page as a mono ledger. All computed at read from raw
+// sessions; nothing stored.
 
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   MobileAtmosphere,
-  MobileSurface,
   MobileHeader,
   MobileSectionEyebrow,
   MobilePrimaryButton,
@@ -45,12 +45,6 @@ export default function ProgressionScreen() {
       : undefined,
   );
 
-  const figures = [
-    { value: summary?.streak.current ?? 0, label: 'day streak', brand: true },
-    { value: summary?.thisWeekSessions ?? 0, label: 'this week', brand: false },
-    { value: summary?.totalSessions ?? 0, label: 'all time', brand: false },
-  ];
-
   return (
     <SafeAreaView
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
@@ -81,58 +75,76 @@ export default function ProgressionScreen() {
           />
         ) : (
           <>
-            <MobileSectionEyebrow>Summary</MobileSectionEyebrow>
-            <MobileSurface padding={20}>
-              <View style={styles.figureRow}>
-                {figures.map((f) => (
-                  <Figure
-                    key={f.label}
-                    value={f.value}
-                    label={f.label}
-                    tone={f.brand ? 'brand' : 'ink'}
-                    align="center"
-                    style={styles.figureCell}
-                  />
-                ))}
-              </View>
-              <View style={[styles.divider, { backgroundColor: colors.border }]} />
-              <View style={styles.metaRow}>
-                <Text style={[styles.metaText, { color: colors.textSecondary }]}>
-                  Best streak {summary?.streak.best ?? 0}
+            {/* The emotional number: streak at hero scale, best + last
+                session murmuring beside it. */}
+            <MobileSectionEyebrow rule flush={false}>
+              Current streak
+            </MobileSectionEyebrow>
+            <View style={styles.heroRow}>
+              <Figure
+                value={summary?.streak.current ?? 0}
+                unit="d"
+                size="hero"
+                tone="brand"
+                testID="progression-streak-hero"
+              />
+              <View style={styles.heroSide}>
+                <Text style={[styles.sideLine, { color: colors.text }]}>
+                  {`best ${summary?.streak.best ?? 0}`}
                 </Text>
-                <Text style={[styles.metaText, { color: colors.textSecondary }]}>
-                  Last session{' '}
-                  {summary?.lastSessionDate
+                <Text style={[styles.sideMeta, { color: colors.textMuted }]} numberOfLines={1}>
+                  {`last ${summary?.lastSessionDate
                     ? new Date(summary.lastSessionDate).toLocaleDateString()
-                    : '—'}
+                    : '—'}`}
                 </Text>
               </View>
-            </MobileSurface>
+            </View>
 
+            {/* Totals as figures on paper. */}
+            <MobileSectionEyebrow rule flush={false}>
+              Totals
+            </MobileSectionEyebrow>
+            <View style={styles.totalsRow}>
+              <Figure
+                value={summary?.thisWeekSessions ?? 0}
+                label="this week"
+                style={styles.totalsCell}
+              />
+              <Figure
+                value={summary?.totalSessions ?? 0}
+                label="all time"
+                align="right"
+                style={styles.totalsCell}
+              />
+            </View>
+
+            {/* Personal bests — the mono ledger. */}
             {pbQuery.data && pbQuery.data.length > 0 ? (
               <>
-                <View style={{ height: 16 }} />
-                <MobileSectionEyebrow>Personal bests</MobileSectionEyebrow>
-                <MobileSurface padding={16}>
-                  {pbQuery.data.slice(0, 10).map((pb) => (
+                <MobileSectionEyebrow rule flush={false}>
+                  Personal bests
+                </MobileSectionEyebrow>
+                <View>
+                  {pbQuery.data.slice(0, 10).map((pb, i) => (
                     <View
                       key={pb.exerciseName}
-                      style={styles.rowBetween}
+                      style={[
+                        styles.pbRow,
+                        { borderBottomColor: colors.mobilePremium.hairlineBorder },
+                        i === Math.min(pbQuery.data.length, 10) - 1
+                          ? { borderBottomWidth: 0 }
+                          : null,
+                      ]}
                     >
-                      <Text
-                        style={[styles.pbName, { color: colors.text }]}
-                        numberOfLines={1}
-                      >
+                      <Text style={[styles.pbName, { color: colors.text }]} numberOfLines={1}>
                         {pb.exerciseName}
                       </Text>
-                      <Text
-                        style={[styles.pbValue, { color: colors.brandText }]}
-                      >
-                        {pb.bestWeight}×{pb.bestReps}
+                      <Text style={[styles.pbValue, { color: colors.brandText }]}>
+                        {`${pb.bestWeight}×${pb.bestReps}`}
                       </Text>
                     </View>
                   ))}
-                </MobileSurface>
+                </View>
               </>
             ) : null}
           </>
@@ -150,21 +162,41 @@ export default function ProgressionScreen() {
 const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
-  figureRow: { flexDirection: 'row' },
-  figureCell: { flex: 1, alignItems: 'center', gap: 2 },
-  divider: { height: 1, marginVertical: 14 },
-  metaRow: {
+  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 32 },
+  heroRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 20,
+    marginTop: 12,
   },
-  metaText: { ...theme.typography.mobileMeta },
-  rowBetween: {
+  heroSide: {
+    flex: 1,
+    paddingTop: 12,
+    gap: 4,
+  },
+  sideLine: {
+    ...theme.typography.mobileLedger,
+  },
+  sideMeta: {
+    ...theme.typography.mobileMeta,
+  },
+  totalsRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginTop: 12,
+  },
+  totalsCell: { flex: 1 },
+  pbRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 6,
+    minHeight: 52,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    gap: 12,
   },
-  pbName: { ...theme.typography.mobileLedger, flex: 1, marginRight: 12 },
-  pbValue: { ...theme.typography.mobileLedger },
+  pbName: { ...theme.typography.mobileBody, fontWeight: '600', flex: 1 },
+  pbValue: {
+    ...theme.typography.mobileLedger,
+  },
 });

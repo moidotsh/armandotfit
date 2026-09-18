@@ -1,9 +1,9 @@
 // app/analytics.tsx
-// Analytics screen — daily-aggregate history + weekly bucketing + a
-// training-consistency grid over the selected range. The chart layer
-// (a real chart lib) lands in a-Phase 5; for now the weekly bucketing
-// renders as a text bar-chart so the data is visible, and the
-// consistency grid surfaces per-day workout density as a heatmap.
+// Analytics — the consistency grid is the story (docs/architecture/
+// logbook-thesis.md §7): it rides the screen's one bounded sheet; the
+// weekly bars stop apologizing — real bar weight, mono values, ledger
+// rows on paper. Range via segmented control. Daily-aggregate history +
+// weekly bucketing all computed at read.
 
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -17,8 +17,7 @@ import {
   SegmentedControl,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { QueryErrorNote } from '../components/composed';
-import { TrainingConsistencyGrid } from '../components/composed';
+import { QueryErrorNote, TrainingConsistencyGrid } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory, useAiPayload } from '../hooks';
@@ -84,7 +83,6 @@ export default function AnalyticsScreen() {
       >
         <SegmentedControl<Range>
           variant="selection"
-          size="sm"
           segments={[
             { value: 7, label: '7d' },
             { value: 30, label: '30d' },
@@ -100,8 +98,10 @@ export default function AnalyticsScreen() {
           <QueryErrorNote onRetry={() => void historyQuery.refetch()} testID="analytics-error" />
         ) : (
           <>
-            <View style={{ height: 16 }} />
-            <MobileSectionEyebrow>Training consistency</MobileSectionEyebrow>
+            {/* The one visual — the screen's single bounded sheet. */}
+            <MobileSectionEyebrow rule flush={false}>
+              Training consistency
+            </MobileSectionEyebrow>
             <MobileSurface padding={16}>
               {historyQuery.isLoading ? (
                 <LoadingSpinner />
@@ -115,51 +115,53 @@ export default function AnalyticsScreen() {
               )}
             </MobileSurface>
 
-            <View style={{ height: 16 }} />
-            <MobileSectionEyebrow>Workouts per week</MobileSectionEyebrow>
-            <MobileSurface padding={16}>
-              {historyQuery.isLoading ? (
-                <LoadingSpinner />
-              ) : weekly.length === 0 ? (
-                <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                  No workouts in this range yet.
-                </Text>
-              ) : (
-                weekly.map((w) => (
-              <View
-                key={w.weekStart}
-                style={styles.barRow}
-                accessibilityLabel={`Week of ${new Date(w.weekStart).toLocaleDateString()}: ${w.sessions} sessions`}
-              >
-                <Text style={[styles.barLabel, { color: colors.textSecondary }]}>
-                  {new Date(w.weekStart).toLocaleDateString(undefined, {
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </Text>
-                <View
-                  style={[
-                    styles.barTrack,
-                    { backgroundColor: colors.backgroundDeep },
-                  ]}
-                >
+            {/* Weekly bars — real bar weight, mono values, rows on paper. */}
+            <MobileSectionEyebrow rule flush={false}>
+              Workouts per week
+            </MobileSectionEyebrow>
+            {historyQuery.isLoading ? (
+              <LoadingSpinner />
+            ) : weekly.length === 0 ? (
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+                No workouts in this range yet.
+              </Text>
+            ) : (
+              <View style={styles.barList}>
+                {weekly.map((w) => (
                   <View
-                    style={[
-                      styles.barFill,
-                      {
-                        width: `${(w.sessions / maxWorkouts) * 100}%`,
-                        backgroundColor: colors.brand,
-                      },
-                    ]}
-                  />
-                </View>
-                <Text style={[styles.barValue, { color: colors.text }]}>
-                  {w.sessions}
-                </Text>
+                    key={w.weekStart}
+                    style={styles.barRow}
+                    accessibilityLabel={`Week of ${new Date(w.weekStart).toLocaleDateString()}: ${w.sessions} sessions`}
+                  >
+                    <Text style={[styles.barLabel, { color: colors.text }]}>
+                      {new Date(w.weekStart).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </Text>
+                    <View
+                      style={[
+                        styles.barTrack,
+                        { backgroundColor: colors.mobilePremium.railTrack },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.barFill,
+                          {
+                            width: `${Math.max(w.sessions > 0 ? 8 : 0, (w.sessions / maxWorkouts) * 100)}%`,
+                            backgroundColor: colors.brand,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={[styles.barValue, { color: colors.text }]}>
+                      {w.sessions}
+                    </Text>
+                  </View>
+                ))}
               </View>
-            ))
-          )}
-            </MobileSurface>
+            )}
           </>
         )}
       </ScrollView>
@@ -170,16 +172,31 @@ export default function AnalyticsScreen() {
 const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
-  emptyText: { ...theme.typography.mobileMeta },
+  bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32 },
+  emptyText: { ...theme.typography.mobileMeta, marginTop: 12 },
+  barList: {
+    gap: 12,
+    marginTop: 12,
+  },
   barRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    gap: 8,
+    gap: 12,
   },
-  barLabel: { ...theme.typography.mobileMeta, minWidth: 56 },
-  barTrack: { flex: 1, height: 10, borderRadius: 5, overflow: 'hidden' },
+  barLabel: {
+    ...theme.typography.mobileLedger,
+    minWidth: 56,
+  },
+  barTrack: {
+    flex: 1,
+    height: 16,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
   barFill: { height: '100%' },
-  barValue: { ...theme.typography.mobileLedger, minWidth: 20 },
+  barValue: {
+    ...theme.typography.mobileLedger,
+    minWidth: 20,
+    textAlign: 'right',
+  },
 });
