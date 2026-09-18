@@ -1,20 +1,19 @@
 // components/MobilePremium/Figure.tsx
 //
-// The figure language of SIGNAL: one labeled value, no chrome (see
-// docs/architecture/signal-thesis.md §2.2). Where StatCard puts a
-// number in a card, Figure puts a number on the surface — the
+// The figure language of THE COUNT: one labeled value, no chrome (see
+// docs/architecture/count-thesis.md §2.2). Where StatCard puts a
+// number in a card, Figure puts a number on the field — the
 // instrument read for stat strips, receipt headers, and hero figures.
 // Numbers are the app's architecture, so the figure scale outranks the
 // word scale at every step:
 //
-//   hero    80/800 condensed display — the one hero figure per screen
-//   display 56/800 condensed display — secondary figure (armed set,
-//           receipt tonnage)
-//   md      30/800 condensed display — stat rows and strips
-//   sm      15/500 mono             — in-row ledger facts
+//   hero    76/800 display — the one hero statement per screen
+//   display 44/800 display — secondary statement (receipt tonnage)
+//   md      26/700 mono    — working figures (stat rows, strips)
+//   sm      14/500 mono    — in-row ledger facts
 //
 // The value rides the theme's figure tokens, so tabular figures and the
-// declared condensed/mono faces arrive by construction — a call site
+// declared display/mono faces arrive by construction — a call site
 // cannot forget them. The optional `unit` renders small and mono after
 // the value (the unit whispers). The optional label rides the eyebrow
 // token in caps.

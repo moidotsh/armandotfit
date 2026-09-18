@@ -1,36 +1,26 @@
 // components/composed/DeskShell.tsx
 //
-// The Desk's screen scaffold (docs/architecture/signal-thesis.md §6):
-// page background + atmosphere + a header slot + the scrolling body +
-// the MobileTabBar. The four top-level Desk surfaces (Today, Library,
-// Progress, Program) compose this; pushed flows (the funnel, detail
-// pages, settings) run their own chrome with back navigation — the bar
-// marks top-level membership, not a route wrapper.
+// The Desk's screen scaffold (docs/architecture/count-thesis.md §6):
+// page field + atmosphere + a header slot + THE SESSION STRIP (pinned
+// under the header while a session runs) + the scrolling body. THE
+// COUNT has no tab bar — the Desk is a stack, not a deck: home is the
+// command surface (its INDEX rows lead to Program, Library, Progress),
+// everything else pushes and returns, and the session strip keeps the
+// live count one tap away on every screen.
 //
-// The tab bar's center action is the app's primary verb: START before
-// a session, RESUME (pulsing) while one is active. The verb's state
-// reads the workout store — no prop threading from every screen.
+// Width policy: header, strip, and body all ride the mobile column —
+// nothing straddles the constraint on desktop. The name stays
+// `DeskShell` (audit-screen-body recognizes it as a body-policy
+// carrier).
 
 import React from 'react';
 import { ScrollView, StyleSheet, View, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Home, Dumbbell, TrendingUp, CalendarDays, Play } from '@tamagui/lucide-icons-2';
-import {
-  MobileAtmosphere,
-  MobileTabBar,
-  type MobileAtmosphereSurface,
-} from '../MobilePremium';
+import { MobileAtmosphere, type MobileAtmosphereSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
 import { useWorkoutStore } from '../../stores';
-import {
-  navigateToHome,
-  navigateToExerciseDatabase,
-  navigateToProgression,
-  navigateToProgram,
-  navigateToSplitSelection,
-  navigateToWorkoutDetail,
-} from '../../navigation';
 import { SCREEN_BODY_STYLE, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
+import { SessionStrip } from './SessionStrip';
 
 export interface DeskShellProps {
   /** Atmosphere surface flavor (kept for parity with ScreenScaffold). */
@@ -39,8 +29,6 @@ export interface DeskShellProps {
   header?: React.ReactNode;
   /** The scroll body. */
   children: React.ReactNode;
-  /** The tab bar's active tab id (route path). */
-  activeTab?: string;
   /** Body content container style (gutter overrides etc.). */
   contentContainerStyle?: React.ComponentProps<typeof ScrollView>['contentContainerStyle'];
   /** Passed to the ScrollView. */
@@ -66,7 +54,6 @@ export function DeskShell({
   surface = 'training',
   header,
   children,
-  activeTab,
   contentContainerStyle,
   showsVerticalScrollIndicator = false,
   onScroll,
@@ -77,30 +64,18 @@ export function DeskShell({
   const { colors } = useAppTheme();
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
 
-  const tabIcon = (Icon: typeof Home, active: boolean) => (
-    <Icon size={19} color={active ? colors.text : colors.textMuted} />
-  );
-  const tab = (
-    id: string,
-    label: string,
-    Icon: typeof Home,
-    onPress: () => void,
-  ) => ({
-    id,
-    label,
-    icon: tabIcon(Icon, activeTab === id),
-    onPress,
-  });
-
   return (
     <SafeAreaView
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface={surface} />
-      {/* The header slot rides the same mobile column as the body and
-          the tab bar — nothing straddles the constraint on desktop. */}
-      <View testID="desk-header-col" style={MOBILE_CONTENT_WIDTH_STYLE}>{header}</View>
+      {/* Header + session strip ride the same mobile column as the
+          body — nothing straddles the constraint on desktop. */}
+      <View testID="desk-header-col" style={MOBILE_CONTENT_WIDTH_STYLE}>
+        {header}
+        {isSessionActive ? <SessionStrip /> : null}
+      </View>
       {noScroll ? (
         <View testID={testID} style={[styles.body, MOBILE_CONTENT_WIDTH_STYLE]}>
           {children}
@@ -118,21 +93,6 @@ export function DeskShell({
           {children}
         </ScrollView>
       )}
-      <MobileTabBar
-        items={[
-          tab('/', 'TODAY', Home, navigateToHome),
-          tab('/exercise-database', 'LIBRARY', Dumbbell, navigateToExerciseDatabase),
-          tab('/progression', 'PROGRESS', TrendingUp, navigateToProgression),
-          tab('/program', 'PROGRAM', CalendarDays, navigateToProgram),
-        ]}
-        activeId={activeTab}
-        centerAction={{
-          label: isSessionActive ? 'Resume session' : 'Start workout',
-          active: isSessionActive,
-          icon: <Play size={22} color={colors.textOnBrand} />,
-          onPress: isSessionActive ? () => navigateToWorkoutDetail() : navigateToSplitSelection,
-        }}
-      />
     </SafeAreaView>
   );
 }
@@ -140,7 +100,7 @@ export function DeskShell({
 const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24 },
+  bodyContent: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 32 },
 });
 
 export default DeskShell;

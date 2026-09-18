@@ -72,6 +72,7 @@ import { FilterChipGroup } from './FilterChipGroup';
 import { DisclosureRow } from './DisclosureRow';
 import { EmptyState } from './EmptyState';
 import { Figure } from './Figure';
+import { TallyStrip } from './TallyStrip';
 import { StatCard } from './StatCard';
 import { Avatar } from './Avatar';
 import { SegmentedProgress } from './SegmentedProgress';
@@ -758,7 +759,7 @@ export function Showcase() {
         </View>
 
         <View style={styles.section}>
-          <MobileSectionEyebrow>Tab bar — the raised signal action</MobileSectionEyebrow>
+          <MobileSectionEyebrow>Tab bar — the raised center action (unwired in this app)</MobileSectionEyebrow>
           {/* The Desk's bottom chrome: four flanking tabs + the raised
               center action (START/RESUME-style). Active tab = ink label +
               2px signal notch; `active` runs the resume pulse (ambient,
@@ -1418,8 +1419,9 @@ export function Showcase() {
 
         <View style={styles.section}>
           <MobileSectionEyebrow rule>Figures — the labeled number, no chrome</MobileSectionEyebrow>
-          {/* The logbook scale: one hero per screen, display for totals,
-              md for stat rows, sm for ledger facts. The unit whispers. */}
+          {/* THE COUNT scale (count-thesis §2.2): one hero statement per
+              screen, display for totals, md for working figures, sm for
+              ledger facts. The unit whispers. */}
           <View style={styles.figureRow}>
             <Figure value="3" unit="d" label="day streak" size="hero" tone="brand" />
           </View>
@@ -1436,6 +1438,29 @@ export function Showcase() {
             <Figure value="6" label="lifts" size="sm" align="center" />
             <View style={styles.figureGap} />
             <Figure value="4,250" unit="kg" label="this week" size="sm" align="right" />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <MobileSectionEyebrow rule>Tallies — the counting mark (TallyStrip)</MobileSectionEyebrow>
+          {/* THE COUNT's signature glyph (count-thesis §2.5): struck
+              marks are done, the NEXT mark is the one orange stroke,
+              ghosts are slots ahead. Groups of five cross. Decoration
+              by contract — the ledger carries the same info as text. */}
+          <View style={styles.figureRow}>
+            <TallyStrip struck={2} next ghost={2} size="lg" testID="showcase-tally-lg" />
+          </View>
+          <View style={styles.spacer} />
+          <View style={styles.figureRow}>
+            <TallyStrip struck={5} next ghost={2} size="sm" />
+            <View style={styles.figureGap} />
+            <TallyStrip struck={3} size="sm" />
+            <View style={styles.figureGap} />
+            <TallyStrip struck={0} next ghost={4} size="sm" />
+          </View>
+          <View style={styles.spacer} />
+          <View style={styles.figureRow}>
+            <TallyStrip struck={7} ghost={1} size="sm" animateLastStrike testID="showcase-tally-strike" />
           </View>
         </View>
 

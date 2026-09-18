@@ -12,7 +12,6 @@
 
 import React, { useMemo, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
-import { usePathname } from 'expo-router';
 import { Settings, Play } from '@tamagui/lucide-icons-2';
 import {
   MobilePrimaryButton,
@@ -51,7 +50,6 @@ export default function HomeScreen() {
   const { colors } = useAppTheme();
   const summaryQuery = useDashboardSummary();
   const recentQuery = useRecentSessionDetails(5);
-  const activePathname = usePathname();
   const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
   const reduced = useReducedMotion();
@@ -127,7 +125,6 @@ export default function HomeScreen() {
     <DeskShell
       surface="training"
       header={header}
-      activeTab={activePathname}
       onScroll={reduced ? undefined : onScrollAnimated}
       testID="home-scroll"
     >

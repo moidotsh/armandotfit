@@ -3,6 +3,7 @@
 // from MobilePremium primitives).
 
 export { DeskShell, type DeskShellProps } from './DeskShell';
+export { SessionStrip } from './SessionStrip';
 export { ArmedSet, type ArmedSetProps } from './ArmedSet';
 export { StationStrip, type StationStripProps, type StationDatum } from './StationStrip';
 export { StageSetRow, type StageSetRowProps } from './StageSetRow';

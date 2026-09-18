@@ -104,7 +104,6 @@ export default function ExerciseDatabaseScreen() {
   return (
     <DeskShell
       surface="training"
-      activeTab="/exercise-database"
       noScroll
       testID="library-body"
       header={

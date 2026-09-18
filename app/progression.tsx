@@ -32,7 +32,6 @@ export default function ProgressionScreen() {
   return (
     <DeskShell
       surface="goal"
-      activeTab="/progression"
       header={
         <View style={styles.headerRow}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Progress</Text>

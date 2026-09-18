@@ -227,7 +227,6 @@ export default function ProgramScreen() {
   return (
     <DeskShell
       surface="analytics"
-      activeTab="/program"
       stickyHeaderIndices={stickyIndices}
       header={
         <View style={styles.headerRow}>
