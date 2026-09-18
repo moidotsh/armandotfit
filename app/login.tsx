@@ -17,7 +17,7 @@ import {
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
 import { navigateToRegister, navigateToForgotPassword } from '../navigation';
-import { SCREEN_BODY_STYLE, APP_DISPLAY_NAME } from '../constants';
+import { SCREEN_BODY_STYLE, APP_DISPLAY_NAME, theme } from '../constants';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
@@ -112,12 +112,11 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   link: {
-    fontSize: 14,
-    fontWeight: '500',
+    ...theme.typography.mobileAction,
     textAlign: 'right',
   },
   help: {
-    fontSize: 14,
+    ...theme.typography.mobileSubtitle,
     textAlign: 'center',
   },
 });

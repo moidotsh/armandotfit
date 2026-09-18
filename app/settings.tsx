@@ -21,7 +21,7 @@ import {
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile, useAiPayload, usePwaPrompt } from '../hooks';
-import { DAY_OF_WEEK_LABELS, SCREEN_BODY_STYLE } from '../constants';
+import { DAY_OF_WEEK_LABELS, SCREEN_BODY_STYLE, theme } from '../constants';
 import { useToast } from '../context';
 import { logger } from '../utils/logger';
 
@@ -259,8 +259,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   restDayLabel: {
-    fontSize: 12,
-    fontWeight: '700',
+    ...theme.typography.mobileTag,
     letterSpacing: 0.4,
   },
   preferenceRow: {
@@ -280,8 +279,7 @@ const styles = StyleSheet.create({
   },
   preferenceLabel: {
     flex: 1,
-    fontSize: 15,
-    fontWeight: '500',
+    ...theme.typography.mobileAction,
   },
   preferenceRadio: {
     width: 22,
@@ -292,8 +290,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sectionHint: {
-    fontSize: 11,
-    lineHeight: 14,
+    ...theme.typography.mobileMeta,
     marginTop: 8,
     paddingHorizontal: 4,
   },

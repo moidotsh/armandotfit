@@ -286,9 +286,7 @@ export default function HomeScreen() {
         anchor={APP_LAYOUT.navDrawerAnchor}
         columnWidth={MOBILE_CONTENT_MAX_WIDTH}
         itemLabelStyle={{
-          fontFamily: theme.fonts.mono,
-          fontSize: 12,
-          letterSpacing: 1.2,
+          ...theme.typography.mobileEyebrow,
           textTransform: 'uppercase',
         }}
         header={
@@ -348,36 +346,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 4,
   },
-  launcherTitle: {
-    fontSize: theme.fontSize.large,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
+  launcherTitle: { ...theme.typography.mobileTitle },
   launcherSub: { ...theme.typography.mobileSubtitle, marginTop: 4 },
   streakRow: { flexDirection: 'row', alignItems: 'center', gap: 20 },
   streakHero: { flex: 1 },
-  streakFigure: {
-    fontSize: 56,
-    fontWeight: '800',
-    letterSpacing: -2,
-    lineHeight: 56,
-    fontVariant: ['tabular-nums'],
-  },
+  streakFigure: { ...theme.typography.mobileDisplay },
   streakUnit: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...theme.typography.mobileEyebrow,
     textTransform: 'uppercase',
-    letterSpacing: 1,
     marginTop: 4,
   },
   streakSide: { gap: 4, alignItems: 'flex-end' },
-  sideValue: { fontSize: 13, fontWeight: '500', fontVariant: ['tabular-nums'] },
-  statLabel: { fontSize: 13, fontWeight: '500' },
-  statValue: { fontSize: 15, fontWeight: '600' },
+  sideValue: { ...theme.typography.mobileLedger },
   actionsRow: { flexDirection: 'row', gap: 8 },
   actionButton: { flex: 1 },
   recentList: { gap: 8 },
-  emptyText: { fontSize: 13, lineHeight: 18 },
+  emptyText: { ...theme.typography.mobileMeta },
   drawerHeader: {
     paddingHorizontal: 20,
   },

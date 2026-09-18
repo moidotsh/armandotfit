@@ -8,6 +8,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MobileSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
+import { theme } from '../../constants';
 import { formatVolume, sumVolume } from '../../services';
 import type { LoggedExerciseWithSets, TrainingSession } from '../../shared/types';
 
@@ -79,13 +80,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  date: { fontSize: 14, fontWeight: '600' },
-  window: { fontSize: 11, fontWeight: '600', letterSpacing: 0.8 },
-  meta: { fontSize: 12, fontVariant: ['tabular-nums'] },
+  date: { ...theme.typography.mobileItemTitle },
+  window: {
+    ...theme.typography.mobileEyebrow,
+  },
+  meta: { ...theme.typography.mobileMeta },
   shape: {
-    fontSize: 12,
-    lineHeight: 16,
+    ...theme.typography.mobileMeta,
     marginTop: 4,
-    fontVariant: ['tabular-nums'],
   },
 });

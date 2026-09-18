@@ -25,7 +25,7 @@ import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises, useAiPayload } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import type { SystemExerciseData } from '../shared/exercises';
-import { SCREEN_BODY_STYLE } from '../constants';
+import { SCREEN_BODY_STYLE, theme } from '../constants';
 
 /** Group the catalog by display category, in display order. */
 const CATEGORY_ORDER = ['Chest', 'Back', 'Shoulders', 'Arms', 'Upper Leg', 'Lower Leg', 'Abs'];
@@ -193,5 +193,5 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   addCustomCta: { marginTop: 8, alignSelf: 'flex-start' },
-  addCustomText: { fontSize: 14, fontWeight: '600' },
+  addCustomText: { ...theme.typography.mobileItemTitle },
 });

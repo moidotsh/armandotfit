@@ -6,6 +6,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
+import { theme } from '../../constants';
 
 export interface SetRowProps {
   position: number;
@@ -35,22 +36,14 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   setPosition: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...theme.typography.mobileMeta,
     minWidth: 18,
-    fontVariant: ['tabular-nums'],
   },
   weight: {
-    fontSize: 13,
-    fontWeight: '500',
+    ...theme.typography.mobileLedger,
     minWidth: 48,
     textAlign: 'right',
-    fontVariant: ['tabular-nums'],
   },
-  times: { fontSize: 12 },
-  reps: {
-    fontSize: 13,
-    fontWeight: '500',
-    fontVariant: ['tabular-nums'],
-  },
+  times: { ...theme.typography.mobileMeta },
+  reps: { ...theme.typography.mobileLedger },
 });

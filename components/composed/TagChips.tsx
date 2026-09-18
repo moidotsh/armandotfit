@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useAppTheme } from '../../context';
+import { theme } from '../../constants';
 
 export interface TagChipsProps {
   /** Currently active tags on the logged exercise. */
@@ -138,18 +139,18 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
   },
-  chipText: { fontSize: 12, fontWeight: '600' },
+  chipText: { ...theme.typography.mobileTag },
   wordCta: {
     paddingVertical: 8,
     paddingHorizontal: 2,
   },
-  wordText: { fontSize: 12, fontWeight: '500' },
+  wordText: { ...theme.typography.mobileTag },
   input: {
     borderWidth: 1.5,
     borderRadius: 10,
     paddingVertical: 6,
     paddingHorizontal: 10,
-    fontSize: 13,
+    ...theme.typography.mobileBody,
   },
 });
 

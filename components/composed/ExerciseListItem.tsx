@@ -7,6 +7,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { MobileSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
+import { theme } from '../../constants';
 import { EXERCISE_TYPE_DISPLAY, type SystemExerciseData } from '../../shared/exercises';
 
 export interface ExerciseListItemProps {
@@ -43,6 +44,6 @@ export function ExerciseListItem({ exercise, onPress }: ExerciseListItemProps) {
 }
 
 const styles = StyleSheet.create({
-  name: { fontSize: 14, fontWeight: '600' },
-  meta: { fontSize: 12, marginTop: 2 },
+  name: { ...theme.typography.mobileItemTitle },
+  meta: { ...theme.typography.mobileMeta, marginTop: 2 },
 });

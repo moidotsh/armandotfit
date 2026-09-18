@@ -31,7 +31,7 @@ import {
   getSlotsForDay,
   type SessionWindow,
 } from '../shared/exercises';
-import { SCREEN_BODY_STYLE, WORKOUT_SPLIT_LIST } from '../constants';
+import { SCREEN_BODY_STYLE, WORKOUT_SPLIT_LIST, theme } from '../constants';
 import type { PreferredSplit } from '../shared/types';
 
 const SPLIT_OPTIONS: MobileSelectionOption[] = WORKOUT_SPLIT_LIST.map((s) => ({
@@ -254,11 +254,8 @@ const styles = StyleSheet.create({
   dayBlock: { marginTop: 16 },
   sessionCard: { gap: 0 },
   windowLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.2,
+    ...theme.typography.mobileEyebrow,
     marginBottom: 4,
-    fontVariant: ['tabular-nums'],
   },
   slotRow: {
     flexDirection: 'row',
@@ -269,9 +266,12 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     paddingLeft: 8,
   },
-  slotIndex: { fontSize: 13, fontWeight: '700', minWidth: 18, fontVariant: ['tabular-nums'] },
+  slotIndex: {
+    ...theme.typography.mobileLedger,
+    minWidth: 18,
+  },
   slotMain: { flex: 1, gap: 2 },
-  slotName: { fontSize: 14, fontWeight: '600' },
+  slotName: { ...theme.typography.mobileItemTitle },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  slotMeta: { fontSize: 12, lineHeight: 16, fontVariant: ['tabular-nums'] },
+  slotMeta: { ...theme.typography.mobileMeta },
 });

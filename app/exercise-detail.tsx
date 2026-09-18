@@ -29,7 +29,7 @@ import {
   type EquipmentSlug,
   type MuscleSlug,
 } from '../shared/exercises';
-import { SCREEN_BODY_STYLE } from '../constants';
+import { SCREEN_BODY_STYLE, theme } from '../constants';
 import type { ExerciseKey } from '../shared/exercises';
 
 function equipmentLabel(e: EquipmentSlug | { slug: EquipmentSlug }): string {
@@ -196,9 +196,9 @@ const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
-  bodyText: { fontSize: 14, lineHeight: 20 },
-  tips: { fontSize: 13, lineHeight: 18, fontStyle: 'italic' },
-  missing: { fontSize: 13, lineHeight: 18 },
+  bodyText: { ...theme.typography.mobileSubtitle },
+  tips: { ...theme.typography.mobileMeta, fontStyle: 'italic' },
+  missing: { ...theme.typography.mobileMeta },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     borderRadius: 999,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   chipPrimary: { borderWidth: 1 },
-  chipText: { fontSize: 12, fontWeight: '500' },
-  chipLegend: { fontSize: 11, lineHeight: 14, marginTop: 10 },
-  sessionHint: { fontSize: 12, lineHeight: 16, textAlign: 'center' },
+  chipText: { ...theme.typography.mobileTag },
+  chipLegend: { ...theme.typography.mobileMeta, marginTop: 10 },
+  sessionHint: { ...theme.typography.mobileMeta, textAlign: 'center' },
 });

@@ -10,6 +10,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useAppTheme } from '../../context';
+import { theme } from '../../constants';
 
 export interface EditableSetRowProps {
   position: number;
@@ -130,23 +131,29 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     gap: 8,
   },
-  setPosition: { fontSize: 12, fontWeight: '600', minWidth: 18, fontVariant: ['tabular-nums'] },
+  setPosition: {
+    ...theme.typography.mobileMeta,
+    minWidth: 18,
+  },
   input: {
     borderWidth: 1.5,
     borderRadius: 10,
     paddingVertical: 6,
     paddingHorizontal: 10,
-    fontSize: 14,
-    fontWeight: '500',
+    ...theme.typography.mobileItemTitle,
+    fontVariant: ['tabular-nums'],
     minWidth: 64,
     textAlign: 'center',
-    fontVariant: ['tabular-nums'],
   },
   repsInput: {
     minWidth: 56,
   },
-  times: { fontSize: 13, fontWeight: '500' },
-  remove: { fontSize: 14, fontWeight: '600', minWidth: 24, textAlign: 'center' },
+  times: { ...theme.typography.mobileLedger },
+  remove: {
+    ...theme.typography.mobileItemTitle,
+    minWidth: 24,
+    textAlign: 'center',
+  },
 });
 
 export default EditableSetRow;

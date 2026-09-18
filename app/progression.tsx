@@ -21,7 +21,7 @@ import { LoadingSpinner } from '../components/primitives';
 import { useAppTheme } from '../context';
 import { safeGoBack, navigateToAnalytics, navigateToSplitSelection } from '../navigation';
 import { useDashboardSummary, usePersonalBests, useAiPayload } from '../hooks';
-import { SCREEN_BODY_STYLE } from '../constants';
+import { SCREEN_BODY_STYLE, theme } from '../constants';
 
 export default function ProgressionScreen() {
   const { colors } = useAppTheme();
@@ -154,30 +154,23 @@ const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
   figureRow: { flexDirection: 'row' },
   figureCell: { flex: 1, alignItems: 'center', gap: 2 },
-  figureValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-    fontVariant: ['tabular-nums'],
-  },
+  figureValue: { ...theme.typography.mobileFigure },
   figureLabel: {
-    fontSize: 10,
-    fontWeight: '600',
+    ...theme.typography.mobileEyebrow,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
   },
   divider: { height: 1, marginVertical: 14 },
   metaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  metaText: { fontSize: 12, fontVariant: ['tabular-nums'] },
+  metaText: { ...theme.typography.mobileMeta },
   rowBetween: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 6,
   },
-  pbName: { fontSize: 13, fontWeight: '500', flex: 1, marginRight: 12 },
-  pbValue: { fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  pbName: { ...theme.typography.mobileLedger, flex: 1, marginRight: 12 },
+  pbValue: { ...theme.typography.mobileLedger },
 });

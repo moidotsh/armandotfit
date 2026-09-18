@@ -9,6 +9,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { MobileSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
+import { theme } from '../../constants';
 import {
   SYSTEM_EXERCISES_BY_SLUG,
   formatExerciseAttributes,
@@ -74,12 +75,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  index: { fontSize: 13, fontWeight: '700', minWidth: 18, fontVariant: ['tabular-nums'] },
-  title: { fontSize: 14, fontWeight: '600', flex: 1 },
-  setsHint: {
-    fontSize: 12,
-    fontWeight: '500',
-    fontVariant: ['tabular-nums'],
+  index: {
+    ...theme.typography.mobileLedger,
+    minWidth: 18,
   },
-  attributeLine: { fontSize: 12, lineHeight: 16, marginTop: 4 },
+  title: { ...theme.typography.mobileItemTitle, flex: 1 },
+  setsHint: { ...theme.typography.mobileLedger },
+  attributeLine: { ...theme.typography.mobileMeta, marginTop: 4 },
 });

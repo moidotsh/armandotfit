@@ -23,7 +23,7 @@ import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory, useAiPayload } from '../hooks';
 import { AnalyticsService } from '../services';
 import { addDays } from '../utils';
-import { SCREEN_BODY_STYLE } from '../constants';
+import { SCREEN_BODY_STYLE, theme } from '../constants';
 
 type Range = 7 | 30 | 90;
 
@@ -164,15 +164,15 @@ const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
-  emptyText: { fontSize: 13, lineHeight: 18 },
+  emptyText: { ...theme.typography.mobileMeta },
   barRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 6,
     gap: 8,
   },
-  barLabel: { fontSize: 11, minWidth: 56, fontVariant: ['tabular-nums'] },
+  barLabel: { ...theme.typography.mobileMeta, minWidth: 56 },
   barTrack: { flex: 1, height: 10, borderRadius: 5, overflow: 'hidden' },
   barFill: { height: '100%' },
-  barValue: { fontSize: 12, fontWeight: '600', minWidth: 20, fontVariant: ['tabular-nums'] },
+  barValue: { ...theme.typography.mobileLedger, minWidth: 20 },
 });
