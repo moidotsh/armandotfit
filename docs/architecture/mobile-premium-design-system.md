@@ -905,6 +905,19 @@ A consumer needing a desktop admin surface builds it separately and
 does not try to force `MobileSurface` / `MobileHeader` to work at
 desktop breakpoints.
 
+### Consumer note — THE QUIET PAGE composed layer (armandotfit)
+
+THE QUIET PAGE (docs/architecture/quiet-page-thesis.md — the active
+design thesis) retuned the shared tokens (five sizes: 48 · 34 · 22 ·
+15 · 12; the `Figure` unit whispers at 12 on every size) and added
+consumer-owned composed primitives the inventory records here:
+
+| Component | Purpose |
+|---|---|
+| `EditionLine` (composed) | The recent-edition row: one session as ONE whisper line (date · day-of-split · window · tonnage), full facts on the accessibility label; `lead` renders the archive's head at figure scale in full ink — hierarchy by scale, not extra elements. Replaced `WorkoutSessionItem`. |
+| `SearchStatement` (composed) | The library's instrument-as-statement: the query rides the statement scale in the display face with an overlaid placeholder node at the same scale (so the hierarchy law measures the page before the first keystroke); ONE hairline beneath — the blank-line counter-field pattern. |
+| `CallBoard` (composed, reworked) | The Floor's docked instrument: the armed set as one ledger line LEFT-ALIGNED on the column's 20px rule (weight × reps at counter scale, steppers under each, blank-line rule when unset), the set ordinal + target in the kicker, LOG SET the one verb. Rides the five-size ramp — no ad-hoc sizes. |
+
 ---
 
 ## 13. Quick reference

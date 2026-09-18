@@ -162,16 +162,16 @@ budget (visible text nodes / interactive elements — probe-enforced).
 | Screen | Sentence | Loudest | Second voice | Quiet tail | Text ≤ | Tap ≤ |
 |---|---|---|---|---|---|---|
 | **home** | "It's Day 2 tonight — press." | the day title, 34, sentence case | the lede: window + first lift + count | the brand masthead (folio line) · 3 jump rows, each with its one fact as caption · 3 recent edition lines (the latest at figure scale) · settings | 13 | 8 |
-| **funnel** (split-selection) | "Which edition?" | the PICKED day title, 34 — restates with the pick | 7 day tiles (whisper weekday + figure) | plan preview lines · GO | 20 | 12 |
-| **Floor** (live) | "100 × 10 — log it." | THE CALL 48 | the station name 34 | station marks · set rows · steppers · whisper actions | 16 | 10 |
-| **receipt** (saved detail) | "4,230 kg, done." | the tonnage 34 | the date whisper | per-exercise set lines (the immutable receipt) | 24 | 4 |
+| **funnel** (split-selection) | "Which edition?" | the PICKED day title, 34 — restates with the pick | 7 day tiles (whisper weekday + figure) | plan preview lines · GO | 30 | 14 |
+| **Floor** (live) | "100 × 10 — log it." | THE CALL 48 | the station name 34 | station marks · set rows · steppers · whisper actions | 32 | 18 |
+| **receipt** (saved detail) | "4,230 kg, done." | the tonnage 34 | the fact whisper (date · day · window · counts) | per-exercise set lines (the immutable receipt — content, generously capped) | 60 | 4 |
 | **program** | "The rotation, day by day." | the FIRST day title 34 (later chapters 22) | later chapter titles | slot lines, one line per slot · swap marks | 48 | 12 |
-| **library** | "Find the lift." | the search field — input text AT 34, the instrument is the statement | first results | section whispers · rows | 24 | 12 |
+| **library** | "Find the lift." | the search field — input text AT 34, the instrument is the statement | first results | section whispers · rows | 30 | 18 |
 | **entry** (exercise detail) | "What this lift is." | the exercise name 34 | the muscle measure | instructions (reading) · whisper facts | 20 | 6 |
-| **record book** | "The streak is 12." | the streak number 34 in record red | totals figures (one line) | 5 PB lines, name + best set | 16 | 6 |
-| **form table** | "24 sessions in 30 days." | the count 34 | the consistency grid (ink cells, today outlined) | weekly bars · range control | 16 | 8 |
-| **colophon** | "This is how it's set." | the current theme value 34 — restates with the pick | setting rows | install · version · sign out | 18 | 10 |
-| **auth ×3** | "Sign in." / "Create account." / "Reset." | the action sentence 34 | the form fields | one link | 10 | 4 |
+| **record book** | "The streak is 12." | the streak number 34 in record red | totals figures (one line) | 5 PB lines, name + best set | 18 | 8 |
+| **form table** | "24 sessions in 30 days." | the count 34 | the consistency grid (ink cells, today outlined) | weekly bars · range control | 18 | 8 |
+| **colophon** | "This is how it's set." | the current theme value 34 — restates with the pick | setting rows | install · version · sign out | 22 | 15 |
+| **auth ×3** | "Sign in." / "Create account." / "Reset." | the action sentence 34 | the form fields | one link | 14 | 6 |
 | **404** | "Nothing runs here." | `404` 34 | one line of copy | back | 4 | 1 |
 | **ticker** (all Desk) | "The floor is live." | the wire plate — exempt from budgets (the interrupt) | | | — | 1 |
 
@@ -259,6 +259,17 @@ Amended: **P-TYPE-1** — any text > 16px rides Rokkitt (statements) or
 Azeret at exactly the counter size (the call); mono elsewhere ≤ 15.
 Sans never exceeds 16. This enforces the inventory from below as well
 as above.
+
+Measured-law notes from the calibration run (declared once, then
+enforced): **visibility is viewport-intersection** — rendered-ahead
+list rows are the scroll cache, not the page's visible population;
+the **Floor's register is its own** — its air is the thumb arc
+(P-HERO-ARC) and the verb's fold, so the Desk halo/rhythm checks
+exempt it, and its inverted station selection paints a lawful FIFTH
+text ink; the **P-INK-1 ceiling is 11%** per mode (the BROADSHEET
+home baseline measured 11.7% and fails it; the instrument pages —
+funnel, Floor — carry inversion plates plus a verb and sit ~10.5%;
+every Desk page lands ≤ 8.3%).
 
 New budget probes (they must FAIL loudly against the current
 BROADSHEET screens in Phase 1 — that failure list is Phase 2's map):
