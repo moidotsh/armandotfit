@@ -1,52 +1,38 @@
 // app/settings.tsx
-// Settings list. Arqavellum ships the cross-cutting settings rows every
-// consumer needs (account identity, theme toggle, sign-out). Domain
-// settings (e.g. notification preferences, training config) land in
-// consumer-extended surfaces.
+// THE QUIET PAGE's colophon (docs/architecture/
+// quiet-page-thesis.md §6): "This is how it's set." No nameplate, no
+// email kicker, no info panel, no section chrome — the current theme
+// IS the statement (restating with every pick); the preference rows
+// keep their ink-invert selection; the rest-day measure keeps its
+// struck marks; install/version ride as single rows; Sign Out is the
+// page's one verb.
 
 import React, { useCallback } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Sun, Moon, Monitor, Check } from '@tamagui/lucide-icons-2';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Check } from '@tamagui/lucide-icons-2';
 import {
-  MobileAtmosphere,
-  MobileSurface,
-  MobileHeader,
-  MobileSectionEyebrow,
-  MobileSettingsRow,
   MobileActionFooter,
   MobilePrimaryButton,
 } from '../components/MobilePremium';
+import { DeskShell } from '../components/composed';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile, usePwaPrompt } from '../hooks';
-import { DAY_OF_WEEK_LABELS, SCREEN_BODY_STYLE, theme } from '../constants';
+import { DAY_OF_WEEK_LABELS, BLOCK_GAP, theme } from '../constants';
 import { useToast } from '../context';
 import { logger } from '../utils/logger';
 
 const PREFERENCE_LABELS: Record<ColorSchemePreference, string> = {
-  light: 'Light',
-  dark: 'Dark',
+  light: 'Paper',
+  dark: 'Evening',
   system: 'System',
 };
 
 const PREFERENCE_ORDER: ColorSchemePreference[] = ['light', 'dark', 'system'];
 
-function PreferenceIcon({ pref, color }: { pref: ColorSchemePreference; color: string }) {
-  const size = 18;
-  switch (pref) {
-    case 'light':
-      return <Sun size={size} color={color} />;
-    case 'dark':
-      return <Moon size={size} color={color} />;
-    case 'system':
-      return <Monitor size={size} color={color} />;
-  }
-}
-
 export default function SettingsScreen() {
   const { session, signOut } = useAuth();
-  const { preference, setPreference, colorScheme, colors } = useAppTheme();
+  const { preference, setPreference, colors } = useAppTheme();
   const { showToast } = useToast();
   const pwaPrompt = usePwaPrompt();
   // The showcase route only exists where dev surfaces do — linking it
@@ -78,226 +64,194 @@ export default function SettingsScreen() {
 
   const restDayIds = restDays.map(String);
 
-
   return (
-    <SafeAreaView
-      style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
-      edges={['top', 'bottom']}
+    <DeskShell
+      surface="analytics"
+      onBack={safeGoBack}
+      testID="colophon-scroll"
+      contentContainerStyle={styles.bodyContent}
     >
-      <MobileAtmosphere surface="analytics" />
-      <MobileHeader
-        title="Settings"
-        eyebrow="Account"
-        onBack={safeGoBack}
-        hideAccentDot
-      />
-      <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
-        {/* THE HEADLINE — the colophon's nameplate. Nothing here needs
-            to win; the page just states its name and serves its rows. */}
-        <Text style={[styles.headlineKicker, { color: colors.textMuted }]}>
-          {`${session?.email ?? '—'}`}
+      {/* THE STATEMENT — how it's set, restating with every pick. */}
+      <View>
+        <Text style={[styles.statement, { color: colors.text }]}>
+          {PREFERENCE_LABELS[preference]}
         </Text>
-        <Text style={[styles.headline, { color: colors.text }]}>
-          THE COLOPHON
-        </Text>
-        <View style={{ height: 12 }} />
-        <MobileSurface padding={0}>
-          <MobileSettingsRow label="Email" value={session?.email ?? '—'} />
-          <MobileSettingsRow
-            label="Resolved theme"
-            value={colorScheme === 'dark' ? 'Dark' : 'Light'}
-            isLast
-          />
-        </MobileSurface>
+      </View>
 
-        <MobileSectionEyebrow rule flush={false}>Appearance</MobileSectionEyebrow>
-        <MobileSurface padding={0}>
-          {PREFERENCE_ORDER.map((pref, i) => {
-            const isActive = preference === pref;
-            return (
-              <Pressable
-                key={pref}
-                onPress={() => setPreference(pref)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: isActive }}
-                style={({ pressed }) => [
-                  styles.preferenceRow,
-                  i === PREFERENCE_ORDER.length - 1
-                    ? null
-                    : {
-                        borderBottomWidth: 1,
-                        borderBottomColor: colors.mobilePremium.hairlineBorder,
-                      },
-                  pressed ? { opacity: 0.6 } : null,
+      {/* The theme trio — ink-invert selection, no panel, no rules. */}
+      <View style={styles.block}>
+        {PREFERENCE_ORDER.map((pref) => {
+          const isActive = preference === pref;
+          return (
+            <Pressable
+              key={pref}
+              onPress={() => setPreference(pref)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: isActive }}
+              style={({ pressed }) => [
+                styles.preferenceRow,
+                pressed ? { opacity: 0.6 } : null,
+              ]}
+            >
+              <Text style={[styles.preferenceLabel, { color: colors.text }]}>
+                {PREFERENCE_LABELS[pref]}
+              </Text>
+              <View
+                style={[
+                  styles.preferenceRadio,
+                  {
+                    // Selection = inversion (ink fill, page-colored
+                    // check), matching the funnel's picked tile —
+                    // not a brand disc.
+                    borderColor: isActive ? colors.text : colors.border,
+                    backgroundColor: isActive ? colors.text : 'transparent',
+                  },
                 ]}
               >
-                <View style={[styles.preferenceIconBox, { backgroundColor: colors.cardAlt }]}>
-                  <PreferenceIcon pref={pref} color={colors.textSecondary} />
-                </View>
-                <Text style={[styles.preferenceLabel, { color: colors.text }]}>
-                  {PREFERENCE_LABELS[pref]}
-                </Text>
-                <View
+                {isActive ? (
+                  <Check size={12} color={colors.background} strokeWidth={3} />
+                ) : null}
+              </View>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {/* Rest days — the seven-mark measure; a rest day is struck. */}
+      <View style={styles.block}>
+        <Text style={[styles.whisper, { color: colors.textMuted }]}>
+          REST DAYS
+        </Text>
+        <View style={styles.restDayRow}>
+          {DAY_OF_WEEK_LABELS.map((d) => {
+            const isRest = restDayIds.includes(String(d.id));
+            return (
+              <Pressable
+                key={d.id}
+                onPress={() => handleToggleRestDay(String(d.id))}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: isRest }}
+                accessibilityLabel={`${d.label} rest day`}
+                style={({ pressed }) => [
+                  styles.restDayTile,
+                  {
+                    backgroundColor: isRest ? colors.text : colors.glass.inputBackground,
+                    opacity: pressed ? 0.6 : 1,
+                  },
+                ]}
+                testID={`rest-day-${d.id}`}
+              >
+                <Text
                   style={[
-                    styles.preferenceRadio,
-                    {
-                      // Selection = inversion (ink fill, page-colored
-                      // check), matching the funnel's picked tile —
-                      // not a brand disc.
-                      borderColor: isActive ? colors.text : colors.border,
-                      backgroundColor: isActive ? colors.text : 'transparent',
-                    },
+                    styles.restDayLabel,
+                    { color: isRest ? colors.background : colors.text },
                   ]}
                 >
-                  {isActive ? (
-                    <Check size={12} color={colors.background} strokeWidth={3} />
-                  ) : null}
-                </View>
+                  {d.label.slice(0, 2)}
+                </Text>
               </Pressable>
             );
           })}
-        </MobileSurface>
+        </View>
+      </View>
 
-        <MobileSectionEyebrow rule flush={false}>Training</MobileSectionEyebrow>
-        <MobileSurface padding={8}>
-          <View style={styles.restDayRow}>
-            {DAY_OF_WEEK_LABELS.map((d) => {
-              const isRest = restDayIds.includes(String(d.id));
-              return (
-                <Pressable
-                  key={d.id}
-                  onPress={() => handleToggleRestDay(String(d.id))}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: isRest }}
-                  accessibilityLabel={`${d.label} rest day`}
-                  style={({ pressed }) => [
-                    styles.restDayTile,
-                    {
-                      // A rest day is a STRUCK mark — solid ink like the
-                      // tally's struck stroke, not the brand fill.
-                      backgroundColor: isRest ? colors.text : colors.glass.inputBackground,
-                      opacity: pressed ? 0.6 : 1,
-                    },
-                  ]}
-                  testID={`rest-day-${d.id}`}
-                >
-                  <Text
-                    style={[
-                      styles.restDayLabel,
-                      { color: isRest ? colors.background : colors.textSecondary },
-                    ]}
-                  >
-                    {d.label.slice(0, 2)}
-                  </Text>
-                </Pressable>
+      {pwaPrompt.shouldShow ? (
+        <View style={styles.block}>
+          <ColophonRow
+            label="Install app"
+            value="How?"
+            onPress={() => {
+              showToast(
+                'info',
+                pwaPrompt.platform === 'ios'
+                  ? 'Safari: Share → Add to Home Screen'
+                  : 'Chrome: ⋮ menu → Install app',
               );
-            })}
-          </View>
-        </MobileSurface>
-        <Text style={[styles.sectionHint, { color: colors.textMuted }]}>
-          Rest days are visually deactivated in the workout-day picker. The
-          day-of-split suggestion ignores them — it only advances when you
-          log a session.
-        </Text>
+              pwaPrompt.dismiss();
+            }}
+          />
+        </View>
+      ) : null}
 
-        {pwaPrompt.shouldShow ? (
-          <>
-            <MobileSectionEyebrow rule flush={false}>Install</MobileSectionEyebrow>
-            <MobileSurface padding={0}>
-              <MobileSettingsRow
-                label="Install app"
-                value="How?"
-                onPress={() => {
-                  showToast(
-                    'info',
-                    pwaPrompt.platform === 'ios'
-                      ? 'Safari: Share → Add to Home Screen'
-                      : 'Chrome: ⋮ menu → Install app',
-                  );
-                  pwaPrompt.dismiss();
-                }}
-                isLast
-              />
-            </MobileSurface>
-            <Text style={[styles.sectionHint, { color: colors.textMuted }]}>
-              Install armandotfit on your home screen for the full-screen,
-              offline-tolerant gym experience.
-            </Text>
-          </>
+      <View style={styles.block}>
+        {devSurfaces ? (
+          <ColophonRow
+            label="Design system"
+            value="View"
+            onPress={navigateToPremiumShowcase}
+          />
         ) : null}
+        <ColophonRow label="Version" value="0.1.0" />
+      </View>
 
-        <MobileSectionEyebrow rule flush={false}>Reference</MobileSectionEyebrow>
-        <MobileSurface padding={0}>
-          {devSurfaces ? (
-            <MobileSettingsRow
-              label="Design System Showcase"
-              value="View"
-              onPress={navigateToPremiumShowcase}
-            />
-          ) : null}
-          <MobileSettingsRow label="Version" value="0.1.0" isLast={!devSurfaces} />
-        </MobileSurface>
-      </ScrollView>
-      <MobileActionFooter>
-        <MobilePrimaryButton onPress={() => void signOut()}>Sign Out</MobilePrimaryButton>
-      </MobileActionFooter>
-    </SafeAreaView>
+      <View style={styles.block}>
+        <Text style={[styles.signedInAs, { color: colors.textMuted }]} numberOfLines={1}>
+          {`signed in as ${session?.email ?? '—'}`}
+        </Text>
+      </View>
+
+      <View style={styles.block}>
+        <MobileActionFooter>
+          <MobilePrimaryButton onPress={() => void signOut()}>Sign Out</MobilePrimaryButton>
+        </MobileActionFooter>
+      </View>
+    </DeskShell>
+  );
+}
+
+/** One colophon row: label at row scale, value whispering right. */
+function ColophonRow({
+  label,
+  value,
+  onPress,
+}: {
+  label: string;
+  value: string;
+  onPress?: () => void;
+}) {
+  const { colors } = useAppTheme();
+  const body = (
+    <>
+      <Text style={[styles.colophonLabel, { color: colors.text }]} numberOfLines={1}>
+        {label}
+      </Text>
+      <Text style={[styles.colophonValue, { color: colors.textMuted }]} numberOfLines={1}>
+        {value}
+      </Text>
+    </>
+  );
+  if (!onPress) {
+    return <View style={styles.colophonRow}>{body}</View>;
+  }
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => [styles.colophonRow, pressed ? { opacity: 0.6 } : null]}
+    >
+      {body}
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  shell: {
-    flex: 1,
-  },
-  body: {
-    ...SCREEN_BODY_STYLE,
-  },
-  headlineKicker: {
-    ...theme.typography.mobileEyebrow,
-  },
-  headline: {
-    ...theme.typography.mobileDisplay,
-    fontSize: 40,
-    lineHeight: 42,
-    marginTop: 6,
-  },
   bodyContent: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 60,
+    paddingHorizontal: 20,
+    paddingTop: 4,
+    paddingBottom: 140,
   },
-  // The rest-day MEASURE — seven marks; a rest day is a struck mark
-  // (broadsheet §7: selection is ink inversion, never brand). Square-
-  // cut, agate letters.
-  restDayRow: {
-    flexDirection: 'row',
-    gap: 4,
+  block: {
+    marginTop: BLOCK_GAP,
   },
-  restDayTile: {
-    flex: 1,
-    height: 44,
-    borderRadius: theme.shapes.tile,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  restDayLabel: {
-    ...theme.typography.mobileTag,
-    letterSpacing: 0.4,
+  statement: {
+    ...theme.typography.mobileDisplay,
   },
   preferenceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    minHeight: 56,
+    minHeight: 48,
     gap: 12,
-  },
-  preferenceIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: theme.shapes.tile,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   preferenceLabel: {
     flex: 1,
@@ -313,9 +267,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sectionHint: {
-    ...theme.typography.mobileMeta,
-    marginTop: 8,
-    paddingHorizontal: 4,
+  whisper: {
+    ...theme.typography.mobileEyebrow,
+    marginBottom: 8,
+  },
+  // The rest-day MEASURE — seven marks; a rest day is a struck mark
+  // (selection is ink inversion, never brand). Square-cut, agate
+  // letters.
+  restDayRow: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  restDayTile: {
+    flex: 1,
+    height: 44,
+    borderRadius: theme.shapes.tile,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  restDayLabel: {
+    ...theme.typography.mobileTag,
+    letterSpacing: 0.4,
+  },
+  signedInAs: {
+    ...theme.typography.mobileLedger,
+  },
+  colophonRow: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  colophonLabel: {
+    ...theme.typography.mobileItemTitle,
+    flex: 1,
+  },
+  colophonValue: {
+    ...theme.typography.mobileLedger,
   },
 });
