@@ -90,7 +90,7 @@ Three ramps, interleaved: statements (28 · 34 · 42 · 72), figures
 | `mobileTitleCondensed` | the station head | Rokkitt | 34 / 38 | 800 | −0.2 | — | floor station names, the swap-bench title |
 | `mobileTitle` | the subhead | Rokkitt | 28 / 32 | 700 | −0.2 | — | section statements, sheet titles, program day titles |
 | `mobileCounter` | the call | Azeret Mono | 56 / 60 | 700 | −1 | tnum | the armed weight × reps, the floor timer — the one place agate goes display size |
-| `mobileFigure` | the stat figure | Rokkitt | 28 / 32 | 700 | −0.3 | tnum | stat strips, PB values, day-of-split numerals (static) |
+| `mobileFigure` | the stat figure | Azeret Mono | 26 / 30 | 700 | −0.5 | tnum | stat strips, PB values, set-list figures, day-of-split numerals — agate keeps every working figure |
 | `mobileAction` | the verb | Rokkitt | 17 / 22 | 700 | +0.6 | — | button labels, uppercased at call site |
 | `mobileItemTitle` | the row lead | platform | 16 / 22 | 600 | −0.1 | — | row titles: exercise names, settings rows |
 | `mobileSubtitle` | the deck | platform | 15 / 20 | 600 | 0 | — | the one line under a statement |

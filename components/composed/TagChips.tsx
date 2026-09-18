@@ -161,6 +161,7 @@ const styles = StyleSheet.create({
   chipText: { ...theme.typography.mobileTag },
   wordCta: {
     minHeight: 44,
+    minWidth: 44,
     justifyContent: 'center',
     paddingHorizontal: 6,
   },

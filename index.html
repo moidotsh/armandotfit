@@ -156,6 +156,30 @@
         scrollbar-width: none;
       }
     </style>
+
+    <!--
+      The focus law (broadsheet-thesis P-FOCUS-1): the UA focus outline
+      never leaks — RN-web renders real buttons/inputs whose default
+      WebKit ring reads as alien chrome — and every focusable control
+      carries OUR ring instead: a 2px rule in the element's own ink
+      (currentColor — mode-correct by construction; inputs that draw the
+      kit's own focus ring override this on their own boxShadow).
+      Mirror trio: this block + the runtime restore in app/_layout.tsx
+      (the injector carries id'd styles into every exported route).
+    -->
+    <style id="global-focus-css">
+      button:focus,
+      [role='button']:focus,
+      a:focus,
+      select:focus {
+        outline-width: 0;
+        box-shadow: 0 0 0 2px currentColor;
+      }
+      input:focus,
+      textarea:focus {
+        outline-width: 0;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

@@ -578,10 +578,11 @@ export const theme = {
     } satisfies TypographyToken,
     // ── Figure language ────────────────────────────────────────────────
     // Numbers are the app's content, so the scale names their slots
-    // too. Statement figures ride the display face (static — Rokkitt's
-    // lining numerals, verified by probe); WORKING figures (anything
-    // that changes or aligns) ride the agate face — mono is tabular by
-    // construction, so timers and counters cannot jitter.
+    // too. Agate keeps EVERY working figure (anything that changes,
+    // aligns, or ledger-reads — at any size; mono is tabular by
+    // construction, so timers and counters cannot jitter). Rokkitt's
+    // numerals appear only at hero scale (72 — static statements: the
+    // streak, the receipt total, the 404).
     mobileHero: {
       fontSize: 72,
       fontWeight: '800',
@@ -597,12 +598,12 @@ export const theme = {
       fontFamily: FONTS.display,
     } satisfies TypographyToken,
     mobileFigure: {
-      fontSize: 28,
+      fontSize: 26,
       fontWeight: '700',
-      lineHeight: 32,
-      letterSpacing: -0.3,
+      lineHeight: 30,
+      letterSpacing: -0.5,
       fontVariant: ['tabular-nums'],
-      fontFamily: FONTS.display,
+      fontFamily: FONTS.mono,
     } satisfies TypographyToken,
     mobileItemTitle: {
       fontSize: 16,

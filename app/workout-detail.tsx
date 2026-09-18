@@ -1,19 +1,20 @@
 // app/workout-detail.tsx
-// Two screens (docs/architecture/count-thesis.md §7):
+// Two screens (docs/architecture/broadsheet-thesis.md §7):
 //
-//   ?id=  the RECEIPT — a Desk page. Tonnage is the headline of
-//         history (display statement), exercises as tally groups +
-//         mono set ledgers, delete behind a two-step footer.
+//   ?id=  the BOX SCORE — a Desk page. Tonnage is the headline of
+//         history (hero statement in ink), exercises as agate set
+//         ledgers, delete behind a two-step footer.
 //
-//   none  the STAGE — the count at full size. One exercise at a time
-//         (one STATION), its sets as large tallies, the next set
-//         pre-armed at carry-forward weight — one thumb / one tap on
-//         LOG SET strikes the mark. The station rail answers "where am
-//         I"; the session count (elapsed · sets · tonnage) answers
-//         "how's it going"; everything else waits its turn. Finish
-//         opens the summary sheet: save once, at the end. The stage
-//         follows the user's mode — the register difference is density
-//         and scale, not a second color scheme.
+//   none  the FLOOR — the live report. One exercise at a time (one
+//         STATION), its name as the station head, the next set
+//         pre-armed at carry-forward weight as THE CALL (`100 KG ×
+//         10 REPS`, agate at counter scale) — one thumb / one tap on
+//         LOG SET locks the line in. The station rail answers "where
+//         am I"; the run-of-play row (elapsed · sets · tonnage)
+//         answers "how's it going"; everything else waits its turn.
+//         Finish opens the summary sheet: save once, at the end. The
+//         Floor follows the user's mode — the register difference is
+//         density and scale, not a second color scheme.
 //
 // The draft hydrates from the program slots (local data — no fetch);
 // draft set rows exist only once logged (the armed-set model). A
@@ -41,7 +42,6 @@ import {
   MobileDialog,
   Figure,
   EmptyState,
-  TallyStrip,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import {
@@ -50,7 +50,7 @@ import {
   InkRail,
   SwapGlyph,
   QueryErrorNote,
-  CountBoard,
+  CallBoard,
   StationStrip,
   StageSetRow,
 } from '../components/composed';
@@ -300,10 +300,11 @@ export default function WorkoutDetailScreen() {
             <LoadingSpinner />
           ) : (
             <>
-              {/* The receipt head: the tonnage is the headline of
-                  history; the count rides beside it. */}
+              {/* The box-score head: tonnage is the headline of
+                  history, set in ink — red is reserved for records;
+                  the counts ride beside it in agate. */}
               <MobileSectionEyebrow rule flush={false}>
-                {`Receipt · started ${new Date(session.startedAt).toLocaleTimeString(undefined, {
+                {`Box score · ${windowLabel ?? 'edition'} · started ${new Date(session.startedAt).toLocaleTimeString(undefined, {
                   hour: 'numeric',
                   minute: '2-digit',
                 })}`}
@@ -314,7 +315,6 @@ export default function WorkoutDetailScreen() {
                   unit="kg"
                   label="moved"
                   size="display"
-                  tone="brand"
                 />
                 <View style={styles.receiptSide}>
                   <Figure
@@ -356,10 +356,11 @@ export default function WorkoutDetailScreen() {
                     <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
                       {ex.exerciseName || 'Exercise'}
                     </Text>
-                    {/* The session's shape as marks — the receipt's
-                        tally group (decoration; the ledger carries the
-                        numbers as text). */}
-                    <TallyStrip struck={ex.sets.length} size="sm" />
+                    {/* The session's shape as a count — agate beside
+                        the name (the ledger carries the numbers). */}
+                    <Text style={[styles.receiptExCount, { color: colors.textMuted }]}>
+                      {`${ex.sets.length} SET${ex.sets.length === 1 ? '' : 'S'}`}
+                    </Text>
                   </View>
                   {ex.tags.length > 0 ? (
                     <Text style={[styles.tagsLine, { color: colors.textMuted }]}>
@@ -447,14 +448,7 @@ export default function WorkoutDetailScreen() {
   );
 }
 
-// ── The Stage ──────────────────────────────────────────────────────────
-
-/** Parse the Rx set ceiling ("3×8–10" → 3) for the board's ghost slots. */
-function targetSetsFor(targetRx: string | null): number | null {
-  if (!targetRx) return null;
-  const n = parseInt(targetRx.split('×')[0] ?? '', 10);
-  return Number.isFinite(n) && n > 0 ? n : null;
-}
+// ── The Stage (the Floor) ──────────────────────────────────────────────
 
 interface StageProps {
   draft: NonNullable<ReturnType<typeof useWorkoutStore.getState>['draft']>;
@@ -800,13 +794,11 @@ function Stage(props: StageProps) {
         </Animated.View>
       </ScrollView>
 
-      {/* THE COUNT BOARD — docked, never scrolls away. The exercise's
-          measure (tallies) + the armed counter + the one verb. */}
+      {/* THE CALL BOARD — docked, never scrolls away. The armed set
+          (the call) + the one verb. */}
       {exercise ? (
-        <CountBoard
+        <CallBoard
           setNumber={exercise.sets.length + 1}
-          struck={exercise.sets.length}
-          targetSets={targetSetsFor(exercise.targetRx)}
           weight={armed.weight}
           reps={armed.reps}
           repsHint={repsHint}

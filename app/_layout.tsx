@@ -108,6 +108,17 @@ function RootShell() {
       '*::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}',
     );
 
+    // The focus law (index.html #global-focus-css, mirrored here): the
+    // UA outline never leaks; every focusable control carries OUR ring
+    // — a 2px rule in its own ink.
+    ensureStyle(
+      'global-focus-css',
+      [
+        "button:focus,[role='button']:focus,a:focus,select:focus{outline-width:0;box-shadow:0 0 0 2px currentColor}",
+        'input:focus,textarea:focus{outline-width:0}',
+      ].join(''),
+    );
+
     // THE BROADSHEET faces — runtime restore of index.html's id'd
     // @font-face block (static export strips <head> styles; the
     // build-time injector covers exported routes, this covers dev and
