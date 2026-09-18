@@ -10,6 +10,7 @@ import { render, fireEvent } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { ThemeProvider } from '../../context';
 import { AppShellHeader } from '../../components/composed/AppShellHeader';
+import { APP_DISPLAY_NAME } from '../../constants/displayName';
 import type { MobileNavDrawerItem } from '../../components/MobilePremium';
 
 function Wrap({ children }: { children: ReactNode }) {
@@ -37,7 +38,7 @@ describe('AppShellHeader', () => {
         <AppShellHeader items={makeItems()} />
       </Wrap>,
     );
-    expect(container.textContent).toContain('Arqavellum');
+    expect(container.textContent).toContain(APP_DISPLAY_NAME);
   });
 
   it('opens the drawer on hamburger press and reveals destinations', () => {
