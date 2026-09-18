@@ -7,8 +7,8 @@
 // record tone. All computed at read from raw sessions; nothing
 // stored.
 
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import {
   MobileSectionEyebrow,
   MobilePrimaryButton,
@@ -22,6 +22,36 @@ import { navigateToAnalytics, navigateToSplitSelection } from '../navigation';
 import { useDashboardSummary, usePersonalBests } from '../hooks';
 import { theme } from '../constants';
 import { e1rm } from '../services';
+import { useReducedMotion } from '../components/premium/shared';
+
+/** THE RECORD RULE — the 2px record-red rule under the streak hero
+ *  draws in once (scaleX 0→1, 160ms). Static full-width under reduced
+ *  motion; purely decorative (the figure carries the number). */
+function RecordRule({ color, width }: { color: string; width: number }) {
+  const reduced = useReducedMotion();
+  const draw = useRef(new Animated.Value(reduced ? 1 : 0)).current;
+  useEffect(() => {
+    if (reduced) return;
+    Animated.timing(draw, {
+      toValue: 1,
+      duration: 160,
+      useNativeDriver: false,
+    }).start();
+  }, [draw, reduced]);
+  return (
+    <Animated.View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={{
+        width,
+        height: 2,
+        backgroundColor: color,
+        marginTop: 6,
+        transform: [{ scaleX: draw.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }) }],
+      }}
+    />
+  );
+}
 
 export default function ProgressionScreen() {
   const { colors } = useAppTheme();
@@ -74,6 +104,7 @@ export default function ProgressionScreen() {
               tone="brand"
               testID="progression-streak-hero"
             />
+            <RecordRule color={colors.brand} width={168} />
             <View style={styles.heroSide}>
               <Text style={[styles.sideLine, { color: colors.text }]}>
                 {`best ${summary?.streak.best ?? 0}`}

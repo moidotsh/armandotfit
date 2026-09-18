@@ -18,8 +18,9 @@
 // Inputs parse to number|null (empty string → null — Number('') is 0,
 // which would false-positive as "0 kg").
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   Pressable,
   StyleSheet,
   Text,
@@ -28,6 +29,7 @@ import {
 } from 'react-native';
 import { useAppTheme } from '../../context';
 import { theme } from '../../constants';
+import { useReducedMotion } from '../premium/shared';
 
 export interface CallBoardProps {
   /** The next set's ordinal (logged sets + 1) — display only. */
@@ -168,8 +170,26 @@ export function CallBoard({
   testID,
 }: CallBoardProps) {
   const { colors } = useAppTheme();
+  const reduced = useReducedMotion();
   const ready = weight != null && reps != null;
   const tid = testID ?? 'call-board';
+
+  // THE LOCKUP — when a set logs, the ordinal stamps in (a fast settle
+  // from above, 90ms). Post-interactive; never gates the LOG tap;
+  // static under reduced motion.
+  const stamp = useRef(new Animated.Value(1)).current;
+  const prevSet = useRef(setNumber);
+  useEffect(() => {
+    if (prevSet.current === setNumber) return;
+    prevSet.current = setNumber;
+    if (reduced) return;
+    stamp.setValue(0);
+    Animated.timing(stamp, {
+      toValue: 1,
+      duration: 90,
+      useNativeDriver: true,
+    }).start();
+  }, [setNumber, reduced, stamp]);
 
   return (
     <View
@@ -180,13 +200,19 @@ export function CallBoard({
       {/* The kicker — the set ordinal carries the record red (the
           next position is the Floor's one red mark beside the verb). */}
       <View style={styles.kickerRow}>
-        <Text style={[styles.kicker, { color: colors.textMuted }]}>
+        <Animated.Text
+          style={[
+            styles.kicker,
+            { color: colors.textMuted },
+            reduced ? null : { transform: [{ translateY: stamp.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) }] },
+          ]}
+        >
           SET{' '}
           <Text style={{ color: colors.brandText }}>
             {String(setNumber).padStart(2, '0')}
           </Text>
           {repsHint ? ` · TGT ${repsHint}` : ''}
-        </Text>
+        </Animated.Text>
       </View>
 
       {/* THE CALL — one box-score line, both numerals at counter
