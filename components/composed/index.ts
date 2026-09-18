@@ -14,6 +14,7 @@ export { InkRail, SwapGlyph, type InkRailProps } from './InkRail';
 export { SplitExerciseRow, type SplitExerciseRowProps } from './SplitExerciseRow';
 export { ExerciseListItem, type ExerciseListItemProps } from './ExerciseListItem';
 export { EditionLine, type EditionLineProps } from './EditionLine';
+export { SearchStatement, type SearchStatementProps } from './SearchStatement';
 export { TrainingConsistencyGrid, type TrainingConsistencyGridProps } from './TrainingConsistencyGrid';
 export { WorkoutListSkeleton } from './WorkoutListSkeleton';
 export { QueryErrorNote, type QueryErrorNoteProps } from './QueryErrorNote';

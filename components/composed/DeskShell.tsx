@@ -89,9 +89,12 @@ export function DeskShell({
     >
       <MobileAtmosphere surface={surface} />
       {/* Header + ticker ride the same mobile column as the body —
-          nothing straddles the constraint on desktop. */}
+          nothing straddles the constraint on desktop. The back
+          chevron renders whenever onBack is set, with or without a
+          header node beside it (a quiet page may have nothing else to
+          say up top — the back law holds regardless). */}
       <View testID="desk-header-col" style={MOBILE_CONTENT_WIDTH_STYLE}>
-        {onBack && header ? (
+        {onBack ? (
           <View style={styles.headerWithBack}>
             <Pressable
               onPress={onBack}
@@ -102,7 +105,7 @@ export function DeskShell({
             >
               <ChevronLeft size={26} color={colors.text} />
             </Pressable>
-            <View style={styles.headerFlex}>{header}</View>
+            {header ? <View style={styles.headerFlex}>{header}</View> : null}
           </View>
         ) : (
           header

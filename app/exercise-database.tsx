@@ -1,31 +1,32 @@
 // app/exercise-database.tsx
-// The Library — a tab destination on the DeskShell. Search + equipment
-// chips (the gym walked as zones: BB/DB/machine/cable/bodyweight) +
-// tap-through to detail. The catalog is local (data.ts — sole display
-// source); filtering is client-side. Unfiltered browse leads with a
-// "Recently logged" section (distinct names from the last sessions,
-// recency order) — the shortest path back to what the user actually
-// lifts. Sections group by display category with sticky headers so
-// scrolling a long list keeps its place.
+// The Library — THE QUIET PAGE's index (docs/architecture/
+// quiet-page-thesis.md §6): "Find a lift." The search field IS the
+// statement (display scale, one hairline beneath — the page's spent
+// rule); the modality chips ride under it as the instrument's second
+// row; the catalog scans beneath in air-separated rows grouped by
+// whisper-caps section heads. The nameplate, the catalog-count
+// shout, and the result-count whisper are gone — the results answer
+// the query by existing. Unfiltered browse leads with a
+// "Recently logged" section (distinct names, recency order).
+// During a live session the custom adder sits one tap open
+// (progressive disclosure).
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { SectionList, Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   MobileInput,
-  MobileSurface,
   MobileSectionEyebrow,
-  SearchField,
   EmptyState,
   FilterChip,
   FilterChipGroup,
 } from '../components/MobilePremium';
-import { DeskShell, ExerciseListItem } from '../components/composed';
+import { DeskShell, ExerciseListItem, SearchStatement } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises, useRecentSessionDetails } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import { SYSTEM_EXERCISES, type SystemExerciseData } from '../shared/exercises';
-import { theme } from '../constants';
+import { theme, BLOCK_GAP, ROW_GAP } from '../constants';
 
 /** Group the catalog by display category, in display order. */
 const CATEGORY_ORDER = ['Chest', 'Back', 'Shoulders', 'Arms', 'Upper Leg', 'Lower Leg', 'Abs'];
@@ -74,6 +75,7 @@ export default function ExerciseDatabaseScreen() {
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
   const addExerciseToDraft = useWorkoutStore((s) => s.addExerciseToDraft);
   const [customName, setCustomName] = useState('');
+  const [adderOpen, setAdderOpen] = useState(false);
   const filter = useExerciseStore((s) => s.filter);
   const setFilter = useExerciseStore((s) => s.setFilter);
   const resetFilters = useExerciseStore((s) => s.resetFilters);
@@ -102,86 +104,81 @@ export default function ExerciseDatabaseScreen() {
   const resultCount = query.data?.length ?? 0;
 
   return (
-    <DeskShell
-      surface="training"
-      onBack={safeGoBack}
-      noScroll
-      testID="library-body"
-      header={
-        <View style={styles.headerRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.headerEyebrow, { color: colors.textMuted }]}>
-              {`${SYSTEM_EXERCISES.length} LIFTS · THE CATALOG IS LOCAL`}
-            </Text>
-            {/* THE HEADLINE — the index's nameplate. The search field
-                beneath is the instrument; sections carry the scan. */}
-            <Text style={[styles.headerTitle, { color: colors.text }]}>
-              THE INDEX
-            </Text>
-          </View>
-        </View>
-      }
-    >
+    <DeskShell surface="training" onBack={safeGoBack} noScroll testID="library-body">
       <View style={styles.body}>
-        <SearchField
-          value={filter.search ?? ''}
-          onChangeText={(text) => setFilter({ search: text.trim() || undefined })}
-          placeholder="Search exercises…"
-          accessibilityLabel="Search exercises"
-          testID="exercise-search-field"
-        />
-        <View style={{ height: 10 }} />
-        <FilterChipGroup>
-          {['floor', 'dumbbell', 'barbell', 'machine', 'cable'].map((m) => (
-            <FilterChip
-              key={m}
-              label={m === 'floor' ? 'Bodyweight' : m === 'dumbbell' ? 'DB' : m === 'barbell' ? 'BB' : m[0].toUpperCase() + m.slice(1)}
-              selected={filter.modality === m}
-              onPress={() =>
-                setFilter({ modality: filter.modality === m ? undefined : m })
-              }
-              accessibilityLabel={`Filter by ${m}`}
-            />
-          ))}
-        </FilterChipGroup>
-
-        {isSessionActive ? (
-          <>
-            <View style={{ height: 12 }} />
-            <MobileSurface padding={12}>
-              <MobileInput
-                label="Not in the library?"
-                value={customName}
-                onChangeText={setCustomName}
-                placeholder="Type an exercise name…"
-              />
-              <Pressable
-                onPress={() => {
-                  const name = customName.trim();
-                  if (name.length < 2) {
-                    showToast('error', 'Give the exercise a name (2+ characters).');
-                    return;
+        {/* The instrument: the search statement + the modality chips. */}
+        <View>
+          <SearchStatement
+            value={filter.search ?? ''}
+            onChangeText={(text: string) => setFilter({ search: text.trim() || undefined })}
+            placeholder="Find a lift"
+            accessibilityLabel="Search exercises"
+            testID="exercise-search-field"
+          />
+          <View style={styles.chips}>
+            <FilterChipGroup>
+              {['floor', 'dumbbell', 'barbell', 'machine', 'cable'].map((m) => (
+                <FilterChip
+                  key={m}
+                  label={m === 'floor' ? 'BW' : m === 'dumbbell' ? 'DB' : m === 'barbell' ? 'BB' : m[0].toUpperCase() + m.slice(1)}
+                  selected={filter.modality === m}
+                  onPress={() =>
+                    setFilter({ modality: filter.modality === m ? undefined : m })
                   }
-                  addExerciseToDraft({ exerciseName: name });
-                  showToast('success', `Added ${name} to session`);
-                  setCustomName('');
-                }}
+                  accessibilityLabel={`Filter by ${m}`}
+                />
+              ))}
+            </FilterChipGroup>
+          </View>
+          {/* The custom adder — one tap open, only while a session
+              runs (progressive disclosure; the browse is the page). */}
+          {isSessionActive ? (
+            adderOpen ? (
+              <View style={styles.adder}>
+                <MobileInput
+                  label=""
+                  value={customName}
+                  onChangeText={setCustomName}
+                  placeholder="Exercise name…"
+                  autoFocus
+                />
+                <Pressable
+                  onPress={() => {
+                    const name = customName.trim();
+                    if (name.length < 2) {
+                      showToast('error', 'Give the exercise a name (2+ characters).');
+                      return;
+                    }
+                    addExerciseToDraft({ exerciseName: name });
+                    showToast('success', `Added ${name} to session`);
+                    setCustomName('');
+                    setAdderOpen(false);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Add custom exercise to session"
+                  style={styles.adderVerb}
+                >
+                  <Text style={[styles.adderVerbText, { color: colors.brandText }]}>
+                    Add to session
+                  </Text>
+                </Pressable>
+              </View>
+            ) : (
+              <Pressable
+                onPress={() => setAdderOpen(true)}
                 accessibilityRole="button"
-                accessibilityLabel="Add custom exercise to session"
-                style={styles.addCustomCta}
+                accessibilityLabel="Add a custom exercise"
+                style={styles.adderToggle}
               >
-                <Text style={[styles.addCustomText, { color: colors.brand }]}>
-                  + Add “{customName.trim() || 'exercise'}” to session
+                <Text style={[styles.adderToggleText, { color: colors.textMuted }]}>
+                  + Add a custom lift
                 </Text>
               </Pressable>
-            </MobileSurface>
-          </>
-        ) : null}
-        <View style={{ height: 12 }} />
-        {/* The count is feedback for a query; the full catalog needs no tally. */}
-        {!isUnfiltered ? (
-          <MobileSectionEyebrow>{resultCount} results</MobileSectionEyebrow>
-        ) : null}
+            )
+          ) : null}
+        </View>
+
+        {/* The catalog. */}
         {resultCount === 0 ? (
           <EmptyState
             compact
@@ -195,24 +192,21 @@ export default function ExerciseDatabaseScreen() {
             // it the section content contributes to the body column's
             // layout and RN-web's default flex-shrink collapses the chip
             // row above it to a sliver.
-            style={{ flex: 1 }}
+            style={[{ flex: 1 }, styles.listGap]}
             sections={sections}
             keyExtractor={(e) => e.slug}
-            renderItem={({ item, index, section }) => (
-              <ExerciseListItem
-                exercise={item}
-                onPress={navigateToExerciseDetail}
-                isLast={index === section.data.length - 1}
-              />
+            initialNumToRender={12}
+            maxToRenderPerBatch={10}
+            windowSize={3}
+            renderItem={({ item }) => (
+              <ExerciseListItem exercise={item} onPress={navigateToExerciseDetail} />
             )}
             renderSectionHeader={({ section }) => (
               <View
                 style={[styles.sectionHeader, { backgroundColor: colors.backgroundDeep }]}
               >
-                <MobileSectionEyebrow rule>
-                  {section.key === RECENT_SECTION_KEY
-                    ? 'Recently logged'
-                    : `${section.category} · ${section.data.length}`}
+                <MobileSectionEyebrow flush={false}>
+                  {section.key === RECENT_SECTION_KEY ? 'Recently logged' : section.category}
                 </MobileSectionEyebrow>
               </View>
             )}
@@ -227,37 +221,44 @@ export default function ExerciseDatabaseScreen() {
 }
 
 const styles = StyleSheet.create({
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    minHeight: 60,
-    paddingHorizontal: 20,
-    paddingTop: 4,
-  },
-  headerEyebrow: {
-    ...theme.typography.mobileEyebrow,
-    marginBottom: 2,
-  },
-  headerTitle: {
-    ...theme.typography.mobileDisplay,
-    fontSize: 40,
-    lineHeight: 42,
-  },
   body: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 4,
   },
-  listContent: { paddingBottom: 32 },
+  chips: {
+    marginTop: 16,
+  },
+  // The air law between the instrument block and the catalog.
+  listGap: {
+    marginTop: BLOCK_GAP,
+  },
+  listContent: { paddingBottom: 40 },
   sectionHeader: {
     // Page-colored sticky band. zIndex keeps the pinned header above
     // the rows painting over it (RN-web sticky paint order; same fix
     // as the program chapter heads).
-    paddingTop: 12,
-    paddingBottom: 6,
+    paddingTop: 8,
+    paddingBottom: 8,
     zIndex: 10,
   },
-  addCustomCta: { marginTop: 8, alignSelf: 'flex-start' },
-  addCustomText: { ...theme.typography.mobileItemTitle },
+  adder: {
+    marginTop: ROW_GAP,
+    gap: 8,
+  },
+  adderToggle: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  adderToggleText: {
+    ...theme.typography.mobileLedger,
+  },
+  adderVerb: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  adderVerbText: {
+    ...theme.typography.mobileLedger,
+    fontWeight: '600',
+  },
 });
