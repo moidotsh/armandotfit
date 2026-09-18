@@ -1,4 +1,11 @@
-# SIGNAL — the two-register instrument system
+# SIGNAL — the two-register instrument system (RETIRED)
+
+**Status:** Retired by `count-thesis.md` (the 2026-11 blank-slate
+redesign, the third upending). Kept as the historical record of the
+SIGNAL system; its taste is rescinded, its §7 map served as the
+feature inventory for THE COUNT rebuild. `constants/theme.ts` and the
+showcase now carry the COUNT tokens; when this doc and the tokens
+disagree, the tokens win.
 
 > The 2026-10 blank-slate redesign thesis. This document is the compass: the
 > point of view, the complete token tables, the measured color law, the
