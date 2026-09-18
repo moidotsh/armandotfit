@@ -1,38 +1,28 @@
 // app/index.tsx
-// Home — the daily brief, set as a logbook page (see
-// docs/architecture/logbook-thesis.md §7): the day itself is the hero,
-// the start button is the only brand fill above the fold, and every
-// section below is a ruled eyebrow + rows on paper — no cards. The
-// funnel (start today's session) answers "what am I walking into?"
-// without a box around it.
+// Today — the Desk's front page (docs/architecture/signal-thesis.md
+// §7): the masthead answers "what am I walking into?" with the
+// day-of-split as the loudest number in the app, the first lift
+// named, and START as the one signal fill above the fold. The week's
+// figures and the recent ledger ride beneath on steel, no cards.
+//
+// Scroll choreography: the masthead compresses under scroll — the
+// hero day figure scales down and the header's compact day chip fades
+// in (transform/opacity only, collapsed to static under reduced
+// motion; see signal-thesis §5).
 
-import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useMemo, useRef, useState } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { usePathname } from 'expo-router';
+import { Settings, Play } from '@tamagui/lucide-icons-2';
 import {
-  Home,
-  PlusCircle,
-  Dumbbell,
-  TrendingUp,
-  BarChart2,
-  CalendarDays,
-  Settings,
-  X,
-} from '@tamagui/lucide-icons-2';
-import {
-  MobileAtmosphere,
-  MobileHomeHeader,
   MobilePrimaryButton,
   MobileSectionEyebrow,
-  MobileNavDrawer,
-  HamburgerButton,
   CopyForAiButton,
   EmptyState,
   Figure,
-  type MobileNavDrawerItem,
 } from '../components/MobilePremium';
 import {
+  DeskShell,
   WorkoutSessionItem,
   DashboardSkeleton,
   WorkoutListSkeleton,
@@ -41,38 +31,32 @@ import {
 import { useAuth, useAppTheme } from '../context';
 import {
   theme,
-  APP_LAYOUT,
-  MOBILE_CONTENT_MAX_WIDTH,
-  SCREEN_BODY_STYLE,
   suggestNextSplitDay,
   suggestSessionWindow,
 } from '../constants';
 import {
   navigateToSettings,
-  navigateToProgram,
   navigateToWorkoutDetail,
-  navigateToExerciseDatabase,
-  navigateToProgression,
-  navigateToAnalytics,
   navigateToSplitSelection,
-  navigateToHome,
 } from '../navigation';
 import { getSlotsForDay, getDayTitle, SYSTEM_EXERCISES_BY_SLUG } from '../shared/exercises';
-import { useSplitPreferenceStore } from '../stores';
+import { useSplitPreferenceStore, useWorkoutStore } from '../stores';
 import {
   useDashboardSummary,
   useRecentSessionDetails,
   useAiPayload,
 } from '../hooks';
+import { useReducedMotion } from '../components/premium/shared';
 
 export default function HomeScreen() {
-  const { session, signOut } = useAuth();
+  const { session } = useAuth();
   const { colors } = useAppTheme();
   const summaryQuery = useDashboardSummary();
   const recentQuery = useRecentSessionDetails(5);
   const activePathname = usePathname();
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
+  const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
+  const reduced = useReducedMotion();
 
   const summary = summaryQuery.data;
   const streak = summary?.streak;
@@ -82,7 +66,10 @@ export default function HomeScreen() {
   // clock, the split is the remembered program.
   const suggestedDay = recent.length > 0 ? suggestNextSplitDay(recent) : 1;
   const suggestedWindow = suggestSessionWindow();
-  const suggestedSlots = getSlotsForDay(preferredSplit, suggestedDay, suggestedWindow);
+  const suggestedSlots = useMemo(
+    () => getSlotsForDay(preferredSplit, suggestedDay, suggestedWindow),
+    [preferredSplit, suggestedDay, suggestedWindow],
+  );
   const suggestedCount = suggestedSlots.length;
   const launcherTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;
   // The brief names the day's opening lift — the answer to "what am I
@@ -105,248 +92,213 @@ export default function HomeScreen() {
       : undefined,
   );
 
-  const navItems: MobileNavDrawerItem[] = [
-    {
-      id: '/',
-      label: 'Home',
-      icon: <Home size={18} color={colors.background} />,
-      onPress: navigateToHome,
-    },
-    {
-      id: '/split-selection',
-      label: 'Start workout',
-      icon: <PlusCircle size={18} color={colors.background} />,
-      onPress: navigateToSplitSelection,
-    },
-    {
-      id: '/exercise-database',
-      label: 'Exercises',
-      icon: <Dumbbell size={18} color={colors.background} />,
-      onPress: navigateToExerciseDatabase,
-    },
-    {
-      id: '/program',
-      label: 'Program',
-      icon: <CalendarDays size={18} color={colors.background} />,
-      onPress: navigateToProgram,
-    },
-    {
-      id: '/progression',
-      label: 'Progression',
-      icon: <TrendingUp size={18} color={colors.background} />,
-      onPress: navigateToProgression,
-    },
-    {
-      id: '/analytics',
-      label: 'Analytics',
-      icon: <BarChart2 size={18} color={colors.background} />,
-      onPress: navigateToAnalytics,
-    },
-    {
-      id: '/settings',
-      label: 'Settings',
-      icon: <Settings size={18} color={colors.background} />,
-      onPress: navigateToSettings,
-    },
-  ];
+  // Scroll choreography — the masthead compresses. One Animated value
+  // driven by onScroll (transform/opacity only); reduced motion never
+  // attaches the listener and everything renders static.
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const onScrollAnimated = useMemo(
+    () =>
+      Animated.event(
+        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+        { useNativeDriver: false },
+      ),
+    [scrollY],
+  );
+  const header = (
+    <View style={styles.headerRow}>
+      <Text style={[styles.wordmark, { color: colors.text }]}>armandotfit</Text>
+      <View style={styles.headerActions}>
+        {!reduced ? (
+          <Animated.Text
+            style={[
+              styles.headerDay,
+              {
+                color: colors.brandText,
+                opacity: scrollY.interpolate({ inputRange: [40, 90], outputRange: [0, 1] }),
+              },
+            ]}
+          >
+            {`D${String(suggestedDay).padStart(2, '0')}`}
+          </Animated.Text>
+        ) : null}
+        <CopyForAiButton variant="subtle" payload={aiPayload} testID="dashboard-copy-for-ai" />
+        <Pressable
+          onPress={navigateToSettings}
+          accessibilityRole="button"
+          accessibilityLabel="Settings"
+          style={({ pressed }) => [styles.iconButton, pressed ? { opacity: 0.6 } : null]}
+          testID="home-settings"
+        >
+          <Settings size={20} color={colors.text} />
+        </Pressable>
+      </View>
+    </View>
+  );
+
+  const heroScale = scrollY.interpolate({ inputRange: [0, 140], outputRange: [1, 0.5] });
+  const heroTranslate = scrollY.interpolate({ inputRange: [0, 140], outputRange: [0, -24] });
+  const heroOpacity = scrollY.interpolate({ inputRange: [0, 140], outputRange: [1, 0.35] });
+
+  const startLabel = isSessionActive
+    ? 'RESUME SESSION'
+    : preferredSplit === 'twoADay'
+      ? `START ${suggestedWindow.toUpperCase()} WORKOUT`
+      : 'START WORKOUT';
 
   return (
-    <SafeAreaView
-      style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
-      edges={['top', 'bottom']}
+    <DeskShell
+      surface="training"
+      header={header}
+      activeTab={activePathname}
+      onScroll={reduced ? undefined : onScrollAnimated}
+      testID="home-scroll"
     >
-      <MobileAtmosphere surface="training" />
-      <MobileHomeHeader
-        brand="armandotfit"
-        subtitle={
-          session?.email ? `Welcome back, ${session.email.split('@')[0]}` : 'Welcome'
-        }
-        onPlate={drawerOpen}
-        menuButton={
-          <HamburgerButton
-            isOpen={drawerOpen}
-            onPress={() => setDrawerOpen((prev) => !prev)}
-            color={drawerOpen ? colors.background : undefined}
-          />
-        }
-        rightAction={<CopyForAiButton variant="subtle" payload={aiPayload} testID="dashboard-copy-for-ai" />}
-      />
-      <ScrollView
-        style={styles.body}
-        contentContainerStyle={styles.bodyContent}
-        showsVerticalScrollIndicator={false}
+      {/* THE MASTHEAD — the day itself is the hero; the START button is
+          the only signal fill above the fold. */}
+      <MobileSectionEyebrow flush={false}>
+        {`TODAY · ${suggestedWindow === 'am' ? 'AM' : 'PM'} WINDOW`}
+      </MobileSectionEyebrow>
+      <Animated.View
+        style={[
+          styles.todayRow,
+          reduced
+            ? null
+            : {
+                transform: [{ scale: heroScale }, { translateY: heroTranslate }],
+                opacity: heroOpacity,
+              },
+        ]}
       >
-        {/* THE FUNNEL — the day itself is the hero figure; the plan
-            reads beside it; the start button is the only brand fill
-            above the fold. */}
-        <MobileSectionEyebrow rule flush={false}>
-          {`Today · ${suggestedWindow === 'am' ? 'AM' : 'PM'} window`}
-        </MobileSectionEyebrow>
-        <View style={styles.todayRow}>
-          <Figure
-            value={suggestedDay}
-            label="day of split"
-            size="hero"
-            tone="brand"
-            testID="home-day-hero"
-          />
-          <View style={styles.todaySide}>
-            <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={2}>
-              {launcherTitle}
-            </Text>
-            <Text style={[styles.todayMeta, { color: colors.textSecondary }]} numberOfLines={1}>
-              {suggestedCount} exercise{suggestedCount === 1 ? '' : 's'}
-            </Text>
-          </View>
-        </View>
-        {firstLift ? (
-          <Text style={[styles.firstLift, { color: colors.text }]} numberOfLines={1}>
-            First up — {firstLift}
+        <Figure
+          value={suggestedDay}
+          label="day of split"
+          size="hero"
+          testID="home-day-hero"
+        />
+        <View style={styles.todaySide}>
+          <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={2}>
+            {launcherTitle}
           </Text>
-        ) : null}
-        <MobilePrimaryButton
-          onPress={navigateToSplitSelection}
-          style={styles.launcher}
-          testID="home-launcher-start"
-        >
-          {preferredSplit === 'twoADay'
-            ? `Start ${suggestedWindow.toUpperCase()} workout`
-            : 'Start workout'}
-        </MobilePrimaryButton>
+          <Text style={[styles.todayMeta, { color: colors.textMuted }]} numberOfLines={1}>
+            {suggestedCount} exercise{suggestedCount === 1 ? '' : 's'}
+          </Text>
+        </View>
+      </Animated.View>
+      {firstLift ? (
+        <Text style={[styles.firstLift, { color: colors.text }]} numberOfLines={1}>
+          First up — {firstLift}
+        </Text>
+      ) : null}
+      <MobilePrimaryButton
+        onPress={isSessionActive ? () => navigateToWorkoutDetail() : navigateToSplitSelection}
+        style={styles.launcher}
+        testID="home-launcher-start"
+      >
+        {startLabel}
+      </MobilePrimaryButton>
 
-        {/* This week — figures on paper, no cards. */}
-        <MobileSectionEyebrow rule flush={false}>
-          This week
-        </MobileSectionEyebrow>
-        {summaryQuery.isLoading ? (
-          <DashboardSkeleton />
-        ) : summaryQuery.isError ? (
-          <QueryErrorNote onRetry={() => void summaryQuery.refetch()} testID="home-summary-error" />
-        ) : (
-          <View style={styles.statRow}>
-            <Figure
-              value={streak?.current ?? 0}
-              unit="d"
-              label="streak"
-              tone="brand"
-              style={styles.statCell}
-            />
-            <Figure
-              value={summary?.thisWeekSessions ?? 0}
-              label="sessions"
-              style={styles.statCell}
-            />
-            <Figure
-              value={summary?.totalSessions ?? 0}
-              label="all time"
-              align="right"
-              style={styles.statCell}
-            />
-          </View>
-        )}
-
-        {/* Recent — the logbook's latest page: ledger rows, hairline rules. */}
-        <MobileSectionEyebrow rule flush={false}>
-          Recent
-        </MobileSectionEyebrow>
-        {recentQuery.isLoading ? (
-          <WorkoutListSkeleton />
-        ) : recentQuery.isError ? (
-          <QueryErrorNote onRetry={() => void recentQuery.refetch()} testID="home-recent-error" />
-        ) : recent.length === 0 ? (
-          <EmptyState
-            title="No sessions yet"
-            message="Your logged AM/PM sessions land here — streaks, day-of-split, and history start with the first one."
-            icon={<PlusCircle size={28} color={colors.brand} />}
-            action={{ label: 'Start workout', onPress: navigateToSplitSelection }}
-            testID="home-empty-state"
+      {/* This week — figures on steel, no cards. */}
+      <MobileSectionEyebrow rule flush={false}>
+        This week
+      </MobileSectionEyebrow>
+      {summaryQuery.isLoading ? (
+        <DashboardSkeleton />
+      ) : summaryQuery.isError ? (
+        <QueryErrorNote onRetry={() => void summaryQuery.refetch()} testID="home-summary-error" />
+      ) : (
+        <View style={styles.statRow}>
+          <Figure
+            value={streak?.current ?? 0}
+            unit="d"
+            label="streak"
+            tone="brand"
+            style={styles.statCell}
           />
-        ) : (
-          <View>
-            {recent.map((w, i) => (
-              <WorkoutSessionItem
-                key={w.id}
-                session={w}
-                isLast={i === recent.length - 1}
-                onPress={navigateToWorkoutDetail}
-              />
-            ))}
-          </View>
-        )}
-      </ScrollView>
-      <MobileNavDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        items={navItems}
-        activePathname={activePathname}
-        atmosphere="training"
-        brandPersistence={APP_LAYOUT.navDrawerBrandPersistence}
-        anchor={APP_LAYOUT.navDrawerAnchor}
-        columnWidth={MOBILE_CONTENT_MAX_WIDTH}
-        itemLabelStyle={{
-          ...theme.typography.mobileEyebrow,
-          textTransform: 'uppercase',
-        }}
-        header={
-          APP_LAYOUT.navDrawerBrandPersistence === 'slideout' ? (
-            <View style={styles.drawerHeader}>
-              <View style={styles.drawerBrandRow}>
-                <Pressable
-                  onPress={() => setDrawerOpen(false)}
-                  hitSlop={12}
-                  accessibilityLabel="Close menu"
-                  accessibilityRole="button"
-                  style={({ pressed }) => [
-                    styles.iconButton,
-                    pressed ? { opacity: 0.6 } : null,
-                  ]}
-                >
-                  <X size={22} color={colors.background} />
-                </Pressable>
-                <Text
-                  style={[theme.typography.mobileTitle, { color: colors.background }]}
-                  numberOfLines={1}
-                >
-                  armandotfit
-                </Text>
-              </View>
-              <Text
-                style={[
-                  theme.typography.mobileSubtitle,
-                  { color: `${colors.background}B3`, marginTop: 4 },
-                ]}
-                numberOfLines={1}
-              >
-                {session?.email
-                  ? `Welcome back, ${session.email.split('@')[0]}`
-                  : 'Welcome'}
-              </Text>
-            </View>
-          ) : undefined
-        }
-        footer={
-          <MobilePrimaryButton variant="ghost" onPress={() => void signOut()}>
-            Sign out
-          </MobilePrimaryButton>
-        }
-      />
-    </SafeAreaView>
+          <Figure
+            value={summary?.thisWeekSessions ?? 0}
+            label="sessions"
+            style={styles.statCell}
+          />
+          <Figure
+            value={summary?.totalSessions ?? 0}
+            label="all time"
+            align="right"
+            style={styles.statCell}
+          />
+        </View>
+      )}
+
+      {/* Recent — the ledger: rows on hairlines. */}
+      <MobileSectionEyebrow rule flush={false}>
+        Recent
+      </MobileSectionEyebrow>
+      {recentQuery.isLoading ? (
+        <WorkoutListSkeleton />
+      ) : recentQuery.isError ? (
+        <QueryErrorNote onRetry={() => void recentQuery.refetch()} testID="home-recent-error" />
+      ) : recent.length === 0 ? (
+        <EmptyState
+          title="No sessions yet"
+          message="Your logged AM/PM sessions land here — streaks, day-of-split, and history start with the first one."
+          icon={<Play size={28} color={colors.brand} />}
+          action={{ label: 'Start workout', onPress: navigateToSplitSelection }}
+          testID="home-empty-state"
+        />
+      ) : (
+        <View>
+          {recent.map((w, i) => (
+            <WorkoutSessionItem
+              key={w.id}
+              session={w}
+              isLast={i === recent.length - 1}
+              onPress={navigateToWorkoutDetail}
+            />
+          ))}
+        </View>
+      )}
+    </DeskShell>
   );
 }
 
 const styles = StyleSheet.create({
-  shell: { flex: 1 },
-  body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 32 },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 52,
+    paddingHorizontal: 20,
+  },
+  wordmark: {
+    fontFamily: theme.fonts.displayCondensed,
+    fontSize: 20,
+    fontWeight: '800',
+    lineHeight: 24,
+    letterSpacing: -0.3,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  headerDay: {
+    ...theme.typography.mobileLedger,
+    marginRight: 8,
+  },
+  iconButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   todayRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 20,
-    marginTop: 12,
+    marginTop: 4,
   },
   todaySide: {
     flex: 1,
-    paddingTop: 8,
+    paddingTop: 10,
     gap: 2,
   },
   dayTitle: {
@@ -366,20 +318,4 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   statCell: { flex: 1 },
-  drawerHeader: {
-    paddingHorizontal: 20,
-  },
-  drawerBrandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 36,
-    gap: 10,
-  },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 });

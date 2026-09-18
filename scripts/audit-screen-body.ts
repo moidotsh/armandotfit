@@ -18,7 +18,10 @@
  * Screens composing `ScreenScaffold`
  * (components/composed/ScreenScaffold) satisfy SB1 by
  * delegation — the scaffold applies SCREEN_BODY_STYLE centrally and is
- * itself the acknowledgement. Detection accepts either name.
+ * itself the acknowledgement. `DeskShell` (this consumer's Desk
+ * scaffold — header + scroll body + tab bar) delegates the same way
+ * and is accepted on the same terms. Detection accepts any of the
+ * three names.
  *
  * ── Policy mode ──────────────────────────────────────────────────────
  *
@@ -115,7 +118,7 @@ for (const file of files) {
   // Skip files with the escape hatch.
   if (/\/\/\s*sb1-exempt/.test(content)) continue;
 
-  if (!/SCREEN_BODY_STYLE|ScreenScaffold/.test(content)) {
+  if (!/SCREEN_BODY_STYLE|ScreenScaffold|DeskShell/.test(content)) {
     violations.push({
       file: `app/${rel}`,
       message:

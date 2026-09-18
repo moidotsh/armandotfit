@@ -611,6 +611,16 @@ export const theme = {
       letterSpacing: -0.2,
       fontFamily: FONTS.display,
     } satisfies TypographyToken,
+    // Condensed title — mobileTitle's job in the condensed display
+    // position: focus-register screens whose headline is a NAME read
+    // at arm's length (the stage's station name).
+    mobileTitleCondensed: {
+      fontSize: 34,
+      fontWeight: '800',
+      lineHeight: 38,
+      letterSpacing: -0.5,
+      fontFamily: FONTS.displayCondensed,
+    } satisfies TypographyToken,
     mobileLedger: {
       fontSize: 15,
       fontWeight: '500',

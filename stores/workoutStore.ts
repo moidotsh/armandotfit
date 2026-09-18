@@ -223,7 +223,6 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     if (!draft) return;
     const exercises: DraftExercise[] = slots.map((slot, i) => {
       const catalog = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
-      const setCount = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
       return {
         localId: newLocalId(),
         exerciseSlug: slot.exercise,
@@ -232,13 +231,11 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
         tags: [...slot.suggestedTags],
         targetRx: rxLabel(slot),
         note: null,
-        sets: Array.from({ length: setCount }, () => ({
-          localId: newLocalId(),
-          position: 0, // renumbered below
-          reps: null,
-          weight: null,
-          note: null,
-        })).map((s, idx) => ({ ...s, position: idx + 1 })),
+        // The armed-set model: a draft set row exists ONLY once logged
+        // (the stage's armed slab is the "next set" — it commits rows,
+        // it does not pre-create them). The programmed count rides
+        // targetRx for progress reads.
+        sets: [],
       };
     });
     set({

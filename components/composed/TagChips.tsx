@@ -1,9 +1,10 @@
 // components/composed/TagChips.tsx
 // The realization-context editor for a logged exercise. Quiet by design:
-// active tags render as small ember chips (tap to remove), suggested tags
-// ride ONE bare-text line (tap a word to add), and the free-form input
-// hides behind a small "+ tag" affordance until asked for. This is the
-// ONLY setup-control surface — there are no per-dimension pickers.
+// active tags render as small signal chips (tap to remove), suggested
+// tags ride ONE bare-text line (tap a word to add), and the free-form
+// input hides behind a small "+ tag" affordance until asked for. This
+// is the ONLY setup-control surface — there are no per-dimension
+// pickers. `register="focus"` retunes the whole surface for the stage.
 
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -18,6 +19,8 @@ export interface TagChipsProps {
   onToggleTag: (tag: string) => void;
   /** Fired when the user submits a new tag via the input. */
   onAddTag: (tag: string) => void;
+  /** 'desk' (default) reads the Desk palette; 'focus' reads the focus register (the stage). */
+  register?: 'desk' | 'focus';
   testID?: string;
 }
 
@@ -31,11 +34,22 @@ export function TagChips({
   suggestions = [],
   onToggleTag,
   onAddTag,
+  register = 'desk',
   testID,
 }: TagChipsProps) {
   const { colors } = useAppTheme();
   const [input, setInput] = useState('');
   const [inputOpen, setInputOpen] = useState(false);
+  const focus = register === 'focus';
+
+  const chipBg = focus ? colors.focus.signalSoft : `${colors.brand}14`;
+  const chipBorder = focus ? colors.focus.signal : `${colors.brand}3D`;
+  const chipText = focus ? colors.focus.signal : colors.brandText;
+  const wordText = focus ? colors.focus.muted : colors.textSecondary;
+  const plusText = focus ? colors.focus.signal : colors.brand;
+  const inputBorder = focus ? colors.focus.border : colors.glass.emptyInputBorder;
+  const inputBg = focus ? colors.focus.surfaceAlt : colors.glass.inputBackground;
+  const inputFg = focus ? colors.focus.text : colors.text;
 
   const active = new Set(tags);
   // Suggestion order: program suggestions first, then any seed-vocabulary
@@ -64,13 +78,13 @@ export function TagChips({
               style={({ pressed }) => [
                 styles.chip,
                 {
-                  backgroundColor: `${colors.brand}14`,
-                  borderColor: `${colors.brand}3D`,
+                  backgroundColor: chipBg,
+                  borderColor: chipBorder,
                   opacity: pressed ? 0.6 : 1,
                 },
               ]}
             >
-              <Text style={[styles.chipText, { color: colors.brandText }]}>
+              <Text style={[styles.chipText, { color: chipText }]}>
                 {tag} ✕
               </Text>
             </Pressable>
@@ -88,7 +102,7 @@ export function TagChips({
             hitSlop={6}
             style={({ pressed }) => [styles.wordCta, pressed ? { opacity: 0.6 } : null]}
           >
-            <Text style={[styles.wordText, { color: colors.textSecondary }]}>
+            <Text style={[styles.wordText, { color: wordText }]}>
               {tag}
             </Text>
           </Pressable>
@@ -101,7 +115,7 @@ export function TagChips({
             hitSlop={6}
             style={({ pressed }) => [styles.wordCta, pressed ? { opacity: 0.6 } : null]}
           >
-            <Text style={[styles.wordText, { color: colors.brand }]}>+ tag</Text>
+            <Text style={[styles.wordText, { color: plusText }]}>+ tag</Text>
           </Pressable>
         )}
       </View>
@@ -111,16 +125,16 @@ export function TagChips({
           style={[
             styles.input,
             {
-              borderColor: colors.glass.emptyInputBorder,
-              backgroundColor: colors.glass.inputBackground,
-              color: colors.text,
+              borderColor: inputBorder,
+              backgroundColor: inputBg,
+              color: inputFg,
             },
           ]}
           value={input}
           onChangeText={setInput}
           onSubmitEditing={submit}
           placeholder="Add tag (e.g. column-3, paused)…"
-          placeholderTextColor={colors.textColors.tertiary}
+          placeholderTextColor={focus ? colors.focus.muted : colors.textColors.tertiary}
           returnKeyType="done"
           autoFocus
           accessibilityLabel="Add custom tag"

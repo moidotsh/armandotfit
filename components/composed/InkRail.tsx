@@ -1,17 +1,27 @@
 // components/composed/InkRail.tsx
-// The substitution picker — invisible until needed. The exercise row
-// stays perfectly clean; one small ⇄ glyph sits after the controls. Tap
-// it and the INK PLATE slides up (the dialect's loudest surface — the
-// drawer and toasts already speak it): the current exercise stamped in
-// paper type, ranked alternatives as plate rows, the programmed lift
-// one tap back. Tap a name, done. That's the whole interaction.
+// The SWAP BENCH — the substitution picker, invisible until needed. The
+// exercise row stays perfectly clean; one small ⇄ glyph sits in the
+// station meta. Tap it and the bench slides up on the FOCUS register
+// (a "doing" surface — choosing an exercise — dark in both modes, like
+// the stage and the chit): the current exercise marked in signal,
+// ranked alternatives as bench rows, and — the metadata play — a WHY
+// line per row: the shared muscles and equipment that earned the rank.
+// The programmed lift is one tap back. Tap a name, done.
 
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { MobileSheet, inkSurface } from '../MobilePremium';
+import { MobileSheet } from '../MobilePremium';
 import { useAppTheme } from '../../context';
 import { rankAlternatives } from '../../services';
-import { SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
+import {
+  SYSTEM_EXERCISES_BY_SLUG,
+  MUSCLE_DISPLAY_NAMES,
+  EQUIPMENT_DISPLAY_NAMES,
+  type MuscleSlug,
+  type EquipmentSlug,
+  type SystemExerciseData,
+} from '../../shared/exercises';
+import { theme } from '../../constants';
 
 export interface InkRailProps {
   currentSlug: string;
@@ -32,11 +42,36 @@ export function SwapGlyph({ onPress, label }: { onPress: () => void; label: stri
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Change ${label}`}
-      style={styles.glyphBox}
+      style={({ pressed }) => [styles.glyphBox, pressed ? { opacity: 0.6 } : null]}
     >
-      <Text style={[styles.glyph, { color: colors.textSecondary }]}>⇄</Text>
+      <Text style={[styles.glyph, { color: colors.focus.muted }]}>⇄</Text>
     </Pressable>
   );
+}
+
+/** The WHY line: shared primary muscles + shared equipment, mono micro. */
+function whyLine(candidate: SystemExerciseData, current: SystemExerciseData): string {
+  const sharedMuscles = candidate.primaryMuscles
+    .filter((m) => current.primaryMuscles.includes(m))
+    .map((m) => MUSCLE_DISPLAY_NAMES[m as MuscleSlug]);
+  const sharedEquipment = candidate.equipment
+    .map((e) => (typeof e === 'string' ? e : e.slug))
+    .filter((e) =>
+      current.equipment.some((ce) => (typeof ce === 'string' ? ce : ce.slug) === e),
+    )
+    .map((e) => EQUIPMENT_DISPLAY_NAMES[e as EquipmentSlug]);
+  return [...sharedMuscles.slice(0, 2), ...sharedEquipment.slice(0, 1)]
+    .filter(Boolean)
+    .map((s) => s.toLowerCase())
+    .join(' · ');
+}
+
+interface BenchRow {
+  slug: string;
+  name: string;
+  isCurrent: boolean;
+  isProgrammed: boolean;
+  why: string | null;
 }
 
 export function InkRail({
@@ -50,36 +85,35 @@ export function InkRail({
 }: InkRailProps) {
   const { colors } = useAppTheme();
 
-  const items = useMemo(() => {
+  const items = useMemo<{ rows: BenchRow[]; current: SystemExerciseData | undefined }>(() => {
     const current = currentSlug
       ? SYSTEM_EXERCISES_BY_SLUG[currentSlug]
       : undefined;
-    if (!current) return [];
+    if (!current) return { rows: [], current: undefined };
 
-    const alts = rankAlternatives(current, 6);
-    const list = [
-      { slug: current.slug, name: current.name, modality: current.modality, isCurrent: true, isProgrammed: false },
+    const rows: BenchRow[] = [
+      { slug: current.slug, name: current.name, isCurrent: true, isProgrammed: false, why: null },
     ];
     if (programmed && programmed.slug !== current.slug) {
-      list.push({
+      rows.push({
         slug: programmed.slug,
         name: programmed.name,
-        modality: SYSTEM_EXERCISES_BY_SLUG[programmed.slug]?.modality,
         isCurrent: false,
         isProgrammed: true,
+        why: null,
       });
     }
-    for (const alt of alts) {
+    for (const alt of rankAlternatives(current, 6)) {
       if (programmed && alt.exercise.slug === programmed.slug) continue;
-      list.push({
+      rows.push({
         slug: alt.exercise.slug,
         name: alt.exercise.name,
-        modality: alt.exercise.modality,
         isCurrent: false,
         isProgrammed: false,
+        why: whyLine(alt.exercise, current),
       });
     }
-    return list;
+    return { rows, current };
   }, [currentSlug, programmed]);
 
   return (
@@ -90,12 +124,12 @@ export function InkRail({
       showCloseButton={false}
       testID={testID}
     >
-      <View style={[styles.plate, inkSurface(colors.text)]}>
-        <Text style={[styles.plateEyebrow, { color: colors.brandOnInk }]}>
-          SWAP
+      <View style={[styles.plate, { backgroundColor: colors.focus.background }]}>
+        <Text style={[styles.plateEyebrow, { color: colors.focus.muted }]}>
+          SWAP BENCH · RANKED BY MUSCLES + EQUIPMENT
         </Text>
         <View style={styles.list}>
-          {items.map((item) => (
+          {items.rows.map((item) => (
             <Pressable
               key={item.slug}
               onPress={() => {
@@ -110,39 +144,48 @@ export function InkRail({
               accessibilityRole="button"
               accessibilityLabel={
                 item.isCurrent
-                  ? item.name
+                  ? `${item.name}, current`
                   : item.isProgrammed
                     ? `Restore ${item.name}`
                     : `Swap to ${item.name}`
               }
               style={({ pressed }) => [
                 styles.row,
+                { borderBottomColor: colors.focus.border },
+                item.isCurrent
+                  ? { backgroundColor: colors.focus.signalSoft }
+                  : null,
                 pressed ? { opacity: 0.6 } : null,
               ]}
             >
+              <View style={styles.rowMain}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.name,
+                    {
+                      color: item.isCurrent
+                        ? colors.focus.signal
+                        : colors.focus.text,
+                    },
+                  ]}
+                >
+                  {item.isProgrammed ? `↺ ${item.name}` : item.name}
+                </Text>
+                {item.why ? (
+                  <Text numberOfLines={1} style={[styles.why, { color: colors.focus.muted }]}>
+                    {item.why}
+                  </Text>
+                ) : null}
+              </View>
               <Text
-                numberOfLines={1}
                 style={[
-                  styles.name,
-                  {
-                    color: item.isCurrent
-                      ? colors.brandOnInk
-                      : item.isProgrammed
-                        ? `${colors.background}B8`
-                        : colors.background,
-                    fontWeight: item.isCurrent ? '800' : '600',
-                  },
+                  styles.meta,
+                  { color: item.isCurrent ? colors.focus.signal : colors.focus.muted },
                 ]}
               >
-                {item.isProgrammed ? `↺ ${item.name}` : item.name}
+                {item.isCurrent ? 'CURRENT' : item.isProgrammed ? 'RESTORE' : ''}
               </Text>
-              {item.isCurrent ? (
-                <Text style={[styles.meta, { color: colors.brandOnInk }]}>current</Text>
-              ) : (
-                <Text style={[styles.meta, { color: `${colors.background}B8` }]}>
-                  {item.isProgrammed ? 'restore' : item.modality ?? ''}
-                </Text>
-              )}
             </Pressable>
           ))}
         </View>
@@ -167,11 +210,8 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   plateEyebrow: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.6,
-    lineHeight: 16,
-    textTransform: 'uppercase',
+    ...theme.typography.mobileEyebrow,
+    fontSize: 10,
     paddingHorizontal: 20,
     paddingTop: 18,
     paddingBottom: 6,
@@ -183,20 +223,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 56,
+    minHeight: 60,
     paddingHorizontal: 20,
     gap: 12,
+    borderBottomWidth: 1,
+  },
+  rowMain: {
+    flex: 1,
+    gap: 1,
   },
   name: {
-    fontSize: 17,
-    lineHeight: 22,
-    flex: 1,
+    ...theme.typography.mobileItemTitle,
+    fontFamily: theme.fonts.display,
+  },
+  why: {
+    ...theme.typography.mobileTag,
+    fontSize: 10,
   },
   meta: {
-    fontSize: 10,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    ...theme.typography.mobileEyebrow,
+    fontSize: 9,
   },
 });
 

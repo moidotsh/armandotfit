@@ -12,7 +12,7 @@ describe('workoutStore', () => {
     useWorkoutStore.getState().resetSession();
   });
 
-  it('hydrates from split slots: names, suggested tags, Rx, set rows', () => {
+  it('hydrates from split slots: names, suggested tags, Rx (armed-set model)', () => {
     const store = useWorkoutStore.getState();
     store.startSession({ splitType: 'twoADay', day: 2, sessionMode: 'pm' });
     const draft = useWorkoutStore.getState().draft;
@@ -31,8 +31,10 @@ describe('workoutStore', () => {
     // Suggested tags pre-filled from the program slot.
     expect(exercises[0].tags).toEqual(['underhand', 'lat-bar']);
     expect(exercises[1].tags).toEqual(['eccentric']);
-    // One empty set row per programmed set (sets max).
-    expect(exercises[0].sets).toHaveLength(3);
+    // The armed-set model (signal-thesis §7): draft rows exist ONLY
+    // once logged — the stage's armed slab commits rows; it never
+    // pre-creates them. The programmed count rides targetRx.
+    expect(exercises[0].sets).toHaveLength(0);
     expect(exercises[0].targetRx).toBe('3 × 8–10');
   });
 
@@ -84,7 +86,7 @@ describe('workoutStore', () => {
     expect(swapped.exerciseName).toBe('Pull-up');
     expect(swapped.position).toBe(1);
     expect(swapped.targetRx).toBe(target.targetRx);
-    expect(swapped.sets).toHaveLength(target.sets.length + 1); // hydrated rows survive + the logged set
+    expect(swapped.sets).toHaveLength(1); // the logged row survives the identity swap
     expect(swapped.sets.some((set) => set.reps === 8 && set.weight === 100)).toBe(true);
     expect(swapped.tags).toEqual([]);
   });
