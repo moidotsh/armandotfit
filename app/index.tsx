@@ -26,7 +26,7 @@ import {
   theme,
   suggestNextSplitDay,
   suggestSessionWindow,
-  BLOCK_GAP,
+  QUIET,
   ROW_GAP,
 } from '../constants';
 import {
@@ -237,11 +237,11 @@ const styles = StyleSheet.create({
   // Top-level blocks carry the air law: BLOCK_GAP above each (the
   // statement leads with none — it is the page's first word).
   block: {
-    marginTop: BLOCK_GAP,
+    ...QUIET.block,
   },
   dayTitle: {
-    ...theme.typography.mobileDisplay,
-    marginTop: 4,
+    ...QUIET.statement,
+    ...QUIET.blockFirst,
   },
   lede: {
     ...theme.typography.mobileItemTitle,

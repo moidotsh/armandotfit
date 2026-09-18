@@ -41,8 +41,7 @@ import {
   suggestNextSplitDay,
   MIN_SPLIT_DAY,
   MAX_SPLIT_DAY,
-  BLOCK_GAP,
-  HALO,
+  QUIET,
   theme,
   type SessionMode,
   type UpcomingWorkoutSlot,
@@ -307,15 +306,14 @@ export default function SplitSelectionScreen() {
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 40 },
   block: {
-    marginTop: BLOCK_GAP,
+    ...QUIET.block,
   },
   statement: {
-    ...theme.typography.mobileDisplay,
+    ...QUIET.statement,
   },
   // The fact line waits outside the statement's halo.
   fact: {
-    ...theme.typography.mobileLedger,
-    marginTop: HALO,
+    ...QUIET.fact,
   },
   dayRow: {
     flexDirection: 'row',

@@ -15,6 +15,7 @@ export { SplitExerciseRow, type SplitExerciseRowProps } from './SplitExerciseRow
 export { ExerciseListItem, type ExerciseListItemProps } from './ExerciseListItem';
 export { EditionLine, type EditionLineProps } from './EditionLine';
 export { SearchStatement, type SearchStatementProps } from './SearchStatement';
+export { NextStation, type NextStationProps } from './NextStation';
 export { TrainingConsistencyGrid, type TrainingConsistencyGridProps } from './TrainingConsistencyGrid';
 export { WorkoutListSkeleton } from './WorkoutListSkeleton';
 export { QueryErrorNote, type QueryErrorNoteProps } from './QueryErrorNote';

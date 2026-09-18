@@ -272,31 +272,35 @@ const styles = StyleSheet.create({
   kicker: {
     ...theme.typography.mobileEyebrow,
   },
-  // THE CALL reads as one ledger line on the column's left rule —
-  // like every statement in the system, not a centered ornament.
+  // THE CALL reads as ONE centered instrument line: the numerals
+  // meet at the ×, each side's stepper row sits under its numeral,
+  // the kicker centers above — the board is symmetric by design
+  // (owner's eye: an instrument, not a ledger line).
   callRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     gap: 12,
     minHeight: 56,
     marginTop: 2,
   },
   sideLeft: {
-    alignItems: 'flex-start',
+    alignItems: 'flex-end',
+    flex: 1,
   },
   sideRight: {
     alignItems: 'flex-start',
+    flex: 1,
   },
   counterTap: {
     minHeight: 60,
     minWidth: 72,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   counterEmpty: {
     width: 88,
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'flex-end',
     paddingBottom: 20,
   },

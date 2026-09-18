@@ -22,7 +22,7 @@ import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory } from '../hooks';
 import { AnalyticsService } from '../services';
 import { addDays } from '../utils';
-import { BLOCK_GAP, HALO, theme } from '../constants';
+import { BLOCK_GAP, QUIET, theme } from '../constants';
 
 type Range = 7 | 30 | 90;
 
@@ -162,15 +162,14 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   block: {
-    marginTop: BLOCK_GAP,
+    ...QUIET.block,
   },
   count: {
-    ...theme.typography.mobileDisplay,
+    ...QUIET.statement,
   },
   // The fact line waits outside the statement's halo.
   countFact: {
-    ...theme.typography.mobileLedger,
-    marginTop: HALO,
+    ...QUIET.fact,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: BLOCK_GAP },
   // The grid breathes narrower than the column — the field is the

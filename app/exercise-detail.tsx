@@ -28,7 +28,7 @@ import {
   type EquipmentSlug,
   type MuscleSlug,
 } from '../shared/exercises';
-import { BLOCK_GAP, HALO, theme } from '../constants';
+import { BLOCK_GAP, QUIET, theme } from '../constants';
 import type { ExerciseKey } from '../shared/exercises';
 
 function equipmentLabel(e: EquipmentSlug | { slug: EquipmentSlug }): string {
@@ -193,15 +193,14 @@ export default function ExerciseDetailScreen() {
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 40 },
   block: {
-    marginTop: BLOCK_GAP,
+    ...QUIET.block,
   },
   headline: {
-    ...theme.typography.mobileDisplay,
+    ...QUIET.statement,
   },
   // The fact line waits outside the statement's halo.
   factLine: {
-    ...theme.typography.mobileLedger,
-    marginTop: HALO,
+    ...QUIET.fact,
   },
   bodyText: { ...theme.typography.mobileBody },
   tips: { ...theme.typography.mobileMeta, marginTop: 10 },

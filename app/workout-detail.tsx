@@ -51,6 +51,7 @@ import {
   CallBoard,
   StationStrip,
   StageSetRow,
+  NextStation,
 } from '../components/composed';
 import { useToast } from '../context';
 import { useAppTheme } from '../context';
@@ -75,7 +76,7 @@ import {
   formatVolume,
   formatElapsed,
 } from '../services';
-import { SCREEN_BODY_STYLE, theme, MOBILE_CONTENT_WIDTH_STYLE, BLOCK_GAP, HALO } from '../constants';
+import { SCREEN_BODY_STYLE, theme, MOBILE_CONTENT_WIDTH_STYLE, BLOCK_GAP, QUIET } from '../constants';
 import { useReducedMotion } from '../components/premium/shared';
 
 /** The armed set's editable values. */
@@ -673,20 +674,11 @@ function Stage(props: StageProps) {
             )}
 
             {index < exercises.length - 1 ? (
-              <Pressable
+              <NextStation
+                name={exercises[index + 1].exerciseName}
                 onPress={() => setStationIndex(index + 1)}
-                accessibilityRole="button"
-                accessibilityLabel={`Next station: ${exercises[index + 1].exerciseName}`}
-                style={({ pressed }) => [
-                  styles.nextStation,
-                  pressed ? { opacity: 0.6 } : null,
-                ]}
                 testID="stage-next-station"
-              >
-                <Text style={[styles.nextStationLabel, { color: colors.text }]} numberOfLines={1}>
-                  {`NEXT — ${exercises[index + 1].exerciseName}`}
-                </Text>
-              </Pressable>
+              />
             ) : null}
 
             <Pressable
@@ -909,14 +901,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 12,
   },
-  nextStation: {
-    minHeight: 48,
-    justifyContent: 'center',
-    marginTop: 12,
-  },
-  nextStationLabel: {
-    ...theme.typography.mobileItemTitle,
-  },
   addExerciseCta: {
     height: 44,
     alignItems: 'center',
@@ -938,14 +922,13 @@ const styles = StyleSheet.create({
   finishStat: { flex: 1 },
   // ── Receipt (Desk) ──
   receiptBlock: {
-    marginTop: BLOCK_GAP,
+    ...QUIET.block,
   },
   receiptStatement: {
-    ...theme.typography.mobileDisplay,
+    ...QUIET.statement,
   },
   receiptFact: {
-    ...theme.typography.mobileLedger,
-    marginTop: HALO,
+    ...QUIET.fact,
   },
   receiptExHead: {
     flexDirection: 'row',

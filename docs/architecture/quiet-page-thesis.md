@@ -123,6 +123,15 @@ information.
 
 Air is spent above the fold, never by pushing the verb below it.
 
+**The one declaration point.** Like the dialect layer (`DIALECT =
+'ink'` presets orb/toast/curtain in `theme.ts`), the quiet-page
+patterns are centralized: `constants/quiet.ts` carries the air-law
+numbers AND the named style table (`QUIET.statement / fact / row /
+whisper / whisperLine / figure / block / blockFirst`). Screens
+spread those the way they spread `theme.typography.*`; a screen
+hand-rolling a statement, a fact gap, or a block gap is drift, not
+choice. Retune the table and the whole app follows.
+
 ## 4. Color law — same values, far less ink
 
 The palettes do not move: **Paper** (light, default), **Evening
@@ -163,7 +172,7 @@ budget (visible text nodes / interactive elements — probe-enforced).
 |---|---|---|---|---|---|---|
 | **home** | "It's Day 2 tonight — press." | the day title, 34, sentence case | the lede: window + first lift + count | the brand masthead (folio line) · 3 jump rows, each with its one fact as caption · 3 recent edition lines (the latest at figure scale) · settings | 13 | 8 |
 | **funnel** (split-selection) | "Which edition?" | the PICKED day title, 34 — restates with the pick | 7 day tiles (whisper weekday + figure) | plan preview lines · GO | 30 | 14 |
-| **Floor** (live) | "100 × 10 — log it." | THE CALL 48 | the station name 34 | station marks · set rows · steppers · whisper actions | 32 | 18 |
+| **Floor** (live) | "100 × 10 — log it." | THE CALL 48 | the station name 34 | station marks · set rows · steppers · the NEXT row (record-mark read + name + chevron, isolated by air) · whisper actions | 32 | 18 |
 | **receipt** (saved detail) | "4,230 kg, done." | the tonnage 34 | the fact whisper (date · day · window · counts) | per-exercise set lines (the immutable receipt — content, generously capped) | 60 | 4 |
 | **program** | "The rotation, day by day." | the FIRST day title 34 (later chapters 22) | later chapter titles | slot lines, one line per slot · swap marks | 48 | 12 |
 | **library** | "Find the lift." | the search field — input text AT 34, the instrument is the statement | first results | section whispers · rows | 30 | 18 |
@@ -197,9 +206,12 @@ Data sprawl resolutions (the subtraction, screen by screen):
   search input is the statement at 34; result-count whispers once.
 - **colophon**: the nameplate dies; the email kicker dies (it is
   already a row); the theme statement carries the page.
-- **Floor**: the call board keeps its dock and its blank-line counter
-  field; Rx + tags murmur in one whisper line; SWAP / ADD survive as
-  whisper links in the station block; NOTE moves into the finish flow.
+- **Floor**: the call board keeps its dock, its blank-line counter
+  field, and its CENTERED instrument read (the numerals meet at the ×,
+  steppers under each side, kicker centered — symmetric by design, the
+  one place the column's left rule yields to an instrument); Rx +
+  tags murmur in one whisper line; SWAP / ADD survive as whisper
+  links in the station block; NOTE moves into the finish flow.
 
 ## 7. Navigation & chrome
 

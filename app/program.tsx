@@ -24,7 +24,7 @@ import {
   getSlotsForDay,
   type SessionWindow,
 } from '../shared/exercises';
-import { BLOCK_GAP, HALO, ROW_GAP, theme } from '../constants';
+import { QUIET, ROW_GAP, theme } from '../constants';
 import type { PreferredSplit } from '../shared/types';
 
 function rxLabel(sets: [number, number], reps: [number, number]): string {
@@ -178,21 +178,20 @@ export default function ProgramScreen() {
 
 const styles = StyleSheet.create({
   dayFirst: {
-    marginTop: 4,
+    ...QUIET.blockFirst,
   },
   day: {
-    marginTop: BLOCK_GAP,
+    ...QUIET.block,
   },
   dayTitleLead: {
-    ...theme.typography.mobileDisplay,
+    ...QUIET.statement,
   },
   dayTitle: {
     ...theme.typography.mobileTitle,
   },
   // The statement's halo: the fact line waits outside the moat.
   dayFact: {
-    ...theme.typography.mobileLedger,
-    marginTop: HALO,
+    ...QUIET.fact,
     marginBottom: 8,
   },
   windowBlock: {

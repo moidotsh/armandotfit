@@ -18,7 +18,7 @@ import { DeskShell } from '../components/composed';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile, usePwaPrompt } from '../hooks';
-import { DAY_OF_WEEK_LABELS, BLOCK_GAP, theme } from '../constants';
+import { DAY_OF_WEEK_LABELS, BLOCK_GAP, QUIET, theme } from '../constants';
 import { useToast } from '../context';
 import { logger } from '../utils/logger';
 
@@ -242,10 +242,10 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
   },
   block: {
-    marginTop: BLOCK_GAP,
+    ...QUIET.block,
   },
   statement: {
-    ...theme.typography.mobileDisplay,
+    ...QUIET.statement,
   },
   preferenceRow: {
     flexDirection: 'row',
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   whisper: {
-    ...theme.typography.mobileEyebrow,
+    ...QUIET.whisper,
     marginBottom: 8,
   },
   // The rest-day MEASURE — seven marks; a rest day is a struck mark

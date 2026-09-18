@@ -23,7 +23,7 @@ import {
 } from '../navigation';
 import { useDashboardSummary, usePersonalBests } from '../hooks';
 import { SYSTEM_EXERCISES } from '../shared/exercises';
-import { BLOCK_GAP, HALO, theme } from '../constants';
+import { BLOCK_GAP, QUIET, theme } from '../constants';
 
 const PB_COUNT = 5;
 
@@ -115,21 +115,20 @@ export default function ProgressionScreen() {
 
 const styles = StyleSheet.create({
   block: {
-    marginTop: BLOCK_GAP,
+    ...QUIET.block,
   },
   streak: {
-    ...theme.typography.mobileDisplay,
+    ...QUIET.statement,
   },
   // The fact line waits outside the statement's halo.
   streakFact: {
-    ...theme.typography.mobileLedger,
-    marginTop: HALO,
+    ...QUIET.fact,
   },
   totals: {
-    ...theme.typography.mobileFigure,
+    ...QUIET.figure,
   },
   sectionWhisper: {
-    ...theme.typography.mobileEyebrow,
+    ...QUIET.whisper,
     marginBottom: 4,
   },
   pbRow: {
@@ -139,11 +138,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   pbName: {
-    ...theme.typography.mobileItemTitle,
+    ...QUIET.row,
     flex: 1,
   },
   pbValue: {
-    ...theme.typography.mobileFigure,
+    ...QUIET.figure,
   },
   analyticsLink: { marginTop: BLOCK_GAP, minHeight: 48, justifyContent: 'center' },
   analyticsLinkText: {

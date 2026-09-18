@@ -26,7 +26,7 @@ import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises, useRecentSessionDetails } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import { SYSTEM_EXERCISES, type SystemExerciseData } from '../shared/exercises';
-import { theme, BLOCK_GAP, ROW_GAP } from '../constants';
+import { QUIET, BLOCK_GAP, ROW_GAP } from '../constants';
 
 /** Group the catalog by display category, in display order. */
 const CATEGORY_ORDER = ['Chest', 'Back', 'Shoulders', 'Arms', 'Upper Leg', 'Lower Leg', 'Abs'];
@@ -251,14 +251,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   adderToggleText: {
-    ...theme.typography.mobileLedger,
+    ...QUIET.whisperLine,
   },
   adderVerb: {
     minHeight: 44,
     justifyContent: 'center',
   },
   adderVerbText: {
-    ...theme.typography.mobileLedger,
+    ...QUIET.whisperLine,
     fontWeight: '600',
   },
 });

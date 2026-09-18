@@ -916,7 +916,9 @@ consumer-owned composed primitives the inventory records here:
 |---|---|
 | `EditionLine` (composed) | The recent-edition row: one session as ONE whisper line (date · day-of-split · window · tonnage), full facts on the accessibility label; `lead` renders the archive's head at figure scale in full ink — hierarchy by scale, not extra elements. Replaced `WorkoutSessionItem`. |
 | `SearchStatement` (composed) | The library's instrument-as-statement: the query rides the statement scale in the display face with an overlaid placeholder node at the same scale (so the hierarchy law measures the page before the first keystroke); ONE hairline beneath — the blank-line counter-field pattern. |
-| `CallBoard` (composed, reworked) | The Floor's docked instrument: the armed set as one ledger line LEFT-ALIGNED on the column's 20px rule (weight × reps at counter scale, steppers under each, blank-line rule when unset), the set ordinal + target in the kicker, LOG SET the one verb. Rides the five-size ramp — no ad-hoc sizes. |
+| `CallBoard` (composed, reworked) | The Floor's docked instrument: the armed set as ONE CENTERED line (the numerals meet at the ×, each side's stepper row under its numeral, the set ordinal + target centered in the kicker, blank-line rule when unset, LOG SET the one verb). Rides the five-size ramp — no ad-hoc sizes. |
+| `NextStation` (composed) | The Floor's way-forward row: the NEXT label in the record-mark read (the next position is the living position — same brandText as the set ordinal), the station's name at row scale in full ink, a chevron, isolated by 24px air above. Apparent without a second verb: no new size, ink, or fill. |
+| `QUIET` (constants/quiet.ts) | The one declaration point for every quiet-page pattern — the air-law numbers (gutter 20 / block 40 / row 16 / halo 24) plus the named style table (statement, fact-with-halo, row, whisper, whisperLine, figure, block, blockFirst). Screens spread these like `theme.typography.*`; the dialect layer presets surfaces, this presets the page law. |
 
 ---
 
