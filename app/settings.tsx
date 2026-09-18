@@ -239,10 +239,12 @@ const styles = StyleSheet.create({
     ...SCREEN_BODY_STYLE,
   },
   bodyContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 60,
   },
+  // The rest-day MEASURE — seven marks; a rest day is a struck mark
+  // (count-thesis §7). Square-cut, mono letters.
   restDayRow: {
     flexDirection: 'row',
     gap: 6,
@@ -250,7 +252,7 @@ const styles = StyleSheet.create({
   restDayTile: {
     flex: 1,
     height: 44,
-    borderRadius: 10,
+    borderRadius: theme.shapes.tile,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -269,7 +271,7 @@ const styles = StyleSheet.create({
   preferenceIconBox: {
     width: 36,
     height: 36,
-    borderRadius: 8,
+    borderRadius: theme.shapes.tile,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -280,7 +282,7 @@ const styles = StyleSheet.create({
   preferenceRadio: {
     width: 22,
     height: 22,
-    borderRadius: 11,
+    borderRadius: theme.shapes.tile,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',

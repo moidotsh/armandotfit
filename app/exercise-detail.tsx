@@ -1,17 +1,19 @@
 // app/exercise-detail.tsx
-// The reference page for a catalog exercise (signal-thesis §7): the
-// name anchors, instructions read as body on steel, equipment rides as
-// chips — and MUSCLES draw as TARGET BARS: primary muscles at full
-// signal bars, secondary at 40% steel. Metadata as data-viz: what the
-// lift trains, at a glance. When a draft session is active, an "Add to
-// active session" CTA wires to addExerciseToDraft (coarse identity +
-// slug); when not, a quiet line says so.
+// The reference page for a catalog exercise (count-thesis §7): the
+// name anchors as a statement, instructions read as body on the field,
+// equipment rides as marking chips — and MUSCLES draw as STROKES:
+// primary muscles at four struck strokes, secondary at two ghosts.
+// Metadata as data-viz in the tally language: what the lift trains, at
+// a glance. When a draft session is active, an "Add to active session"
+// CTA wires to addExerciseToDraft (coarse identity + slug); when not,
+// a quiet line says so.
 
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
+  TallyStrip,
   MobileAtmosphere,
   MobileHeader,
   MobileSectionEyebrow,
@@ -135,13 +137,9 @@ export default function ExerciseDetailScreen() {
                       <Text style={[styles.targetName, { color: colors.text }]}>
                         {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
                       </Text>
-                      <View
-                        style={[styles.targetTrack, { backgroundColor: colors.mobilePremium.railTrack }]}
-                      >
-                        <View
-                          style={[styles.targetBar, { backgroundColor: colors.brand }]}
-                        />
-                      </View>
+                      {/* Muscle strokes — the tally as data-viz: four
+                          struck marks for a prime mover. */}
+                      <TallyStrip struck={4} size="sm" />
                       <Text style={[styles.targetWeight, { color: colors.brandText }]}>
                         PRIME
                       </Text>
@@ -156,13 +154,8 @@ export default function ExerciseDetailScreen() {
                       <Text style={[styles.targetName, { color: colors.textSecondary }]}>
                         {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
                       </Text>
-                      <View
-                        style={[styles.targetTrack, { backgroundColor: colors.mobilePremium.railTrack }]}
-                      >
-                        <View
-                          style={[styles.targetBar, styles.targetBarSecondary, { backgroundColor: colors.textMuted }]}
-                        />
-                      </View>
+                      {/* Two ghost strokes for an assistant mover. */}
+                      <TallyStrip struck={0} ghost={2} size="sm" />
                       <Text style={[styles.targetWeight, { color: colors.textMuted }]}>
                         ASSIST
                       </Text>

@@ -1,13 +1,13 @@
 // app/program.tsx
-// My Program — the split as a document (signal-thesis §7): days are
-// chapters (mono DAY 01 + Saira title + planned-sets figure in the
-// condensed face), and each chapter head PINS while its slots scroll
+// My Program — the split as a document (count-thesis §7): days are
+// chapters (mono DAY 01 marking + Big Shoulders title + planned-sets
+// figure in mono), and each chapter head PINS while its slots scroll
 // under it — the reader always knows which day they're reading. Slots
 // are the same numbered ledger rows the funnel preview speaks — one
 // slot language everywhere. Plan-time Swap: a standing per-slot
 // substitution (persisted client-side; the authored program in
 // splits.ts is never edited). Swapped slots carry their Rx forward,
-// mark with a 2px signal rule, and reset with one tap.
+// mark with a 2px strike rule, and reset with one tap.
 
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -89,7 +89,9 @@ export default function ProgramScreen() {
           isLast ? { borderBottomWidth: 0 } : null,
         ]}
       >
-        <Text style={[styles.slotIndex, { color: colors.brandText }]}>{position}</Text>
+        <Text style={[styles.slotIndex, { color: colors.brandText }]}>
+            {String(position).padStart(2, '0')}
+          </Text>
         <View style={styles.slotMain}>
           <View style={styles.nameRow}>
             <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
@@ -312,7 +314,9 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
   },
   dayTitle: {
-    ...theme.typography.mobileTitle,
+    ...theme.typography.mobileDisplay,
+    fontSize: 34,
+    lineHeight: 36,
     flex: 1,
   },
   daySets: {

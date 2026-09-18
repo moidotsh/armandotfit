@@ -48,7 +48,7 @@ export default function LoginScreen() {
       <MobileAtmosphere surface="auth" />
       <View style={[styles.brandBlock, { paddingTop: insets.top + 24 }]}>
         <Text style={[styles.wordmark, { color: colors.textMuted }]}>
-          armandotfit
+          ARMANDOTFIT
         </Text>
         <View style={[styles.wordmarkRule, { backgroundColor: colors.brand }]} />
         <Text style={[styles.title, { color: colors.text }]}>
@@ -139,11 +139,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   wordmark: {
-    fontFamily: theme.fonts.displayCondensed ?? theme.fonts.display,
-    fontSize: 20,
+    fontFamily: theme.fonts.display,
+    fontSize: 21,
     fontWeight: '800',
-    lineHeight: 24,
-    letterSpacing: -0.3,
+    lineHeight: 26,
+    letterSpacing: 0.6,
   },
   title: {
     ...theme.typography.mobileTitle,

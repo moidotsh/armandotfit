@@ -30,7 +30,7 @@ export default function NotFoundScreen() {
     <ScreenScaffold surface="analytics">
       <View style={styles.center}>
         <Text style={[styles.wordmark, { color: colors.textMuted }]}>
-          armandotfit
+          ARMANDOTFIT
         </Text>
         <Figure value="404" size="hero" tone="brand" testID="not-found-hero" />
         <Text style={[styles.title, { color: colors.text }]}>
@@ -54,11 +54,11 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   wordmark: {
-    fontFamily: theme.fonts.displayCondensed ?? theme.fonts.display,
+    fontFamily: theme.fonts.display,
     fontSize: 20,
     fontWeight: '800' as const,
     lineHeight: 24,
-    letterSpacing: -0.3,
+    letterSpacing: 0.6,
   },
   title: {
     ...theme.typography.mobileTitle,

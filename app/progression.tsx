@@ -1,9 +1,9 @@
 // app/progression.tsx
-// Progress — a tab destination on the DeskShell (signal-thesis §7):
-// the emotional number first — the current streak as the hero figure
-// in the signal tone — the totals beside it as figures on steel, and
-// personal bests closing the page as a mono ledger. All computed at
-// read from raw sessions; nothing stored.
+// THE RECORD (count-thesis §7): the emotional number first — the
+// current streak as the hero statement in the strike tone with the
+// week's measure of marks beneath it — the totals beside it as mono
+// figures, and personal bests closing the page as a ruled ledger. All
+// computed at read from raw sessions; nothing stored.
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -12,6 +12,7 @@ import {
   MobilePrimaryButton,
   EmptyState,
   Figure,
+  TallyStrip,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { DeskShell, QueryErrorNote } from '../components/composed';
@@ -74,6 +75,15 @@ export default function ProgressionScreen() {
                     : '—'}`}
                 </Text>
               </View>
+            </View>
+            {/* The week's measure — the streak as marks: trained days
+                struck, the days ahead ghost. */}
+            <View style={styles.streakMeasure} testID="progression-streak-measure">
+              <TallyStrip
+                struck={Math.min(summary?.streak.current ?? 0, 7)}
+                ghost={Math.max(0, 7 - Math.min(summary?.streak.current ?? 0, 7))}
+                size="sm"
+              />
             </View>
 
             {/* Totals as figures on paper. */}
@@ -141,10 +151,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     height: 52,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   headerTitle: {
-    ...theme.typography.mobileTitle,
+    ...theme.typography.mobileDisplay,
+    fontSize: 30,
+    lineHeight: 34,
+    letterSpacing: 0.4,
+  },
+  streakMeasure: {
+    marginTop: 10,
   },
   analyticsLink: { marginTop: 24 },
   heroRow: {

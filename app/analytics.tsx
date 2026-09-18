@@ -1,9 +1,10 @@
 // app/analytics.tsx
-// Analytics — the consistency grid is the story (docs/architecture/
-// logbook-thesis.md §7): it rides the screen's one bounded sheet; the
-// weekly bars stop apologizing — real bar weight, mono values, ledger
-// rows on paper. Range via segmented control. Daily-aggregate history +
-// weekly bucketing all computed at read.
+// Analytics — the consistency field is the story (docs/architecture/
+// count-thesis.md §7): square-cut cells at four levels with today
+// outlined, riding the ruled field; the weekly bars stop apologizing —
+// real bar weight, mono values, ledger rows. Range via segmented
+// control. Daily-aggregate history + weekly bucketing all computed at
+// read.
 
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
