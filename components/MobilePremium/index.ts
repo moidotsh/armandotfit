@@ -155,6 +155,13 @@ export type { MobileNavDrawerGlassCapProps } from './MobileNavDrawerGlassCap';
 export { HamburgerButton } from './HamburgerButton';
 export type { HamburgerButtonProps } from './HamburgerButton';
 
+export { MobileTabBar } from './MobileTabBar';
+export type {
+  MobileTabBarProps,
+  MobileTabBarItem,
+  MobileTabBarCenterAction,
+} from './MobileTabBar';
+
 export { SkeletonBlock } from './SkeletonBlock';
 export type { SkeletonBlockProps } from './SkeletonBlock';
 

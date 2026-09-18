@@ -93,8 +93,8 @@ function RootShell() {
     ensureMeta('mobile-web-app-capable', 'yes');
     ensureMeta('apple-mobile-web-app-status-bar-style', colorScheme === 'dark' ? 'black' : 'default');
     ensureMeta('apple-mobile-web-app-title', APP_DISPLAY_NAME);
-    ensureMeta('theme-color', colors.background, '(min-width: 701px)');
-    ensureMeta('theme-color', colors.brand, '(max-width: 700px)');
+    ensureMeta('theme-color', colors.backgroundDeep, '(min-width: 701px)');
+    ensureMeta('theme-color', colors.backgroundDeep, '(max-width: 700px)');
 
     const ensureStyle = (id: string, css: string) => {
       if (document.getElementById(id)) return;
@@ -108,16 +108,16 @@ function RootShell() {
       '*::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}',
     );
 
-    // The logbook faces — runtime restore of index.html's id'd
+    // The SIGNAL faces — runtime restore of index.html's id'd
     // @font-face block (static export strips <head> styles; the
     // build-time injector covers exported routes, this covers dev and
-    // anything the strip still misses). Mirror trio: index.html,
+    // anything the strip still misses). 'Saira Cond' is the same
+    // variable file pinned to wdth 75. Mirror trio: index.html,
     // scripts/inject-critical-web.ts, this block.
     const ensureFontLinks = () => {
       const fontFiles = [
-        '/fonts/archivo-var.woff2',
-        '/fonts/plex-mono-500.woff2',
-        '/fonts/plex-mono-600.woff2',
+        '/fonts/saira-var.woff2',
+        '/fonts/martian-mono-var.woff2',
       ];
       for (const href of fontFiles) {
         if (document.querySelector(`link[rel="preload"][href="${href}"]`)) continue;
@@ -134,9 +134,9 @@ function RootShell() {
     ensureStyle(
       'arq-font-faces',
       [
-        "@font-face{font-family:'Archivo';font-style:normal;font-weight:100 900;font-display:swap;src:url('/fonts/archivo-var.woff2') format('woff2')}",
-        "@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/plex-mono-500.woff2') format('woff2')}",
-        "@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/plex-mono-600.woff2') format('woff2')}",
+        "@font-face{font-family:'Saira';font-style:normal;font-weight:100 900;font-stretch:100%;font-display:swap;src:url('/fonts/saira-var.woff2') format('woff2')}",
+        "@font-face{font-family:'Saira Cond';font-style:normal;font-weight:100 900;font-stretch:75%;font-display:swap;src:url('/fonts/saira-var.woff2') format('woff2')}",
+        "@font-face{font-family:'Martian Mono';font-style:normal;font-weight:100 800;font-display:swap;src:url('/fonts/martian-mono-var.woff2') format('woff2')}",
       ].join(''),
     );
 

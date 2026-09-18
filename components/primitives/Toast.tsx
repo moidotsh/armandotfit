@@ -39,13 +39,13 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
 
   // The surface language follows `theme.toast.style` (the theme override
   // point, beside shapes/atmosphere): 'card' is the bordered card with
-  // colored icons; 'chit' is the ink treatment — the announcement
-  // strip's strong tone, floating. The chit inverts like every ink
-  // surface: `colors.text` plate in light, bone in dark; paper
-  // (`colors.background`) is its type.
+  // colored icons; 'chit' is the instrument treatment — the focus
+  // register's near-black plate with ice type in BOTH modes (the Floor
+  // does not follow the Desk's mode; see signal-thesis §3), one status
+  // dot, mono message.
   const chit = theme.toast.style === 'chit';
-  const ink = colors.text;
-  const paper = colors.background;
+  const ink = colors.focus.background;
+  const paper = colors.focus.text;
 
   // Type tint at 15% opacity for the LEFT accent stripe only — keeps
   // type identification without compromising readability. The body

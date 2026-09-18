@@ -1,21 +1,20 @@
 // components/MobilePremium/RouteCurtain.tsx
 //
-// The route curtain — the ink dialect's navigation transition (the
-// machinery behind `theme.transition.style = 'curtain'`; retired
-// entirely under the starter's 'none' default). Mounted once at the
-// root layout above every surface. The move is printed matter, not a
-// fade:
+// The route curtain — the signal sweep (the machinery behind
+// `theme.transition.style = 'curtain'`; retired entirely under the
+// starter's 'none' default). Mounted once at the root layout above
+// every surface. The move is an instrument cover, not a fade:
 //
-//   cover   an ink plate (grain, the inverted-surface treatment)
-//           sweeps over the outgoing page — the paper chaser trails
-//           its leading edge by a 4% beat
-//   hold    the platen rule draws across in the brand accent, the
-//           eyebrow rises, and the destination stamps on in the
-//           display face — a letterpress strike with a slight
-//           overshoot
+//   cover   the focus plate (near-black, flat — the Floor's surface)
+//           sweeps over the outgoing page — a steel chaser trails its
+//           leading edge by a 4% beat
+//   hold    the 2px signal rule draws across, the eyebrow rises in
+//           tracked mono, and the destination stamps on in the
+//           condensed display face — a stadium-clock strike with a
+//           slight overshoot
 //   reveal  the plate lifts (up when drilling in, down when backing
-//           out), rule leading, paper chasing it off — the new page
-//           surfaces behind the rising paper edge
+//           out), signal rule leading, steel chasing it off — the new
+//           page surfaces behind the rising edge
 //
 // Two cover entries share the one choreography:
 //   slide — NavigationHelper covers BEFORE navigating (the swap
@@ -50,7 +49,6 @@ import {
   type CurtainDirection,
   type CurtainMode,
 } from '../../utils/routeTransition';
-import { inkSurface } from './grain';
 
 /** The paper chaser trails the ink plate by this fraction of viewport. */
 const CHASER_TRAIL = '4%';
@@ -111,7 +109,7 @@ export function RouteCurtain() {
       {showMask ? (
         <View
           testID="route-curtain"
-          style={[styles.fill, inkSurface(colors.text)]}
+          style={[styles.fill, { backgroundColor: colors.focus.background }]}
           pointerEvents="auto"
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
@@ -275,17 +273,17 @@ function CurtainPanel({ mode, direction, copy, revealed, onDone }: CurtainPanelP
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      {/* Paper chaser — trails the ink plate in, follows it off. */}
+      {/* Steel chaser — trails the plate in, follows it off. */}
       <Animated.View
-        style={[styles.fill, { backgroundColor: colors.background, transform: [{ translateY: chaserY }] }]}
+        style={[styles.fill, { backgroundColor: colors.backgroundDeep, transform: [{ translateY: chaserY }] }]}
         pointerEvents="none"
       />
-      {/* The ink plate. */}
+      {/* The focus plate. */}
       <Animated.View
-        style={[styles.fill, inkSurface(colors.text), { transform: [{ translateY: inkY }] }]}
+        style={[styles.fill, { backgroundColor: colors.focus.background }, { transform: [{ translateY: inkY }] }]}
         pointerEvents="none"
       >
-        {/* Platen rule — draws across in the hold, leads the lift. */}
+        {/* Signal rule — draws across in the hold, leads the lift. */}
         <Animated.View
           style={[
             up ? styles.barUp : styles.barDown,
@@ -304,7 +302,7 @@ function CurtainPanel({ mode, direction, copy, revealed, onDone }: CurtainPanelP
               <Animated.Text
                 style={[
                   styles.eyebrow,
-                  { color: colors.background, opacity: eyebrow, transform: [{ translateY: eyebrowY }] },
+                  { color: colors.focus.muted, opacity: eyebrow, transform: [{ translateY: eyebrowY }] },
                 ]}
                 allowFontScaling={false}
               >
@@ -313,7 +311,7 @@ function CurtainPanel({ mode, direction, copy, revealed, onDone }: CurtainPanelP
               <Animated.Text
                 style={[
                   styles.stamp,
-                  { color: colors.background, fontSize: stampSize, lineHeight: Math.round(stampSize * 1.05) },
+                  { color: colors.focus.text, fontSize: stampSize, lineHeight: Math.round(stampSize * 1.05) },
                   { opacity: stampOpacity, transform: [{ translateY: stampY }, { scaleY: stampScale }] },
                 ]}
                 numberOfLines={longStamp ? 2 : 1}
@@ -347,14 +345,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: 3,
+    height: 2,
   },
   barDown: {
     position: 'absolute',
     left: 0,
     right: 0,
     top: 0,
-    height: 3,
+    height: 2,
   },
   barOrigin: {
     transformOrigin: 'left center',
@@ -377,10 +375,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   stamp: {
-    // The display face when one is declared (single-weight poster
-    // faces carry 400); the fallback platform sans needs the weight.
-    fontFamily: theme.fonts.display,
-    fontWeight: theme.fonts.display ? '400' : '800',
+    // The condensed display position when one is declared (variable
+    // faces carry the weight axis); the fallback platform sans needs
+    // the weight spelled out.
+    fontFamily: theme.fonts.displayCondensed ?? theme.fonts.display,
+    fontWeight: theme.fonts.displayCondensed ?? theme.fonts.display ? '700' : '800',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },

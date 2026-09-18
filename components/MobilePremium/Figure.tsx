@@ -1,22 +1,23 @@
 // components/MobilePremium/Figure.tsx
 //
-// The figure language of the logbook: one labeled value, no chrome.
-// Where StatCard puts a number in a card, Figure puts a number on the
-// paper — the receipt treatment for stat strips, receipt headers, and
-// hero figures. Numbers are the app's architecture, so the figure
-// scale outranks the word scale at every step (see
-// docs/architecture/logbook-thesis.md §4):
+// The figure language of SIGNAL: one labeled value, no chrome (see
+// docs/architecture/signal-thesis.md §2.2). Where StatCard puts a
+// number in a card, Figure puts a number on the surface — the
+// instrument read for stat strips, receipt headers, and hero figures.
+// Numbers are the app's architecture, so the figure scale outranks the
+// word scale at every step:
 //
-//   hero    72/800 display — the one hero figure per screen
-//   display 44/800 display — secondary figure (totals, receipt volume)
-//   md      28/700 display — stat rows and strips
-//   sm      15/600 mono    — in-row ledger facts
+//   hero    80/800 condensed display — the one hero figure per screen
+//   display 56/800 condensed display — secondary figure (armed set,
+//           receipt tonnage)
+//   md      30/800 condensed display — stat rows and strips
+//   sm      15/500 mono             — in-row ledger facts
 //
 // The value rides the theme's figure tokens, so tabular figures and the
-// declared display/mono faces arrive by construction — a call site
+// declared condensed/mono faces arrive by construction — a call site
 // cannot forget them. The optional `unit` renders small and mono after
-// the value (the logbook convention: the unit whispers). The optional
-// label rides the eyebrow token in caps.
+// the value (the unit whispers). The optional label rides the eyebrow
+// token in caps.
 //
 // Domain-neutral: the consumer supplies value + label and formats the
 // value. No trend computation, no data fetching, no domain semantics.
@@ -27,7 +28,7 @@ import { theme } from '../../constants';
 import { useAppTheme } from '../../context';
 
 export type FigureSize = 'hero' | 'display' | 'md' | 'sm';
-export type FigureTone = 'ink' | 'brand' | 'plate';
+export type FigureTone = 'ink' | 'brand' | 'plate' | 'focus';
 export type FigureAlign = 'left' | 'center' | 'right';
 
 export interface FigureProps {
@@ -39,7 +40,11 @@ export interface FigureProps {
   label?: string;
   /** Figure scale. Default 'md'. */
   size?: FigureSize;
-  /** 'ink' (default) reads text color; 'brand' the brand slot; 'plate' is paper-type for ink plates. */
+  /**
+   * 'ink' (default) reads text color; 'brand' the brand slot; 'plate' is
+   * paper-type for ink plates; 'focus' reads the focus register's text
+   * color (the Floor — the live-session stage).
+   */
   tone?: FigureTone;
   /** Default 'left'. */
   align?: FigureAlign;
@@ -69,14 +74,14 @@ function valueStyleFor(size: FigureSize) {
 function unitStyleFor(size: FigureSize) {
   switch (size) {
     case 'hero':
-      return { fontSize: 26, paddingBottom: 10 } as const;
+      return { fontSize: 24, paddingBottom: 12 } as const;
     case 'display':
-      return { fontSize: 17, paddingBottom: 6 } as const;
+      return { fontSize: 17, paddingBottom: 8 } as const;
     case 'sm':
       return { fontSize: 10, paddingBottom: 1 } as const;
     case 'md':
     default:
-      return { fontSize: 13, paddingBottom: 3 } as const;
+      return { fontSize: 13, paddingBottom: 4 } as const;
   }
 }
 
@@ -95,7 +100,13 @@ export function Figure({
   const alignment =
     align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
   const valueColor =
-    tone === 'brand' ? colors.brand : tone === 'plate' ? colors.background : colors.text;
+    tone === 'brand'
+      ? colors.brand
+      : tone === 'plate'
+        ? colors.background
+        : tone === 'focus'
+          ? colors.focus.text
+          : colors.text;
 
   return (
     <View
@@ -114,7 +125,14 @@ export function Figure({
             style={[
               styles.unit,
               unitStyleFor(size),
-              { color: tone === 'plate' ? colors.brandOnInk : colors.textMuted },
+              {
+                color:
+                  tone === 'plate'
+                    ? colors.brandOnInk
+                    : tone === 'focus'
+                      ? colors.focus.muted
+                      : colors.textMuted,
+              },
             ]}
           >
             {unit}
@@ -122,7 +140,13 @@ export function Figure({
         ) : null}
       </View>
       {label ? (
-        <Text style={[styles.label, { color: colors.textMuted }]} numberOfLines={1}>
+        <Text
+          style={[
+            styles.label,
+            { color: tone === 'focus' ? colors.focus.muted : colors.textMuted },
+          ]}
+          numberOfLines={1}
+        >
           {label}
         </Text>
       ) : null}

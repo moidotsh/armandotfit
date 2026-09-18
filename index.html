@@ -23,14 +23,15 @@
       Expo Web's static export strips every tag below from <head>
       except <link rel="icon"> when generating dist/index.html. The
       three places are a deliberate mirror set — keep them in sync in
-      the same change. The theme-color values are armandotfit's ember
-      palette (warm paper surface for desktop, ember brand for mobile);
-      update this file, the injector's extraction, and app/_layout.tsx
-      together so the deployed HTML and the runtime injection agree.
+      the same change. The theme-color values are armandotfit's SIGNAL
+      palette (steel page tone on every width — the chrome never
+      shouts); update this file, the injector's extraction, and
+      app/_layout.tsx together so the deployed HTML and the runtime
+      injection agree.
       Full design + debugging checklist: docs/architecture/pwa-installability.md.
     -->
-    <meta name="theme-color" content="#F4F0EA" media="(min-width: 701px)" />
-    <meta name="theme-color" content="#E8590C" media="(max-width: 700px)" />
+    <meta name="theme-color" content="#E8EAEE" media="(min-width: 701px)" />
+    <meta name="theme-color" content="#E8EAEE" media="(max-width: 700px)" />
 
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icons/192.png" />
@@ -43,46 +44,50 @@
     <title>armandotfit</title>
 
     <!--
-      The logbook faces — self-hosted, OFL (docs/architecture/
-      logbook-thesis.md §2). Archivo ships as one variable-weight file
-      (covers the 700/800 the display tokens use); IBM Plex Mono as two
-      statics (500/600). Mirror trio discipline: this id'd style block,
-      the runtime restore in app/_layout.tsx, and the injector carry
-      them together — plus the preload lines below so the first hero
-      figure renders in its face, not a fallback.
+      The SIGNAL faces — self-hosted, OFL (docs/architecture/
+      signal-thesis.md §2.1). Saira ships as ONE variable file covering
+      wght 100–900 × wdth 75–125; 'Saira Cond' is the SAME file pinned
+      to wdth 75 via a second @font-face (one download, two families —
+      RN's TextStyle has no fontStretch, so the width axis is exposed
+      as a family name). Martian Mono is one variable file (wght
+      100–800). Mirror trio discipline: this id'd style block, the
+      runtime restore in app/_layout.tsx, and the injector carry them
+      together — plus the preload line so the first hero figure renders
+      in its face, not a fallback.
     -->
-    <link rel="preload" href="/fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/plex-mono-500.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/plex-mono-600.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/saira-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/martian-mono-var.woff2" as="font" type="font/woff2" crossorigin />
     <style id="arq-font-faces">
       @font-face {
-        font-family: 'Archivo';
+        font-family: 'Saira';
         font-style: normal;
         font-weight: 100 900;
+        font-stretch: 100%;
         font-display: swap;
-        src: url('/fonts/archivo-var.woff2') format('woff2');
+        src: url('/fonts/saira-var.woff2') format('woff2');
       }
       @font-face {
-        font-family: 'IBM Plex Mono';
+        font-family: 'Saira Cond';
         font-style: normal;
-        font-weight: 500;
+        font-weight: 100 900;
+        font-stretch: 75%;
         font-display: swap;
-        src: url('/fonts/plex-mono-500.woff2') format('woff2');
+        src: url('/fonts/saira-var.woff2') format('woff2');
       }
       @font-face {
-        font-family: 'IBM Plex Mono';
+        font-family: 'Martian Mono';
         font-style: normal;
-        font-weight: 600;
+        font-weight: 100 800;
         font-display: swap;
-        src: url('/fonts/plex-mono-600.woff2') format('woff2');
+        src: url('/fonts/martian-mono-var.woff2') format('woff2');
       }
     </style>
 
     <!--
-      The ink boot plate — the pre-JS cover. armandotfit's design
-      language is the ink dialect, so the first painted frame is the
-      warm ink plate (#231B15) with the name stamped on it in paper
-      type, not a white flash. The root layout lifts it via
+      The signal boot plate — the pre-JS cover. armandotfit's design
+      language opens cold: the steel page (#E8EAEE) with the name
+      stamped in ink and a 2px signal rule beneath it, not a white
+      flash and not a warm plate. The root layout lifts it via
       markBootReady() → html[data-boot-ready] as soon as React mounts
       (see utils/routeTransition.ts); reduced-motion users keep it as a
       static cover that simply disappears on lift. Pure CSS + one
@@ -90,7 +95,7 @@
     -->
     <style id="ink-boot-plate">
       html:not([data-boot-ready]) body {
-        background: #231b15;
+        background: #e8eaee;
       }
       html:not([data-boot-ready]) #root::before {
         content: 'armandotfit';
@@ -99,16 +104,28 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #231b15;
-        color: #f4f0ea;
-        font-family: 'Archivo', -apple-system, sans-serif;
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: 0.18em;
+        background: #e8eaee;
+        color: #0b0e13;
+        font-family: 'Saira Cond', 'Saira', -apple-system, sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
         text-transform: lowercase;
         z-index: 9999;
       }
-      html[data-boot-ready] #root::before {
+      html:not([data-boot-ready]) #root::after {
+        content: '';
+        position: fixed;
+        left: 50%;
+        top: calc(50% + 26px);
+        width: 84px;
+        height: 2px;
+        margin-left: -42px;
+        background: #e8510a;
+        z-index: 9999;
+      }
+      html[data-boot-ready] #root::before,
+      html[data-boot-ready] #root::after {
         content: none;
       }
     </style>
@@ -127,7 +144,7 @@
         height: 100%;
         margin: 0;
         padding: 0;
-        background: #f4f0ea;
+        background: #e8eaee;
       }
       #root {
         display: flex;

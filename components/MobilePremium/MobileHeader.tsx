@@ -70,6 +70,7 @@ const NAV_TITLE_STYLE = {
   fontWeight: '700',
   lineHeight: 20,
   letterSpacing: -0.2,
+  fontFamily: theme.typography.mobileItemTitle.fontFamily,
 } as const;
 
 /**

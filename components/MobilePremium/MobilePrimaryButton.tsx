@@ -1,20 +1,16 @@
 // components/MobilePremium/MobilePrimaryButton.tsx
 // Primary action button for the mobile premium kit.
 //
-// Same ~54px height as the original (preserves the 490px fit). The premium
-// signal comes from:
-//
-//   • Subtle vertical gradient (web only) — accent color, with the top ~6%
-//     lighter than the bottom. Suggests light hitting a physical button.
-//   • Inset top highlight (web only) — a 1px brighter line at the top edge.
-//   • Refined outer shadow — accent-tinted glow when enabled, neutral
-//     shadow when disabled / loading.
-//   • Consistent Respond motion via usePressedStyle (scale 0.98 + 0.9
-//     opacity; reduced motion collapses to opacity-only).
-//   • typography.mobileAction label (15/600 with slight tracking).
+// Same ~54px height as the original (preserves the 490px fit). The
+// SIGNAL system runs it FLAT (docs/architecture/signal-thesis.md §4):
+// a solid signal fill with an ink label — road-sign discipline, no
+// gradient, no glow. The premium is the color law + the label's face
+// (mobileAction rides the display face at 700) + consistent Respond
+// motion via usePressedStyle (scale 0.98 + 0.9 opacity; reduced motion
+// collapses to opacity-only).
 //
 // Variants:
-//   • 'primary' (default) — filled accent button with gradient + glow.
+//   • 'primary' (default) — filled accent button, ink label.
 //   • 'secondary' — transparent background with an accent border. The
 //     paired secondary affordance (e.g. Register next to Login).
 //   • 'ghost' — transparent background with accent text. For subtle
@@ -27,7 +23,6 @@ import React, { useMemo } from 'react';
 // icon slot — the standard primary-action pattern.
 import { ActivityIndicator, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Pressable, usePressedStyle } from '../premium/shared';
-import { isWeb } from '../../utils';
 import { theme, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
 
@@ -72,6 +67,7 @@ const ACTION_LABEL_STYLE = {
   fontWeight: theme.typography.mobileAction.fontWeight as any,
   lineHeight: theme.typography.mobileAction.lineHeight,
   letterSpacing: theme.typography.mobileAction.letterSpacing,
+  fontFamily: theme.typography.mobileAction.fontFamily,
 } as const;
 
 /**
@@ -100,9 +96,9 @@ export function MobilePrimaryButton({
   const isGhost = variant === 'ghost';
   const isSmall = size === 'sm';
 
-  // The button's material — branches on variant.
-  //   primary: gradient (web) + inset highlight + accent-tinted glow.
-  //   secondary: transparent background + accent border, no glow.
+  // The button's material — branches on variant. SIGNAL runs flat:
+  //   primary: solid accent fill, no gradient, no glow.
+  //   secondary: transparent background + accent border.
   //   ghost: transparent background, no border, no glow.
   const materialStyle = useMemo(() => {
     if (isGhost) {
@@ -118,25 +114,8 @@ export function MobilePrimaryButton({
         borderColor: disabled || loading ? `${accent}40` : accent,
       } as const;
     }
-    if (!isWeb) {
-      return {
-        backgroundColor: disabled || loading ? colors.buttonBackgroundDisabled : accent,
-      } as const;
-    }
-    // Web primary: subtle gradient + inset top highlight + accent-tinted glow.
-    const top = `${accent}ff`;
-    const bottom = `${accent}d9`; // ~85% — a 15% luminance drop on the bottom
-    const glow =
-      disabled || loading
-        ? '0 2px 8px rgba(15, 23, 42, 0.12)'
-        : `0 6px 18px ${accent}33, 0 2px 4px ${accent}24, inset 0 1px 0 rgba(255, 255, 255, 0.18)`;
     return {
-      backgroundImage:
-        disabled || loading
-          ? 'none'
-          : `linear-gradient(180deg, ${top} 0%, ${bottom} 100%)`,
       backgroundColor: disabled || loading ? colors.buttonBackgroundDisabled : accent,
-      boxShadow: glow,
     } as const;
   }, [accent, colors.buttonBackgroundDisabled, disabled, loading, isGhost, isSecondary]);
 
