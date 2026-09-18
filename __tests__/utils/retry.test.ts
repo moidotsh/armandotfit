@@ -15,13 +15,16 @@ describe('withRetry', () => {
   });
 
   it('retries on failure and returns the result once it succeeds', async () => {
+    // Rejections are created LAZILY (mockImplementation + Promise.reject
+    // inside) — mockRejectedValueOnce builds eager promises that reject
+    // before withRetry attaches its handlers, which surfaces as an
+    // unhandled rejection under some runners.
     const fn = vi
       .fn()
-      .mockRejectedValueOnce(new Error('boom'))
-      .mockRejectedValueOnce(new Error('boom'))
+      .mockImplementationOnce(() => Promise.reject(new Error('boom')))
+      .mockImplementationOnce(() => Promise.reject(new Error('boom')))
       .mockResolvedValueOnce('recovered');
-    // Real timers + 1ms delays keep the test fast without the
-    // fake-timer/unhandled-rejection race that mockRejectedValue triggers.
+    // Real timers + 1ms delays keep the test fast.
     const result = await withRetry(fn, { maxRetries: 3, baseDelay: 1, maxDelay: 1 });
     expect(result).toBe('recovered');
     expect(fn).toHaveBeenCalledTimes(3);
