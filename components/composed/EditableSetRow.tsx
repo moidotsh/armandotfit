@@ -1,14 +1,16 @@
 // components/composed/EditableSetRow.tsx
-// Editable set row for the live-draft view. Two compact numeric inputs
-// (weight × reps) + a remove affordance. No completion toggle — a set is
-// logged when it's done; the row existing in the draft means it happened.
+// Editable set row for the live-draft view — the row a lifter hits
+// mid-set, so it's sized for gloves and glare: 48px inputs, mono 17/600
+// figures, the position index carrying the done mark (a filled set is a
+// done set — no completion toggle; the row existing in the draft means
+// it happened).
 //
 // Numeric parsing: empty string → null (load-bearing — Number('') is 0,
 // which would false-positive as "0 lbs"). NaN also falls back to null.
 // Sets with null reps or weight are dropped at save time.
 
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View, type TextStyle } from 'react-native';
 import { useAppTheme } from '../../context';
 import { theme } from '../../constants';
 
@@ -29,6 +31,16 @@ function parseNumber(text: string): number | null {
   const n = Number(trimmed);
   return Number.isFinite(n) ? n : null;
 }
+
+// Control rhythm (the kit-chrome precedent): mono figures at 17/600 so
+// the numbers read at arm's length without reading as content titles.
+const INPUT_TEXT: TextStyle = {
+  fontSize: 17,
+  fontWeight: '600',
+  lineHeight: 22,
+  fontFamily: theme.fonts.mono,
+  fontVariant: ['tabular-nums'],
+};
 
 export function EditableSetRow({
   position,
@@ -59,24 +71,21 @@ export function EditableSetRow({
     if (next !== repsText) setRepsText(next);
   }
 
-  const inputBorderColor = colors.glass.emptyInputBorder;
-  const inputBg = colors.glass.inputBackground;
-
   return (
     <View style={styles.row}>
       <Text
         style={[
           styles.setPosition,
-          { color: filled ? colors.brand : colors.textSecondary },
+          { color: filled ? colors.brand : colors.textColors.tertiary },
         ]}
       >
-        {filled ? '✓' : position}
+        {filled ? '✓' : String(position)}
       </Text>
 
       <TextInput
         style={[
           styles.input,
-          { borderColor: inputBorderColor, backgroundColor: inputBg, color: colors.text },
+          { borderColor: filled ? colors.brandSoft : colors.glass.emptyInputBorder, backgroundColor: colors.glass.inputBackground, color: colors.text },
         ]}
         value={weightText}
         onChangeText={(t) => {
@@ -91,13 +100,13 @@ export function EditableSetRow({
         accessibilityLabel={`Set ${position} weight`}
       />
 
-      <Text style={[styles.times, { color: colors.textSecondary }]}>×</Text>
+      <Text style={[styles.times, { color: colors.textMuted }]}>×</Text>
 
       <TextInput
         style={[
           styles.input,
           styles.repsInput,
-          { borderColor: inputBorderColor, backgroundColor: inputBg, color: colors.text },
+          { borderColor: filled ? colors.brandSoft : colors.glass.emptyInputBorder, backgroundColor: colors.glass.inputBackground, color: colors.text },
         ]}
         value={repsText}
         onChangeText={(t) => {
@@ -105,7 +114,7 @@ export function EditableSetRow({
           onChangeReps(parseNumber(t));
         }}
         placeholder={repsHint ?? '–'}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={colors.textColors.tertiary}
         keyboardType="numeric"
         returnKeyType="done"
         maxLength={6}
@@ -114,11 +123,11 @@ export function EditableSetRow({
 
       <Pressable
         onPress={onRemove}
-        hitSlop={{ top: 14, bottom: 14, left: 12, right: 12 }}
         accessibilityRole="button"
         accessibilityLabel={`Remove set ${position}`}
+        style={styles.removeBox}
       >
-        <Text style={[styles.remove, { color: colors.textSecondary }]}>✕</Text>
+        <Text style={[styles.remove, { color: colors.textMuted }]}>✕</Text>
       </Pressable>
     </View>
   );
@@ -128,31 +137,39 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    gap: 8,
+    gap: 10,
+    paddingVertical: 4,
   },
   setPosition: {
-    ...theme.typography.mobileMeta,
-    minWidth: 18,
+    ...theme.typography.mobileLedger,
+    minWidth: 20,
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1.5,
-    borderRadius: 10,
-    paddingVertical: 6,
+    borderRadius: theme.shapes.control,
+    minHeight: 48,
+    paddingVertical: 8,
     paddingHorizontal: 10,
-    ...theme.typography.mobileItemTitle,
-    fontVariant: ['tabular-nums'],
-    minWidth: 64,
+    ...INPUT_TEXT,
+    minWidth: 84,
     textAlign: 'center',
   },
   repsInput: {
-    minWidth: 56,
+    minWidth: 72,
   },
-  times: { ...theme.typography.mobileLedger },
+  times: {
+    ...theme.typography.mobileLedger,
+  },
+  removeBox: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   remove: {
     ...theme.typography.mobileItemTitle,
-    minWidth: 24,
-    textAlign: 'center',
+    fontWeight: '400',
   },
 });
 

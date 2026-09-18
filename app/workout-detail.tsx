@@ -1,7 +1,12 @@
 // app/workout-detail.tsx
-// Active session screen. Two modes:
-//   - id param: read-only detail of a past session
-//   - no id: live logging against workoutStore.draft
+// Active session screen — the logbook's working page (see
+// docs/architecture/logbook-thesis.md §7). Two modes:
+//   - id param: read-only receipt of a past session — the tonnage is
+//     the headline of history (display figure), exercises as ledger
+//     tables on paper.
+//   - no id: live logging against workoutStore.draft — sticky exercise
+//     headers answer "what am I on and how far" at arm's length while
+//     the sets scroll under them; inputs sized for gloves and glare.
 // The draft hydrates from the program slots (local data — no fetch) and
 // saves via useLogWorkout once, at the end. A logged set is a done set;
 // rows with missing reps/weight are dropped at save time.
@@ -18,7 +23,6 @@ import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   MobileAtmosphere,
-  MobileSurface,
   MobileHeader,
   MobilePrimaryButton,
   MobileActionFooter,
@@ -26,6 +30,7 @@ import {
   MobileInput,
   CopyForAiButton,
   Figure,
+  EmptyState,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import {
@@ -36,7 +41,6 @@ import {
   SwapGlyph,
   QueryErrorNote,
 } from '../components/composed';
-import { EmptyState } from '../components/MobilePremium';
 import { useToast } from '../context';
 import { useAppTheme } from '../context';
 import {
@@ -53,7 +57,7 @@ import {
 } from '../hooks';
 import { useWorkoutStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots } from '../services';
-import { getSlotsForDay, getDayTitle, TAG_VOCABULARY_SEED } from '../shared/exercises';
+import { getDayTitle, TAG_VOCABULARY_SEED } from '../shared/exercises';
 import {
   isSetFilled,
   sumVolume,
@@ -311,39 +315,49 @@ export default function WorkoutDetailScreen() {
             <LoadingSpinner />
           ) : (
             <>
-              {/* The receipt header: when it started + what it added up to. */}
-              <MobileSurface padding={16}>
-                <Text style={[styles.receiptMeta, { color: colors.textColors.tertiary }]}>
-                  Started{' '}
-                  {new Date(session.startedAt).toLocaleTimeString(undefined, {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                  })}
-                </Text>
-                <View style={styles.receiptStats}>
-                  <Figure value={session.exercises.length} label="lifts" align="center" style={styles.stat} />
-                  <Figure value={totalSets} label="sets" align="center" style={styles.stat} />
+              {/* The receipt head: the tonnage is the headline of
+                  history; the count rides beside it. */}
+              <MobileSectionEyebrow rule flush={false}>
+                {`Receipt · started ${new Date(session.startedAt).toLocaleTimeString(undefined, {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                })}`}
+              </MobileSectionEyebrow>
+              <View style={styles.receiptHead}>
+                <Figure
+                  value={formatVolume(totalKg)}
+                  unit="kg"
+                  label="moved"
+                  size="display"
+                  tone="brand"
+                />
+                <View style={styles.receiptSide}>
                   <Figure
-                    value={formatVolume(totalKg)}
-                    label="kg"
-                    tone="brand"
-                    align="center"
-                    style={styles.stat}
+                    value={session.exercises.length}
+                    label="lifts"
+                    size="md"
+                    align="right"
+                  />
+                  <Figure
+                    value={totalSets}
+                    label="sets"
+                    size="md"
+                    align="right"
                   />
                 </View>
-              </MobileSurface>
-              <View style={{ height: 16 }} />
+              </View>
+
               {session.note ? (
                 <>
-                  <MobileSectionEyebrow>Notes</MobileSectionEyebrow>
-                  <MobileSurface padding={16}>
-                    <Text style={[styles.bodyText, { color: colors.text }]}>
-                      {session.note}
-                    </Text>
-                  </MobileSurface>
-                  <View style={{ height: 16 }} />
+                  <MobileSectionEyebrow rule flush={false}>
+                    Note
+                  </MobileSectionEyebrow>
+                  <Text style={[styles.bodyText, { color: colors.text }]}>
+                    {session.note}
+                  </Text>
                 </>
               ) : null}
+
               {session.exercises.length === 0 ? (
                 <EmptyState
                   title="No exercises logged"
@@ -352,25 +366,28 @@ export default function WorkoutDetailScreen() {
                 />
               ) : null}
               {session.exercises.map((ex) => (
-                <View key={ex.id} style={{ marginBottom: 12 }}>
-                  <MobileSectionEyebrow>
-                    {`${ex.exerciseName || 'Exercise'} · ${ex.sets.length} set${ex.sets.length === 1 ? '' : 's'}`}
-                  </MobileSectionEyebrow>
-                  <MobileSurface padding={12}>
-                    {ex.tags.length > 0 ? (
-                      <Text style={[styles.tagsLine, { color: colors.textSecondary }]}>
-                        {ex.tags.join(' · ')}
-                      </Text>
-                    ) : null}
-                    {ex.sets.map((s) => (
-                      <SetRow
-                        key={s.id}
-                        position={s.position}
-                        reps={s.reps}
-                        weight={s.weight}
-                      />
-                    ))}
-                  </MobileSurface>
+                <View key={ex.id} style={styles.receiptExercise}>
+                  <View style={styles.receiptExHead}>
+                    <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                      {ex.exerciseName || 'Exercise'}
+                    </Text>
+                    <Text style={[styles.receiptExCount, { color: colors.textMuted }]}>
+                      {`${ex.sets.length} set${ex.sets.length === 1 ? '' : 's'}`}
+                    </Text>
+                  </View>
+                  {ex.tags.length > 0 ? (
+                    <Text style={[styles.tagsLine, { color: colors.textMuted }]}>
+                      {ex.tags.join(' · ')}
+                    </Text>
+                  ) : null}
+                  {ex.sets.map((s) => (
+                    <SetRow
+                      key={s.id}
+                      position={s.position}
+                      reps={s.reps}
+                      weight={s.weight}
+                    />
+                  ))}
                 </View>
               ))}
             </>
@@ -422,6 +439,172 @@ export default function WorkoutDetailScreen() {
     ? `${dayTitle}${sessionSuffix}`
     : `${draft.splitType === 'oneADay' ? '1-a-day' : 'AM/PM'} · day ${draft.day}${sessionSuffix}`;
 
+  // The sticky-header scroll: stats strip + eyebrow, then per exercise a
+  // pinned header (name + done/total) above its scrolling body.
+  const scrollChildren: React.ReactElement[] = [];
+  const stickyIndices: number[] = [];
+
+  scrollChildren.push(
+    <View key="stats" style={styles.statsStrip}>
+      <Figure value={elapsed} label="elapsed" tone="brand" size="sm" style={styles.stat} />
+      <Figure value={sessionSets} label="sets done" size="sm" style={styles.stat} />
+      <Figure
+        value={formatVolume(sessionKg)}
+        unit="kg"
+        label="moved"
+        size="sm"
+        align="right"
+        style={styles.stat}
+      />
+    </View>,
+  );
+  scrollChildren.push(
+    <MobileSectionEyebrow key="count" rule flush={false}>
+      {draft.exercises.length} exercise{draft.exercises.length === 1 ? '' : 's'}
+    </MobileSectionEyebrow>,
+  );
+
+  draft.exercises.forEach((ex, i) => {
+    const filledCount = ex.sets.filter(isSetFilled).length;
+    const repsHint = ex.targetRx?.split('×')[1]?.trim() ?? null;
+    const suggestions = TAG_VOCABULARY_SEED.filter(
+      (t) => !ex.tags.includes(t),
+    ).slice(0, 6);
+    stickyIndices.push(scrollChildren.length);
+    scrollChildren.push(
+      <View
+        key={`h-${ex.localId}`}
+        style={[
+          styles.exHeader,
+          { backgroundColor: colors.backgroundDeep, borderBottomColor: colors.mobilePremium.hairlineBorder },
+        ]}
+      >
+        <Text style={[styles.exIndex, { color: colors.brandText }]}>{i + 1}</Text>
+        <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+          {ex.exerciseName}
+        </Text>
+        <Text
+          style={[
+            styles.exProgress,
+            { color: filledCount === ex.sets.length && ex.sets.length > 0 ? colors.brandText : colors.textMuted },
+          ]}
+        >
+          {`${filledCount}/${ex.sets.length}`}
+        </Text>
+      </View>,
+    );
+    scrollChildren.push(
+      <View key={`b-${ex.localId}`} style={styles.exBody}>
+        <View style={styles.exControls}>
+          {ex.targetRx ? (
+            <Text style={[styles.rxLine, { color: colors.textMuted }]} numberOfLines={1}>
+              {`Target ${ex.targetRx}`}
+            </Text>
+          ) : (
+            <View />
+          )}
+          <SwapGlyph onPress={() => setPickerFor(ex.localId)} label={ex.exerciseName} />
+          <Pressable
+            onPress={() => removeExerciseFromDraft(ex.localId)}
+            accessibilityRole="button"
+            accessibilityLabel={`Remove ${ex.exerciseName} from session`}
+            style={styles.removeExerciseCta}
+          >
+            <Text style={[styles.removeExerciseText, { color: colors.textMuted }]}>
+              Remove
+            </Text>
+          </Pressable>
+        </View>
+        {/* Realization tags — the single context surface. */}
+        <TagChips
+          tags={ex.tags}
+          suggestions={suggestions}
+          onToggleTag={(tag) => toggleDraftExerciseTag(ex.localId, tag)}
+          onAddTag={(tag) => toggleDraftExerciseTag(ex.localId, tag)}
+          testID={`tag-chips-${ex.localId}`}
+        />
+        {ex.sets.length > 0 ? (
+          <View style={styles.setList}>
+            {ex.sets.map((s) => (
+              <EditableSetRow
+                key={s.localId}
+                position={s.position}
+                weight={s.weight}
+                reps={s.reps}
+                repsHint={repsHint}
+                onChangeWeight={(w) =>
+                  updateSetInDraft(ex.localId, s.localId, { weight: w })
+                }
+                onChangeReps={(r) =>
+                  updateSetInDraft(ex.localId, s.localId, { reps: r })
+                }
+                onRemove={() =>
+                  removeSetFromDraft(ex.localId, s.localId)
+                }
+              />
+            ))}
+          </View>
+        ) : (
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+            No sets logged.
+          </Text>
+        )}
+        <Pressable
+          onPress={() => {
+            // Weight carry-forward: the last filled weight pre-fills the
+            // new set — logging repeats far more than it changes.
+            const lastFilled = [...ex.sets].reverse().find(isSetFilled);
+            addSetToDraft(ex.localId, { weight: lastFilled?.weight ?? null });
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={`Add set to ${ex.exerciseName}`}
+          style={styles.addSetCta}
+        >
+          <Text style={[styles.addCta, { color: colors.brandText }]}>
+            + Add set
+          </Text>
+        </Pressable>
+      </View>,
+    );
+  });
+
+  scrollChildren.push(
+    <Pressable
+      key="add-exercise"
+      onPress={navigateToExerciseDatabase}
+      accessibilityRole="button"
+      accessibilityLabel="Add exercise from library"
+      style={({ pressed }) => [
+        styles.addExerciseCta,
+        { borderColor: colors.border },
+        pressed ? { opacity: 0.6 } : null,
+      ]}
+    >
+      <Text style={[styles.addCta, { color: colors.brandText }]}>
+        + Add exercise
+      </Text>
+    </Pressable>,
+  );
+
+  scrollChildren.push(
+    <View key="notes" style={styles.notesWrap}>
+      <MobileInput
+        label="Notes"
+        value={draft.notes ?? ''}
+        onChangeText={setDraftNotes}
+        placeholder="How did it feel?"
+      />
+    </View>,
+  );
+
+  if (sessionError) {
+    scrollChildren.push(
+      <Text key="error" style={[styles.errorText, { color: colors.alert }]}>
+        {sessionError}
+      </Text>,
+    );
+  }
+
   return (
     <SafeAreaView
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
@@ -438,160 +621,9 @@ export default function WorkoutDetailScreen() {
         style={styles.body}
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator={false}
+        stickyHeaderIndices={stickyIndices}
       >
-        <View style={[styles.statsStrip, { borderBottomColor: colors.border }]}>
-          <Figure value={elapsed} label="elapsed" tone="brand" align="center" style={styles.stat} />
-          <Figure value={sessionSets} label="sets" align="center" style={styles.stat} />
-          <Figure
-            value={formatVolume(sessionKg)}
-            label="kg"
-            align="center"
-            style={styles.stat}
-          />
-        </View>
-
-        <MobileSectionEyebrow>
-          {draft.exercises.length} exercise{draft.exercises.length === 1 ? '' : 's'}
-        </MobileSectionEyebrow>
-
-        {draft.exercises.length === 0 ? (
-          <MobileSurface padding={20}>
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              No exercises planned for this day. Tap below to add your own.
-            </Text>
-          </MobileSurface>
-        ) : (
-          draft.exercises.map((ex) => {
-            const repsHint = ex.targetRx?.split('×')[1]?.trim() ?? null;
-            const suggestions = TAG_VOCABULARY_SEED.filter(
-              (t) => !ex.tags.includes(t),
-            ).slice(0, 6);
-            return (
-              <View key={ex.localId} style={{ marginBottom: 12 }}>
-                <MobileSurface padding={12}>
-                  <View style={styles.exerciseHeader}>
-                    <View style={styles.nameRow}>
-                      <Text style={[styles.exerciseName, { color: colors.text }]}>
-                        {ex.exerciseName}
-                      </Text>
-                      <SwapGlyph onPress={() => setPickerFor(ex.localId)} label={ex.exerciseName} />
-                    </View>
-                    <Pressable
-                      onPress={() => removeExerciseFromDraft(ex.localId)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Remove ${ex.exerciseName} from session`}
-                      hitSlop={8}
-                    >
-                      <Text
-                        style={[
-                          styles.removeExerciseCta,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
-                        Remove
-                      </Text>
-                    </Pressable>
-                  </View>
-                  {ex.targetRx ? (
-                    <Text style={[styles.rxLine, { color: colors.textSecondary }]}>
-                      Target {ex.targetRx}
-                    </Text>
-                  ) : null}
-                  <Text style={[styles.progressLine, { color: colors.textSecondary }]}>
-                    {ex.sets.filter(isSetFilled).length}/{ex.sets.length} sets
-                    {sumVolume(ex.sets) > 0 ? ` · ${formatVolume(sumVolume(ex.sets))} kg` : ''}
-                  </Text>
-                  {/* Realization tags — the single context surface. */}
-                  <TagChips
-                    tags={ex.tags}
-                    suggestions={suggestions}
-                    onToggleTag={(tag) => toggleDraftExerciseTag(ex.localId, tag)}
-                    onAddTag={(tag) => toggleDraftExerciseTag(ex.localId, tag)}
-                    testID={`tag-chips-${ex.localId}`}
-                  />
-                  {ex.sets.length > 0 ? (
-                    <View style={{ marginTop: 8 }}>
-                      {ex.sets.map((s) => (
-                        <EditableSetRow
-                          key={s.localId}
-                          position={s.position}
-                          weight={s.weight}
-                          reps={s.reps}
-                          repsHint={repsHint}
-                          onChangeWeight={(w) =>
-                            updateSetInDraft(ex.localId, s.localId, { weight: w })
-                          }
-                          onChangeReps={(r) =>
-                            updateSetInDraft(ex.localId, s.localId, { reps: r })
-                          }
-                          onRemove={() =>
-                            removeSetFromDraft(ex.localId, s.localId)
-                          }
-                        />
-                      ))}
-                    </View>
-                  ) : (
-                    <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                      No sets logged.
-                    </Text>
-                  )}
-                  <Pressable
-                    onPress={() => {
-                      // Weight carry-forward: the last filled weight
-                      // pre-fills the new set — logging repeats far more
-                      // than it changes.
-                      const lastFilled = [...ex.sets]
-                        .reverse()
-                        .find(isSetFilled);
-                      addSetToDraft(ex.localId, { weight: lastFilled?.weight ?? null });
-                    }}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Add set to ${ex.exerciseName}`}
-                    hitSlop={6}
-                    style={styles.addSetCta}
-                  >
-                    <Text style={[styles.addCta, { color: colors.brand }]}>
-                      + Add set
-                    </Text>
-                  </Pressable>
-                </MobileSurface>
-              </View>
-            );
-          })
-        )}
-
-        <View style={{ height: 8 }} />
-        <Pressable
-          onPress={navigateToExerciseDatabase}
-          accessibilityRole="button"
-          accessibilityLabel="Add exercise from library"
-          style={({ pressed }) => [
-            styles.addExerciseCta,
-            { borderColor: colors.border },
-            pressed ? { opacity: 0.6 } : null,
-          ]}
-        >
-          <Text style={[styles.addCta, { color: colors.brand }]}>
-            + Add exercise
-          </Text>
-        </Pressable>
-
-        <View style={{ height: 16 }} />
-        <MobileInput
-          label="Notes"
-          value={draft.notes ?? ''}
-          onChangeText={setDraftNotes}
-          placeholder="How did it feel?"
-        />
-
-        {sessionError ? (
-          <>
-            <View style={{ height: 12 }} />
-            <Text style={[styles.errorText, { color: colors.alert }]}>
-              {sessionError}
-            </Text>
-          </>
-        ) : null}
+        {scrollChildren}
       </ScrollView>
       <MobileActionFooter>
         <MobilePrimaryButton variant="ghost" onPress={handleDiscard}>
@@ -614,50 +646,99 @@ export default function WorkoutDetailScreen() {
 const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
+  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 32 },
   bodyText: { ...theme.typography.mobileBody },
-  emptyText: { ...theme.typography.mobileMeta },
-  exerciseName: { ...theme.typography.mobileItemTitle },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 },
-  exerciseHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  receiptMeta: {
-    ...theme.typography.mobileEyebrow,
-    textTransform: 'uppercase',
-    marginBottom: 10,
-  },
-  receiptStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  rxLine: { ...theme.typography.mobileMeta, marginTop: 2 },
-  progressLine: { ...theme.typography.mobileMeta, marginTop: 2 },
+  emptyText: { ...theme.typography.mobileMeta, marginTop: 8 },
   statsStrip: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingBottom: 12,
-    marginBottom: 4,
-    borderBottomWidth: 1,
+    alignItems: 'flex-end',
+    paddingTop: 4,
+    paddingBottom: 2,
   },
-  stat: { alignItems: 'center', flex: 1 },
-  tagsLine: { ...theme.typography.mobileMeta, marginBottom: 6 },
+  stat: { flex: 1 },
+  exHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    marginTop: 12,
+  },
+  exIndex: {
+    ...theme.typography.mobileLedger,
+    minWidth: 20,
+  },
+  exerciseName: {
+    ...theme.typography.mobileItemTitle,
+    flex: 1,
+  },
+  exProgress: {
+    ...theme.typography.mobileLedger,
+  },
+  exBody: {
+    paddingTop: 8,
+  },
+  exControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 44,
+  },
+  rxLine: {
+    ...theme.typography.mobileLedger,
+    flex: 1,
+  },
   removeExerciseCta: {
+    height: 44,
+    justifyContent: 'center',
+  },
+  removeExerciseText: {
     ...theme.typography.mobileTag,
-    paddingVertical: 8,
+  },
+  setList: {
+    marginTop: 4,
+  },
+  addSetCta: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+    paddingRight: 12,
+  },
+  addCta: {
+    ...theme.typography.mobileLedger,
   },
   addExerciseCta: {
     borderWidth: 1.5,
     borderStyle: 'dashed',
     borderRadius: theme.shapes.tile,
-    paddingVertical: 16,
+    minHeight: 48,
+    marginTop: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addSetCta: { marginTop: 8, alignSelf: 'flex-start' },
-  addCta: { ...theme.typography.mobileItemTitle, textAlign: 'center' },
-  errorText: { ...theme.typography.mobileMeta },
+  notesWrap: { marginTop: 20 },
+  errorText: { ...theme.typography.mobileMeta, marginTop: 12 },
+  receiptHead: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  receiptSide: {
+    gap: 12,
+    paddingBottom: 4,
+  },
+  receiptExercise: {
+    marginTop: 20,
+  },
+  receiptExHead: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  receiptExCount: {
+    ...theme.typography.mobileMeta,
+  },
+  tagsLine: { ...theme.typography.mobileMeta, marginTop: 2 },
 });

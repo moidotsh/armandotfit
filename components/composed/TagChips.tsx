@@ -131,24 +131,29 @@ export function TagChips({
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: 6, marginTop: 4 },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' },
+  wrap: { gap: 2, marginTop: 4 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 2, alignItems: 'center' },
+  // Every pressable clears the 44px touch floor — the visual pill rides
+  // centered inside the box (RN-web hitSlop does not expand the DOM hit
+  // area; measured).
   chip: {
+    minHeight: 44,
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    justifyContent: 'center',
     borderRadius: 999,
     borderWidth: 1,
   },
   chipText: { ...theme.typography.mobileTag },
   wordCta: {
-    paddingVertical: 8,
-    paddingHorizontal: 2,
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 6,
   },
   wordText: { ...theme.typography.mobileTag },
   input: {
     borderWidth: 1.5,
-    borderRadius: 10,
-    paddingVertical: 6,
+    borderRadius: theme.shapes.control,
+    minHeight: 44,
     paddingHorizontal: 10,
     ...theme.typography.mobileBody,
   },

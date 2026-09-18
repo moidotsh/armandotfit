@@ -1,8 +1,8 @@
 // components/composed/InkRail.tsx
 // The substitution picker — invisible until needed. The exercise row
-// stays perfectly clean; one tiny ⇄ glyph sits after the name. Tap it
-// and a no-chrome sheet slides up with ranked alternatives as bare
-// text rows. Tap a name, done. That's the whole interaction.
+// stays perfectly clean; one small ⇄ glyph sits after the controls. Tap
+// it and the ink plate slides up with ranked alternatives as paper-type
+// rows. Tap a name, done. That's the whole interaction.
 
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -22,7 +22,7 @@ export interface InkRailProps {
   testID?: string;
 }
 
-/** The tiny ⇄ glyph rendered after the exercise name. */
+/** The ⇄ trigger — a 44×44 target wearing a small glyph. */
 export function SwapGlyph({ onPress, label }: { onPress: () => void; label: string }) {
   const { colors } = useAppTheme();
   return (
@@ -30,7 +30,7 @@ export function SwapGlyph({ onPress, label }: { onPress: () => void; label: stri
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Change ${label}`}
-      hitSlop={8}
+      style={styles.glyphBox}
     >
       <Text style={[styles.glyph, { color: colors.textSecondary }]}>⇄</Text>
     </Pressable>
@@ -111,7 +111,7 @@ export function InkRail({
             }
             style={({ pressed }) => [
               styles.row,
-              { borderBottomColor: colors.border },
+              { borderBottomColor: colors.mobilePremium.hairlineBorder },
               pressed ? { opacity: 0.6 } : null,
             ]}
           >
@@ -121,7 +121,7 @@ export function InkRail({
                 styles.name,
                 {
                   color: item.isCurrent
-                    ? colors.brand
+                    ? colors.brandText
                     : item.isProgrammed
                       ? colors.textSecondary
                       : colors.text,
@@ -131,9 +131,9 @@ export function InkRail({
               {item.isProgrammed ? `↺ ${item.name}` : item.name}
             </Text>
             {item.isCurrent ? (
-              <Text style={[styles.meta, { color: colors.brand }]}>current</Text>
+              <Text style={[styles.meta, { color: colors.brandText }]}>current</Text>
             ) : (
-              <Text style={[styles.meta, { color: colors.textColors.tertiary }]}>
+              <Text style={[styles.meta, { color: colors.textMuted }]}>
                 {item.isProgrammed ? 'restore' : item.modality ?? ''}
               </Text>
             )}
@@ -145,8 +145,14 @@ export function InkRail({
 }
 
 const styles = StyleSheet.create({
+  glyphBox: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   glyph: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
   },
   list: {
@@ -156,20 +162,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 13,
+    minHeight: 52,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     gap: 12,
   },
   name: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '600',
     flex: 1,
   },
   meta: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
 });
+
+export default InkRail;
