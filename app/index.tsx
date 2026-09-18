@@ -54,7 +54,7 @@ import {
   navigateToSplitSelection,
   navigateToHome,
 } from '../navigation';
-import { getSlotsForDay, getDayTitle } from '../shared/exercises';
+import { getSlotsForDay, getDayTitle, SYSTEM_EXERCISES_BY_SLUG } from '../shared/exercises';
 import { useSplitPreferenceStore } from '../stores';
 import {
   useDashboardSummary,
@@ -79,11 +79,17 @@ export default function HomeScreen() {
   // clock, the split is the remembered program.
   const suggestedDay = recent.length > 0 ? suggestNextSplitDay(recent) : 1;
   const suggestedWindow = suggestSessionWindow();
-  const suggestedCount = getSlotsForDay(preferredSplit, suggestedDay, suggestedWindow).length;
+  const suggestedSlots = getSlotsForDay(preferredSplit, suggestedDay, suggestedWindow);
+  const suggestedCount = suggestedSlots.length;
   const launcherTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;
-  const launcherSub = preferredSplit === 'twoADay'
+  const launcherPlan = preferredSplit === 'twoADay'
     ? `${launcherTitle} · ${suggestedWindow.toUpperCase()} · ${suggestedCount} exercises`
     : `${launcherTitle} · ${suggestedCount} exercises`;
+  // The brief names the day's opening lift — the answer to "what am I
+  // walking into?" without leaving home.
+  const firstLift = suggestedSlots.length > 0
+    ? SYSTEM_EXERCISES_BY_SLUG[suggestedSlots[0].exercise]?.name ?? null
+    : null;
 
   const aiPayload = useAiPayload(
     summary
@@ -177,8 +183,13 @@ export default function HomeScreen() {
             Start today's session
           </Text>
           <Text style={[styles.launcherSub, { color: colors.textSecondary }]}>
-            {launcherSub} — picked for you, adjust in one tap
+            {launcherPlan}
           </Text>
+          {firstLift ? (
+            <Text style={[styles.launcherSub, { color: colors.textSecondary }]}>
+              First up: {firstLift}
+            </Text>
+          ) : null}
           <View style={{ height: 12 }} />
           <MobilePrimaryButton onPress={navigateToSplitSelection} testID="home-launcher-start">
             Start {preferredSplit === 'twoADay' ? `${suggestedWindow.toUpperCase()} ` : ''}workout
@@ -213,42 +224,6 @@ export default function HomeScreen() {
             </View>
           </MobileSurface>
         )}
-
-        {/* Quick actions — one 2×2 grid, no duplicates. */}
-        <View style={{ height: 16 }} />
-        <MobileSectionEyebrow>Quick actions</MobileSectionEyebrow>
-        <View style={styles.actionsRow}>
-          <MobilePrimaryButton
-            variant="ghost"
-            onPress={navigateToExerciseDatabase}
-            style={styles.actionButton}
-          >
-            Exercises
-          </MobilePrimaryButton>
-          <MobilePrimaryButton
-            variant="ghost"
-            onPress={navigateToProgram}
-            style={styles.actionButton}
-          >
-            Program
-          </MobilePrimaryButton>
-        </View>
-        <View style={styles.actionsRow}>
-          <MobilePrimaryButton
-            variant="ghost"
-            onPress={navigateToProgression}
-            style={styles.actionButton}
-          >
-            Progression
-          </MobilePrimaryButton>
-          <MobilePrimaryButton
-            variant="ghost"
-            onPress={navigateToAnalytics}
-            style={styles.actionButton}
-          >
-            Analytics
-          </MobilePrimaryButton>
-        </View>
 
         {/* Recent workouts */}
         <View style={{ height: 16 }} />
@@ -346,12 +321,10 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   launcherTitle: { ...theme.typography.mobileTitle },
-  launcherSub: { ...theme.typography.mobileSubtitle, marginTop: 4 },
+  launcherSub: { ...theme.typography.mobileSubtitle, marginTop: 2 },
   streakRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
   streakSide: { gap: 4, alignItems: 'flex-end' },
   sideValue: { ...theme.typography.mobileLedger },
-  actionsRow: { flexDirection: 'row', gap: 8 },
-  actionButton: { flex: 1 },
   recentList: { gap: 8 },
   emptyText: { ...theme.typography.mobileMeta },
   drawerHeader: {
