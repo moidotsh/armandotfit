@@ -107,5 +107,6 @@ Direct-copy consumer of the public starter (sibling at `../arqavellum`, `github.
 | Claim-type → owner map | `docs/OWNERSHIP.md` |
 | Exercise identity + logging governance (identity test, tags, promotion rule) | `docs/architecture/exercise-logging-governance.md` |
 | MobilePremium design system | `docs/architecture/mobile-premium-design-system.md` |
+| The 2026 redesign thesis (logbook type/surface/hierarchy system) | `docs/architecture/logbook-thesis.md` |
 | PWA installability | `docs/architecture/pwa-installability.md` |
 | Theme tokens / palette values | `constants/theme.ts` |

@@ -124,10 +124,10 @@ background subtly. No thick painted bars.
 
 The kit's corner language is one semantic family in `constants/theme.ts` — the single re-skin point for shape:
 
-- `surface` (16) — cards + section surfaces (`MobileSurface`, `StatCard`, `MobileAlert`)
-- `sheet` (20) — portal panels (calendar/dialog bodies)
-- `control` (14) — inputs, buttons, selects
-- `tile` (12) — selection rows, option containers, thumbnails
+- `surface` (12) — cards + section surfaces (`MobileSurface`, `StatCard`, `MobileAlert`)
+- `sheet` (16) — portal panels (calendar/dialog bodies)
+- `control` (10) — inputs, buttons, selects
+- `tile` (8) — selection rows, option containers, thumbnails
 - `tag` (999) — chips, tags, badges (full round)
 
 Primitives read the tokens (not literals), so a consumer flattening the language — e.g. a sleek, monochrome retail feel — overrides the family once (`surface: 8, control: 8, tile: 6, tag: 4`) and every primitive follows. The raw `theme.borderRadius` scale (`small`/`medium`/`large`/`pill`) remains for ad-hoc shapes. Micro-radii (hairlines, grabbers, progress bars, focus rings) stay literal on purpose — they're chrome, not shape language.
@@ -240,7 +240,7 @@ via the path alias, or `../MobilePremium` relatively).
 | `Toast` (primitives) | The transient-message surface (`ToastContainer`, mounted by the shell). Two surface languages read `theme.toast.style` (§5.3): `'card'` — bordered card, colored icon, left stripe (the glass default); `'chit'` — the ink plate with paper type, one 7px status dot, receipt-mono message when `fonts.mono` is declared, flat air. Items carry `accessibilityLiveRegion="polite"`; the card radius reads `theme.shapes.control`. |
 | `EmptyState` | The canonical empty-state primitive. Domain-neutral: consumer supplies title, optional message, optional icon, and optional action. The action renders through `MobilePrimaryButton` so the tap target + variant language (primary/secondary/ghost) match the rest of the kit — pick the variant by context (primary when EmptyState is the screen's main content, secondary/ghost when nested). Compact mode trims the vertical rhythm for nested use. No preset copy, no icon library, no variant codes — those stay consumer-side. |
 | `OfflineBanner` | Pinned connectivity / sync banner. Three variants carry distinct semantics: `'offline'` (error red — device is offline; optional pending count), `'syncing'` (brand — online and flushing pending work), `'sync-failed'` (warning amber — a sync attempt failed; pair with `actionLabel="Retry"` + `onAction`). Purely presentational: the consumer owns network state, queue state, and mount/unmount. No store subscription, no polling, no auto-hide. Respects its parent's layout — does not pin itself to the screen. Uses `accessibilityLiveRegion="polite"` so screen readers announce state changes; the `status` role is omitted because RN's `AccessibilityRole` enum does not include it. |
-| `Figure` | The labeled number, no chrome — value + optional uppercase label on the paper. The chrome-less sibling of `StatCard`: for stat strips, receipt headers, and the one hero figure per screen. `size` rides the figure tokens (`'display'` → mobileDisplay, `'md'` (default) → mobileFigure, `'sm'` → mobileLedger), so tabular figures and declared faces arrive by construction; `tone: 'brand'` reads the value in the brand slot; `align` composes receipt rows. Static View with `role="text"` and a composed `"<value> <label>"` a11y label. |
+| `Figure` | The labeled number, no chrome — value + optional `unit` (small mono, whispering after the value) + optional uppercase label on the paper. The chrome-less sibling of `StatCard`: for stat strips, receipt headers, and the one hero figure per screen. `size` rides the figure tokens (`'hero'` → mobileHero, `'display'` → mobileDisplay, `'md'` (default) → mobileFigure, `'sm'` → mobileLedger), so tabular figures and declared faces arrive by construction; `tone: 'brand'` reads the value in the brand slot, `'plate'` is paper-type for ink plates; `align` composes receipt rows. Static View with `role="text"` and a composed `"<value> <unit> <label>"` a11y label. |
 | `StatCard` | Small card showing one labeled metric — `label`, large `value`, optional `subtitle`, optional `icon`, optional `accentColor`. Three variants: `'plain'` (default card surface), `'accent'` (brand-tinted background), `'outline'` (hairline border). Three sizes: `'sm'`, `'md'`, `'lg'` (control padding + value font size). Optional `onPress` turns the card into a Pressable with `role="button"`; without `onPress` it is a non-interactive View with `role="text"`. Press feedback via `usePressedStyle` (scale + opacity; opacity-only under reduced motion). |
 | `SkeletonBlock` | Loading placeholder. Reads `colors.cardAlt` and pulses opacity via `useShimmer` (1.0 → 0.5 → 1.0, 1200ms; collapses to flat under `prefers-reduced-motion: reduce`). Uses `Animated.View`, not `ActivityIndicator`, so the C4 audit doesn't apply by construction. Consumer composes per-screen skeletons from this primitive. |
 | `ActivityGrid` | Generic responsive activity-grid / heatmap. Domain-neutral: takes normalized `ActivityGridDatum[]` + `startDate`/`endDate` and renders a calendar of intensity-colored cells (level 0 = empty `colors.cardAlt`, levels 1–4 = brand color at increasing alpha). Two layout modes: **`calendar`** (default) — fixed 7-column grid, one week per row, with weekday alignment via `weekStartsOn`; **`responsive-matrix`** — dev-preview mode that adapts column count to width. The component measures its own container via `useContainerQuery`, so the responsive width is the in-grid width after parent-surface padding. Levels are derived from `value / maxValue` by default; consumers can supply a `getLevel` callback (called only on date cells after aggregation; return clamped to 0..4). Empty `data` with a valid range renders the full zero-level calendar — the invalid-range empty state fires only when `start > end` or endpoints are malformed. Calendar mode is compact-aware: below the feasible threshold (7·cellMinSize + 6·preferredGap) it first reduces gap toward `minGap`, then reduces cell size below `cellMinSize` while keeping `totalWidth ≤ availableWidth`, `gap ≥ 0`, and cells square; the `compact` flag on the layout output signals this state. No persistence, no Supabase, no domain store, no new dependency. |
@@ -481,18 +481,24 @@ write ad-hoc `fontSize`/`fontWeight` values. The current slots:
 
 | Token | Shape | Reads as |
 |---|---|---|
-| `mobileDisplay` | 56/800, ls −2, tabular, display face | The one hero figure per screen |
-| `mobileFigure` | 22/700, ls −0.3, tabular, display face | Stat-strip / receipt figures |
-| `mobileTitle` | 22/600, ls −0.2, display face | Screen + card-lead titles |
-| `mobileAction` | 15/600, ls +0.4 | Buttons, links, row labels |
-| `mobileItemTitle` | 14/600 | Row / card item titles |
-| `mobileSubtitle` | 14/400, lh 20 | Supporting line under a title |
-| `mobileBody` | 14/400, lh 22 | Prose |
-| `mobileFieldLabel` | 13/600 | Input labels |
-| `mobileLedger` | 13/500, tabular, mono face | In-row numeric facts (set rows, side stats) |
-| `mobileMeta` | 12/400, lh 16, tabular | Caption / meta lines |
-| `mobileTag` | 12/600, ls +0.1 | Chip text |
-| `mobileEyebrow` | 11/600, ls +1.4, mono face | Uppercase section + micro labels |
+| `mobileHero` | 72/800, lh 76, ls −2.5, tabular, display face | The one hero figure per screen (day numbers, streaks, the 404) |
+| `mobileDisplay` | 44/800, lh 48, ls −1.5, tabular, display face | Secondary figures: totals, receipt tonnage |
+| `mobileFigure` | 28/700, lh 32, ls −0.5, tabular, display face | Stat-strip / receipt figures |
+| `mobileTitle` | 28/700, lh 32, ls −0.8, display face | Screen + day titles |
+| `mobileAction` | 16/600, ls +0.2 | Buttons, links, row labels |
+| `mobileItemTitle` | 18/700, lh 24, ls −0.3 | Row leads: exercise names, list titles |
+| `mobileSubtitle` | 15/400, lh 22 | Supporting line under a title |
+| `mobileBody` | 15/400, lh 22 | Prose |
+| `mobileFieldLabel` | 13/600, ls +0.2 | Input labels |
+| `mobileLedger` | 15/600, lh 20, tabular, mono face | In-row numeric facts (set rows, dates, Rx) |
+| `mobileMeta` | 13/400, lh 18, tabular | Caption / meta lines |
+| `mobileTag` | 12/600, ls +0.2 | Chip text |
+| `mobileEyebrow` | 11/700, lh 16, ls +1.6, mono face | Uppercase section + micro labels |
+
+The two-ramp logic (words 11·13·15·18·28, figures 15·28·44·72 — a
+number is always one step louder than the words around it) and the
+self-hosted face pair live in `docs/architecture/logbook-thesis.md`,
+this consumer's design thesis.
 
 Every figure token carries `fontVariant: ['tabular-nums']` by
 construction — a call site cannot forget it.
