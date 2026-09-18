@@ -84,7 +84,9 @@ const REQUIRED_HTML_ROUTES: readonly string[] = [
   'register.html',
   'forgot-password.html',
   'settings.html',
-  'qr.html',
+  // No 'qr.html' here: this consumer never carried the starter's /qr
+  // route (the shell-sync commit f24d2a624 shipped the verify list
+  // verbatim with the expectation stale for this route table).
   'dev/premium.html',
   '_sitemap.html',
   '+not-found.html',
