@@ -1,10 +1,13 @@
 // app/exercise-database.tsx
 // Exercise library browse. Search + modality chips + tap-through to
 // detail. The catalog is local (data.ts — sole display source);
-// filtering is client-side. Sections group by display category with
-// sticky headers so scrolling a long list keeps its place.
+// filtering is client-side. Unfiltered browse leads with a "Recently
+// logged" section (distinct names from the last sessions, recency
+// order) — the shortest path back to what the user actually lifts.
+// Sections group by display category with sticky headers so scrolling
+// a long list keeps its place.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { SectionList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -22,9 +25,9 @@ import {
 import { ExerciseListItem } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { navigateToExerciseDetail, safeGoBack } from '../navigation';
-import { useExercises, useAiPayload } from '../hooks';
+import { useExercises, useRecentSessionDetails, useAiPayload } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
-import type { SystemExerciseData } from '../shared/exercises';
+import { SYSTEM_EXERCISES, type SystemExerciseData } from '../shared/exercises';
 import { SCREEN_BODY_STYLE, theme } from '../constants';
 
 /** Group the catalog by display category, in display order. */
@@ -44,6 +47,30 @@ function groupedByCategory(entries: SystemExerciseData[]) {
     .map(([category, entries]) => ({ category, data: entries, key: category }));
 }
 
+const RECENT_SECTION_KEY = '__recent';
+
+/** Distinct recently-logged catalog entries, recency order (a logged
+ *  exercise joins identity by NAME — custom names don't resolve). */
+function recentCatalogEntries(
+  sessions: Array<{ exercises: Array<{ exerciseName: string }> }> | undefined,
+  cap = 5,
+): SystemExerciseData[] {
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const session of sessions ?? []) {
+    for (const e of session.exercises) {
+      if (seen.has(e.exerciseName)) continue;
+      seen.add(e.exerciseName);
+      names.push(e.exerciseName);
+      if (names.length >= cap) break;
+    }
+    if (names.length >= cap) break;
+  }
+  return names
+    .map((n) => SYSTEM_EXERCISES.find((x) => x.name === n))
+    .filter((x): x is SystemExerciseData => Boolean(x));
+}
+
 export default function ExerciseDatabaseScreen() {
   const { colors } = useAppTheme();
   const { showToast } = useToast();
@@ -55,6 +82,19 @@ export default function ExerciseDatabaseScreen() {
   const resetFilters = useExerciseStore((s) => s.resetFilters);
 
   const query = useExercises(filter);
+  const recentQuery = useRecentSessionDetails(10);
+
+  // The Recent section only leads the UNFILTERED browse — the moment the
+  // user searches or filters, the list answers the query alone.
+  const isUnfiltered = !filter.search && !filter.modality;
+  const sections = useMemo(() => {
+    const recent = isUnfiltered ? recentCatalogEntries(recentQuery.data) : [];
+    const recentSection =
+      recent.length > 0
+        ? [{ category: 'Recently logged', data: recent, key: RECENT_SECTION_KEY }]
+        : [];
+    return [...recentSection, ...groupedByCategory(query.data ?? [])];
+  }, [isUnfiltered, recentQuery.data, query.data]);
 
   useEffect(() => {
     return () => {
@@ -138,7 +178,10 @@ export default function ExerciseDatabaseScreen() {
           </>
         ) : null}
         <View style={{ height: 12 }} />
-        <MobileSectionEyebrow>{resultCount} results</MobileSectionEyebrow>
+        {/* The count is feedback for a query; the full catalog needs no tally. */}
+        {!isUnfiltered ? (
+          <MobileSectionEyebrow>{resultCount} results</MobileSectionEyebrow>
+        ) : null}
         {resultCount === 0 ? (
           <EmptyState
             compact
@@ -153,7 +196,7 @@ export default function ExerciseDatabaseScreen() {
             // layout and RN-web's default flex-shrink collapses the chip
             // row above it to a sliver.
             style={{ flex: 1 }}
-            sections={groupedByCategory(query.data ?? [])}
+            sections={sections}
             keyExtractor={(e) => e.slug}
             renderItem={({ item }) => (
               <View style={styles.itemWrap}>
@@ -165,7 +208,9 @@ export default function ExerciseDatabaseScreen() {
                 style={[styles.sectionHeader, { backgroundColor: colors.backgroundDeep }]}
               >
                 <MobileSectionEyebrow>
-                  {`${section.category} · ${section.data.length}`}
+                  {section.key === RECENT_SECTION_KEY
+                    ? 'Recently logged'
+                    : `${section.category} · ${section.data.length}`}
                 </MobileSectionEyebrow>
               </View>
             )}
