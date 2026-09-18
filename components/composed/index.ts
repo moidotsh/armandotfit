@@ -5,11 +5,6 @@
 export { SetRow, type SetRowProps } from './SetRow';
 export { EditableSetRow, type EditableSetRowProps } from './EditableSetRow';
 export { TagChips, type TagChipsProps } from './TagChips';
-export {
-  AlternativesExpansion,
-  type AlternativesExpansionProps,
-  type AlternativesSelection,
-} from './AlternativesExpansion';
 export { InkRail, SwapGlyph, type InkRailProps } from './InkRail';
 export { SplitExerciseRow, type SplitExerciseRowProps } from './SplitExerciseRow';
 export { ExerciseListItem, type ExerciseListItemProps } from './ExerciseListItem';
