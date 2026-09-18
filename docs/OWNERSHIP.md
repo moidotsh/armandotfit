@@ -11,7 +11,7 @@
 | Project orientation (what arqavellum is, quickstart) | `README.md` | Navigation surface — points at canonical content, doesn't redefine it. |
 | Claim-type → owner-doc map (this meta-layer) | this file (`docs/OWNERSHIP.md`) | — |
 | MobilePremium design system (four pillars, primitive inventory, atmosphere palettes, 490px test, gating policy) | `docs/architecture/mobile-premium-design-system.md` | The visual source of truth is `app/dev/premium.tsx`; the doc is the written reference. |
-| The active design thesis (THE BROADSHEET: the daily training paper — headline law, agate figures, the record red, the wire) | `docs/architecture/broadsheet-thesis.md` | Supersedes `count-thesis.md`, `signal-thesis.md`, `logbook-thesis.md` (all retired, kept as records). |
+| The active design thesis (THE QUIET PAGE: reduction — the content is the statement, air is the structure, one verb, countable budgets) | `docs/architecture/quiet-page-thesis.md` | Supersedes `broadsheet-thesis.md`, `count-thesis.md`, `signal-thesis.md`, `logbook-thesis.md` (all retired, kept as records). |
 | PWA installability (manifest, SW, runtime injection, icons) | `docs/architecture/pwa-installability.md` | The runtime injection block in `app/_layout.tsx` is load-bearing — keep it in sync with the doc. |
 | Logging data model (five-table schema) | `supabase/migrations/20261001000000_greenslate_rebuild.sql` | The migration file is the schema of record. |
 | Exercise identity + logging governance (identity test, tags, promotion rule) | `docs/architecture/exercise-logging-governance.md` | Source of truth for the identity-vs-realization boundary and when tags earn structure. CLAUDE.md invariants #4–#8 cross-link. |

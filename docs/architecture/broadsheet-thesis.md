@@ -1,4 +1,12 @@
-# THE BROADSHEET — the daily training paper
+# THE BROADSHEET — the daily training paper (RETIRED)
+
+**Status:** Retired by `quiet-page-thesis.md` (the 2026-12 reduction
+pass, the fifth upending). Kept as the historical record of the
+cohesion pass; its §3.3 measured contrast matrix carries over (the
+QUIET PAGE keeps the palette values verbatim), and its §7 map fed the
+screen inventory for the reduction. `constants/theme.ts` and the
+showcase now carry the QUIET PAGE tokens; when this doc and the tokens
+disagree, the tokens win.
 
 > The fourth upending (2026-12). This document is the compass: the
 > point of view, the complete token tables, the measured color law,
