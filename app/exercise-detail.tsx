@@ -11,7 +11,6 @@ import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   MobileAtmosphere,
-  MobileSurface,
   MobileHeader,
   MobileSectionEyebrow,
   MobilePrimaryButton,
@@ -69,8 +68,6 @@ export default function ExerciseDetailScreen() {
     >
       <MobileAtmosphere surface="instructions" />
       <MobileHeader
-        title={exercise?.name ?? 'Exercise'}
-        eyebrow={exercise ? EXERCISE_TYPE_DISPLAY[exercise.exerciseType] : ''}
         onBack={safeGoBack}
         navRightAction={<CopyForAiButton payload={aiPayload} testID="exercise-detail-copy-for-ai" />}
       />
@@ -85,26 +82,33 @@ export default function ExerciseDetailScreen() {
           </Text>
         ) : (
           <>
-            <MobileSectionEyebrow>Instructions</MobileSectionEyebrow>
-            <MobileSurface padding={16}>
-              <Text style={[styles.bodyText, { color: colors.text }]}>
-                {exercise.instructions || 'No instructions available.'}
+            {/* The reference page: the name is the anchor — display
+                scale, type riding above as the mono eyebrow. */}
+            <Text style={[styles.typeEyebrow, { color: colors.textMuted }]}>
+              {(EXERCISE_TYPE_DISPLAY[exercise.exerciseType] ?? '').toUpperCase()}
+            </Text>
+            <Text style={[styles.headline, { color: colors.text }]}>
+              {exercise.name}
+            </Text>
+
+            <MobileSectionEyebrow rule flush={false}>
+              Instructions
+            </MobileSectionEyebrow>
+            <Text style={[styles.bodyText, { color: colors.text }]}>
+              {exercise.instructions || 'No instructions available.'}
+            </Text>
+            {exercise.tips ? (
+              <Text style={[styles.tips, { color: colors.textMuted }]}>
+                Tip: {exercise.tips}
               </Text>
-              {exercise.tips ? (
-                <>
-                  <View style={{ height: 12 }} />
-                  <Text style={[styles.tips, { color: colors.textSecondary }]}>
-                    Tip: {exercise.tips}
-                  </Text>
-                </>
-              ) : null}
-            </MobileSurface>
+            ) : null}
 
             {exercise.primaryMuscles.length + exercise.secondaryMuscles.length > 0 && (
               <>
-                <View style={{ height: 16 }} />
-                <MobileSectionEyebrow>Muscles worked</MobileSectionEyebrow>
-                <MobileSurface padding={16}>
+                <MobileSectionEyebrow rule flush={false}>
+                  Muscles worked
+                </MobileSectionEyebrow>
+                <View>
                   <View style={styles.chipWrap}>
                     {exercise.primaryMuscles.map((m) => (
                       <View
@@ -133,18 +137,19 @@ export default function ExerciseDetailScreen() {
                       </View>
                     ))}
                   </View>
-                  <Text style={[styles.chipLegend, { color: colors.textColors.tertiary }]}>
-                    Outlined are primary; the rest assist.
+                  <Text style={[styles.chipLegend, { color: colors.textMuted }]}>
+                    Tinted are primary; the rest assist.
                   </Text>
-                </MobileSurface>
+                </View>
               </>
             )}
 
             {exercise.equipment.length > 0 && (
               <>
-                <View style={{ height: 16 }} />
-                <MobileSectionEyebrow>Equipment</MobileSectionEyebrow>
-                <MobileSurface padding={16}>
+                <MobileSectionEyebrow rule flush={false}>
+                  Equipment
+                </MobileSectionEyebrow>
+                <View>
                   <View style={styles.chipWrap}>
                     {exercise.equipment.map((e, i) => (
                       <View
@@ -157,7 +162,7 @@ export default function ExerciseDetailScreen() {
                       </View>
                     ))}
                   </View>
-                </MobileSurface>
+                </View>
               </>
             )}
 
@@ -195,9 +200,16 @@ export default function ExerciseDetailScreen() {
 const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
-  bodyText: { ...theme.typography.mobileSubtitle },
-  tips: { ...theme.typography.mobileMeta, fontStyle: 'italic' },
+  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 32 },
+  typeEyebrow: {
+    ...theme.typography.mobileEyebrow,
+  },
+  headline: {
+    ...theme.typography.mobileTitle,
+    marginBottom: 4,
+  },
+  bodyText: { ...theme.typography.mobileBody },
+  tips: { ...theme.typography.mobileMeta, fontStyle: 'italic', marginTop: 10 },
   missing: { ...theme.typography.mobileMeta },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {

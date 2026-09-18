@@ -1,48 +1,47 @@
 // app/program.tsx
-// My Program — the split display. Every day, every session window, every
-// slot with its Rx and suggested tags — plus plan-time Swap: a standing
-// per-slot substitution (persisted client-side; the authored program in
-// splits.ts is never edited). Swapped slots carry their Rx forward and
+// My Program — the split as a document (docs/architecture/
+// logbook-thesis.md §7): days are chapters (mono DAY 01 + Archivo
+// title + planned-sets figure), slots are the same numbered ledger rows
+// the split-selection preview speaks — one slot language everywhere.
+// Plan-time Swap: a standing per-slot substitution (persisted
+// client-side; the authored program in splits.ts is never edited).
+// Swapped slots carry their Rx forward, mark with a 2px brand rule, and
 // reset with one tap.
 
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   MobileAtmosphere,
   MobileHeader,
-  MobileSurface,
   MobileSectionEyebrow,
-  MobileSelectionList,
   MobilePrimaryButton,
+  SegmentedControl,
   CopyForAiButton,
-  type MobileSelectionOption,
 } from '../components/MobilePremium';
 import { InkRail, SwapGlyph } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
-import { useAiPayload, } from '../hooks';
+import { useAiPayload } from '../hooks';
 import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots, slotKey } from '../services';
 import {
   TWO_A_DAY_SPLITS,
   ONE_A_DAY_SPLITS,
   SYSTEM_EXERCISES_BY_SLUG,
+  MUSCLE_DISPLAY_NAMES,
   getSlotsForDay,
+  type MuscleSlug,
   type SessionWindow,
 } from '../shared/exercises';
 import { SCREEN_BODY_STYLE, WORKOUT_SPLIT_LIST, theme } from '../constants';
 import type { PreferredSplit } from '../shared/types';
 
-const SPLIT_OPTIONS: MobileSelectionOption[] = WORKOUT_SPLIT_LIST.map((s) => ({
-  id: s.id,
-  label: s.label,
-  description: s.description,
-}));
+const SPLIT_SEGMENTS = WORKOUT_SPLIT_LIST.map((s) => ({ value: s.id, label: s.label }));
 
 function rxLabel(sets: [number, number], reps: [number, number]): string {
   const s = sets[1] > 0 ? sets[1] : sets[0];
-  return `${s} × ${reps[0]}–${reps[1]}`;
+  return `${s}×${reps[0]}–${reps[1]}`;
 }
 
 export default function ProgramScreen() {
@@ -56,8 +55,6 @@ export default function ProgramScreen() {
   const [pickerFor, setPickerFor] = useState<string | null>(null);
   const setOverride = useProgramOverrideStore((s) => s.setOverride);
   const clearOverride = useProgramOverrideStore((s) => s.clearOverride);
-
-
 
   const days = split === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
   const overriddenCount = Object.keys(overrides).length;
@@ -76,6 +73,7 @@ export default function ProgramScreen() {
     day: number,
     window: SessionWindow,
     position: number,
+    isLast: boolean,
   ) => {
     const slots = resolveSlots(split, day, window, overrides);
     const slot = slots[position - 1];
@@ -84,6 +82,14 @@ export default function ProgramScreen() {
     const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
     const name = entry?.name ?? slot.exercise;
     const isOverridden = key in overrides;
+    const detail = [
+      slot.suggestedTags.length > 0 ? slot.suggestedTags.join(' · ') : null,
+      entry?.primaryMuscles[0]
+        ? MUSCLE_DISPLAY_NAMES[entry.primaryMuscles[0] as MuscleSlug]
+        : null,
+    ]
+      .filter(Boolean)
+      .join(' · ');
 
     return (
       <View
@@ -91,24 +97,29 @@ export default function ProgramScreen() {
         style={[
           styles.slotRow,
           {
-            borderBottomColor: colors.border,
+            borderBottomColor: colors.mobilePremium.hairlineBorder,
             borderLeftColor: isOverridden ? colors.brand : 'transparent',
           },
+          isLast ? { borderBottomWidth: 0 } : null,
         ]}
       >
-        <Text style={[styles.slotIndex, { color: colors.brand }]}>{position}</Text>
+        <Text style={[styles.slotIndex, { color: colors.brandText }]}>{position}</Text>
         <View style={styles.slotMain}>
           <View style={styles.nameRow}>
-            <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={2}>
+            <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
               {name}
             </Text>
             <SwapGlyph onPress={() => setPickerFor(key)} label={name} />
           </View>
-          <Text style={[styles.slotMeta, { color: colors.textSecondary }]}>
-            {rxLabel(slot.sets, slot.reps)}
-            {slot.suggestedTags.length > 0 ? ` · ${slot.suggestedTags.join(' · ')}` : ''}
-          </Text>
+          {detail ? (
+            <Text style={[styles.slotDetail, { color: colors.textMuted }]} numberOfLines={1}>
+              {detail}
+            </Text>
+          ) : null}
         </View>
+        <Text style={[styles.slotRx, { color: colors.text }]}>
+          {rxLabel(slot.sets, slot.reps)}
+        </Text>
       </View>
     );
   };
@@ -151,45 +162,67 @@ export default function ProgramScreen() {
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator={false}
       >
-        <MobileSurface>
-          <MobileSelectionList
-            options={SPLIT_OPTIONS}
-            selectedId={splitChoice}
-            onSelect={setSplitChoice}
-          />
-        </MobileSurface>
+        <SegmentedControl<string>
+          variant="selection"
+          segments={SPLIT_SEGMENTS}
+          value={splitChoice}
+          onChange={setSplitChoice}
+          accessibilityLabel="Split archetype"
+          testID="program-split"
+        />
 
-        {days.map((day) => {
+        {days.map((day, di) => {
           const volume = dayVolume(day.day);
+          const windows: SessionWindow[] =
+            split === 'twoADay' ? ['am', 'pm'] : ['single'];
           return (
             <View key={day.day} style={styles.dayBlock}>
-              <MobileSectionEyebrow>
-                {`${day.title} · ${volume.sets} sets`}
-              </MobileSectionEyebrow>
-              {split === 'twoADay' ? (
-                (['am', 'pm'] as const).map((window) => (
-                  <MobileSurface key={window} padding={14} style={styles.sessionCard}>
-                    <Text
-                      style={[styles.windowLabel, { color: colors.brandText }]}
-                    >
-                      {`${window.toUpperCase()} · ${volume.lifts / 2} lifts`}
-                    </Text>
-                    {renderSlot(day.day, window, 1)}
-                    {renderSlot(day.day, window, 2)}
-                    {renderSlot(day.day, window, 3)}
-                    {renderSlot(day.day, window, 4)}
-                  </MobileSurface>
-                ))
-              ) : (
-                <MobileSurface padding={14} style={styles.sessionCard}>
-                  {renderSlot(day.day, 'single', 1)}
-                  {renderSlot(day.day, 'single', 2)}
-                  {renderSlot(day.day, 'single', 3)}
-                  {renderSlot(day.day, 'single', 4)}
-                  {renderSlot(day.day, 'single', 5)}
-                  {renderSlot(day.day, 'single', 6)}
-                  {renderSlot(day.day, 'single', 7)}
-                </MobileSurface>
+              {/* Day chapter head: mono number, Archivo title, sets figure. */}
+              <View style={styles.dayHead}>
+                <Text style={[styles.dayNumber, { color: colors.brandText }]}>
+                  {`DAY ${String(day.day).padStart(2, '0')}`}
+                </Text>
+                <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
+                  {day.title}
+                </Text>
+                <Text style={[styles.daySets, { color: colors.text }]}>
+                  {`${volume.sets}`}
+                  <Text style={[styles.daySetsUnit, { color: colors.textMuted }]}>
+                    {' sets'}
+                  </Text>
+                </Text>
+              </View>
+              {windows.map((window) => {
+                const count = resolveSlots(split, day.day, window, overrides).length;
+                return (
+                  <View key={window} style={styles.windowBlock}>
+                    {split === 'twoADay' ? (
+                      <Text style={[styles.windowLabel, { color: colors.textMuted }]}>
+                        {`${window.toUpperCase()} · ${count} LIFTS`}
+                      </Text>
+                    ) : null}
+                    {renderSlot(day.day, window, 1, false)}
+                    {renderSlot(day.day, window, 2, false)}
+                    {renderSlot(day.day, window, 3, false)}
+                    {split === 'twoADay'
+                      ? renderSlot(day.day, window, 4, true)
+                      : renderSlot(day.day, window, 4, false)}
+                    {split === 'oneADay'
+                      ? renderSlot(day.day, window, 5, false)
+                      : null}
+                    {split === 'oneADay'
+                      ? renderSlot(day.day, window, 6, false)
+                      : null}
+                    {split === 'oneADay'
+                      ? renderSlot(day.day, window, 7, true)
+                      : null}
+                  </View>
+                );
+              })}
+              {di === days.length - 1 ? null : (
+                <View
+                  style={[styles.dayRule, { backgroundColor: colors.mobilePremium.hairlineBorder }]}
+                />
               )}
             </View>
           );
@@ -208,7 +241,7 @@ export default function ProgramScreen() {
           </MobilePrimaryButton>
         ) : null}
       </ScrollView>
-    {pickerFor ? (() => {
+      {pickerFor ? (() => {
       const [sp, d, w, pos] = pickerFor.split(':');
       const slots = resolveSlots(sp as PreferredSplit, Number(d), w as never, overrides);
       const pickerSlot = slots[Number(pos) - 1] ?? null;
@@ -250,28 +283,61 @@ export default function ProgramScreen() {
 const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
-  dayBlock: { marginTop: 16 },
-  sessionCard: { gap: 0 },
+  bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32 },
+  dayBlock: {
+    marginTop: 24,
+  },
+  dayHead: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 10,
+    marginBottom: 8,
+  },
+  dayNumber: {
+    ...theme.typography.mobileEyebrow,
+    paddingBottom: 5,
+  },
+  dayTitle: {
+    ...theme.typography.mobileTitle,
+    flex: 1,
+  },
+  daySets: {
+    ...theme.typography.mobileFigure,
+  },
+  daySetsUnit: {
+    ...theme.typography.mobileMeta,
+    fontWeight: '400',
+  },
+  windowBlock: {
+    marginBottom: 4,
+  },
   windowLabel: {
     ...theme.typography.mobileEyebrow,
-    marginBottom: 4,
+    marginTop: 10,
+    marginBottom: 2,
+  },
+  dayRule: {
+    height: 1,
+    marginTop: 20,
   },
   slotRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    gap: 10,
+    gap: 12,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderLeftWidth: 3,
-    paddingLeft: 8,
+    borderLeftWidth: 2,
+    paddingLeft: 10,
   },
   slotIndex: {
     ...theme.typography.mobileLedger,
     minWidth: 18,
   },
-  slotMain: { flex: 1, gap: 2 },
-  slotName: { ...theme.typography.mobileItemTitle },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  slotMeta: { ...theme.typography.mobileMeta },
+  slotMain: { flex: 1, gap: 1 },
+  nameRow: { flexDirection: 'row', alignItems: 'center' },
+  slotName: { ...theme.typography.mobileItemTitle, flex: 1 },
+  slotDetail: { ...theme.typography.mobileMeta },
+  slotRx: {
+    ...theme.typography.mobileLedger,
+  },
 });

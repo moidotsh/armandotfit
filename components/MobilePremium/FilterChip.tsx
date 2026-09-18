@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 999,
     borderWidth: 1,
-    minHeight: 36,
+    minHeight: 44,
   },
   iconSlot: {
     flexDirection: 'row',

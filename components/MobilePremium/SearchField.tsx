@@ -120,13 +120,13 @@ const styles = StyleSheet.create({
     position: 'relative',
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 36,
+    minHeight: 44,
     borderRadius: theme.shapes.tag,
   },
   // FilterChip's geometry: 36 tall, pill, 13px type.
   input: {
     flex: 1,
-    minHeight: 36,
+    minHeight: 44,
     borderRadius: theme.shapes.tag,
     borderWidth: 1,
     paddingHorizontal: 34,

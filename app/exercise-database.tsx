@@ -198,16 +198,18 @@ export default function ExerciseDatabaseScreen() {
             style={{ flex: 1 }}
             sections={sections}
             keyExtractor={(e) => e.slug}
-            renderItem={({ item }) => (
-              <View style={styles.itemWrap}>
-                <ExerciseListItem exercise={item} onPress={navigateToExerciseDetail} />
-              </View>
+            renderItem={({ item, index, section }) => (
+              <ExerciseListItem
+                exercise={item}
+                onPress={navigateToExerciseDetail}
+                isLast={index === section.data.length - 1}
+              />
             )}
             renderSectionHeader={({ section }) => (
               <View
                 style={[styles.sectionHeader, { backgroundColor: colors.backgroundDeep }]}
               >
-                <MobileSectionEyebrow>
+                <MobileSectionEyebrow rule>
                   {section.key === RECENT_SECTION_KEY
                     ? 'Recently logged'
                     : `${section.category} · ${section.data.length}`}
@@ -231,8 +233,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
   },
-  listContent: { paddingBottom: 24 },
-  itemWrap: { marginBottom: 8 },
+  listContent: { paddingBottom: 32 },
   sectionHeader: {
     paddingTop: 12,
     paddingBottom: 6,
