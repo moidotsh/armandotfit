@@ -114,7 +114,7 @@ function RootShell() {
     ensureStyle(
       'global-focus-css',
       [
-        "button:focus,[role='button']:focus,a:focus,select:focus{outline-width:0;box-shadow:0 0 0 2px currentColor}",
+        "button:focus,[role='button']:focus,[role='link']:focus,a:focus,select:focus{outline-width:0;box-shadow:0 0 0 2px currentColor}",
         'input:focus,textarea:focus{outline-width:0}',
       ].join(''),
     );

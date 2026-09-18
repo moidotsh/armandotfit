@@ -147,7 +147,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   title: {
-    ...theme.typography.mobileTitle,
+    // The auth statement at headline scale (the wordmark above is the
+    // folio masthead; the rule beneath it is the paper's red nameplate
+    // rule — the one brand mark beside the verb).
+    ...theme.typography.mobileDisplay,
   },
   body: {
     ...SCREEN_BODY_STYLE,
