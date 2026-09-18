@@ -212,6 +212,13 @@ Data sprawl resolutions (the subtraction, screen by screen):
   one place the column's left rule yields to an instrument); Rx +
   tags murmur in one whisper line; SWAP / ADD survive as whisper
   links in the station block; NOTE moves into the finish flow.
+  The armed model: later sets carry the last logged set; the FIRST
+  set arms from the previous session's TOP set (the highest weight
+  loaded — you walk in matched to your best, not to whatever the
+  session ended on); fresh ground arms reps at the target range's
+  low end (the program's own ask) with the weight left a blank
+  line. The way forward is the NEXT row — record-mark label, name
+  in ink, chevron, isolated by air.
 
 ## 7. Navigation & chrome
 

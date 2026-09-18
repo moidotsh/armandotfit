@@ -271,6 +271,10 @@ const styles = StyleSheet.create({
   },
   kicker: {
     ...theme.typography.mobileEyebrow,
+    // The kicker centers under the board's centered instrument read
+    // (justifyContent on the row is a no-op for a full-width text
+    // node — the alignment lives on the text).
+    textAlign: 'center',
   },
   // THE CALL reads as ONE centered instrument line: the numerals
   // meet at the ×, each side's stepper row sits under its numeral,

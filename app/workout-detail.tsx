@@ -194,9 +194,12 @@ export default function WorkoutDetailScreen() {
     }
   }, [draft, lastTagsQuery.data, setDraftExerciseTags]);
 
-  // Last performance (computed at read from recent sessions): the
-  // most recent logged set per exercise NAME — the first-set prefill
-  // for the armed slab when the exercise has no in-session sets yet.
+  // Last performance (computed at read from recent sessions): per
+  // exercise NAME, the TOP set of the most recent session that has
+  // it — the highest weight loaded (ties resolve to the later set),
+  // with the reps done at that weight. The first-set prefill for the
+  // armed slab: you walk in matched to what your best loaded last
+  // time, not to whatever the session happened to end on.
   const recentForPrefill = useRecentSessionDetails(10);
   const lastPerformance = useMemo(() => {
     const map = new Map<string, { weight: number; reps: number }>();
@@ -204,8 +207,12 @@ export default function WorkoutDetailScreen() {
       for (const ex of session.exercises) {
         const key = ex.exerciseName.toLowerCase();
         if (map.has(key)) continue;
-        const last = ex.sets[ex.sets.length - 1];
-        if (last) map.set(key, { weight: last.weight, reps: last.reps });
+        let top: { weight: number; reps: number } | null = null;
+        for (const set of ex.sets) {
+          const w = set.weight ?? 0;
+          if (!top || w >= top.weight) top = { weight: w, reps: set.reps ?? 0 };
+        }
+        if (top) map.set(key, top);
       }
     }
     return map;
@@ -463,9 +470,20 @@ function Stage(props: StageProps) {
   const index = Math.min(stationIndex, Math.max(0, exercises.length - 1));
   const exercise = exercises[index] ?? null;
 
+  // The program's own ask for this station: the LOW end of the target
+  // rep range ("3x8-10" -> 8) — the default a fresh exercise arms to.
+  const targetRepsLow = useMemo(() => {
+    const hint = exercise?.targetRx?.split('×')[1]?.trim();
+    if (!hint) return null;
+    const low = parseInt(hint.split(/[\u2013\u2014-]/)[0], 10);
+    return Number.isFinite(low) && low > 0 ? low : null;
+  }, [exercise?.targetRx]);
+
   // The armed set for the current station: whatever the user has set,
   // else carry-forward from this exercise's last logged set, else the
-  // last session's performance for this exercise name, else empty.
+  // previous session's TOP set for this exercise name, else fresh
+  // ground — reps default to the target range's low end (the
+  // program's ask), weight stays a blank line until the bar loads.
   const armed: Armed = useMemo(() => {
     const explicit = armedByExercise[exercise?.localId ?? ''];
     if (explicit) return explicit;
@@ -477,8 +495,8 @@ function Stage(props: StageProps) {
       ? armedPrefill.get(exercise.exerciseName.toLowerCase())
       : undefined;
     if (lastTime) return { weight: lastTime.weight, reps: lastTime.reps };
-    return { weight: null, reps: null };
-  }, [armedByExercise, exercise, armedPrefill]);
+    return { weight: null, reps: targetRepsLow };
+  }, [armedByExercise, exercise, armedPrefill, targetRepsLow]);
 
   const setArmed = (next: Armed) => {
     if (!exercise) return;
