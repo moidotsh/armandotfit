@@ -578,6 +578,7 @@ export const theme = {
       lineHeight: 56,
       letterSpacing: -2,
       fontVariant: ['tabular-nums'],
+      fontFamily: FONTS.display,
     } satisfies TypographyToken,
     mobileFigure: {
       fontSize: 22,
@@ -585,6 +586,7 @@ export const theme = {
       lineHeight: 26,
       letterSpacing: -0.3,
       fontVariant: ['tabular-nums'],
+      fontFamily: FONTS.display,
     } satisfies TypographyToken,
     mobileItemTitle: {
       fontSize: 14,
@@ -598,6 +600,7 @@ export const theme = {
       lineHeight: 18,
       letterSpacing: 0,
       fontVariant: ['tabular-nums'],
+      fontFamily: FONTS.mono,
     } satisfies TypographyToken,
     mobileMeta: {
       fontSize: 12,
