@@ -19,9 +19,15 @@ export interface EditionLineProps {
     exercises?: LoggedExerciseWithSets[];
   };
   onPress: (id: string) => void;
+  /**
+   * The archive's head: the LATEST edition renders at row scale in
+   * full ink (the second voice of the front page); older ones whisper.
+   * Same one line — hierarchy by scale and ink, not extra elements.
+   */
+  lead?: boolean;
 }
 
-export function EditionLine({ session, onPress }: EditionLineProps) {
+export function EditionLine({ session, onPress, lead = false }: EditionLineProps) {
   const { colors } = useAppTheme();
 
   // AM and PM are separate session rows; the start hour restores which
@@ -56,7 +62,10 @@ export function EditionLine({ session, onPress }: EditionLineProps) {
       accessibilityLabel={`Session ${aria}`}
       style={({ pressed }) => [styles.row, pressed ? { opacity: 0.6 } : null]}
     >
-      <Text style={[styles.line, { color: colors.textMuted }]} numberOfLines={1}>
+      <Text
+        style={[lead ? styles.lineLead : styles.line, { color: lead ? colors.text : colors.textMuted }]}
+        numberOfLines={1}
+      >
         {line}
       </Text>
     </Pressable>
@@ -70,6 +79,10 @@ const styles = StyleSheet.create({
   },
   line: {
     ...theme.typography.mobileLedger,
+  },
+  // The archive's head — the figure line at row scale, full ink.
+  lineLead: {
+    ...theme.typography.mobileFigure,
   },
 });
 

@@ -36,6 +36,15 @@ Deletion is the default; retention needs the argument. A screen is
 done when it can lose any single element and get worse — and there is
 almost nothing left that can be lost.
 
+**Quiet is not vacant.** The reduction removes framing, not facts.
+The nameplate sandwich dies; the streak number stays. A page that has
+been emptied of information is not quiet, it is unpopulated — the
+failure mode this pass guards against as firmly as against clutter.
+Every block keeps its one FACT (the caption on a row, the window in a
+lede, the count on a measure), carried in one line instead of a
+stack. Density of meaning, sparseness of marks: air is spent AROUND
+content, never instead of it.
+
 ## 2. The pillars
 
 1. **The content is the statement.** Page names die. The loudest thing
@@ -152,7 +161,7 @@ budget (visible text nodes / interactive elements — probe-enforced).
 
 | Screen | Sentence | Loudest | Second voice | Quiet tail | Text ≤ | Tap ≤ |
 |---|---|---|---|---|---|---|
-| **home** | "It's Day 2 tonight — press." | the day title, 34, sentence case | the lede: first lift + count | 3 jump rows, label-only · 3 recent edition lines · settings | 12 | 8 |
+| **home** | "It's Day 2 tonight — press." | the day title, 34, sentence case | the lede: window + first lift + count | the brand masthead (folio line) · 3 jump rows, each with its one fact as caption · 3 recent edition lines (the latest at figure scale) · settings | 13 | 8 |
 | **funnel** (split-selection) | "Which edition?" | the PICKED day title, 34 — restates with the pick | 7 day tiles (whisper weekday + figure) | plan preview lines · GO | 20 | 12 |
 | **Floor** (live) | "100 × 10 — log it." | THE CALL 48 | the station name 34 | station marks · set rows · steppers · whisper actions | 16 | 10 |
 | **receipt** (saved detail) | "4,230 kg, done." | the tonnage 34 | the date whisper | per-exercise set lines (the immutable receipt) | 24 | 4 |
@@ -168,10 +177,12 @@ budget (visible text nodes / interactive elements — probe-enforced).
 
 Data sprawl resolutions (the subtraction, screen by screen):
 
-- **home**: the masthead wordmark, the edition kicker, "In this app",
-  this-week figures, and 5-session recent list all die. Recent
-  editions become 3 one-line agate rows. The jump lines keep their
-  labels, lose their captions and rules.
+- **home**: the edition kicker, "In this app", and the 5-session
+  recent list die. The brand masthead stays — quieter (folio line at
+  row scale, never competing with the statement); the window moves
+  into the lede; the jump rows keep their one fact each as captions
+  (the streak lives on the Progress row); recent editions become 3
+  one-line rows — the latest at figure scale, the rest whispering.
 - **record book**: side facts die; totals collapse to one figure line;
   PB ledger shows 5 rows (name + best set; e1RM column dies).
 - **form table**: the nameplate dies; the count is the statement; bars
