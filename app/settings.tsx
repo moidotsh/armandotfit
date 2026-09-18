@@ -16,7 +16,6 @@ import {
   MobileSettingsRow,
   MobileActionFooter,
   MobilePrimaryButton,
-  MobileSelectionList,
   CopyForAiButton,
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
@@ -154,16 +153,38 @@ export default function SettingsScreen() {
         </MobileSurface>
 
         <MobileSectionEyebrow flush={false}>Training</MobileSectionEyebrow>
-        <MobileSurface>
-          <MobileSelectionList
-            multiSelect
-            selectedIds={restDayIds}
-            onSelect={handleToggleRestDay}
-            options={DAY_OF_WEEK_LABELS.map((d) => ({
-              id: String(d.id),
-              label: d.label,
-            }))}
-          />
+        <MobileSurface padding={12}>
+          <View style={styles.restDayRow}>
+            {DAY_OF_WEEK_LABELS.map((d) => {
+              const isRest = restDayIds.includes(String(d.id));
+              return (
+                <Pressable
+                  key={d.id}
+                  onPress={() => handleToggleRestDay(String(d.id))}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: isRest }}
+                  accessibilityLabel={`${d.label} rest day`}
+                  style={({ pressed }) => [
+                    styles.restDayTile,
+                    {
+                      backgroundColor: isRest ? accent : colors.glass.inputBackground,
+                      opacity: pressed ? 0.6 : 1,
+                    },
+                  ]}
+                  testID={`rest-day-${d.id}`}
+                >
+                  <Text
+                    style={[
+                      styles.restDayLabel,
+                      { color: isRest ? colors.textOnBrand : colors.textSecondary },
+                    ]}
+                  >
+                    {d.label.slice(0, 2)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </MobileSurface>
         <Text style={[styles.sectionHint, { color: colors.textColors.tertiary }]}>
           Rest days are visually deactivated in the workout-day picker. The
@@ -225,6 +246,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 60,
+  },
+  restDayRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  restDayTile: {
+    flex: 1,
+    height: 44,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  restDayLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
   preferenceRow: {
     flexDirection: 'row',
