@@ -639,6 +639,25 @@ export default function WorkoutDetailScreen() {
             : 'Save session'}
         </MobilePrimaryButton>
       </MobileActionFooter>
+      {/* Mid-workout swap — the ink plate over the session. Catalog
+          exercises rank alternatives; custom-named lifts (no slug) have
+          nothing to rank and swap from the library instead. */}
+      {pickerExercise && pickerExercise.exerciseSlug ? (
+        <InkRail
+          currentSlug={pickerExercise.exerciseSlug}
+          open={pickerFor !== null}
+          onOpenChange={(next) => {
+            if (!next) setPickerFor(null);
+          }}
+          onSwap={(next) => {
+            if (!pickerFor) return;
+            swapDraftExercise(pickerFor, next);
+            setPickerFor(null);
+            showToast('success', next.exerciseName);
+          }}
+          testID="live-swap-picker"
+        />
+      ) : null}
     </SafeAreaView>
   );
 }

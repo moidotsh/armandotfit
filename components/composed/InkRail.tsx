@@ -1,12 +1,14 @@
 // components/composed/InkRail.tsx
 // The substitution picker — invisible until needed. The exercise row
 // stays perfectly clean; one small ⇄ glyph sits after the controls. Tap
-// it and the ink plate slides up with ranked alternatives as paper-type
-// rows. Tap a name, done. That's the whole interaction.
+// it and the INK PLATE slides up (the dialect's loudest surface — the
+// drawer and toasts already speak it): the current exercise stamped in
+// paper type, ranked alternatives as plate rows, the programmed lift
+// one tap back. Tap a name, done. That's the whole interaction.
 
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { MobileSheet } from '../MobilePremium';
+import { MobileSheet, inkSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
 import { rankAlternatives } from '../../services';
 import { SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
@@ -88,57 +90,62 @@ export function InkRail({
       showCloseButton={false}
       testID={testID}
     >
-      <View style={styles.list}>
-        {items.map((item) => (
-          <Pressable
-            key={item.slug}
-            onPress={() => {
-              onOpenChange(false);
-              if (item.isCurrent) return;
-              if (item.isProgrammed && onRestore) {
-                onRestore();
-              } else {
-                onSwap({ exerciseName: item.name, exerciseSlug: item.slug });
+      <View style={[styles.plate, inkSurface(colors.text)]}>
+        <Text style={[styles.plateEyebrow, { color: colors.brandOnInk }]}>
+          SWAP
+        </Text>
+        <View style={styles.list}>
+          {items.map((item) => (
+            <Pressable
+              key={item.slug}
+              onPress={() => {
+                onOpenChange(false);
+                if (item.isCurrent) return;
+                if (item.isProgrammed && onRestore) {
+                  onRestore();
+                } else {
+                  onSwap({ exerciseName: item.name, exerciseSlug: item.slug });
+                }
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={
+                item.isCurrent
+                  ? item.name
+                  : item.isProgrammed
+                    ? `Restore ${item.name}`
+                    : `Swap to ${item.name}`
               }
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={
-              item.isCurrent
-                ? item.name
-                : item.isProgrammed
-                  ? `Restore ${item.name}`
-                  : `Swap to ${item.name}`
-            }
-            style={({ pressed }) => [
-              styles.row,
-              { borderBottomColor: colors.mobilePremium.hairlineBorder },
-              pressed ? { opacity: 0.6 } : null,
-            ]}
-          >
-            <Text
-              numberOfLines={1}
-              style={[
-                styles.name,
-                {
-                  color: item.isCurrent
-                    ? colors.brandText
-                    : item.isProgrammed
-                      ? colors.textSecondary
-                      : colors.text,
-                },
+              style={({ pressed }) => [
+                styles.row,
+                pressed ? { opacity: 0.6 } : null,
               ]}
             >
-              {item.isProgrammed ? `↺ ${item.name}` : item.name}
-            </Text>
-            {item.isCurrent ? (
-              <Text style={[styles.meta, { color: colors.brandText }]}>current</Text>
-            ) : (
-              <Text style={[styles.meta, { color: colors.textMuted }]}>
-                {item.isProgrammed ? 'restore' : item.modality ?? ''}
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.name,
+                  {
+                    color: item.isCurrent
+                      ? colors.brandOnInk
+                      : item.isProgrammed
+                        ? `${colors.background}B8`
+                        : colors.background,
+                    fontWeight: item.isCurrent ? '800' : '600',
+                  },
+                ]}
+              >
+                {item.isProgrammed ? `↺ ${item.name}` : item.name}
               </Text>
-            )}
-          </Pressable>
-        ))}
+              {item.isCurrent ? (
+                <Text style={[styles.meta, { color: colors.brandOnInk }]}>current</Text>
+              ) : (
+                <Text style={[styles.meta, { color: `${colors.background}B8` }]}>
+                  {item.isProgrammed ? 'restore' : item.modality ?? ''}
+                </Text>
+              )}
+            </Pressable>
+          ))}
+        </View>
       </View>
     </MobileSheet>
   );
@@ -155,21 +162,34 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
-  list: {
+  plate: {
+    borderRadius: 0,
     paddingBottom: 16,
+  },
+  plateEyebrow: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.6,
+    lineHeight: 16,
+    textTransform: 'uppercase',
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 6,
+  },
+  list: {
+    paddingBottom: 8,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 52,
+    minHeight: 56,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
     gap: 12,
   },
   name: {
     fontSize: 17,
-    fontWeight: '600',
+    lineHeight: 22,
     flex: 1,
   },
   meta: {

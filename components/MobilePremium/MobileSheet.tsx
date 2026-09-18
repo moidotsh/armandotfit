@@ -115,15 +115,18 @@ export function MobileSheet({
       onRequestClose={handleClose}
       statusBarTranslucent
     >
-      <Pressable
-        style={[
-          styles.scrim,
-          isBottom ? styles.scrimBottom : styles.scrimTop,
-        ]}
-        onPress={closeOnBackdropTap ? handleClose : undefined}
-        accessibilityRole={closeOnBackdropTap ? 'button' : undefined}
-        accessibilityLabel={closeOnBackdropTap ? 'Close sheet' : undefined}
-      >
+      {/* Scrim and panel are SIBLINGS, not nested: RN-web renders a
+          role=button Pressable as a real <button>, and a <button>
+          cannot contain the panel's own buttons (invalid HTML +
+          hydration errors). The scrim absolute-fills behind the panel;
+          the host owns the anchor justification the scrim used to own. */}
+      <View style={[styles.host, isBottom ? styles.hostBottom : styles.hostTop]}>
+        <Pressable
+          style={styles.scrim}
+          onPress={closeOnBackdropTap ? handleClose : undefined}
+          accessibilityRole={closeOnBackdropTap ? 'button' : undefined}
+          accessibilityLabel={closeOnBackdropTap ? 'Close sheet' : undefined}
+        />
         <Pressable
           onPress={(e) => e.stopPropagation()}
           style={[
@@ -165,21 +168,24 @@ export function MobileSheet({
 
           <View style={styles.body}>{children}</View>
         </Pressable>
-      </Pressable>
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  scrim: {
+  host: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  scrimBottom: {
+  hostBottom: {
     justifyContent: 'flex-end',
   },
-  scrimTop: {
+  hostTop: {
     justifyContent: 'flex-start',
+  },
+  scrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   // Policy spread lands on the visible sheet panel — NOT on the Modal
   // root or the backdrop Pressable. SB2 (audit-mobile-content-width.ts)
