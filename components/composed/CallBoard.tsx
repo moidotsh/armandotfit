@@ -227,7 +227,7 @@ export function CallBoard({
           align="left"
           testID={`${tid}-weight`}
         />
-        <Text style={[styles.multiplier, { color: colors.textSecondary }]}>×</Text>
+        <Text style={[styles.multiplier, { color: colors.textMuted }]}>×</Text>
         <CallSide
           label="REPS"
           value={reps}
@@ -259,7 +259,9 @@ export function CallBoard({
 const styles = StyleSheet.create({
   board: {
     borderTopWidth: 1,
-    paddingHorizontal: 16,
+    // The board rides the page gutter (20) — the call is a statement
+    // on the column's left rule.
+    paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 10,
   },
@@ -269,33 +271,32 @@ const styles = StyleSheet.create({
   },
   kicker: {
     ...theme.typography.mobileEyebrow,
-    fontSize: 10,
   },
+  // THE CALL reads as one ledger line on the column's left rule —
+  // like every statement in the system, not a centered ornament.
   callRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     gap: 12,
     minHeight: 56,
     marginTop: 2,
   },
   sideLeft: {
-    alignItems: 'flex-end',
-    flex: 1,
+    alignItems: 'flex-start',
   },
   sideRight: {
     alignItems: 'flex-start',
-    flex: 1,
   },
   counterTap: {
     minHeight: 60,
     minWidth: 72,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
   },
   counterEmpty: {
     width: 88,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'flex-end',
     paddingBottom: 20,
   },
@@ -308,9 +309,7 @@ const styles = StyleSheet.create({
   },
   multiplier: {
     ...theme.typography.mobileFigure,
-    fontSize: 22,
-    lineHeight: 26,
-    marginTop: 15,
+    marginTop: 16,
   },
   stepperRow: {
     flexDirection: 'row',
@@ -327,19 +326,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepperGlyph: {
-    fontSize: 22,
+    ...theme.typography.mobileFigure,
     fontWeight: '600',
-    lineHeight: 26,
   },
   stepperStep: {
     ...theme.typography.mobileEyebrow,
-    fontSize: 10,
     minWidth: 24,
     textAlign: 'center',
   },
   unitLabel: {
     ...theme.typography.mobileEyebrow,
-    fontSize: 10,
     marginTop: 4,
   },
   logButton: {

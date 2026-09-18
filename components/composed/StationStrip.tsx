@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 8,
   },
   mark: {

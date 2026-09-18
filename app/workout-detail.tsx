@@ -1,20 +1,21 @@
 // app/workout-detail.tsx
-// Two screens (docs/architecture/broadsheet-thesis.md §7):
+// Two screens (docs/architecture/quiet-page-thesis.md §6):
 //
-//   ?id=  the BOX SCORE — a Desk page. Tonnage is the headline of
-//         history (hero statement in ink), exercises as agate set
-//         ledgers, delete behind a two-step footer.
+//   ?id=  the RECEIPT — a Desk page. "That was N kg": tonnage is the
+//         statement, one fact whisper carries the date/window/counts,
+//         exercises read as quiet ledgers, delete behind a two-step
+//         footer.
 //
 //   none  the FLOOR — the live report. One exercise at a time (one
-//         STATION), its name as the station head, the next set
-//         pre-armed at carry-forward weight as THE CALL (`100 KG ×
-//         10 REPS`, agate at counter scale) — one thumb / one tap on
-//         LOG SET locks the line in. The station rail answers "where
-//         am I"; the run-of-play row (elapsed · sets · tonnage)
-//         answers "how's it going"; everything else waits its turn.
-//         Finish opens the summary sheet: save once, at the end. The
-//         Floor follows the user's mode — the register difference is
-//         density and scale, not a second color scheme.
+//         STATION), its name at the statement scale, the next set
+//         pre-armed at carry-forward weight as THE CALL (`100 × 10`,
+//         agate at counter scale) — one thumb / one tap on LOG SET
+//         locks the line in. The chromeless header is a clock with two
+//         ways out (‹ minimize, FINISH); the station marks answer
+//         "where am I"; totals wait in the finish sheet — mid-set,
+//         nothing counts anything for you. The Floor follows the
+//         user's mode — the register difference is density and scale,
+//         not a second color scheme.
 //
 // The draft hydrates from the program slots (local data — no fetch);
 // draft set rows exist only once logged (the armed-set model). A
@@ -22,7 +23,6 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Animated,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -33,11 +33,8 @@ import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from '@tamagui/lucide-icons-2';
 import {
-  MobileAtmosphere,
-  MobileHeader,
   MobilePrimaryButton,
   MobileActionFooter,
-  MobileSectionEyebrow,
   MobileInput,
   MobileDialog,
   Figure,
@@ -45,6 +42,7 @@ import {
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import {
+  DeskShell,
   SetRow,
   TagChips,
   InkRail,
@@ -77,7 +75,7 @@ import {
   formatVolume,
   formatElapsed,
 } from '../services';
-import { SCREEN_BODY_STYLE, theme, DURATION, MOBILE_CONTENT_WIDTH_STYLE } from '../constants';
+import { SCREEN_BODY_STYLE, theme, MOBILE_CONTENT_WIDTH_STYLE, BLOCK_GAP, HALO } from '../constants';
 import { useReducedMotion } from '../components/premium/shared';
 
 /** The armed set's editable values. */
@@ -260,145 +258,98 @@ export default function WorkoutDetailScreen() {
       ? session.exercises.reduce((n, e) => n + sumVolume(e.sets), 0)
       : 0;
     return (
-      <SafeAreaView
-        style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
-        edges={['top', 'bottom']}
+      <DeskShell
+        surface="training"
+        onBack={safeGoBack}
+        testID="receipt-scroll"
+        contentContainerStyle={styles.bodyContent}
       >
-        <MobileAtmosphere surface="training" />
-        <MobileHeader
-          title={
-            session
-              ? new Date(session.startedAt).toLocaleDateString(undefined, {
+        {existingQuery.isLoading ? (
+          <LoadingSpinner />
+        ) : existingQuery.isError ? (
+          <QueryErrorNote
+            onRetry={() => void existingQuery.refetch()}
+            testID="workout-detail-error"
+          />
+        ) : !session ? (
+          <LoadingSpinner />
+        ) : (
+          <>
+            {/* THE STATEMENT — tonnage. The receipt's one sentence is
+                "that was N kg"; the fact line carries the rest. */}
+            <View>
+              <Text style={[styles.receiptStatement, { color: colors.text }]}>
+                {`${formatVolume(totalKg)} kg`}
+              </Text>
+              <Text style={[styles.receiptFact, { color: colors.textMuted }]} numberOfLines={1}>
+                {`${new Date(session.startedAt).toLocaleDateString(undefined, {
+                  weekday: 'short',
                   month: 'short',
                   day: 'numeric',
-                })
-              : 'Session'
-          }
-          eyebrow={
-            session
-              ? `${
-                  session.splitDay != null ? `day ${session.splitDay}` : 'ad-hoc'
-                }${windowLabel ? ` · ${windowLabel}` : ''}`
-              : ''
-          }
-          onBack={safeGoBack}
-          hideAccentDot
-        />
-        <ScrollView
-          style={styles.body}
-          contentContainerStyle={styles.bodyContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {existingQuery.isLoading ? (
-            <LoadingSpinner />
-          ) : existingQuery.isError ? (
-            <QueryErrorNote
-              onRetry={() => void existingQuery.refetch()}
-              testID="workout-detail-error"
-            />
-          ) : !session ? (
-            <LoadingSpinner />
-          ) : (
-            <>
-              {/* The box-score head: tonnage is the headline of
-                  history, set in ink — red is reserved for records;
-                  the counts ride beside it in agate. */}
-              <MobileSectionEyebrow rule flush={false}>
-                {`Box score · ${windowLabel ?? 'edition'} · started ${new Date(session.startedAt).toLocaleTimeString(undefined, {
-                  hour: 'numeric',
-                  minute: '2-digit',
-                })}`}
-              </MobileSectionEyebrow>
-              <View style={styles.receiptHead}>
-                <Figure
-                  value={formatVolume(totalKg)}
-                  unit="kg"
-                  label="moved"
-                  size="display"
-                />
-                <View style={styles.receiptSide}>
-                  <Figure
-                    value={session.exercises.length}
-                    label="lifts"
-                    size="md"
-                    align="right"
-                  />
-                  <Figure
-                    value={totalSets}
-                    label="sets"
-                    size="md"
-                    align="right"
-                  />
-                </View>
+                })} · ${session.splitDay != null ? `D${session.splitDay}` : 'ad-hoc'}${windowLabel ? ` · ${windowLabel}` : ''} · ${session.exercises.length} lifts · ${totalSets} sets`}
+              </Text>
+            </View>
+
+            {session.note ? (
+              <View style={styles.receiptBlock}>
+                <Text style={[styles.bodyText, { color: colors.text }]}>
+                  {session.note}
+                </Text>
               </View>
+            ) : null}
 
-              {session.note ? (
-                <>
-                  <MobileSectionEyebrow rule flush={false}>
-                    Note
-                  </MobileSectionEyebrow>
-                  <Text style={[styles.bodyText, { color: colors.text }]}>
-                    {session.note}
+            {session.exercises.length === 0 ? (
+              <EmptyState
+                title="No exercises logged"
+                message="This session was saved with a note only."
+                testID="workout-detail-empty"
+              />
+            ) : null}
+            {session.exercises.map((ex) => (
+              <View key={ex.id} style={styles.receiptBlock}>
+                <View style={styles.receiptExHead}>
+                  <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                    {ex.exerciseName || 'Exercise'}
                   </Text>
-                </>
-              ) : null}
-
-              {session.exercises.length === 0 ? (
-                <EmptyState
-                  title="No exercises logged"
-                  message="This session was saved with a note only."
-                  testID="workout-detail-empty"
-                />
-              ) : null}
-              {session.exercises.map((ex) => (
-                <View key={ex.id} style={styles.receiptExercise}>
-                  <View style={styles.receiptExHead}>
-                    <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
-                      {ex.exerciseName || 'Exercise'}
-                    </Text>
-                    {/* The session's shape as a count — agate beside
-                        the name (the ledger carries the numbers). */}
-                    <Text style={[styles.receiptExCount, { color: colors.textMuted }]}>
-                      {`${ex.sets.length} SET${ex.sets.length === 1 ? '' : 'S'}`}
-                    </Text>
-                  </View>
-                  {ex.tags.length > 0 ? (
-                    <Text style={[styles.tagsLine, { color: colors.textMuted }]}>
-                      {ex.tags.join(' · ')}
-                    </Text>
-                  ) : null}
-                  {ex.sets.map((s) => (
-                    <SetRow
-                      key={s.id}
-                      position={s.position}
-                      reps={s.reps}
-                      weight={s.weight}
-                    />
-                  ))}
                 </View>
-              ))}
-            </>
-          )}
-        </ScrollView>
-        <MobileActionFooter>
-          <MobilePrimaryButton
-            variant="ghost"
-            accentColor={colors.alert}
-            onPress={() => {
-              if (!id) return;
-              if (!confirmDelete) {
-                setConfirmDelete(true);
-                return;
-              }
-              deleteSessionMutation.mutate(id);
-            }}
-            loading={deleteSessionMutation.isPending}
-            testID="workout-detail-delete"
-          >
-            {confirmDelete ? 'Tap again to delete' : 'Delete session'}
-          </MobilePrimaryButton>
-        </MobileActionFooter>
-      </SafeAreaView>
+                {ex.tags.length > 0 ? (
+                  <Text style={[styles.tagsLine, { color: colors.textMuted }]}>
+                    {ex.tags.join(' · ')}
+                  </Text>
+                ) : null}
+                {ex.sets.map((s) => (
+                  <SetRow
+                    key={s.id}
+                    position={s.position}
+                    reps={s.reps}
+                    weight={s.weight}
+                  />
+                ))}
+              </View>
+            ))}
+            <View style={styles.receiptBlock}>
+              <MobileActionFooter>
+                <MobilePrimaryButton
+                  variant="ghost"
+                  accentColor={colors.alert}
+                  onPress={() => {
+                    if (!id) return;
+                    if (!confirmDelete) {
+                      setConfirmDelete(true);
+                      return;
+                    }
+                    deleteSessionMutation.mutate(id);
+                  }}
+                  loading={deleteSessionMutation.isPending}
+                  testID="workout-detail-delete"
+                >
+                  {confirmDelete ? 'Tap again to delete' : 'Delete session'}
+                </MobilePrimaryButton>
+              </MobileActionFooter>
+            </View>
+          </>
+        )}
+      </DeskShell>
     );
   }
 
@@ -410,7 +361,6 @@ export default function WorkoutDetailScreen() {
         style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
         edges={['top', 'bottom']}
       >
-        <MobileHeader title="Starting session…" hideAccentDot />
         <View style={styles.body}>
           <LoadingSpinner />
         </View>
@@ -503,6 +453,7 @@ function Stage(props: StageProps) {
   const [stationIndex, setStationIndex] = useState(0);
   const [finishOpen, setFinishOpen] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [tagsOpen, setTagsOpen] = useState(false);
   const [armedByExercise, setArmedByExercise] = useState<
     Record<string, Armed>
   >({});
@@ -510,24 +461,6 @@ function Stage(props: StageProps) {
   const exercises = draft.exercises;
   const index = Math.min(stationIndex, Math.max(0, exercises.length - 1));
   const exercise = exercises[index] ?? null;
-
-  // Station transition — a horizontal slide on switch (transform +
-  // opacity only; a cut under reduced motion).
-  const slide = useRef(new Animated.Value(0)).current;
-  const prevIndexRef = useRef(index);
-  useEffect(() => {
-    if (prevIndexRef.current === index) return;
-    const fromRight = index > prevIndexRef.current;
-    prevIndexRef.current = index;
-    if (reduced) return;
-    slide.setValue(fromRight ? 1 : -1);
-    Animated.timing(slide, {
-      toValue: 0,
-      duration: DURATION.fast,
-      useNativeDriver: true,
-    }).start();
-  }, [index, reduced, slide]);
-  const slideX = slide.interpolate({ inputRange: [-1, 1], outputRange: [-40, 40] });
 
   // The armed set for the current station: whatever the user has set,
   // else carry-forward from this exercise's last logged set, else the
@@ -588,11 +521,6 @@ function Stage(props: StageProps) {
   };
 
   const dayTitle = getDayTitle(draft.splitType, draft.day);
-  const sessionSuffix =
-    draft.splitType === 'twoADay' ? ` · ${draft.sessionMode.toUpperCase()}` : '';
-  const stageEyebrow = dayTitle
-    ? `${dayTitle.toUpperCase()}${sessionSuffix}`
-    : `${draft.splitType === 'oneADay' ? '1-A-DAY' : 'AM/PM'} · DAY ${draft.day}${sessionSuffix}`;
 
   return (
     <SafeAreaView
@@ -602,7 +530,9 @@ function Stage(props: StageProps) {
       {/* The stage rides the mobile column like every Desk screen —
           the page field bleeds full-viewport, the content does not. */}
       <View style={[styles.stageColumn, MOBILE_CONTENT_WIDTH_STYLE]}>
-      {/* Stage header — minimize, the day, finish. */}
+      {/* Stage header — minimize, the clock, finish. The Floor's
+          chromeless header: one number running, two words to leave
+          by. Totals wait in the finish sheet. */}
       <View style={styles.stageHeader} testID="stage-header">
         <Pressable
           onPress={replaceWithHome}
@@ -614,8 +544,8 @@ function Stage(props: StageProps) {
           <ChevronLeft size={24} color={colors.text} />
         </Pressable>
         <View style={styles.stageHeaderCenter}>
-          <Text style={[styles.stageEyebrow, { color: colors.textMuted }]} numberOfLines={1}>
-            {stageEyebrow}
+          <Text style={[styles.stageClock, { color: colors.text }]} numberOfLines={1}>
+            {elapsed}
           </Text>
         </View>
         <Pressable
@@ -627,29 +557,14 @@ function Stage(props: StageProps) {
           accessibilityLabel="Finish session"
           style={({ pressed }) => [
             styles.finishButton,
-            { borderColor: colors.mobilePremium.hairlineBorderStrong },
             pressed ? { opacity: 0.6 } : null,
           ]}
           testID="stage-finish"
         >
-          <Text style={[styles.finishLabel, { color: colors.textSecondary }]}>
+          <Text style={[styles.finishLabel, { color: colors.text }]}>
             FINISH
           </Text>
         </Pressable>
-      </View>
-
-      {/* Session strip — the instrument row. */}
-      <View style={styles.sessionStrip} testID="stage-session-strip">
-        <Text style={[styles.sessionStat, { color: colors.text }]}>
-          {elapsed}
-        </Text>
-        <Text style={[styles.sessionStatMuted, { color: colors.textMuted }]}>
-          {`${sessionSets} SET${sessionSets === 1 ? '' : 'S'}`}
-        </Text>
-        <Text style={[styles.sessionStatMuted, { color: colors.textMuted }]}>
-          {`${formatVolume(sessionKg)} KG`}
-        </Text>
-        <View style={{ flex: 1 }} />
       </View>
 
       {/* Station strip — position + navigation. */}
@@ -671,127 +586,143 @@ function Stage(props: StageProps) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Animated.View style={{ transform: [{ translateX: slideX }] }}>
-          {exercise ? (
-            <>
-              <View style={styles.stationHead}>
-                <Text
-                  style={[styles.stationName, { color: colors.text }]}
-                  numberOfLines={2}
-                  testID="stage-station-name"
+        {exercise ? (
+          <>
+            <View style={styles.stationHead}>
+              <Text
+                style={[styles.stationName, { color: colors.text }]}
+                numberOfLines={2}
+                testID="stage-station-name"
+              >
+                {exercise.exerciseName}
+              </Text>
+              <View style={styles.stationMeta}>
+                {exercise.targetRx ? (
+                  <Text style={[styles.stationRx, { color: colors.textMuted }]}>
+                    {`TARGET ${exercise.targetRx}`}
+                  </Text>
+                ) : null}
+                <SwapGlyph
+                  onPress={() => setPickerFor(exercise.localId)}
+                  label={exercise.exerciseName}
+                />
+                <Pressable
+                  onPress={() => {
+                    removeExerciseFromDraft(exercise.localId);
+                    setStationIndex((i) => Math.max(0, i - 1));
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove ${exercise.exerciseName} from session`}
+                  style={({ pressed }) => [styles.removeCta, pressed ? { opacity: 0.6 } : null]}
                 >
-                  {exercise.exerciseName}
-                </Text>
-                <View style={styles.stationMeta}>
-                  {exercise.targetRx ? (
-                    <Text style={[styles.stationRx, { color: colors.textMuted }]}>
-                      {`TARGET ${exercise.targetRx}`}
-                    </Text>
-                  ) : null}
-                  <SwapGlyph
-                    onPress={() => setPickerFor(exercise.localId)}
-                    label={exercise.exerciseName}
-                  />
-                  <Pressable
-                    onPress={() => {
-                      removeExerciseFromDraft(exercise.localId);
-                      setStationIndex((i) => Math.max(0, i - 1));
-                    }}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Remove ${exercise.exerciseName} from session`}
-                    style={({ pressed }) => [styles.removeCta, pressed ? { opacity: 0.6 } : null]}
-                  >
-                    <Text style={[styles.removeLabel, { color: colors.textMuted }]}>
-                      REMOVE
-                    </Text>
-                  </Pressable>
-                </View>
+                  <Text style={[styles.removeLabel, { color: colors.textMuted }]}>
+                    REMOVE
+                  </Text>
+                </Pressable>
               </View>
+            </View>
 
+            {/* Tags — one whisper line; the editor opens one tap
+                deeper (tags prefill from last time; mid-set editing
+                is the exception, not the default). */}
+            <Pressable
+              onPress={() => setTagsOpen((o) => !o)}
+              accessibilityRole="button"
+              accessibilityLabel={
+                exercise.tags.length > 0
+                  ? `Edit tags — ${exercise.tags.join(', ')}`
+                  : 'Add tags'
+              }
+              style={({ pressed }) => [styles.tagsToggle, pressed ? { opacity: 0.6 } : null]}
+            >
+              <Text style={[styles.tagsToggleText, { color: colors.textMuted }]} numberOfLines={1}>
+                {exercise.tags.length > 0 ? exercise.tags.join(' · ') : '+ TAGS'}
+              </Text>
+            </Pressable>
+            {tagsOpen ? (
               <TagChips
                 tags={exercise.tags}
                 suggestions={TAG_VOCABULARY_SEED.filter(
                   (t) => !exercise.tags.includes(t),
-                ).slice(0, 5)}
+                ).slice(0, 3)}
                 onToggleTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
                 onAddTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
                 register="desk"
                 testID={`tag-chips-${exercise.localId}`}
               />
+            ) : null}
 
-              {/* The ledger — every row a logged set, scoreboard-legible. */}
-              {exercise.sets.length > 0 ? (
-                <View style={styles.ledger}>
-                  {exercise.sets.map((s) => (
-                    <StageSetRow
-                      key={s.localId}
-                      position={s.position}
-                      weight={s.weight ?? 0}
-                      reps={s.reps ?? 0}
-                      onRemove={() => removeSetFromDraft(exercise.localId, s.localId)}
-                      testID={`stage-set-row-${s.position}`}
-                    />
-                  ))}
-                </View>
-              ) : (
-                <Text style={[styles.ledgerEmpty, { color: colors.textMuted }]}>
-                  No sets logged yet — the board below arms your first.
-                </Text>
-              )}
-
-              {index < exercises.length - 1 ? (
-                <Pressable
-                  onPress={() => setStationIndex(index + 1)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Next station: ${exercises[index + 1].exerciseName}`}
-                  style={({ pressed }) => [
-                    styles.nextStation,
-                    { backgroundColor: colors.cardAlt, borderColor: colors.mobilePremium.hairlineBorderStrong },
-                    pressed ? { opacity: 0.7 } : null,
-                  ]}
-                  testID="stage-next-station"
-                >
-                  <Text style={[styles.nextStationLabel, { color: colors.text }]}>
-                    NEXT · {exercises[index + 1].exerciseName.toUpperCase()}
-                  </Text>
-                </Pressable>
-              ) : null}
-
-              <Pressable
-                onPress={navigateToExerciseDatabase}
-                accessibilityRole="button"
-                accessibilityLabel="Add exercise from library"
-                style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
-              >
-                <Text style={[styles.addExerciseLabel, { color: colors.textMuted }]}>
-                  + ADD EXERCISE
-                </Text>
-              </Pressable>
-
-              {sessionError ? (
-                <Text style={[styles.errorText, { color: colors.alert }]}>
-                  {sessionError}
-                </Text>
-              ) : null}
-            </>
-          ) : (
-            <View>
+            {/* The ledger — every row a logged set, scoreboard-legible. */}
+            {exercise.sets.length > 0 ? (
+              <View style={styles.ledger}>
+                {exercise.sets.map((s) => (
+                  <StageSetRow
+                    key={s.localId}
+                    position={s.position}
+                    weight={s.weight ?? 0}
+                    reps={s.reps ?? 0}
+                    onRemove={() => removeSetFromDraft(exercise.localId, s.localId)}
+                    testID={`stage-set-row-${s.position}`}
+                  />
+                ))}
+              </View>
+            ) : (
               <Text style={[styles.ledgerEmpty, { color: colors.textMuted }]}>
-                No exercises in this session.
+                No sets logged yet — the board below arms your first.
               </Text>
+            )}
+
+            {index < exercises.length - 1 ? (
               <Pressable
-                onPress={navigateToExerciseDatabase}
+                onPress={() => setStationIndex(index + 1)}
                 accessibilityRole="button"
-                accessibilityLabel="Add exercise from library"
-                style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
+                accessibilityLabel={`Next station: ${exercises[index + 1].exerciseName}`}
+                style={({ pressed }) => [
+                  styles.nextStation,
+                  pressed ? { opacity: 0.6 } : null,
+                ]}
+                testID="stage-next-station"
               >
-                <Text style={[styles.addExerciseLabel, { color: colors.textMuted }]}>
-                  + ADD EXERCISE
+                <Text style={[styles.nextStationLabel, { color: colors.text }]} numberOfLines={1}>
+                  {`NEXT — ${exercises[index + 1].exerciseName}`}
                 </Text>
               </Pressable>
-            </View>
-          )}
-        </Animated.View>
+            ) : null}
+
+            <Pressable
+              onPress={navigateToExerciseDatabase}
+              accessibilityRole="button"
+              accessibilityLabel="Add exercise from library"
+              style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
+            >
+              <Text style={[styles.addExerciseLabel, { color: colors.textMuted }]}>
+                + ADD EXERCISE
+              </Text>
+            </Pressable>
+
+            {sessionError ? (
+              <Text style={[styles.errorText, { color: colors.alert }]}>
+                {sessionError}
+              </Text>
+            ) : null}
+          </>
+        ) : (
+          <View>
+            <Text style={[styles.ledgerEmpty, { color: colors.textMuted }]}>
+              No exercises in this session.
+            </Text>
+            <Pressable
+              onPress={navigateToExerciseDatabase}
+              accessibilityRole="button"
+              accessibilityLabel="Add exercise from library"
+              style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
+            >
+              <Text style={[styles.addExerciseLabel, { color: colors.textMuted }]}>
+                + ADD EXERCISE
+              </Text>
+            </Pressable>
+          </View>
+        )}
       </ScrollView>
 
       {/* THE CALL BOARD — docked, never scrolls away. The armed set
@@ -897,7 +828,7 @@ const styles = StyleSheet.create({
   },
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 32 },
+  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 120 },
   bodyText: { ...theme.typography.mobileBody },
   // ── Stage ──
   stageHeader: {
@@ -912,8 +843,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stageEyebrow: {
-    ...theme.typography.mobileEyebrow,
+  // The clock — the Floor's only running figure in the chrome.
+  stageClock: {
+    ...theme.typography.mobileFigure,
   },
   iconButton: {
     width: 44,
@@ -923,35 +855,17 @@ const styles = StyleSheet.create({
   },
   finishButton: {
     minHeight: 44,
-    paddingHorizontal: 14,
-    borderRadius: theme.shapes.control,
-    borderWidth: 1.5,
+    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 4,
   },
   finishLabel: {
     ...theme.typography.mobileEyebrow,
-    fontSize: 11,
-  },
-  sessionStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    paddingHorizontal: 16,
-    paddingBottom: 6,
-  },
-  sessionStat: {
-    ...theme.typography.mobileLedger,
-    fontWeight: '600',
-  },
-  sessionStatMuted: {
-    ...theme.typography.mobileEyebrow,
-    fontSize: 10,
   },
   stationScroll: { flex: 1 },
   stationContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 24,
   },
@@ -970,7 +884,6 @@ const styles = StyleSheet.create({
   },
   stationRx: {
     ...theme.typography.mobileEyebrow,
-    fontSize: 10,
     flex: 1,
   },
   removeCta: {
@@ -980,10 +893,16 @@ const styles = StyleSheet.create({
   },
   removeLabel: {
     ...theme.typography.mobileEyebrow,
-    fontSize: 10,
   },
   ledger: {
     marginTop: 6,
+  },
+  tagsToggle: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  tagsToggleText: {
+    ...theme.typography.mobileLedger,
   },
   ledgerEmpty: {
     ...theme.typography.mobileMeta,
@@ -991,16 +910,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   nextStation: {
-    height: 52,
-    borderRadius: theme.shapes.control,
-    borderWidth: 1,
-    alignItems: 'center',
+    minHeight: 48,
     justifyContent: 'center',
-    marginTop: 18,
+    marginTop: 12,
   },
   nextStationLabel: {
-    ...theme.typography.mobileEyebrow,
-    fontSize: 11,
+    ...theme.typography.mobileItemTitle,
   },
   addExerciseCta: {
     height: 44,
@@ -1010,7 +925,6 @@ const styles = StyleSheet.create({
   },
   addExerciseLabel: {
     ...theme.typography.mobileEyebrow,
-    fontSize: 10,
   },
   errorText: { ...theme.typography.mobileMeta, marginTop: 12 },
   armedDock: {
@@ -1023,18 +937,15 @@ const styles = StyleSheet.create({
   },
   finishStat: { flex: 1 },
   // ── Receipt (Desk) ──
-  receiptHead: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    marginTop: 4,
+  receiptBlock: {
+    marginTop: BLOCK_GAP,
   },
-  receiptSide: {
-    gap: 12,
-    paddingBottom: 4,
+  receiptStatement: {
+    ...theme.typography.mobileDisplay,
   },
-  receiptExercise: {
-    marginTop: 20,
+  receiptFact: {
+    ...theme.typography.mobileLedger,
+    marginTop: HALO,
   },
   receiptExHead: {
     flexDirection: 'row',
@@ -1046,8 +957,5 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileItemTitle,
     flex: 1,
   },
-  receiptExCount: {
-    ...theme.typography.mobileMeta,
-  },
-  tagsLine: { ...theme.typography.mobileMeta, marginTop: 2 },
+  tagsLine: { ...theme.typography.mobileLedger, marginTop: 2, marginBottom: 4 },
 });

@@ -84,7 +84,6 @@ const styles = StyleSheet.create({
   },
   multiplier: {
     ...theme.typography.mobileFigure,
-    fontSize: 20,
     fontWeight: '700',
   },
   remove: {

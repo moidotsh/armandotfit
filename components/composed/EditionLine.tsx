@@ -60,6 +60,7 @@ export function EditionLine({ session, onPress, lead = false }: EditionLineProps
       onPress={() => onPress(session.id)}
       accessibilityRole="button"
       accessibilityLabel={`Session ${aria}`}
+      testID={`recent-${session.id}`}
       style={({ pressed }) => [styles.row, pressed ? { opacity: 0.6 } : null]}
     >
       <Text
