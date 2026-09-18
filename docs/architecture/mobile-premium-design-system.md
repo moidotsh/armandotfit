@@ -474,6 +474,28 @@ message read `fonts.mono` the same way — declaring the axis never moves
 the default look. Body/UI text deliberately stays the platform sans for
 legibility.
 
+The named type scale (`theme.typography`, canonical values in
+`constants/theme.ts`) is the complete pick-from list — call sites never
+write ad-hoc `fontSize`/`fontWeight` values. The current slots:
+
+| Token | Shape | Reads as |
+|---|---|---|
+| `mobileDisplay` | 56/800, ls −2, tabular, display face | The one hero figure per screen |
+| `mobileFigure` | 22/700, ls −0.3, tabular, display face | Stat-strip / receipt figures |
+| `mobileTitle` | 22/600, ls −0.2, display face | Screen + card-lead titles |
+| `mobileAction` | 15/600, ls +0.4 | Buttons, links, row labels |
+| `mobileItemTitle` | 14/600 | Row / card item titles |
+| `mobileSubtitle` | 14/400, lh 20 | Supporting line under a title |
+| `mobileBody` | 14/400, lh 22 | Prose |
+| `mobileFieldLabel` | 13/600 | Input labels |
+| `mobileLedger` | 13/500, tabular, mono face | In-row numeric facts (set rows, side stats) |
+| `mobileMeta` | 12/400, lh 16, tabular | Caption / meta lines |
+| `mobileTag` | 12/600, ls +0.1 | Chip text |
+| `mobileEyebrow` | 11/600, ls +1.4, mono face | Uppercase section + micro labels |
+
+Every figure token carries `fontVariant: ['tabular-nums']` by
+construction — a call site cannot forget it.
+
 Self-hosting recipe (web): font files in `public/fonts/` (woff2 first),
 the `@font-face` block in an id'd `<style>` in `index.html`, restored
 at runtime from `app/_layout.tsx` (static export strips `<head>`
