@@ -1,30 +1,28 @@
 // app/analytics.tsx
-// THE FORM TABLE (broadsheet-thesis §7): the consistency field is the
-// story — square-cut cells at four INK levels with today outlined in
-// the record red (the one red mark on the field), riding the ruled
-// page; the weekly bars stop apologizing — real bar weight in ink,
-// agate values, ledger rows. Range via segmented control (agate
-// markings). Daily-aggregate history + weekly bucketing all computed
+// THE QUIET PAGE's form table (docs/architecture/
+// quiet-page-thesis.md §6): "You trained 24 of 30." The nameplate,
+// the MobileSurface panel, the section eyebrows, and the MobileHeader
+// chrome die — the COUNT is the statement (the page's one sentence,
+// restating with the range pick), the grid sits open on the field
+// (ink density is the data-viz; today outlined in the record red),
+// and the weekly bars read as one quiet line each: date · count,
+// with real bar weight. Daily aggregates + weekly bucketing computed
 // at read.
 
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
 import {
   MobileAtmosphere,
-  MobileSurface,
-  MobileHeader,
-  MobileSectionEyebrow,
   SegmentedControl,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { QueryErrorNote, TrainingConsistencyGrid } from '../components/composed';
+import { DeskShell, QueryErrorNote, TrainingConsistencyGrid } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory } from '../hooks';
 import { AnalyticsService } from '../services';
 import { addDays } from '../utils';
-import { SCREEN_BODY_STYLE, theme } from '../constants';
+import { BLOCK_GAP, HALO, theme } from '../constants';
 
 type Range = 7 | 30 | 90;
 
@@ -46,7 +44,6 @@ export default function AnalyticsScreen() {
   }, [historyQuery.data]);
 
   const maxWorkouts = Math.max(1, ...weekly.map((w) => w.sessions));
-
   const sessionsInRange = weekly.reduce((sum, w) => sum + w.sessions, 0);
 
   // Grid range: today + range days back (matches the repository's
@@ -59,31 +56,25 @@ export default function AnalyticsScreen() {
   }, [range]);
 
   return (
-    <SafeAreaView
-      style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
-      edges={['top', 'bottom']}
+    <DeskShell
+      surface="analytics"
+      onBack={safeGoBack}
+      testID="form-scroll"
+      contentContainerStyle={styles.bodyContent}
     >
-      <MobileAtmosphere surface="analytics" />
-      <MobileHeader
-        title="Analytics"
-        eyebrow="History"
-        onBack={safeGoBack}
-        hideAccentDot
-      />
-      <ScrollView
-        style={styles.body}
-        contentContainerStyle={styles.bodyContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* THE HEADLINE — the form table's nameplate; the grid beneath
-            is the data, in ink. */}
-        <Text style={[styles.headlineKicker, { color: colors.textMuted }]}>
-          {`${sessionsInRange} SESSION${sessionsInRange === 1 ? '' : 'S'} · LAST ${range} DAYS`}
+      {/* THE STATEMENT — the count. The page's sentence is "you
+          trained N of R days"; the number carries it. */}
+      <View>
+        <Text style={[styles.count, { color: colors.text }]}>
+          {sessionsInRange}
         </Text>
-        <Text style={[styles.headline, { color: colors.text }]}>
-          THE FORM TABLE
+        <Text style={[styles.countFact, { color: colors.textMuted }]} numberOfLines={1}>
+          {`sessions · last ${range} days`}
         </Text>
-        <View style={{ height: 12 }} />
+      </View>
+
+      {/* The range pick. */}
+      <View style={styles.block}>
         <SegmentedControl<Range>
           variant="selection"
           segments={[
@@ -96,39 +87,36 @@ export default function AnalyticsScreen() {
           accessibilityLabel="Analytics range"
           testID="analytics-range"
         />
+      </View>
 
-        {historyQuery.isError ? (
-          <QueryErrorNote onRetry={() => void historyQuery.refetch()} testID="analytics-error" />
-        ) : (
-          <>
-            {/* The one visual — the screen's single bounded sheet. */}
-            <MobileSectionEyebrow rule flush={false}>
-              Training consistency
-            </MobileSectionEyebrow>
-            <MobileSurface padding={16}>
-              {historyQuery.isLoading ? (
-                <LoadingSpinner />
-              ) : (
+      {historyQuery.isError ? (
+        <QueryErrorNote onRetry={() => void historyQuery.refetch()} testID="analytics-error" />
+      ) : (
+        <>
+          {/* The field — ink density, today outlined in the record red. */}
+          <View style={styles.block}>
+            {historyQuery.isLoading ? (
+              <LoadingSpinner />
+            ) : (
+              <View style={styles.gridWrap}>
                 <TrainingConsistencyGrid
                   data={historyQuery.data ?? []}
                   startDate={gridRange.startDate}
                   endDate={gridRange.endDate}
                   testID="analytics-consistency-grid"
                 />
-              )}
-            </MobileSurface>
+              </View>
+            )}
+          </View>
 
-            {/* Weekly bars — real bar weight, mono values, rows on paper. */}
-            <MobileSectionEyebrow rule flush={false}>
-              Workouts per week
-            </MobileSectionEyebrow>
-            {historyQuery.isLoading ? (
-              <LoadingSpinner />
-            ) : weekly.length === 0 ? (
-              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-                No workouts in this range yet.
-              </Text>
-            ) : (
+          {/* Weekly bars — one quiet line each: date · count, real
+              bar weight in ink. */}
+          {historyQuery.isLoading ? null : weekly.length === 0 ? (
+            <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+              No workouts in this range yet.
+            </Text>
+          ) : (
+            <View style={styles.block}>
               <View style={styles.barList}>
                 {weekly.map((w) => (
                   <View
@@ -136,79 +124,78 @@ export default function AnalyticsScreen() {
                     style={styles.barRow}
                     accessibilityLabel={`Week of ${new Date(w.weekStart).toLocaleDateString()}: ${w.sessions} sessions`}
                   >
-                    <Text style={[styles.barLabel, { color: colors.text }]}>
-                      {new Date(w.weekStart).toLocaleDateString(undefined, {
+                    <Text style={[styles.barLabel, { color: colors.textMuted }]} numberOfLines={1}>
+                      {`${new Date(w.weekStart).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
-                      })}
+                      })} · ${w.sessions}`}
                     </Text>
-                    <View
-                      style={[
-                        styles.barTrack,
-                        { backgroundColor: colors.mobilePremium.railTrack },
-                      ]}
-                    >
+                    <View style={styles.barTrackWrap}>
+                      {/* No track — a week's bar is a line of ink on
+                          the field, its length the count. */}
                       <View
                         style={[
                           styles.barFill,
                           {
-                            width: `${Math.max(w.sessions > 0 ? 8 : 0, (w.sessions / maxWorkouts) * 100)}%`,
+                            width: `${Math.max(w.sessions > 0 ? 6 : 0, (w.sessions / maxWorkouts) * 88)}%`,
                             backgroundColor: colors.text,
                           },
                         ]}
                       />
                     </View>
-                    <Text style={[styles.barValue, { color: colors.text }]}>
-                      {w.sessions}
-                    </Text>
                   </View>
                 ))}
               </View>
-            )}
-          </>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+            </View>
+          )}
+        </>
+      )}
+    </DeskShell>
   );
 }
 
 const styles = StyleSheet.create({
-  shell: { flex: 1 },
-  body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32 },
-  headlineKicker: {
-    ...theme.typography.mobileEyebrow,
+  bodyContent: {
+    paddingHorizontal: 20,
+    paddingTop: 4,
+    paddingBottom: 80,
   },
-  headline: {
+  block: {
+    marginTop: BLOCK_GAP,
+  },
+  count: {
     ...theme.typography.mobileDisplay,
-    fontSize: 40,
-    lineHeight: 42,
-    marginTop: 6,
   },
-  emptyText: { ...theme.typography.mobileMeta, marginTop: 12 },
+  // The fact line waits outside the statement's halo.
+  countFact: {
+    ...theme.typography.mobileLedger,
+    marginTop: HALO,
+  },
+  emptyText: { ...theme.typography.mobileMeta, marginTop: BLOCK_GAP },
+  // The grid breathes narrower than the column — the field is the
+  // story, not the paint.
+  gridWrap: {
+    maxWidth: 240,
+  },
   barList: {
-    gap: 12,
-    marginTop: 12,
+    gap: 14,
   },
   barRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    minHeight: 20,
   },
   barLabel: {
     ...theme.typography.mobileLedger,
-    minWidth: 56,
+    minWidth: 84,
   },
-  barTrack: {
+  barTrackWrap: {
     flex: 1,
-    height: 16,
-    borderRadius: theme.shapes.tile,
-    overflow: 'hidden',
+    alignItems: 'flex-start',
   },
-  barFill: { height: '100%' },
-  barValue: {
-    ...theme.typography.mobileLedger,
-    minWidth: 20,
-    textAlign: 'right',
+  barFill: {
+    height: 8,
+    borderRadius: theme.shapes.tile,
   },
 });
