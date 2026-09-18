@@ -64,11 +64,24 @@ export { DESKTOP_LAYOUT_MODE } from './styles';
 export { APP_LAYOUT } from './layout';
 export type { NavDrawerBrandPersistence, NavDrawerAnchor } from './layout';
 
-// THE QUIET PAGE air law + the one declaration point for every
-// quiet-page pattern (gutter/block rhythm/row gap/halo + the named
-// statement/fact/row/whisper styles) — consumer-owned, probe-enforced
-// (P-AIR-1), the same discipline as the dialect layer in theme.ts.
+// THE QUIET PAGE air law — now a compat shim aliasing THE BOARD's
+// carriers (see board.ts); screens migrate to BOARD as they rebuild.
 export { PAGE_GUTTER, BLOCK_GAP, ROW_GAP, HALO, FACT_GAP, QUIET } from './quiet';
+
+// THE BOARD (docs/architecture/board-thesis.md) — the air law's live
+// declaration point + THE PLATE CODE (denominations, per-scale slab
+// geometry, greedy decomposition, tally geometry). Colors live in
+// theme.colors.*.meter; this is the arithmetic.
+export {
+  BOARD,
+  PLATE_DENOMINATIONS,
+  PLATE_SCALE,
+  PLATE_QUANTUM,
+  decomposeLoad,
+  stackWidthFor,
+  TALLY_SCALE,
+} from './board';
+export type { PlateSegment, PlateScale, MeterStep, TallyScale } from './board';
 
 // Workout split metadata (decoupled from theme for SOC). The day→exercise
 // assignments live in shared/exercises/splits.ts because they're typed
