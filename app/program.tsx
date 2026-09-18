@@ -1,6 +1,6 @@
 // app/program.tsx
 // My Program — the split as a document (count-thesis §7): days are
-// chapters (mono DAY 01 marking + Big Shoulders title + planned-sets
+// chapters (mono DAY 01 kicker + Rokkitt title + planned-sets
 // figure in mono), and each chapter head PINS while its slots scroll
 // under it — the reader always knows which day they're reading. Slots
 // are the same numbered ledger rows the funnel preview speaks — one

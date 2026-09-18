@@ -30,8 +30,8 @@
       injection agree.
       Full design + debugging checklist: docs/architecture/pwa-installability.md.
     -->
-    <meta name="theme-color" content="#F1F1EF" media="(min-width: 701px)" />
-    <meta name="theme-color" content="#F1F1EF" media="(max-width: 700px)" />
+    <meta name="theme-color" content="#F2EEE5" media="(min-width: 701px)" />
+    <meta name="theme-color" content="#F2EEE5" media="(max-width: 700px)" />
 
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icons/192.png" />
@@ -44,25 +44,25 @@
     <title>armandotfit</title>
 
     <!--
-      The COUNT faces — self-hosted, OFL (docs/architecture/
-      count-thesis.md §2.1). Big Shoulders (one variable file, wght
-      100–900, condensed by design) speaks statements; Azeret Mono
-      (one variable file, wght 100–900) keeps the count — mono is
-      tabular by construction. Mirror trio discipline: this id'd
-      style block, the runtime restore in app/_layout.tsx, and the
-      injector carry them together — plus the preload lines so the
-      first statement and the first counter render in their faces,
-      not fallbacks.
+      THE BROADSHEET faces — self-hosted, OFL (docs/architecture/
+      broadsheet-thesis.md §2.1). Rokkitt (one variable file, wght
+      100–900, slab serif) speaks headlines; Azeret Mono (one
+      variable file, wght 100–900) keeps the agate — every changing
+      or aligned figure. Mono is tabular by construction. Mirror trio
+      discipline: this id'd style block, the runtime restore in
+      app/_layout.tsx, and the injector carry them together — plus
+      the preload lines so the first headline and the first figure
+      render in their faces, not fallbacks.
     -->
-    <link rel="preload" href="/fonts/big-shoulders-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/rokkitt-var.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/azeret-mono-var.woff2" as="font" type="font/woff2" crossorigin />
     <style id="arq-font-faces">
       @font-face {
-        font-family: 'Big Shoulders';
+        font-family: 'Rokkitt';
         font-style: normal;
         font-weight: 100 900;
         font-display: swap;
-        src: url('/fonts/big-shoulders-var.woff2') format('woff2');
+        src: url('/fonts/rokkitt-var.woff2') format('woff2');
       }
       @font-face {
         font-family: 'Azeret Mono';
@@ -74,18 +74,19 @@
     </style>
 
     <!--
-      The COUNT boot plate — the pre-JS cover. armandotfit's design
-      language opens as the ruled field: the chalk page (#F1F1EF) with
-      the name stamped in graphite Big Shoulders and a 2px strike rule
+      THE BROADSHEET boot plate — the pre-JS cover. armandotfit's
+      design language opens as the page: warm paper (#F2EEE5) with
+      the name stamped in ink Rokkitt and a 2px record-red rule
       beneath it — not a white flash, not a colored plate. The root
       layout lifts it via markBootReady() → html[data-boot-ready] as
       soon as React mounts (see utils/routeTransition.ts);
       reduced-motion users keep it as a static cover that simply
-      disappears on lift. Pure CSS + one attribute — no script needed.
+      disappears on lift. Pure CSS + one attribute — no script
+      needed.
     -->
     <style id="ink-boot-plate">
       html:not([data-boot-ready]) body {
-        background: #f1f1ef;
+        background: #f2eee5;
       }
       html:not([data-boot-ready]) #root::before {
         content: 'ARMANDOTFIT';
@@ -94,9 +95,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f1f1ef;
-        color: #131514;
-        font-family: 'Big Shoulders', -apple-system, sans-serif;
+        background: #f2eee5;
+        color: #1b1812;
+        font-family: 'Rokkitt', -apple-system, sans-serif;
         font-size: 24px;
         font-weight: 800;
         letter-spacing: 0.14em;
@@ -111,7 +112,7 @@
         width: 84px;
         height: 2px;
         margin-left: -42px;
-        background: #c64100;
+        background: #c24100;
         z-index: 9999;
       }
       html[data-boot-ready] #root::before,
@@ -134,7 +135,7 @@
         height: 100%;
         margin: 0;
         padding: 0;
-        background: #f1f1ef;
+        background: #f2eee5;
       }
       #root {
         display: flex;

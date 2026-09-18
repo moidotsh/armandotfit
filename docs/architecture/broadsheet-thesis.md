@@ -204,13 +204,25 @@ on a red fill comes from size and face, not alpha.
 
 Every text-bearing slot × every surface it rides, computed from the
 hex pairs (`.shots/vision2/contrast.ts`; regenerate before any
-palette change — the §3 table is a declaration, the matrix is the
-law). Targets: text ≥ 7 on page/card, secondary ≥ 7, muted ≥ 4.5 on
-the darkest surface it rides, brand fill ≥ 3.0 as UI component with
-≥ 4.5 preferred on page, `brandText` ≥ 4.5, `textOnBrand` ≥ 4.5,
-status quartet ≥ 4.5 as text on page and card, wire text ≥ 12,
-`brandOnInk` ≥ 6. **The measured numbers are pinned in this section
-by the Phase-1 probe run** (they replace this paragraph when run).
+palette change — the §3 table is a declaration, this matrix is the
+law). Reading: paper/evening, all ≥ WCAG AA. **72 pairs, 0 failures
+(2026-12 run):**
+
+- text: **15.3 / 15.9** on page · **16.8 / 14.8** on card ·
+  **15.1 / 14.0** on cardAlt
+- secondary: **9.4 / 11.3** on page (≥ 8.8 on every surface)
+- muted: **5.9 / 6.5** on page · ≥ **5.0 / 5.9** on the darkest
+  surface it rides (cardAlt)
+- brand as fill: **4.48 / 7.64** on page (**4.92 / 7.09** on card) —
+  clears 3:1 UI-component with headroom
+- brandText: **6.37 / 9.52** on page · textOnBrand on the fill:
+  **4.82 / 7.46** (paper on the record red; ink on the bright one —
+  the paint flips with the plate, both measured)
+- status quartet as text on page+card: paper **4.60–5.24**, evening
+  **7.39–10.14**
+- the wire: text **16.1 / 15.3** on bg/surface, muted 6.6,
+  signal-as-text 8.4, onSignal 8.1
+- brandOnInk on the wire bg: **8.36**
 
 ## 4. Surface & elevation language
 

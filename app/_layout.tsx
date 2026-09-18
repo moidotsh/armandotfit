@@ -108,14 +108,14 @@ function RootShell() {
       '*::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}',
     );
 
-    // The COUNT faces — runtime restore of index.html's id'd
+    // THE BROADSHEET faces — runtime restore of index.html's id'd
     // @font-face block (static export strips <head> styles; the
     // build-time injector covers exported routes, this covers dev and
     // anything the strip still misses). Mirror trio: index.html,
     // scripts/inject-critical-web.ts, this block.
     const ensureFontLinks = () => {
       const fontFiles = [
-        '/fonts/big-shoulders-var.woff2',
+        '/fonts/rokkitt-var.woff2',
         '/fonts/azeret-mono-var.woff2',
       ];
       for (const href of fontFiles) {
@@ -133,7 +133,7 @@ function RootShell() {
     ensureStyle(
       'arq-font-faces',
       [
-        "@font-face{font-family:'Big Shoulders';font-style:normal;font-weight:100 900;font-display:swap;src:url('/fonts/big-shoulders-var.woff2') format('woff2')}",
+        "@font-face{font-family:'Rokkitt';font-style:normal;font-weight:100 900;font-display:swap;src:url('/fonts/rokkitt-var.woff2') format('woff2')}",
         "@font-face{font-family:'Azeret Mono';font-style:normal;font-weight:100 900;font-display:swap;src:url('/fonts/azeret-mono-var.woff2') format('woff2')}",
       ].join(''),
     );
