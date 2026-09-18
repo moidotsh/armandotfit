@@ -1,15 +1,15 @@
 // app/+not-found.tsx
 //
-// The shell's not-found screen — the honest dead end. Neutral starter
-// copy; consumers override the strings (or the whole composition) with
-// their brand's voice. Excluded from SB1 by filename, but it composes
+// The honest dead end, wearing the app's voice: the wordmark eyebrow and
+// copy that points back at the training surfaces instead of generic
+// starter text. Excluded from SB1 by filename, but it composes
 // ScreenScaffold anyway (the centered column + atmosphere read is the
 // same as every other screen).
 
 import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { ScreenScaffold } from '../components/composed';
-import { EmptyState, MobileSurface } from '../components/MobilePremium';
+import { EmptyState, MobileSectionEyebrow, MobileSurface } from '../components/MobilePremium';
 import { replaceWithHome } from '../navigation';
 import { markNotFoundActive, markNotFoundInactive } from '../components/primitives/AuthGuard';
 
@@ -26,9 +26,11 @@ export default function NotFoundScreen() {
     <ScreenScaffold surface="analytics">
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <MobileSurface padding={20}>
+          <MobileSectionEyebrow>armandotfit</MobileSectionEyebrow>
+          <View style={{ height: 8 }} />
           <EmptyState
             title="Page not found"
-            message="The page you're looking for doesn't exist or has moved."
+            message="Nothing lives at this address — your program, sessions, and streaks are all still where you left them."
             action={{
               label: 'Back to home',
               onPress: replaceWithHome,

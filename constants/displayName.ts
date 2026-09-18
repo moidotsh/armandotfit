@@ -5,4 +5,4 @@
 // theme.ts: a consumer overrides both (color via the brand family, name
 // via this one constant) and every generated reference follows.
 
-export const APP_DISPLAY_NAME = 'Arqavellum';
+export const APP_DISPLAY_NAME = 'armandotfit';
