@@ -7,15 +7,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { MobileSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
-import type { SystemExerciseData } from '../../shared/exercises';
-
-/** exerciseType values are catalog slugs; the library shows words. */
-const EXERCISE_TYPE_LABELS: Record<string, string> = {
-  free_weight: 'Free weight',
-  calisthenic: 'Bodyweight',
-  machine: 'Machine',
-  cable: 'Cable',
-};
+import { EXERCISE_TYPE_DISPLAY, type SystemExerciseData } from '../../shared/exercises';
 
 export interface ExerciseListItemProps {
   exercise: SystemExerciseData;
@@ -25,7 +17,7 @@ export interface ExerciseListItemProps {
 export function ExerciseListItem({ exercise, onPress }: ExerciseListItemProps) {
   const { colors } = useAppTheme();
   const meta = [
-    EXERCISE_TYPE_LABELS[exercise.exerciseType] ?? exercise.exerciseType,
+    EXERCISE_TYPE_DISPLAY[exercise.exerciseType] ?? exercise.exerciseType,
     exercise.difficultyLevel,
   ]
     .filter(Boolean)

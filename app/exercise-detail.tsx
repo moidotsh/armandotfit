@@ -1,7 +1,9 @@
 // app/exercise-detail.tsx
 // Detail card for a catalog exercise: instructions, tips, muscles,
-// equipment. When a draft session is active, an "Add to active session"
-// CTA wires to addExerciseToDraft (coarse identity + slug).
+// equipment. Muscles + equipment read as attribute chips — primary
+// chips carry a border, secondary ones ride muted. When a draft session
+// is active, an "Add to active session" CTA wires to addExerciseToDraft
+// (coarse identity + slug); when not, a quiet line says so.
 
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -22,6 +24,7 @@ import { useExerciseDetail, useAiPayload } from '../hooks';
 import { useWorkoutStore } from '../stores';
 import {
   EQUIPMENT_DISPLAY_NAMES,
+  EXERCISE_TYPE_DISPLAY,
   MUSCLE_DISPLAY_NAMES,
   type EquipmentSlug,
   type MuscleSlug,
@@ -47,9 +50,9 @@ export default function ExerciseDetailScreen() {
     exercise
       ? {
           title: exercise.name,
-          contextLabel: exercise.exerciseType,
+          contextLabel: EXERCISE_TYPE_DISPLAY[exercise.exerciseType],
           visibleContent: [
-            `- Type: ${exercise.exerciseType}`,
+            `- Type: ${EXERCISE_TYPE_DISPLAY[exercise.exerciseType]}`,
             `- Muscles: ${[...exercise.primaryMuscles, ...exercise.secondaryMuscles]
               .map((m) => MUSCLE_DISPLAY_NAMES[m as MuscleSlug])
               .join(', ') || '—'}`,
@@ -67,7 +70,7 @@ export default function ExerciseDetailScreen() {
       <MobileAtmosphere surface="instructions" />
       <MobileHeader
         title={exercise?.name ?? 'Exercise'}
-        eyebrow={exercise?.exerciseType ?? ''}
+        eyebrow={exercise ? EXERCISE_TYPE_DISPLAY[exercise.exerciseType] : ''}
         onBack={safeGoBack}
         navRightAction={<CopyForAiButton payload={aiPayload} testID="exercise-detail-copy-for-ai" />}
       />
@@ -102,26 +105,37 @@ export default function ExerciseDetailScreen() {
                 <View style={{ height: 16 }} />
                 <MobileSectionEyebrow>Muscles worked</MobileSectionEyebrow>
                 <MobileSurface padding={16}>
-                  {exercise.primaryMuscles.map((m) => (
-                    <View key={m} style={styles.row}>
-                      <Text style={[styles.label, { color: colors.text }]}>
-                        {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
-                      </Text>
-                      <Text style={[styles.tag, { color: colors.textSecondary }]}>
-                        primary
-                      </Text>
-                    </View>
-                  ))}
-                  {exercise.secondaryMuscles.map((m) => (
-                    <View key={m} style={styles.row}>
-                      <Text style={[styles.label, { color: colors.text }]}>
-                        {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
-                      </Text>
-                      <Text style={[styles.tag, { color: colors.textSecondary }]}>
-                        secondary
-                      </Text>
-                    </View>
-                  ))}
+                  <View style={styles.chipWrap}>
+                    {exercise.primaryMuscles.map((m) => (
+                      <View
+                        key={m}
+                        style={[
+                          styles.chip,
+                          styles.chipPrimary,
+                          { borderColor: colors.border, backgroundColor: colors.glass.inputBackground },
+                        ]}
+                        accessibilityLabel={`Primary muscle ${MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}`}
+                      >
+                        <Text style={[styles.chipText, { color: colors.text }]}>
+                          {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
+                        </Text>
+                      </View>
+                    ))}
+                    {exercise.secondaryMuscles.map((m) => (
+                      <View
+                        key={m}
+                        style={styles.chip}
+                        accessibilityLabel={`Secondary muscle ${MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}`}
+                      >
+                        <Text style={[styles.chipText, { color: colors.textSecondary }]}>
+                          {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                  <Text style={[styles.chipLegend, { color: colors.textColors.tertiary }]}>
+                    Outlined are primary; the rest assist.
+                  </Text>
                 </MobileSurface>
               </>
             )}
@@ -131,16 +145,30 @@ export default function ExerciseDetailScreen() {
                 <View style={{ height: 16 }} />
                 <MobileSectionEyebrow>Equipment</MobileSectionEyebrow>
                 <MobileSurface padding={16}>
-                  {exercise.equipment.map((e, i) => (
-                    <View key={`${e}-${i}`} style={styles.row}>
-                      <Text style={[styles.label, { color: colors.text }]}>
-                        {equipmentLabel(e)}
-                      </Text>
-                    </View>
-                  ))}
+                  <View style={styles.chipWrap}>
+                    {exercise.equipment.map((e, i) => (
+                      <View
+                        key={`${e}-${i}`}
+                        style={[styles.chip, styles.chipPrimary, { borderColor: colors.border, backgroundColor: colors.glass.inputBackground }]}
+                      >
+                        <Text style={[styles.chipText, { color: colors.text }]}>
+                          {equipmentLabel(e)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
                 </MobileSurface>
               </>
             )}
+
+            {!isSessionActive ? (
+              <>
+                <View style={{ height: 16 }} />
+                <Text style={[styles.sessionHint, { color: colors.textColors.tertiary }]}>
+                  Start a session to add this exercise to your day.
+                </Text>
+              </>
+            ) : null}
           </>
         )}
       </ScrollView>
@@ -171,12 +199,14 @@ const styles = StyleSheet.create({
   bodyText: { fontSize: 14, lineHeight: 20 },
   tips: { fontSize: 13, lineHeight: 18, fontStyle: 'italic' },
   missing: { fontSize: 13, lineHeight: 18 },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 4,
+  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
-  label: { fontSize: 14, fontWeight: '500' },
-  tag: { fontSize: 12 },
+  chipPrimary: { borderWidth: 1 },
+  chipText: { fontSize: 12, fontWeight: '500' },
+  chipLegend: { fontSize: 11, lineHeight: 14, marginTop: 10 },
+  sessionHint: { fontSize: 12, lineHeight: 16, textAlign: 'center' },
 });

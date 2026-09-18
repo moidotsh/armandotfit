@@ -13,7 +13,6 @@
 // suggestedTags + the user's session tags — never in catalog entries.
 
 import type { ExerciseType, DifficultyLevel } from '../types';
-
 // ──────────────────────────────────────────────────────────────────────
 // Muscle + equipment slugs (match seed SQL slugs)
 // ──────────────────────────────────────────────────────────────────────
@@ -99,6 +98,14 @@ export type EquipmentSlug = (typeof EquipmentSlug)[keyof typeof EquipmentSlug];
 // display_name columns so attribute chips can render without a DB
 // round-trip on the split-preview / active-session surfaces. If the two
 // drift, the seed SQL is the source of truth — fix it here to match.
+
+/** Modality slugs → words (the library list and detail header show these). */
+export const EXERCISE_TYPE_DISPLAY: Record<ExerciseType, string> = {
+  free_weight: 'Free weight',
+  calisthenic: 'Bodyweight',
+  machine: 'Machine',
+  cable: 'Cable',
+};
 
 export const MUSCLE_DISPLAY_NAMES: Record<MuscleSlug, string> = {
   [MuscleSlug.CHEST]: 'Chest',
