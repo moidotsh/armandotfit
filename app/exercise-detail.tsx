@@ -17,11 +17,10 @@ import {
   MobileSectionEyebrow,
   MobilePrimaryButton,
   MobileActionFooter,
-  CopyForAiButton,
 } from '../components/MobilePremium';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
-import { useExerciseDetail, useAiPayload } from '../hooks';
+import { useExerciseDetail, useRecentSessionDetails } from '../hooks';
 import { useWorkoutStore } from '../stores';
 import {
   EQUIPMENT_DISPLAY_NAMES,
@@ -42,26 +41,38 @@ export default function ExerciseDetailScreen() {
   const { colors } = useAppTheme();
   const { showToast } = useToast();
   const query = useExerciseDetail(slug ?? null);
+  const recentQuery = useRecentSessionDetails(10);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
   const addExerciseToDraft = useWorkoutStore((s) => s.addExerciseToDraft);
 
   const exercise = query.data;
 
-  const aiPayload = useAiPayload(
-    exercise
-      ? {
-          title: exercise.name,
-          contextLabel: EXERCISE_TYPE_DISPLAY[exercise.exerciseType],
-          visibleContent: [
-            `- Type: ${EXERCISE_TYPE_DISPLAY[exercise.exerciseType]}`,
-            `- Muscles: ${[...exercise.primaryMuscles, ...exercise.secondaryMuscles]
-              .map((m) => MUSCLE_DISPLAY_NAMES[m as MuscleSlug])
-              .join(', ') || '—'}`,
-            `- Equipment: ${exercise.equipment.map(equipmentLabel).join(', ') || '—'}`,
-          ].join('\n'),
-        }
-      : undefined,
-  );
+  // LAST TIME — this exercise's most recent logged set, computed at
+  // read from history (identity joins by name). The number you're
+  // walking in to beat.
+  const lastTime = React.useMemo(() => {
+    if (!exercise) return null;
+    const key = exercise.name.toLowerCase();
+    for (const session of recentQuery.data ?? []) {
+      const found = session.exercises.find(
+        (ex) => ex.exerciseName.toLowerCase() === key,
+      );
+      if (found && found.sets.length > 0) {
+        const last = found.sets[found.sets.length - 1];
+        return {
+          weight: last.weight,
+          reps: last.reps,
+          sets: found.sets.length,
+          when: new Date(session.startedAt).toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric',
+          }),
+        };
+      }
+    }
+    return null;
+  }, [exercise, recentQuery.data]);
+
 
   return (
     <SafeAreaView
@@ -71,7 +82,6 @@ export default function ExerciseDetailScreen() {
       <MobileAtmosphere surface="instructions" />
       <MobileHeader
         onBack={safeGoBack}
-        navRightAction={<CopyForAiButton payload={aiPayload} testID="exercise-detail-copy-for-ai" />}
       />
       <ScrollView
         style={styles.body}
@@ -92,6 +102,11 @@ export default function ExerciseDetailScreen() {
             <Text style={[styles.headline, { color: colors.text }]}>
               {exercise.name}
             </Text>
+            {lastTime ? (
+              <Text style={[styles.lastLine, { color: colors.brandText }]}>
+                {`LAST — ${lastTime.weight}×${lastTime.reps} · ${lastTime.sets} set${lastTime.sets === 1 ? '' : 's'} · ${lastTime.when}`}
+              </Text>
+            ) : null}
 
             <MobileSectionEyebrow rule flush={false}>
               Instructions
@@ -220,6 +235,11 @@ const styles = StyleSheet.create({
   headline: {
     ...theme.typography.mobileTitle,
     marginBottom: 4,
+  },
+  lastLine: {
+    ...theme.typography.mobileEyebrow,
+    fontSize: 10,
+    marginBottom: 6,
   },
   bodyText: { ...theme.typography.mobileBody },
   tips: { ...theme.typography.mobileMeta, fontStyle: 'italic', marginTop: 10 },

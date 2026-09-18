@@ -50,6 +50,7 @@ export default function LoginScreen() {
         <Text style={[styles.wordmark, { color: colors.textMuted }]}>
           armandotfit
         </Text>
+        <View style={[styles.wordmarkRule, { backgroundColor: colors.brand }]} />
         <Text style={[styles.title, { color: colors.text }]}>
           Welcome back
         </Text>
@@ -127,6 +128,15 @@ const styles = StyleSheet.create({
     ...MOBILE_CONTENT_WIDTH_STYLE,
     paddingHorizontal: 20,
     gap: 4,
+  },
+  wordmarkRule: {
+    // The boot plate's mark: a 2px signal rule under the wordmark —
+    // the brand moment, once, quietly.
+    width: 72,
+    height: 2,
+    marginTop: 8,
+    marginBottom: 18,
+    alignSelf: 'center',
   },
   wordmark: {
     fontFamily: theme.fonts.displayCondensed ?? theme.fonts.display,

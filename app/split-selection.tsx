@@ -26,11 +26,10 @@ import {
   MobileActionFooter,
   MobileSectionEyebrow,
   SegmentedControl,
-  CopyForAiButton,
 } from '../components/MobilePremium';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, safeGoBack } from '../navigation';
-import { useProfile, useRecentWorkouts, useAiPayload } from '../hooks';
+import { useProfile, useRecentWorkouts } from '../hooks';
 import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots } from '../services';
 import {
@@ -97,13 +96,6 @@ export default function SplitSelectionScreen() {
     ? MAX_SPLIT_DAY
     : suggestedDay - 1;
 
-  const aiPayload = useAiPayload({
-    visibleContent: [
-      `- Split: ${splitChoice === 'oneADay' ? '1-a-day' : 'AM/PM'}`,
-      `- Next day-of-split: ${suggestedDay}`,
-      `- Rest days configured: ${restDays.length}`,
-    ].join('\n'),
-  });
 
   const slots = useMemo(
     () => getUpcomingWorkoutSlots(7, restDays, walkStartDay),
@@ -129,6 +121,14 @@ export default function SplitSelectionScreen() {
 
   // Preview the day's slots with standing substitutions applied.
   const previewSlots = resolveSlots(split, draftDay, session, programOverrides);
+  // The day's targets — the distinct primary muscle groups across the
+  // preview slots, in slot order (metadata as structure, computed at
+  // read from the catalog).
+  const targetGroups = previewSlots
+    .map((slot) => SYSTEM_EXERCISES_BY_SLUG[slot.exercise]?.primaryMuscles[0])
+    .filter((m): m is MuscleSlug => Boolean(m))
+    .map((m) => MUSCLE_DISPLAY_NAMES[m]);
+  const targets = [...new Set(targetGroups)];
 
   const handleStart = () => {
     // Remember the choices — the next launch opens pre-configured.
@@ -160,7 +160,6 @@ export default function SplitSelectionScreen() {
             : 'Pick your split'
         }
         onBack={safeGoBack}
-        navRightAction={<CopyForAiButton payload={aiPayload} testID="split-selection-copy-for-ai" />}
       />
       <ScrollView
         style={styles.body}
@@ -296,6 +295,11 @@ export default function SplitSelectionScreen() {
             your own from the exercise database.
           </Text>
         ) : (
+          <Text style={[styles.targetsLine, { color: colors.brandText }]} numberOfLines={1}>
+            {`TARGETS — ${targets.join(' · ')}`}
+          </Text>
+        )}
+        {previewSlots.length === 0 ? null : (
           <View>
             {previewSlots.map((slot, i) => {
               const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
@@ -406,6 +410,12 @@ const styles = StyleSheet.create({
   restHint: {
     ...theme.typography.mobileMeta,
     marginTop: 10,
+  },
+  targetsLine: {
+    ...theme.typography.mobileEyebrow,
+    fontSize: 10,
+    marginTop: 10,
+    marginBottom: 2,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: 12 },
   slotRow: {

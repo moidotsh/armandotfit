@@ -36,7 +36,6 @@ import {
   MobileSectionEyebrow,
   MobileInput,
   MobileDialog,
-  CopyForAiButton,
   Figure,
   EmptyState,
 } from '../components/MobilePremium';
@@ -62,7 +61,6 @@ import {
   useWorkoutDetail,
   useLogWorkout,
   useDeleteSession,
-  useAiPayload,
   useLastUsedTags,
   useRecentSessionDetails,
 } from '../hooks';
@@ -126,39 +124,10 @@ export default function WorkoutDetailScreen() {
     }
   }, [deleteSessionMutation.isSuccess, showToast]);
 
-  const draftAiPayload = useAiPayload(
-    draft
-      ? {
-          title: 'Active session',
-          visibleContent: [
-            `- Split: ${draft.splitType === 'oneADay' ? '1-a-day' : 'AM/PM'}`,
-            `- Day: ${draft.day}${draft.splitType === 'twoADay' ? ` (${draft.sessionMode})` : ''}`,
-            `- Exercises: ${draft.exercises.length}`,
-          ].join('\n'),
-        }
-      : undefined,
-  );
 
   // Read-only copy payload — describes the LOADED session, not the
   // (usually absent) draft. Computed at read; nothing stored.
   const loadedSession = existingQuery.data;
-  const readonlyAiPayload = useAiPayload(
-    loadedSession
-      ? {
-          title: 'Session',
-          visibleContent: [
-            `- Date: ${new Date(loadedSession.startedAt).toLocaleString()}`,
-            `- Day: ${loadedSession.splitDay ?? 'ad-hoc'}`,
-            ...loadedSession.exercises.map(
-              (ex) =>
-                `- ${ex.exerciseName}: ${ex.sets
-                  .map((s) => `${s.weight}kg × ${s.reps}`)
-                  .join(', ') || 'no sets'}`,
-            ),
-          ].join('\n'),
-        }
-      : undefined,
-  );
 
   // Hydrate the draft from the program slots once per session. Local +
   // synchronous — the program is TypeScript data. Idempotent via
@@ -308,7 +277,6 @@ export default function WorkoutDetailScreen() {
               : ''
           }
           onBack={safeGoBack}
-          navRightAction={<CopyForAiButton payload={readonlyAiPayload} testID="workout-detail-readonly-copy-for-ai" />}
         />
         <ScrollView
           style={styles.body}
@@ -452,7 +420,6 @@ export default function WorkoutDetailScreen() {
       isSaving={isSaving || logMutation.isPending}
       sessionError={sessionError}
       armedPrefill={lastPerformance}
-      draftAiPayload={draftAiPayload}
       pickerExercise={pickerExercise}
       pickerFor={pickerFor}
       setPickerFor={setPickerFor}
@@ -483,7 +450,6 @@ interface StageProps {
   isSaving: boolean;
   sessionError: string | null;
   armedPrefill: Map<string, { weight: number; reps: number }>;
-  draftAiPayload: ReturnType<typeof useAiPayload>;
   pickerExercise: { localId: string; exerciseName: string; exerciseSlug: string | '' } | null;
   pickerFor: string | null;
   setPickerFor: (localId: string | null) => void;
@@ -508,7 +474,6 @@ function Stage(props: StageProps) {
     isSaving,
     sessionError,
     armedPrefill,
-    draftAiPayload,
     pickerExercise,
     pickerFor,
     setPickerFor,
@@ -678,7 +643,6 @@ function Stage(props: StageProps) {
           {`${formatVolume(sessionKg)} KG`}
         </Text>
         <View style={{ flex: 1 }} />
-        <CopyForAiButton payload={draftAiPayload} testID="workout-detail-active-copy-for-ai" />
       </View>
 
       {/* Station strip — position + navigation. */}

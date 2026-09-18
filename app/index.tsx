@@ -17,7 +17,6 @@ import { Settings, Play } from '@tamagui/lucide-icons-2';
 import {
   MobilePrimaryButton,
   MobileSectionEyebrow,
-  CopyForAiButton,
   EmptyState,
   Figure,
 } from '../components/MobilePremium';
@@ -44,7 +43,6 @@ import { useSplitPreferenceStore, useWorkoutStore } from '../stores';
 import {
   useDashboardSummary,
   useRecentSessionDetails,
-  useAiPayload,
 } from '../hooks';
 import { useReducedMotion } from '../components/premium/shared';
 
@@ -78,19 +76,6 @@ export default function HomeScreen() {
     ? SYSTEM_EXERCISES_BY_SLUG[suggestedSlots[0].exercise]?.name ?? null
     : null;
 
-  const aiPayload = useAiPayload(
-    summary
-      ? {
-          visibleContent: [
-            `- Current streak: ${streak?.current ?? 0} days`,
-            `- Best streak: ${streak?.best ?? 0} days`,
-            `- This week: ${summary.thisWeekSessions ?? 0} sessions`,
-            `- Total sessions: ${summary.totalSessions ?? 0} sessions`,
-            `- Recent sessions: ${recent.length}`,
-          ].join('\n'),
-        }
-      : undefined,
-  );
 
   // Scroll choreography — the masthead compresses. One Animated value
   // driven by onScroll (transform/opacity only); reduced motion never
@@ -121,7 +106,6 @@ export default function HomeScreen() {
             {`D${String(suggestedDay).padStart(2, '0')}`}
           </Animated.Text>
         ) : null}
-        <CopyForAiButton variant="subtle" payload={aiPayload} testID="dashboard-copy-for-ai" />
         <Pressable
           onPress={navigateToSettings}
           accessibilityRole="button"

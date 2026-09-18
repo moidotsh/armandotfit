@@ -10,7 +10,6 @@ import { StyleSheet, Text, View } from 'react-native';
 import {
   MobileSectionEyebrow,
   MobilePrimaryButton,
-  CopyForAiButton,
   EmptyState,
   Figure,
 } from '../components/MobilePremium';
@@ -18,8 +17,9 @@ import { LoadingSpinner } from '../components/primitives';
 import { DeskShell, QueryErrorNote } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToAnalytics, navigateToSplitSelection } from '../navigation';
-import { useDashboardSummary, usePersonalBests, useAiPayload } from '../hooks';
+import { useDashboardSummary, usePersonalBests } from '../hooks';
 import { theme } from '../constants';
+import { e1rm } from '../services';
 
 export default function ProgressionScreen() {
   const { colors } = useAppTheme();
@@ -28,18 +28,6 @@ export default function ProgressionScreen() {
   const summary = summaryQuery.data;
   const isEmpty = (summary?.totalSessions ?? 0) === 0;
 
-  const aiPayload = useAiPayload(
-    summary
-      ? {
-          visibleContent: [
-            `- Current streak: ${summary.streak.current} days`,
-            `- Best streak: ${summary.streak.best} days`,
-            `- Sessions logged: ${summary.totalSessions}`,
-            `- This week: ${summary.thisWeekSessions}`,
-          ].join('\n'),
-        }
-      : undefined,
-  );
 
   return (
     <DeskShell
@@ -48,7 +36,6 @@ export default function ProgressionScreen() {
       header={
         <View style={styles.headerRow}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Progress</Text>
-          <CopyForAiButton payload={aiPayload} testID="progression-copy-for-ai" />
         </View>
       }
     >
@@ -129,8 +116,11 @@ export default function ProgressionScreen() {
                       <Text style={[styles.pbName, { color: colors.text }]} numberOfLines={1}>
                         {pb.exerciseName}
                       </Text>
-                      <Text style={[styles.pbValue, { color: colors.brandText }]}>
+                      <Text style={[styles.pbValue, { color: colors.text }]}>
                         {`${pb.bestWeight}×${pb.bestReps}`}
+                      </Text>
+                      <Text style={[styles.pbEstimate, { color: colors.brandText }]}>
+                        {`e1RM ${Math.round(e1rm(pb.bestWeight, pb.bestReps))}`}
                       </Text>
                     </View>
                   ))}
@@ -193,5 +183,11 @@ const styles = StyleSheet.create({
   pbName: { ...theme.typography.mobileBody, fontWeight: '600', flex: 1 },
   pbValue: {
     ...theme.typography.mobileLedger,
+  },
+  pbEstimate: {
+    ...theme.typography.mobileEyebrow,
+    fontSize: 10,
+    minWidth: 72,
+    textAlign: 'right',
   },
 });

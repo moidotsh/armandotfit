@@ -15,11 +15,9 @@ import {
   MobileSectionEyebrow,
   MobilePrimaryButton,
   SegmentedControl,
-  CopyForAiButton,
 } from '../components/MobilePremium';
 import { DeskShell, InkRail, SwapGlyph } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
-import { useAiPayload } from '../hooks';
 import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots, slotKey } from '../services';
 import {
@@ -56,15 +54,6 @@ export default function ProgramScreen() {
   const days = split === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
   const overriddenCount = Object.keys(overrides).length;
 
-  const aiPayload = useAiPayload({
-    title: 'My Program',
-    contextLabel: 'The split',
-    visibleContent: [
-      `- Split: ${split === 'oneADay' ? '1-a-day' : 'AM/PM'}`,
-      `- Days: 4, slots: ${split === 'oneADay' ? 28 : 32}`,
-      `- Standing substitutions: ${overriddenCount}`,
-    ].join('\n'),
-  });
 
   const renderSlot = (
     day: number,
@@ -248,7 +237,6 @@ export default function ProgramScreen() {
             </Text>
             <Text style={[styles.headerTitle, { color: colors.text }]}>Program</Text>
           </View>
-          <CopyForAiButton payload={aiPayload} testID="program-copy-for-ai" />
         </View>
       }
     >

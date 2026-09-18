@@ -14,7 +14,6 @@ import {
   MobileInput,
   MobileSurface,
   MobileSectionEyebrow,
-  CopyForAiButton,
   SearchField,
   EmptyState,
   FilterChip,
@@ -23,7 +22,7 @@ import {
 import { DeskShell, ExerciseListItem } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { navigateToExerciseDetail } from '../navigation';
-import { useExercises, useRecentSessionDetails, useAiPayload } from '../hooks';
+import { useExercises, useRecentSessionDetails } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import { SYSTEM_EXERCISES, type SystemExerciseData } from '../shared/exercises';
 import { theme } from '../constants';
@@ -101,12 +100,6 @@ export default function ExerciseDatabaseScreen() {
   }, [resetFilters]);
 
   const resultCount = query.data?.length ?? 0;
-  const aiPayload = useAiPayload({
-    visibleContent: [
-      `- Search: "${filter.search ?? ''}"`,
-      `- Results: ${resultCount}`,
-    ].join('\n'),
-  });
 
   return (
     <DeskShell
@@ -117,7 +110,6 @@ export default function ExerciseDatabaseScreen() {
       header={
         <View style={styles.headerRow}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Exercises</Text>
-          <CopyForAiButton payload={aiPayload} testID="exercise-database-copy-for-ai" />
         </View>
       }
     >

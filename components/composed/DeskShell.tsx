@@ -100,7 +100,7 @@ export function DeskShell({
       <MobileAtmosphere surface={surface} />
       {/* The header slot rides the same mobile column as the body and
           the tab bar — nothing straddles the constraint on desktop. */}
-      <View style={MOBILE_CONTENT_WIDTH_STYLE}>{header}</View>
+      <View testID="desk-header-col" style={MOBILE_CONTENT_WIDTH_STYLE}>{header}</View>
       {noScroll ? (
         <View testID={testID} style={[styles.body, MOBILE_CONTENT_WIDTH_STYLE]}>
           {children}

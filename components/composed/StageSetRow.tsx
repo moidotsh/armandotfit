@@ -9,8 +9,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { X } from '@tamagui/lucide-icons-2';
+import { FadeIn } from '../premium/shared';
 import { useAppTheme } from '../../context';
-import { theme } from '../../constants';
+import { theme, DURATION } from '../../constants';
 
 export interface StageSetRowProps {
   position: number;
@@ -29,6 +30,10 @@ export function StageSetRow({
 }: StageSetRowProps) {
   const { colors } = useAppTheme();
   return (
+    // The stamp: a logged row enters on a snap fade-rise — AFTER the
+    // state change (post-interactive), never gating the next tap, and
+    // collapsed under reduced motion.
+    <FadeIn duration={DURATION.fast} y={6}>
     <View
       testID={testID}
       accessibilityLabel={`Set ${position}: ${weight} kilograms, ${reps} reps`}
@@ -57,6 +62,7 @@ export function StageSetRow({
         <View style={styles.remove} />
       )}
     </View>
+    </FadeIn>
   );
 }
 

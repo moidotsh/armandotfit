@@ -16,11 +16,10 @@ import {
   MobileSettingsRow,
   MobileActionFooter,
   MobilePrimaryButton,
-  CopyForAiButton,
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
-import { useProfile, useUpdateProfile, useAiPayload, usePwaPrompt } from '../hooks';
+import { useProfile, useUpdateProfile, usePwaPrompt } from '../hooks';
 import { DAY_OF_WEEK_LABELS, SCREEN_BODY_STYLE, theme } from '../constants';
 import { useToast } from '../context';
 import { logger } from '../utils/logger';
@@ -80,13 +79,6 @@ export default function SettingsScreen() {
 
   const restDayIds = restDays.map(String);
 
-  const aiPayload = useAiPayload({
-    visibleContent: [
-      `- Email: ${session?.email ?? '—'}`,
-      `- Theme: ${colorScheme}${preference !== colorScheme ? ` (preference: ${preference})` : ''}`,
-      `- Rest days: ${restDays.length}`,
-    ].join('\n'),
-  });
 
   return (
     <SafeAreaView
@@ -98,7 +90,6 @@ export default function SettingsScreen() {
         title="Settings"
         eyebrow="Account"
         onBack={safeGoBack}
-        navRightAction={<CopyForAiButton payload={aiPayload} testID="settings-copy-for-ai" />}
       />
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
         <MobileSurface padding={0}>
