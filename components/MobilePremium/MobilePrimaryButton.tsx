@@ -90,7 +90,11 @@ export function MobilePrimaryButton({
 }: MobilePrimaryButtonProps) {
   const pressedStyle = usePressedStyle();
   const { colors } = useAppTheme();
-  const accent = accentColor ?? colors.brand;
+  // The accent defaults to the `buttonBackground` token (the shell's
+  // single verb-fill lever): consumers whose verbs carry the brand
+  // set buttonBackground = brand; consumers whose verb is the page's
+  // own ink set it to ink. `accentColor` remains the per-call escape.
+  const accent = accentColor ?? colors.buttonBackground;
   const isPrimary = variant === 'primary';
   const isSecondary = variant === 'secondary';
   const isGhost = variant === 'ghost';

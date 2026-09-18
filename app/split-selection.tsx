@@ -1,13 +1,13 @@
 // app/split-selection.tsx
-// The FUNNEL — set the edition (docs/architecture/
-// quiet-page-thesis.md §6): "Which edition?" Three picks in order and
-// GO — the page's one verb. The PICKED day's title is the statement
-// (restating with every pick); one fact line carries the targets and
-// counts outside the halo. The seven-day measure is the second voice:
-// weekday whisper + day-of-split figure, the picked tile INVERTING
-// (ink plate on paper, paper on ink — inversion is selection; borders
-// do not survive glare). The plan previews in the same quiet rows as
-// the rotation document: name + Rx, air-separated.
+// The FUNNEL — set the edition (docs/architecture/board-thesis.md
+// §7): "Which edition?" Three picks in order and GO — the page's one
+// verb. The PICKED day's title is the statement (restating with every
+// pick); one fact line carries the targets and counts outside the
+// halo. The seven-day measure is the second voice: weekday caps + the
+// day-of-split figure in Spline, the picked tile INVERTING to the ink
+// plate — inversion is selection; borders do not survive glare. The
+// plan previews as THE BOARD rows: name + Rx + the plate stack at the
+// prefill weight.
 //   1. Workout day — a rolling 7-day measure. Each non-rest day
 //      carries its day-of-split (1..4), derived from the user's last
 //      logged session via getNextSplitDay. Rest days render muted but
@@ -28,10 +28,10 @@ import {
   MobileActionFooter,
   SegmentedControl,
 } from '../components/MobilePremium';
-import { DeskShell } from '../components/composed';
+import { BoardShell, PlateStack } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, replaceWithWorkoutDetail, safeGoBack } from '../navigation';
-import { useProfile, useRecentWorkouts } from '../hooks';
+import { useProfile, useRecentWorkouts, useRecentSessionDetails } from '../hooks';
 import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots } from '../services';
 import {
@@ -41,8 +41,9 @@ import {
   suggestNextSplitDay,
   MIN_SPLIT_DAY,
   MAX_SPLIT_DAY,
-  QUIET,
+  BOARD,
   theme,
+  PAGE_GUTTER,
   type SessionMode,
   type UpcomingWorkoutSlot,
 } from '../constants';
@@ -70,6 +71,7 @@ export default function SplitSelectionScreen() {
   // picker renders immediately on mount.
   const profileQuery = useProfile();
   const recentQuery = useRecentWorkouts(1);
+  const prefillQuery = useRecentSessionDetails(5);
 
   const restDays = profileQuery.data?.restDays ?? [];
 
@@ -103,6 +105,21 @@ export default function SplitSelectionScreen() {
     () => getUpcomingWorkoutSlots(7, restDays, walkStartDay),
     [restDays, walkStartDay],
   );
+
+  // The board rows' prefills — the last TOP set per exercise name.
+  const prefillByname = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const sess of prefillQuery.data ?? []) {
+      for (const ex of sess.exercises) {
+        const key = ex.exerciseName.toLowerCase();
+        if (map.has(key)) continue;
+        let top = 0;
+        for (const set of ex.sets) top = Math.max(top, set.weight ?? 0);
+        if (top > 0) map.set(key, top);
+      }
+    }
+    return map;
+  }, [prefillQuery.data]);
 
   // Selected slot = explicit pick if valid, else first non-rest day in
   // the window. Falls back to slots[0] when every upcoming day is a
@@ -162,7 +179,7 @@ export default function SplitSelectionScreen() {
     .join(' — ');
 
   return (
-    <DeskShell
+    <BoardShell
       surface="setup"
       onBack={safeGoBack}
       testID="funnel-scroll"
@@ -178,8 +195,8 @@ export default function SplitSelectionScreen() {
         </Text>
       </View>
 
-      {/* THE MEASURE — seven tiles; weekday whisper above the
-          day-of-split figure. The pick inverts. */}
+      {/* THE MEASURE — seven tiles; weekday caps above the day-of-split
+          figure. The pick inverts to the ink plate. */}
       <View style={styles.block}>
         <View style={styles.dayRow} testID="funnel-day-measure">
           {slots.map((slot) => {
@@ -188,7 +205,7 @@ export default function SplitSelectionScreen() {
             const dowLabel = DAY_OF_WEEK_LABELS[slot.dayOfWeek].label.slice(0, 2).toUpperCase();
             const numeral = isRest ? 'R' : String(slot.splitDay).padStart(2, '0');
             // Inversion palette: the plate is the text color, the
-            // content is the page — one swap, both modes.
+            // content is the board — one swap, both modes.
             const plateBg = isSelected ? colors.text : isRest ? colors.glass.inputBackground : colors.card;
             const markColor = isSelected ? colors.background : colors.textMuted;
             const numeralColor = isSelected ? colors.background : isRest ? colors.textMuted : colors.text;
@@ -248,7 +265,7 @@ export default function SplitSelectionScreen() {
         </Text>
       </View>
 
-      {/* THE PLAN — the same quiet rows as the rotation document. */}
+      {/* THE PLAN — the board rows: name + Rx + the prefill stack. */}
       <View style={styles.block}>
         {previewSlots.length === 0 ? (
           <Text style={[styles.emptyText, { color: colors.textMuted }]}>
@@ -262,17 +279,21 @@ export default function SplitSelectionScreen() {
               const name = entry?.name ?? slot.exercise;
               const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
               const rx = `${sets}×${slot.reps[0]}–${slot.reps[1]}`;
+              const prefill = prefillByname.get(name.toLowerCase()) ?? null;
               return (
                 <View
                   key={slot.exercise + i}
                   style={styles.slotRow}
                 >
-                  <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
-                    {name}
-                  </Text>
-                  <Text style={[styles.slotRx, { color: colors.textMuted }]}>
-                    {rx}
-                  </Text>
+                  <View style={styles.slotNameHold}>
+                    <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
+                      {name}
+                    </Text>
+                    <Text style={[styles.slotRx, { color: colors.textMuted }]}>
+                      {rx}
+                    </Text>
+                  </View>
+                  <PlateStack kg={prefill} scale="whisper" testID={`funnel-stack-${i}`} />
                 </View>
               );
             })}
@@ -299,21 +320,21 @@ export default function SplitSelectionScreen() {
           )}
         </MobileActionFooter>
       </View>
-    </DeskShell>
+    </BoardShell>
   );
 }
 
 const styles = StyleSheet.create({
-  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 40 },
+  bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 40 },
   block: {
-    ...QUIET.block,
+    ...BOARD.block,
   },
   statement: {
-    ...QUIET.statement,
+    ...BOARD.statement,
   },
   // The fact line waits outside the statement's halo.
   fact: {
-    ...QUIET.fact,
+    ...BOARD.fact,
   },
   dayRow: {
     flexDirection: 'row',
@@ -321,33 +342,37 @@ const styles = StyleSheet.create({
   },
   dayTile: {
     flex: 1,
-    minHeight: 64,
+    minHeight: 54,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    gap: 4,
+    paddingVertical: 6,
+    gap: 3,
   },
   dayDow: {
     ...theme.typography.mobileEyebrow,
   },
   dayNumeral: {
     ...theme.typography.mobileFigure,
+    fontWeight: '700',
   },
   sessionRow: {
-    marginTop: 12,
+    marginTop: 8,
   },
   splitDescription: {
     ...theme.typography.mobileLedger,
-    marginTop: 10,
+    marginTop: 8,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: 4 },
   slotRow: {
-    minHeight: 48,
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  slotName: { ...theme.typography.mobileItemTitle, flex: 1 },
+  slotNameHold: {
+    flex: 1,
+  },
+  slotName: { ...BOARD.row },
   slotRx: {
     ...theme.typography.mobileLedger,
   },

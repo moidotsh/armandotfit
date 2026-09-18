@@ -1,33 +1,33 @@
 // app/index.tsx
-// Home — THE QUIET PAGE's front page (docs/architecture/
-// quiet-page-thesis.md §6). No tab bar: the Desk is a stack and home
-// is its hub. Quiet is not vacant: the framing dies, the facts stay.
-// The day's title is the statement (sentence case — the page carries
-// no name of its own); the lede carries the window + opening lift;
-// START (or RESUME) is the one verb. Three jump rows keep their one
-// fact each as captions (the streak lives on the Progress row); the
-// recent editions close the page — the latest at figure scale, the
-// rest whispering. Blocks separate by air (BLOCK_GAP), not rules.
-// While a session runs, DeskShell pins the wire ticker under the
-// header.
+// Home — THE BOARD's front (docs/architecture/board-thesis.md §7).
+// Question: "what am I walking into today?" The day's title is the
+// statement (the page carries no name of its own); **THE BOARD** —
+// the day's plan framed by the 2px rule pair — shows each lift with
+// its plate stack at the prefill weight, so you SEE the session's
+// size before you start. START (or RESUME) is the one verb (ink).
+// Three jump rows keep their one fact each (the streak lives on the
+// Progress row); recent sessions close the page as Spline lines.
+// While a session runs, BoardShell pins the ticker under the folio.
 
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Dumbbell, Settings } from '@tamagui/lucide-icons-2';
 import { MobilePrimaryButton, EmptyState } from '../components/MobilePremium';
 import {
-  DeskShell,
+  BoardShell,
   EditionLine,
   WorkoutListSkeleton,
   QueryErrorNote,
+  PlateStack,
 } from '../components/composed';
 import { useAppTheme } from '../context';
 import {
   theme,
   suggestNextSplitDay,
   suggestSessionWindow,
-  QUIET,
+  BOARD,
   ROW_GAP,
+  PAGE_GUTTER,
 } from '../constants';
 import {
   navigateToSettings,
@@ -66,19 +66,28 @@ export default function HomeScreen() {
     () => getSlotsForDay(preferredSplit, suggestedDay, suggestedWindow),
     [preferredSplit, suggestedDay, suggestedWindow],
   );
-  const suggestedCount = suggestedSlots.length;
   const dayTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;
-  // The lede answers "what am I walking into?" without leaving the
-  // front page: the window it will be, the lift it opens with.
-  const firstLift = suggestedSlots.length > 0
-    ? SYSTEM_EXERCISES_BY_SLUG[suggestedSlots[0].exercise]?.name ?? null
-    : null;
+
+  // The board rows' prefills — the last TOP set per exercise name
+  // (computed at read; the same rule that arms the Floor).
+  const prefillByname = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const session of recent) {
+      for (const ex of session.exercises) {
+        const key = ex.exerciseName.toLowerCase();
+        if (map.has(key)) continue;
+        let top = 0;
+        for (const set of ex.sets) top = Math.max(top, set.weight ?? 0);
+        if (top > 0) map.set(key, top);
+      }
+    }
+    return map;
+  }, [recent]);
 
   const header = (
     <View style={styles.headerRow}>
-      {/* The masthead — the brand mark as a folio line. Quiet does not
-          mean anonymous: the app's name rides the front page at row
-          scale (the day's statement below stays the loudest thing). */}
+      {/* The folio — the brand mark at whisper scale. The board's
+          content is the brand; the masthead stays a folio line. */}
       <View style={styles.brand}>
         <Dumbbell size={16} color={colors.text} />
         <Text style={[styles.wordmark, { color: colors.text }]}>ARMANDOTFIT</Text>
@@ -120,10 +129,13 @@ export default function HomeScreen() {
   );
 
   return (
-    <DeskShell surface="training" header={header} testID="home-scroll">
-      {/* THE STATEMENT — the day itself. The page has no nameplate:
-          its loudest thing is what is happening today. */}
+    <BoardShell surface="training" header={header} testID="home-scroll">
+      {/* THE STATEMENT — the day itself, with the window whisper in
+          record-orange furniture above it. */}
       <View>
+        <Text style={[styles.windowWhisper, { color: colors.brandText }]}>
+          {`${suggestedWindow === 'am' ? 'MORNING' : 'EVENING'} · DAY ${suggestedDay}`}
+        </Text>
         <Text
           testID="home-day-title"
           style={[styles.dayTitle, { color: colors.text }]}
@@ -133,20 +145,41 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* The lede + the one verb. */}
+      {/* THE BOARD — the day's plan between the 2px rule pair: name +
+          Rx whisper + the plate stack at the prefill weight. You see
+          the session's size before you start it. */}
       <View style={styles.block}>
-        {firstLift ? (
-          <Text style={[styles.lede, { color: colors.text }]} numberOfLines={1}>
-            {`${suggestedWindow === 'am' ? 'AM' : 'PM'} · ${firstLift}` +
-              (suggestedCount > 1 ? `, then ${suggestedCount - 1} more` : '')}
-          </Text>
-        ) : (
-          <Text style={[styles.lede, { color: colors.textMuted }]} numberOfLines={2}>
-            {isSessionActive
-              ? 'A session is on the floor.'
-              : 'Start when you hit the floor.'}
-          </Text>
-        )}
+        <View style={[styles.boardBlock, { borderColor: colors.text }]} testID="home-board">
+          {suggestedSlots.length === 0 ? (
+            <Text style={[styles.boardEmpty, { color: colors.textMuted }]}>
+              No lifts programmed — start anyway and draw your own.
+            </Text>
+          ) : (
+            suggestedSlots.map((slot, i) => {
+              const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
+              const name = entry?.name ?? slot.exercise;
+              const prefill = prefillByname.get(name.toLowerCase()) ?? null;
+              const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
+              return (
+                <View key={slot.exercise + i} style={styles.boardRow}>
+                  <View style={styles.boardNameHold}>
+                    <Text style={[styles.boardName, { color: colors.text }]} numberOfLines={1}>
+                      {name}
+                    </Text>
+                    <Text style={[styles.boardRx, { color: colors.textMuted }]}>
+                      {`${sets}×${slot.reps[0]}–${slot.reps[1]}`}
+                    </Text>
+                  </View>
+                  <PlateStack kg={prefill} scale="whisper" testID={`home-board-stack-${i}`} />
+                </View>
+              );
+            })
+          )}
+        </View>
+      </View>
+
+      {/* The one verb. */}
+      <View style={styles.block}>
         <MobilePrimaryButton
           onPress={isSessionActive ? () => navigateToWorkoutDetail() : navigateToSplitSelection}
           testID={isSessionActive ? 'home-resume' : 'home-start'}
@@ -155,7 +188,7 @@ export default function HomeScreen() {
         </MobilePrimaryButton>
       </View>
 
-      {/* The jump rows — the tab bar's replacement, each with its fact. */}
+      {/* The jump rows — the Desk's only chrome, each with its fact. */}
       <View style={[styles.block, styles.jumpStack]}>
         {jumpLine(
           'Program',
@@ -177,8 +210,7 @@ export default function HomeScreen() {
         )}
       </View>
 
-      {/* Recent editions — one line each; the latest speaks, the rest
-          whisper. */}
+      {/* Recent sessions — one Spline line each; the latest leads. */}
       <View style={styles.block}>
         {recentQuery.isLoading ? (
           <WorkoutListSkeleton />
@@ -204,7 +236,7 @@ export default function HomeScreen() {
           </View>
         )}
       </View>
-    </DeskShell>
+    </BoardShell>
   );
 }
 
@@ -214,7 +246,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     height: 52,
-    paddingHorizontal: 20,
+    paddingHorizontal: PAGE_GUTTER,
   },
   brand: {
     flexDirection: 'row',
@@ -222,11 +254,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   wordmark: {
-    fontFamily: theme.fonts.display,
-    fontSize: 15,
-    fontWeight: '700',
-    lineHeight: 20,
-    letterSpacing: 0.8,
+    ...theme.typography.mobileEyebrow,
+    letterSpacing: 1.6,
   },
   iconButton: {
     width: 44,
@@ -234,18 +263,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Top-level blocks carry the air law: BLOCK_GAP above each (the
-  // statement leads with none — it is the page's first word).
+  // Top-level blocks carry the air law.
   block: {
-    ...QUIET.block,
+    ...BOARD.block,
+  },
+  windowWhisper: {
+    ...theme.typography.mobileEyebrow,
+    marginBottom: 6,
   },
   dayTitle: {
-    ...QUIET.statement,
-    ...QUIET.blockFirst,
+    ...BOARD.statement,
+    ...BOARD.blockFirst,
   },
-  lede: {
-    ...theme.typography.mobileItemTitle,
-    marginBottom: 24,
+  // THE BOARD — the framed plan block.
+  boardBlock: {
+    borderTopWidth: 2,
+    borderBottomWidth: 2,
+    paddingVertical: 10,
+  },
+  boardEmpty: {
+    ...theme.typography.mobileMeta,
+    paddingVertical: 8,
+  },
+  boardRow: {
+    minHeight: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  boardNameHold: {
+    flex: 1,
+  },
+  boardName: {
+    ...BOARD.row,
+  },
+  boardRx: {
+    ...theme.typography.mobileLedger,
+    marginTop: 0,
   },
   jumpStack: {
     gap: ROW_GAP / 2,
@@ -258,7 +312,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   jumpLabel: {
-    ...theme.typography.mobileItemTitle,
+    ...BOARD.row,
   },
   jumpCaption: {
     ...theme.typography.mobileLedger,
