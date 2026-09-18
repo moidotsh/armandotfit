@@ -77,6 +77,7 @@ export default function AnalyticsScreen() {
       <View style={styles.block}>
         <SegmentedControl<Range>
           variant="selection"
+          chromeless
           segments={[
             { value: 7, label: '7d' },
             { value: 30, label: '30d' },

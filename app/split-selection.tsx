@@ -1,13 +1,13 @@
 // app/split-selection.tsx
-// The FUNNEL — set the edition (docs/architecture/broadsheet-thesis.md
-// §7): three picks, in order, and GO. The page opens with its headline
-// — WHAT today's edition trains (the day's target muscles, in ink) —
-// the deck carries the counts, and the seven-day measure is the second
-// voice: weekday agate + day-of-split numeral, the picked tile
-// INVERTING (ink plate on paper, paper on iron — inversion is
-// selection; borders do not survive glare). The plan previews as a
-// numbered agate ledger — the same slot language as the rotation
-// document.
+// The FUNNEL — set the edition (docs/architecture/
+// quiet-page-thesis.md §6): "Which edition?" Three picks in order and
+// GO — the page's one verb. The PICKED day's title is the statement
+// (restating with every pick); one fact line carries the targets and
+// counts outside the halo. The seven-day measure is the second voice:
+// weekday whisper + day-of-split figure, the picked tile INVERTING
+// (ink plate on paper, paper on ink — inversion is selection; borders
+// do not survive glare). The plan previews in the same quiet rows as
+// the rotation document: name + Rx, air-separated.
 //   1. Workout day — a rolling 7-day measure. Each non-rest day
 //      carries its day-of-split (1..4), derived from the user's last
 //      logged session via getNextSplitDay. Rest days render muted but
@@ -22,21 +22,17 @@
 // auto-hydrates from the program slots (getSlotsForDay) locally.
 
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
-  MobileAtmosphere,
-  MobileHeader,
   MobilePrimaryButton,
   MobileActionFooter,
-  MobileSectionEyebrow,
   SegmentedControl,
 } from '../components/MobilePremium';
+import { DeskShell } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, replaceWithWorkoutDetail, safeGoBack } from '../navigation';
 import { useProfile, useRecentWorkouts } from '../hooks';
 import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
-import { useWorkoutStore as useWorkoutStoreForActive } from '../stores';
 import { resolveSlots } from '../services';
 import {
   WORKOUT_SPLIT_LIST,
@@ -45,7 +41,8 @@ import {
   suggestNextSplitDay,
   MIN_SPLIT_DAY,
   MAX_SPLIT_DAY,
-  SCREEN_BODY_STYLE,
+  BLOCK_GAP,
+  HALO,
   theme,
   type SessionMode,
   type UpcomingWorkoutSlot,
@@ -67,7 +64,7 @@ function splitDescription(id: string): string {
 export default function SplitSelectionScreen() {
   const { colors } = useAppTheme();
   const startSession = useWorkoutStore((s) => s.startSession);
-  const isSessionActive = useWorkoutStoreForActive((s) => s.isSessionActive);
+  const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
 
   // Profile + recent sessions drive the day-of-split suggestion + the
   // rest-day map. Both fall back to safe defaults while loading so the
@@ -152,68 +149,49 @@ export default function SplitSelectionScreen() {
     navigateToWorkoutDetail();
   };
 
-  // THE HEADLINE — what today's edition trains: the day's distinct
-  // primary targets in slot order, uppercased. Falls back to the day
-  // title when the catalog carries no muscle data; a rest-day override
-  // says so.
-  const headline = useMemo(() => {
-    if (selectedSlot?.isRestDay) return 'Rest day override';
-    if (targets.length > 0) return targets.join(' · ');
-    return getDayTitle(split, draftDay) || `Day ${draftDay}`;
-  }, [selectedSlot, targets, split, draftDay]);
-
-  const deck = [
+  // THE STATEMENT — restating with every pick: the picked day's title.
+  const statement = selectedSlot?.isRestDay
+    ? 'Rest day'
+    : getDayTitle(split, draftDay) || `Day ${draftDay}`;
+  // One fact line — what the edition trains, and the counts.
+  const fact = [
+    targets.length > 0 && !selectedSlot?.isRestDay ? targets.join(' · ') : null,
     `${previewSlots.length} lift${previewSlots.length === 1 ? '' : 's'}`,
-    isTwoADay ? `${session.toUpperCase()} session` : null,
-    selectedSlot ? `${selectedSlot.dayLabel}` : null,
-  ].filter(Boolean).join(' · ');
+    isTwoADay ? session.toUpperCase() : null,
+  ]
+    .filter(Boolean)
+    .join(' — ');
 
   return (
-    <SafeAreaView
-      style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
-      edges={['top', 'bottom']}
+    <DeskShell
+      surface="setup"
+      onBack={safeGoBack}
+      testID="funnel-scroll"
+      contentContainerStyle={styles.bodyContent}
     >
-      <MobileAtmosphere surface="setup" />
-      <MobileHeader
-        title="Start"
-        hideAccentDot
-        eyebrow="Set the edition"
-        onBack={safeGoBack}
-      />
-      <ScrollView
-        style={styles.body}
-        contentContainerStyle={styles.bodyContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* THE HEADLINE + DECK — the one statement this page makes:
-            what today's edition trains. */}
-        <Text style={[styles.headlineKicker, { color: colors.textMuted }]}>
-          {`TODAY'S EDITION · DAY ${String(draftDay).padStart(2, '0')}`}
+      {/* THE STATEMENT + fact — restating with every pick. */}
+      <View>
+        <Text style={[styles.statement, { color: colors.text }]} numberOfLines={2} testID="funnel-headline">
+          {statement}
         </Text>
-        <Text style={[styles.headline, { color: colors.text }]} numberOfLines={2} testID="funnel-headline">
-          {headline.toUpperCase()}
+        <Text style={[styles.fact, { color: colors.textMuted }]} numberOfLines={1}>
+          {fact}
         </Text>
-        <Text style={[styles.deck, { color: colors.textSecondary }]} numberOfLines={1}>
-          {deck}
-        </Text>
+      </View>
 
-        {/* THE MEASURE — seven tiles; weekday agate above the
-            day-of-split numeral. The pick inverts: ink plate on paper,
-            paper on iron. */}
-        <MobileSectionEyebrow rule flush={false}>
-          Workout day
-        </MobileSectionEyebrow>
+      {/* THE MEASURE — seven tiles; weekday whisper above the
+          day-of-split figure. The pick inverts. */}
+      <View style={styles.block}>
         <View style={styles.dayRow} testID="funnel-day-measure">
           {slots.map((slot) => {
             const isSelected = selectedSlot?.isoDate === slot.isoDate;
             const isRest = slot.isRestDay;
             const dowLabel = DAY_OF_WEEK_LABELS[slot.dayOfWeek].label.slice(0, 2).toUpperCase();
-            const dateNum = slot.date.getDate();
             const numeral = isRest ? 'R' : String(slot.splitDay).padStart(2, '0');
             // Inversion palette: the plate is the text color, the
             // content is the page — one swap, both modes.
             const plateBg = isSelected ? colors.text : isRest ? colors.glass.inputBackground : colors.card;
-            const markColor = isSelected ? colors.background : isRest ? colors.textColors.tertiary : colors.textMuted;
+            const markColor = isSelected ? colors.background : colors.textMuted;
             const numeralColor = isSelected ? colors.background : isRest ? colors.textMuted : colors.text;
             return (
               <Pressable
@@ -221,7 +199,7 @@ export default function SplitSelectionScreen() {
                 onPress={() => setSelectedIsoDate(slot.isoDate)}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={`${dowLabel} ${dateNum}, ${isRest ? 'Rest' : `Day ${slot.splitDay}`}`}
+                accessibilityLabel={`${dowLabel}, ${isRest ? 'Rest' : `Day ${slot.splitDay}`}`}
                 style={({ pressed }) => [
                   styles.dayTile,
                   { backgroundColor: plateBg, borderRadius: theme.shapes.tile },
@@ -230,48 +208,31 @@ export default function SplitSelectionScreen() {
                 testID={`day-tile-${slot.isoDate}`}
               >
                 <Text style={[styles.dayDow, { color: markColor }]}>{dowLabel}</Text>
-                <Text
-                  style={[
-                    styles.dayNumeral,
-                    { color: numeralColor },
-                  ]}
-                >
+                <Text style={[styles.dayNumeral, { color: numeralColor }]}>
                   {numeral}
                 </Text>
-                <Text style={[styles.dayDate, { color: markColor }]}>{dateNum}</Text>
               </Pressable>
             );
           })}
         </View>
-        <Text style={[styles.restHint, { color: colors.textMuted }]}>
-          Suggested from your last session. Rest days are configured in settings.
-        </Text>
+      </View>
 
-        {/* Split archetype — a segmented control; the one-line
-            description follows the choice. */}
-        <MobileSectionEyebrow rule flush={false}>
-          Split
-        </MobileSectionEyebrow>
+      {/* Archetype + window — the instrument's second row. */}
+      <View style={styles.block}>
         <SegmentedControl<string>
           variant="selection"
+          chromeless
           segments={SPLIT_SEGMENTS}
           value={splitChoice}
           onChange={setSplitChoice}
           accessibilityLabel="Split archetype"
           testID="split-archetype"
         />
-        <Text style={[styles.splitDescription, { color: colors.textMuted }]}>
-          {splitDescription(splitChoice)}
-        </Text>
-
-        {/* Session window — AM/PM only exists in the two-a-day split. */}
         {isTwoADay ? (
-          <>
-            <MobileSectionEyebrow rule flush={false}>
-              Session
-            </MobileSectionEyebrow>
+          <View style={styles.sessionRow}>
             <SegmentedControl<string>
               variant="selection"
+              chromeless
               segments={[
                 { value: 'am', label: 'AM' },
                 { value: 'pm', label: 'PM' },
@@ -281,64 +242,36 @@ export default function SplitSelectionScreen() {
               accessibilityLabel="Session window"
               testID="split-session"
             />
-          </>
+          </View>
         ) : null}
+        <Text style={[styles.splitDescription, { color: colors.textMuted }]} numberOfLines={1}>
+          {splitDescription(splitChoice)}
+        </Text>
+      </View>
 
-        {/* THE PLAN — numbered ledger rows. The same slot language as
-            the program document: one slot, one read. */}
-        <MobileSectionEyebrow rule flush={false}>
-          {previewSlots.length === 0
-            ? 'No exercises planned'
-            : isTwoADay
-              ? `${session.toUpperCase()} session · ${previewSlots.length} exercise${previewSlots.length === 1 ? '' : 's'}`
-              : `${previewSlots.length} exercise${previewSlots.length === 1 ? '' : 's'}`}
-        </MobileSectionEyebrow>
-
+      {/* THE PLAN — the same quiet rows as the rotation document. */}
+      <View style={styles.block}>
         {previewSlots.length === 0 ? (
-          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            No exercises planned for this day. Start a session anyway and add
-            your own from the exercise database.
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+            No exercises planned for this day — start anyway and add your own
+            from the library.
           </Text>
-        ) : null}
-        {previewSlots.length === 0 ? null : (
+        ) : (
           <View>
             {previewSlots.map((slot, i) => {
               const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
               const name = entry?.name ?? slot.exercise;
               const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
               const rx = `${sets}×${slot.reps[0]}–${slot.reps[1]}`;
-              const detail = [
-                slot.suggestedTags.length > 0 ? slot.suggestedTags.join(' · ') : null,
-                entry?.primaryMuscles[0]
-                  ? MUSCLE_DISPLAY_NAMES[entry.primaryMuscles[0] as MuscleSlug]
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(' · ');
-              const isLast = i === previewSlots.length - 1;
               return (
                 <View
                   key={slot.exercise + i}
-                  style={[
-                    styles.slotRow,
-                    { borderBottomColor: colors.mobilePremium.hairlineBorder },
-                    isLast ? { borderBottomWidth: 0 } : null,
-                  ]}
+                  style={styles.slotRow}
                 >
-                  <Text style={[styles.slotIndex, { color: colors.textMuted }]}>
-                    {String(i + 1).padStart(2, '0')}
+                  <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
+                    {name}
                   </Text>
-                  <View style={styles.slotMain}>
-                    <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
-                      {name}
-                    </Text>
-                    {detail ? (
-                      <Text style={[styles.slotDetail, { color: colors.textMuted }]} numberOfLines={1}>
-                        {detail}
-                      </Text>
-                    ) : null}
-                  </View>
-                  <Text style={[styles.slotRx, { color: colors.text }]}>
+                  <Text style={[styles.slotRx, { color: colors.textMuted }]}>
                     {rx}
                   </Text>
                 </View>
@@ -346,105 +279,77 @@ export default function SplitSelectionScreen() {
             })}
           </View>
         )}
-      </ScrollView>
-      <MobileActionFooter>
-        <MobilePrimaryButton variant="ghost" onPress={safeGoBack}>
-          Cancel
-        </MobilePrimaryButton>
-        {isSessionActive ? (
-          <MobilePrimaryButton
-            onPress={replaceWithWorkoutDetail}
-            testID="split-selection-start-session"
-          >
-            RESUME SESSION
-          </MobilePrimaryButton>
-        ) : (
-          <MobilePrimaryButton
-            onPress={handleStart}
-            testID="split-selection-start-session"
-          >
-            GO
-          </MobilePrimaryButton>
-        )}
-      </MobileActionFooter>
-    </SafeAreaView>
+      </View>
+
+      <View style={styles.block}>
+        <MobileActionFooter>
+          {isSessionActive ? (
+            <MobilePrimaryButton
+              onPress={replaceWithWorkoutDetail}
+              testID="split-selection-start-session"
+            >
+              RESUME SESSION
+            </MobilePrimaryButton>
+          ) : (
+            <MobilePrimaryButton
+              onPress={handleStart}
+              testID="split-selection-start-session"
+            >
+              GO
+            </MobilePrimaryButton>
+          )}
+        </MobileActionFooter>
+      </View>
+    </DeskShell>
   );
 }
 
 const styles = StyleSheet.create({
-  shell: { flex: 1 },
-  body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32 },
-  headlineKicker: {
-    ...theme.typography.mobileEyebrow,
+  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 40 },
+  block: {
+    marginTop: BLOCK_GAP,
   },
-  headline: {
+  statement: {
     ...theme.typography.mobileDisplay,
-    marginTop: 8,
-    textTransform: 'uppercase',
   },
-  deck: {
-    ...theme.typography.mobileSubtitle,
-    marginTop: 8,
-    marginBottom: 4,
+  // The fact line waits outside the statement's halo.
+  fact: {
+    ...theme.typography.mobileLedger,
+    marginTop: HALO,
   },
   dayRow: {
     flexDirection: 'row',
     gap: 6,
-    marginTop: 12,
   },
   dayTile: {
     flex: 1,
-    minHeight: 80,
+    minHeight: 64,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    gap: 3,
+    paddingVertical: 8,
+    gap: 4,
   },
   dayDow: {
-    fontSize: 9,
-    fontWeight: '600',
-    fontFamily: theme.fonts.mono,
-    letterSpacing: 1,
-    lineHeight: 12,
+    ...theme.typography.mobileEyebrow,
   },
   dayNumeral: {
-    fontFamily: theme.fonts.mono,
-    fontSize: 22,
-    fontWeight: '700',
-    lineHeight: 26,
-    fontVariant: ['tabular-nums'],
+    ...theme.typography.mobileFigure,
   },
-  dayDate: {
-    fontSize: 9,
-    fontWeight: '500',
-    fontFamily: theme.fonts.mono,
-    lineHeight: 12,
-    fontVariant: ['tabular-nums'],
-  },
-  restHint: {
-    ...theme.typography.mobileMeta,
-    marginTop: 10,
+  sessionRow: {
+    marginTop: 12,
   },
   splitDescription: {
-    ...theme.typography.mobileMeta,
+    ...theme.typography.mobileLedger,
     marginTop: 10,
   },
-  emptyText: { ...theme.typography.mobileMeta, marginTop: 12 },
+  emptyText: { ...theme.typography.mobileMeta, marginTop: 4 },
   slotRow: {
+    minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
   },
-  slotIndex: {
-    ...theme.typography.mobileLedger,
-    minWidth: 22,
-  },
-  slotMain: { flex: 1, gap: 1 },
-  slotName: { ...theme.typography.mobileItemTitle },
-  slotDetail: { ...theme.typography.mobileMeta },
+  slotName: { ...theme.typography.mobileItemTitle, flex: 1 },
   slotRx: {
     ...theme.typography.mobileLedger,
   },
