@@ -1,23 +1,29 @@
 // app/index.tsx
-// Today — the Desk's front page (docs/architecture/signal-thesis.md
-// §7): the masthead answers "what am I walking into?" with the
-// day-of-split as the loudest number in the app, the first lift
-// named, and START as the one signal fill above the fold. The week's
-// figures and the recent ledger ride beneath on steel, no cards.
+// Home — THE COUNT's command surface (docs/architecture/
+// count-thesis.md §7). No tab bar: the Desk is a stack and home is
+// its hub. The masthead is the day's MEASURE — the 4-day tally strip
+// with today as the orange next mark above the day title in the
+// display face, first lift named, and START (or RESUME) as the one
+// primary verb. THE INDEX — three ruled rows leading to Program,
+// Library, Progress — replaces navigation chrome. The week's figures
+// and the recent ledger ride beneath on the ruled field. While a
+// session runs, DeskShell pins the iron session strip under the
+// header (count-thesis §6).
 //
-// Scroll choreography: the masthead compresses under scroll — the
-// hero day figure scales down and the header's compact day chip fades
-// in (transform/opacity only, collapsed to static under reduced
-// motion; see signal-thesis §5).
+// Scroll choreography (ruler-compress): the title compresses under
+// scroll — it scales down and lifts while the header's compact day
+// marking fades in (transform/opacity only; collapsed to static under
+// reduced motion — count-thesis §5).
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Settings, Play } from '@tamagui/lucide-icons-2';
+import { Settings, ChevronRight } from '@tamagui/lucide-icons-2';
 import {
   MobilePrimaryButton,
   MobileSectionEyebrow,
   EmptyState,
   Figure,
+  TallyStrip,
 } from '../components/MobilePremium';
 import {
   DeskShell,
@@ -26,7 +32,7 @@ import {
   WorkoutListSkeleton,
   QueryErrorNote,
 } from '../components/composed';
-import { useAuth, useAppTheme } from '../context';
+import { useAppTheme } from '../context';
 import {
   theme,
   suggestNextSplitDay,
@@ -36,8 +42,16 @@ import {
   navigateToSettings,
   navigateToWorkoutDetail,
   navigateToSplitSelection,
+  navigateToProgram,
+  navigateToExerciseDatabase,
+  navigateToProgression,
 } from '../navigation';
-import { getSlotsForDay, getDayTitle, SYSTEM_EXERCISES_BY_SLUG } from '../shared/exercises';
+import {
+  getSlotsForDay,
+  getDayTitle,
+  SYSTEM_EXERCISES,
+  SYSTEM_EXERCISES_BY_SLUG,
+} from '../shared/exercises';
 import { useSplitPreferenceStore, useWorkoutStore } from '../stores';
 import {
   useDashboardSummary,
@@ -46,7 +60,6 @@ import {
 import { useReducedMotion } from '../components/premium/shared';
 
 export default function HomeScreen() {
-  const { session } = useAuth();
   const { colors } = useAppTheme();
   const summaryQuery = useDashboardSummary();
   const recentQuery = useRecentSessionDetails(5);
@@ -57,9 +70,9 @@ export default function HomeScreen() {
   const summary = summaryQuery.data;
   const streak = summary?.streak;
   const recent = recentQuery.data ?? [];
-  // THE FUNNEL ENTRY: what the app opens with. Day suggestion sticks to
-  // today's logged day (AM then PM share it), the window follows the
-  // clock, the split is the remembered program.
+  // THE FUNNEL ENTRY: day suggestion sticks to today's logged day (AM
+  // then PM share it), the window follows the clock, the split is the
+  // remembered program.
   const suggestedDay = recent.length > 0 ? suggestNextSplitDay(recent) : 1;
   const suggestedWindow = suggestSessionWindow();
   const suggestedSlots = useMemo(
@@ -74,10 +87,9 @@ export default function HomeScreen() {
     ? SYSTEM_EXERCISES_BY_SLUG[suggestedSlots[0].exercise]?.name ?? null
     : null;
 
-
-  // Scroll choreography — the masthead compresses. One Animated value
-  // driven by onScroll (transform/opacity only); reduced motion never
-  // attaches the listener and everything renders static.
+  // Ruler-compress — one Animated value driven by onScroll
+  // (transform/opacity only); reduced motion never attaches the
+  // listener and the masthead renders static.
   const scrollY = useRef(new Animated.Value(0)).current;
   const onScrollAnimated = useMemo(
     () =>
@@ -87,18 +99,21 @@ export default function HomeScreen() {
       ),
     [scrollY],
   );
+  const titleScale = scrollY.interpolate({ inputRange: [0, 140], outputRange: [1, 0.6] });
+  const titleTranslate = scrollY.interpolate({ inputRange: [0, 140], outputRange: [0, -18] });
+  const titleOpacity = scrollY.interpolate({ inputRange: [0, 140], outputRange: [1, 0.4] });
+  const headerMarkOpacity = scrollY.interpolate({ inputRange: [40, 90], outputRange: [0, 1] });
+
   const header = (
     <View style={styles.headerRow}>
-      <Text style={[styles.wordmark, { color: colors.text }]}>armandotfit</Text>
+      <Text style={[styles.wordmark, { color: colors.text }]}>ARMANDOTFIT</Text>
       <View style={styles.headerActions}>
         {!reduced ? (
           <Animated.Text
+            testID="home-header-day"
             style={[
-              styles.headerDay,
-              {
-                color: colors.brandText,
-                opacity: scrollY.interpolate({ inputRange: [40, 90], outputRange: [0, 1] }),
-              },
+              styles.headerDayMark,
+              { color: colors.brandText, opacity: headerMarkOpacity },
             ]}
           >
             {`D${String(suggestedDay).padStart(2, '0')}`}
@@ -117,9 +132,30 @@ export default function HomeScreen() {
     </View>
   );
 
-  const heroScale = scrollY.interpolate({ inputRange: [0, 140], outputRange: [1, 0.5] });
-  const heroTranslate = scrollY.interpolate({ inputRange: [0, 140], outputRange: [0, -24] });
-  const heroOpacity = scrollY.interpolate({ inputRange: [0, 140], outputRange: [1, 0.35] });
+  const indexRow = (
+    label: string,
+    caption: string,
+    onPress: () => void,
+    testID: string,
+  ) => (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${label} — ${caption}`}
+      testID={testID}
+      style={({ pressed }) => [
+        styles.indexRow,
+        { borderBottomColor: colors.mobilePremium.hairlineBorder },
+        pressed ? { opacity: 0.6 } : null,
+      ]}
+    >
+      <Text style={[styles.indexLabel, { color: colors.text }]}>{label}</Text>
+      <Text style={[styles.indexCaption, { color: colors.textMuted }]} numberOfLines={1}>
+        {caption}
+      </Text>
+      <ChevronRight size={18} color={colors.textMuted} />
+    </Pressable>
+  );
 
   return (
     <DeskShell
@@ -128,51 +164,82 @@ export default function HomeScreen() {
       onScroll={reduced ? undefined : onScrollAnimated}
       testID="home-scroll"
     >
-      {/* THE MASTHEAD — the day itself is the hero; the START button is
-          the only signal fill above the fold. */}
+      {/* THE MASTHEAD — the day's measure. The tally strip is the
+          hero: past days struck, today the orange next mark, the rest
+          ghost. The title is the statement. */}
       <MobileSectionEyebrow flush={false}>
-        {`TODAY · ${suggestedWindow === 'am' ? 'AM' : 'PM'} WINDOW`}
+        {`TODAY · ${suggestedWindow === 'am' ? 'AM' : 'PM'} WINDOW · DAY ${suggestedDay} OF 4`}
       </MobileSectionEyebrow>
-      <Animated.View
-        testID="home-masthead-row"
+      <View style={styles.measureRow} testID="home-measure">
+        <TallyStrip
+          struck={Math.max(0, suggestedDay - 1)}
+          next
+          ghost={Math.max(0, 4 - suggestedDay)}
+          size="lg"
+          testID="home-day-measure"
+        />
+      </View>
+      <Animated.Text
+        testID="home-masthead-title"
         style={[
-          styles.todayRow,
+          styles.dayTitle,
+          { color: colors.text },
           reduced
             ? null
             : {
-                transform: [{ scale: heroScale }, { translateY: heroTranslate }],
-                opacity: heroOpacity,
+                transform: [{ scale: titleScale }, { translateY: titleTranslate }],
+                opacity: titleOpacity,
               },
         ]}
+        numberOfLines={2}
       >
-        <Figure
-          value={suggestedDay}
-          label="day of split"
-          size="hero"
-          testID="home-day-hero"
-        />
-        <View style={styles.todaySide}>
-          <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={2}>
-            {launcherTitle}
-          </Text>
-          <Text style={[styles.todayMeta, { color: colors.textMuted }]} numberOfLines={1}>
-            {suggestedCount} exercise{suggestedCount === 1 ? '' : 's'}
-          </Text>
-        </View>
-      </Animated.View>
+        {launcherTitle.toUpperCase()}
+      </Animated.Text>
       {firstLift ? (
         <Text style={[styles.firstLift, { color: colors.text }]} numberOfLines={1}>
-          First up — {firstLift}
+          {`First up — ${firstLift}${suggestedCount > 1 ? `  +${suggestedCount - 1} more` : ''}`}
         </Text>
       ) : (
         <Text style={[styles.firstLift, { color: colors.textMuted }]} numberOfLines={2}>
           {isSessionActive
-            ? 'Session in progress — resume from the bar below.'
-            : 'Start from the bar below when you hit the floor.'}
+            ? 'Session in progress — the strip above returns to the stage.'
+            : 'Start from the button below when you hit the floor.'}
         </Text>
       )}
+      <MobilePrimaryButton
+        onPress={isSessionActive ? () => navigateToWorkoutDetail() : navigateToSplitSelection}
+        testID={isSessionActive ? 'home-resume' : 'home-start'}
+      >
+        {isSessionActive ? 'RESUME SESSION' : 'START'}
+      </MobilePrimaryButton>
 
-      {/* This week — figures on steel, no cards. */}
+      {/* THE INDEX — the tab bar's replacement. Three ruled rows,
+          each with its count; the Desk navigates from here. */}
+      <MobileSectionEyebrow rule flush={false}>
+        Index
+      </MobileSectionEyebrow>
+      <View style={styles.indexStack} testID="home-index">
+        {indexRow(
+          'PROGRAM',
+          '4-day · AM/PM',
+          navigateToProgram,
+          'home-index-program',
+        )}
+        {indexRow(
+          'LIBRARY',
+          `${SYSTEM_EXERCISES.length} lifts`,
+          navigateToExerciseDatabase,
+          'home-index-library',
+        )}
+        {indexRow(
+          'PROGRESS',
+          streak?.current != null ? `${streak.current}-day streak` : 'streak + bests',
+          navigateToProgression,
+          'home-index-progress',
+        )}
+      </View>
+
+      {/* This week — mono figures on the field. */}
       <MobileSectionEyebrow rule flush={false}>
         This week
       </MobileSectionEyebrow>
@@ -215,7 +282,7 @@ export default function HomeScreen() {
         <EmptyState
           title="No sessions yet"
           message="Your logged AM/PM sessions land here — streaks, day-of-split, and history start with the first one."
-          icon={<Play size={28} color={colors.brand} />}
+          icon={<TallyStrip struck={0} next ghost={4} size="sm" />}
           action={{ label: 'Start workout', onPress: navigateToSplitSelection }}
           testID="home-empty-state"
         />
@@ -241,23 +308,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     height: 52,
-    paddingHorizontal: 20,
-  },
-  wordmark: {
-    fontFamily: theme.fonts.displayCondensed,
-    fontSize: 20,
-    fontWeight: '800',
-    lineHeight: 24,
-    letterSpacing: -0.3,
+    paddingHorizontal: 16,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    gap: 10,
   },
-  headerDay: {
+  wordmark: {
+    fontFamily: theme.fonts.display,
+    fontSize: 18,
+    fontWeight: '800',
+    lineHeight: 22,
+    letterSpacing: 0.6,
+  },
+  headerDayMark: {
     ...theme.typography.mobileLedger,
-    marginRight: 8,
   },
   iconButton: {
     width: 44,
@@ -265,28 +331,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  todayRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 20,
-    marginTop: 4,
-  },
-  todaySide: {
-    flex: 1,
-    paddingTop: 10,
-    gap: 2,
+  measureRow: {
+    marginTop: 2,
+    minHeight: 44,
   },
   dayTitle: {
-    ...theme.typography.mobileTitle,
-  },
-  todayMeta: {
-    ...theme.typography.mobileMeta,
+    ...theme.typography.mobileDisplay,
+    fontSize: 46,
+    lineHeight: 48,
+    marginTop: 12,
+    textTransform: 'uppercase',
   },
   firstLift: {
     ...theme.typography.mobileItemTitle,
-    marginTop: 12,
+    marginTop: 10,
+    marginBottom: 14,
   },
-  launcher: { marginTop: 16 },
+  indexStack: {
+    marginTop: 2,
+  },
+  indexRow: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderBottomWidth: 1,
+  },
+  indexLabel: {
+    fontFamily: theme.fonts.display,
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+  },
+  indexCaption: {
+    ...theme.typography.mobileLedger,
+    flex: 1,
+    textAlign: 'right',
+  },
   statRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',

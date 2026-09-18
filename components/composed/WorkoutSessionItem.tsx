@@ -1,10 +1,10 @@
 // components/composed/WorkoutSessionItem.tsx
 // Reusable ledger row for a training session (home's recent page and
-// analytics history). The logbook read: the date is the row's voice
-// (display scale), the window and day-of-split ride right in mono, and
-// the session's shape murmurs beneath. No card — rows separate by
-// hairline rules. All derived from the session at read time; nothing
-// stored.
+// analytics history). THE COUNT read (count-thesis §7): the
+// day-of-split mark leads — mono, the count in short form — the date
+// is the row's voice, the window rides beside it, and the session's
+// shape murmurs beneath in mono. No card — rows separate by hairline
+// rules. All derived from the session at read time; nothing stored.
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -53,6 +53,13 @@ export function WorkoutSessionItem({ session, onPress, isLast = false }: Workout
       ]}
     >
       <View style={styles.headRow}>
+        <Text
+          style={[styles.dayMark, { color: colors.brandText }]}
+          numberOfLines={1}
+          accessibilityLabel={session.splitDay != null ? `Day ${session.splitDay}` : 'Ad-hoc'}
+        >
+          {session.splitDay != null ? `D${session.splitDay}` : 'ADH'}
+        </Text>
         <Text style={[styles.date, { color: colors.text }]} numberOfLines={1}>
           {new Date(session.startedAt).toLocaleDateString(undefined, {
             weekday: 'short',
@@ -60,8 +67,8 @@ export function WorkoutSessionItem({ session, onPress, isLast = false }: Workout
             day: 'numeric',
           })}
         </Text>
-        <Text style={[styles.windowDay, { color: colors.brandText }]} numberOfLines={1}>
-          {`${windowLabel} · ${session.splitDay != null ? `DAY ${session.splitDay}` : 'AD-HOC'}`}
+        <Text style={[styles.window, { color: colors.textMuted }]} numberOfLines={1}>
+          {windowLabel}
         </Text>
       </View>
       {shape ? (
@@ -80,17 +87,21 @@ const styles = StyleSheet.create({
   },
   headRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'baseline',
-    gap: 12,
+    gap: 10,
+  },
+  dayMark: {
+    ...theme.typography.mobileEyebrow,
+    minWidth: 30,
   },
   date: { ...theme.typography.mobileItemTitle, flex: 1 },
-  windowDay: {
-    ...theme.typography.mobileEyebrow,
+  window: {
+    ...theme.typography.mobileLedger,
   },
   shape: {
     ...theme.typography.mobileMeta,
     marginTop: 3,
+    marginLeft: 40,
   },
 });
 
