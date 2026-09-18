@@ -1,57 +1,31 @@
 // app/progression.tsx
-// THE RECORD BOOK (broadsheet-thesis §7): the emotional number first —
-// the current streak as the hero statement in the record red (records
-// are the one thing red is for) with the run's facts murmuring beside
-// it in agate — the totals beneath as figures, and personal bests
-// closing the page as a ruled ledger with their best sets in the
-// record tone. All computed at read from raw sessions; nothing
+// THE QUIET PAGE's record book (docs/architecture/
+// quiet-page-thesis.md §6): "The streak is 12." No nameplate, no
+// "COMPUTED AT READ" shout — the streak NUMBER is the statement, in
+// the record red, alone in its halo; one fact line carries "day
+// streak · best"; the totals collapse to one figure line; the ledger
+// curates to five best lifts (name + best set in the record-mark
+// read; the e1RM column dies — it never answered a question the
+// owner asked). All computed at read from raw sessions; nothing
 // stored.
 
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
-import {
-  MobileSectionEyebrow,
-  MobilePrimaryButton,
-  EmptyState,
-  Figure,
-} from '../components/MobilePremium';
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { EmptyState } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { DeskShell, QueryErrorNote } from '../components/composed';
 import { useAppTheme } from '../context';
-import { navigateToAnalytics, navigateToSplitSelection, safeGoBack } from '../navigation';
+import {
+  navigateToExerciseDetail,
+  navigateToAnalytics,
+  navigateToSplitSelection,
+  safeGoBack,
+} from '../navigation';
 import { useDashboardSummary, usePersonalBests } from '../hooks';
-import { theme } from '../constants';
-import { e1rm } from '../services';
-import { useReducedMotion } from '../components/premium/shared';
+import { SYSTEM_EXERCISES } from '../shared/exercises';
+import { BLOCK_GAP, HALO, theme } from '../constants';
 
-/** THE RECORD RULE — the 2px record-red rule under the streak hero
- *  draws in once (scaleX 0→1, 160ms). Static full-width under reduced
- *  motion; purely decorative (the figure carries the number). */
-function RecordRule({ color, width }: { color: string; width: number }) {
-  const reduced = useReducedMotion();
-  const draw = useRef(new Animated.Value(reduced ? 1 : 0)).current;
-  useEffect(() => {
-    if (reduced) return;
-    Animated.timing(draw, {
-      toValue: 1,
-      duration: 160,
-      useNativeDriver: false,
-    }).start();
-  }, [draw, reduced]);
-  return (
-    <Animated.View
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      style={{
-        width,
-        height: 2,
-        backgroundColor: color,
-        marginTop: 6,
-        transform: [{ scaleX: draw.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }) }],
-      }}
-    />
-  );
-}
+const PB_COUNT = 5;
 
 export default function ProgressionScreen() {
   const { colors } = useAppTheme();
@@ -59,26 +33,10 @@ export default function ProgressionScreen() {
   const pbQuery = usePersonalBests();
   const summary = summaryQuery.data;
   const isEmpty = (summary?.totalSessions ?? 0) === 0;
+  const pbs = (pbQuery.data ?? []).slice(0, PB_COUNT);
 
   return (
-    <DeskShell
-      surface="goal"
-      onBack={safeGoBack}
-      header={
-        <View style={styles.headerRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.headerEyebrow, { color: colors.textMuted }]}>
-              COMPUTED AT READ · NOTHING STORED
-            </Text>
-            {/* THE HEADLINE — the record book's nameplate; the streak
-                hero below outranks it. */}
-            <Text style={[styles.headerTitle, { color: colors.text }]}>
-              THE RECORD
-            </Text>
-          </View>
-        </View>
-      }
-    >
+    <DeskShell surface="goal" onBack={safeGoBack} testID="record-scroll">
       {summaryQuery.isLoading ? (
         <LoadingSpinner />
       ) : summaryQuery.isError ? (
@@ -86,162 +44,109 @@ export default function ProgressionScreen() {
       ) : isEmpty ? (
         <EmptyState
           title="Nothing to progress yet"
-          message="Log your first session and your streak, totals, and personal bests start here."
+          message="Log your first session and the streak, totals, and bests start here."
           action={{ label: 'Start workout', onPress: navigateToSplitSelection }}
           testID="progression-empty"
         />
       ) : (
         <>
-          {/* The emotional number: the streak at hero scale in the
-              record red — the page's one hero. */}
-          <MobileSectionEyebrow rule flush={false}>
-            The run
-          </MobileSectionEyebrow>
-          <View style={styles.heroRow}>
-            <Figure
-              value={summary?.streak.current ?? 0}
-              unit="d"
-              size="hero"
-              tone="brand"
-              testID="progression-streak-hero"
-            />
-            <RecordRule color={colors.brand} width={168} />
-            <View style={styles.heroSide}>
-              <Text style={[styles.sideLine, { color: colors.text }]}>
-                {`best ${summary?.streak.best ?? 0}`}
-              </Text>
-              <Text style={[styles.sideMeta, { color: colors.textMuted }]} numberOfLines={1}>
-                {`last ${summary?.lastSessionDate
-                  ? new Date(summary.lastSessionDate).toLocaleDateString(undefined, {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                    })
-                  : '—'}`}
-              </Text>
-            </View>
+          {/* THE STATEMENT — the streak itself, in the record red,
+              alone in its halo. The unit rides the fact line. */}
+          <View>
+            <Text style={[styles.streak, { color: colors.brand }]}>
+              {summary?.streak.current ?? 0}
+            </Text>
+            <Text style={[styles.streakFact, { color: colors.textMuted }]} numberOfLines={1}>
+              {`day streak · best ${summary?.streak.best ?? 0}`}
+            </Text>
           </View>
 
-          {/* Totals as figures on paper. */}
-          <MobileSectionEyebrow rule flush={false}>
-            Totals
-          </MobileSectionEyebrow>
-          <View style={styles.totalsRow}>
-            <Figure
-              value={summary?.thisWeekSessions ?? 0}
-              label="this week"
-              style={styles.totalsCell}
-            />
-            <Figure
-              value={summary?.totalSessions ?? 0}
-              label="all time"
-              align="right"
-              style={styles.totalsCell}
-            />
+          {/* Totals — one figure line. */}
+          <View style={styles.block}>
+            <Text style={[styles.totals, { color: colors.text }]} numberOfLines={1}>
+              {`${summary?.thisWeekSessions ?? 0} this week · ${summary?.totalSessions ?? 0} all time`}
+            </Text>
           </View>
 
-          {/* Personal bests — the record ledger: best sets carry the
-              record tone; e1RM murmurs in agate. */}
-          {pbQuery.data && pbQuery.data.length > 0 ? (
-            <>
-              <MobileSectionEyebrow rule flush={false}>
-                Personal bests
-              </MobileSectionEyebrow>
+          {/* The ledger — five best lifts, one line each. */}
+          {pbs.length > 0 ? (
+            <View style={styles.block}>
+              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+                BEST LIFTS
+              </Text>
               <View>
-                {pbQuery.data.slice(0, 10).map((pb, i) => (
-                  <View
-                    key={pb.exerciseName}
-                    style={[
-                      styles.pbRow,
-                      { borderBottomColor: colors.mobilePremium.hairlineBorder },
-                      i === Math.min(pbQuery.data.length, 10) - 1
-                        ? { borderBottomWidth: 0 }
-                        : null,
-                    ]}
-                  >
-                    <Text style={[styles.pbName, { color: colors.text }]} numberOfLines={1}>
-                      {pb.exerciseName}
-                    </Text>
-                    <Text style={[styles.pbValue, { color: colors.brandText }]}>
-                      {`${pb.bestWeight}×${pb.bestReps}`}
-                    </Text>
-                    <Text style={[styles.pbEstimate, { color: colors.textMuted }]}>
-                      {`e1RM ${Math.round(e1rm(pb.bestWeight, pb.bestReps))}`}
-                    </Text>
-                  </View>
-                ))}
+                {pbs.map((pb) => {
+                  // Identity joins by NAME (data.ts) — resolve the
+                  // slug for the route at read time.
+                  const slug = SYSTEM_EXERCISES.find((e) => e.name === pb.exerciseName)?.slug;
+                  return (
+                    <Pressable
+                      key={pb.exerciseName}
+                      onPress={slug ? () => navigateToExerciseDetail(slug) : undefined}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${pb.exerciseName} — best ${pb.bestWeight} kilograms for ${pb.bestReps}`}
+                      style={({ pressed }) => [styles.pbRow, pressed ? { opacity: 0.6 } : null]}
+                    >
+                      <Text style={[styles.pbName, { color: colors.text }]} numberOfLines={1}>
+                        {pb.exerciseName}
+                      </Text>
+                      <Text style={[styles.pbValue, { color: colors.brandText }]}>
+                        {`${pb.bestWeight}×${pb.bestReps}`}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
-            </>
+            </View>
           ) : null}
         </>
       )}
-      <MobilePrimaryButton variant="ghost" onPress={navigateToAnalytics} style={styles.analyticsLink}>
-        View analytics
-      </MobilePrimaryButton>
+      <Pressable
+        onPress={navigateToAnalytics}
+        accessibilityRole="button"
+        accessibilityLabel="View analytics"
+        style={({ pressed }) => [styles.analyticsLink, pressed ? { opacity: 0.6 } : null]}
+      >
+        <Text style={[styles.analyticsLinkText, { color: colors.text }]}>Analytics</Text>
+      </Pressable>
     </DeskShell>
   );
 }
 
 const styles = StyleSheet.create({
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    minHeight: 60,
-    paddingHorizontal: 16,
-    paddingTop: 4,
+  block: {
+    marginTop: BLOCK_GAP,
   },
-  headerEyebrow: {
-    ...theme.typography.mobileEyebrow,
-    marginBottom: 2,
-  },
-  headerTitle: {
+  streak: {
     ...theme.typography.mobileDisplay,
-    fontSize: 40,
-    lineHeight: 42,
   },
-  analyticsLink: { marginTop: 24 },
-  heroRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 20,
-    marginTop: 12,
-  },
-  heroSide: {
-    flex: 1,
-    paddingTop: 12,
-    gap: 4,
-  },
-  sideLine: {
+  // The fact line waits outside the statement's halo.
+  streakFact: {
     ...theme.typography.mobileLedger,
+    marginTop: HALO,
   },
-  sideMeta: {
-    ...theme.typography.mobileMeta,
+  totals: {
+    ...theme.typography.mobileFigure,
   },
-  totalsRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginTop: 12,
+  sectionWhisper: {
+    ...theme.typography.mobileEyebrow,
+    marginBottom: 4,
   },
-  totalsCell: { flex: 1 },
   pbRow: {
+    minHeight: 48,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    minHeight: 52,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
     gap: 12,
   },
-  pbName: { ...theme.typography.mobileBody, fontWeight: '600', flex: 1 },
-  pbValue: {
-    ...theme.typography.mobileLedger,
-    fontWeight: '700',
+  pbName: {
+    ...theme.typography.mobileItemTitle,
+    flex: 1,
   },
-  pbEstimate: {
-    ...theme.typography.mobileEyebrow,
-    fontSize: 10,
-    minWidth: 72,
-    textAlign: 'right',
+  pbValue: {
+    ...theme.typography.mobileFigure,
+  },
+  analyticsLink: { marginTop: BLOCK_GAP, minHeight: 48, justifyContent: 'center' },
+  analyticsLinkText: {
+    ...theme.typography.mobileItemTitle,
   },
 });
