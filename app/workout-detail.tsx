@@ -34,6 +34,7 @@ import {
   TagChips,
   InkRail,
   SwapGlyph,
+  QueryErrorNote,
 } from '../components/composed';
 import { EmptyState } from '../components/MobilePremium';
 import { useToast } from '../context';
@@ -299,7 +300,14 @@ export default function WorkoutDetailScreen() {
           contentContainerStyle={styles.bodyContent}
           showsVerticalScrollIndicator={false}
         >
-          {existingQuery.isLoading || !session ? (
+          {existingQuery.isLoading ? (
+            <LoadingSpinner />
+          ) : existingQuery.isError ? (
+            <QueryErrorNote
+              onRetry={() => void existingQuery.refetch()}
+              testID="workout-detail-error"
+            />
+          ) : !session ? (
             <LoadingSpinner />
           ) : (
             <>

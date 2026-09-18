@@ -17,6 +17,7 @@ import {
   SegmentedControl,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
+import { QueryErrorNote } from '../components/composed';
 import { TrainingConsistencyGrid } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
@@ -95,32 +96,36 @@ export default function AnalyticsScreen() {
           testID="analytics-range"
         />
 
-        <View style={{ height: 16 }} />
-        <MobileSectionEyebrow>Training consistency</MobileSectionEyebrow>
-        <MobileSurface padding={16}>
-          {historyQuery.isLoading ? (
-            <LoadingSpinner />
-          ) : (
-            <TrainingConsistencyGrid
-              data={historyQuery.data ?? []}
-              startDate={gridRange.startDate}
-              endDate={gridRange.endDate}
-              testID="analytics-consistency-grid"
-            />
-          )}
-        </MobileSurface>
+        {historyQuery.isError ? (
+          <QueryErrorNote onRetry={() => void historyQuery.refetch()} testID="analytics-error" />
+        ) : (
+          <>
+            <View style={{ height: 16 }} />
+            <MobileSectionEyebrow>Training consistency</MobileSectionEyebrow>
+            <MobileSurface padding={16}>
+              {historyQuery.isLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <TrainingConsistencyGrid
+                  data={historyQuery.data ?? []}
+                  startDate={gridRange.startDate}
+                  endDate={gridRange.endDate}
+                  testID="analytics-consistency-grid"
+                />
+              )}
+            </MobileSurface>
 
-        <View style={{ height: 16 }} />
-        <MobileSectionEyebrow>Workouts per week</MobileSectionEyebrow>
-        <MobileSurface padding={16}>
-          {historyQuery.isLoading ? (
-            <LoadingSpinner />
-          ) : weekly.length === 0 ? (
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              No workouts in this range yet.
-            </Text>
-          ) : (
-            weekly.map((w) => (
+            <View style={{ height: 16 }} />
+            <MobileSectionEyebrow>Workouts per week</MobileSectionEyebrow>
+            <MobileSurface padding={16}>
+              {historyQuery.isLoading ? (
+                <LoadingSpinner />
+              ) : weekly.length === 0 ? (
+                <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                  No workouts in this range yet.
+                </Text>
+              ) : (
+                weekly.map((w) => (
               <View
                 key={w.weekStart}
                 style={styles.barRow}
@@ -154,7 +159,9 @@ export default function AnalyticsScreen() {
               </View>
             ))
           )}
-        </MobileSurface>
+            </MobileSurface>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

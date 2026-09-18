@@ -19,6 +19,7 @@ import {
   Figure,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
+import { QueryErrorNote } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack, navigateToAnalytics, navigateToSplitSelection } from '../navigation';
 import { useDashboardSummary, usePersonalBests, useAiPayload } from '../hooks';
@@ -69,6 +70,8 @@ export default function ProgressionScreen() {
       >
         {summaryQuery.isLoading ? (
           <LoadingSpinner />
+        ) : summaryQuery.isError ? (
+          <QueryErrorNote onRetry={() => void summaryQuery.refetch()} testID="progression-error" />
         ) : isEmpty ? (
           <EmptyState
             title="Nothing to progress yet"

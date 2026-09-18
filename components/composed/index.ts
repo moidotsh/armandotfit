@@ -12,6 +12,7 @@ export { WorkoutSessionItem, type WorkoutSessionItemProps } from './WorkoutSessi
 export { TrainingConsistencyGrid, type TrainingConsistencyGridProps } from './TrainingConsistencyGrid';
 export { DashboardSkeleton } from './DashboardSkeleton';
 export { WorkoutListSkeleton } from './WorkoutListSkeleton';
+export { QueryErrorNote, type QueryErrorNoteProps } from './QueryErrorNote';
 
 // Shell composed layer (synced from arqavellum)
 export { AppShellHeader } from './AppShellHeader';

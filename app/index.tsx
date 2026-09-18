@@ -34,6 +34,7 @@ import {
   WorkoutSessionItem,
   DashboardSkeleton,
   WorkoutListSkeleton,
+  QueryErrorNote,
 } from '../components/composed';
 import { useAuth, useAppTheme } from '../context';
 import {
@@ -201,6 +202,8 @@ export default function HomeScreen() {
         <MobileSectionEyebrow>This week</MobileSectionEyebrow>
         {summaryQuery.isLoading ? (
           <DashboardSkeleton />
+        ) : summaryQuery.isError ? (
+          <QueryErrorNote onRetry={() => void summaryQuery.refetch()} testID="home-summary-error" />
         ) : (
           <MobileSurface padding={20}>
             <View style={styles.streakRow}>
@@ -230,6 +233,8 @@ export default function HomeScreen() {
         <MobileSectionEyebrow>Recent workouts</MobileSectionEyebrow>
         {recentQuery.isLoading ? (
           <WorkoutListSkeleton />
+        ) : recentQuery.isError ? (
+          <QueryErrorNote onRetry={() => void recentQuery.refetch()} testID="home-recent-error" />
         ) : recent.length === 0 ? (
           <EmptyState
             title="No sessions yet"
