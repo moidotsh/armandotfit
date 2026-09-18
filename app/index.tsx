@@ -26,6 +26,8 @@ import {
   MobileNavDrawer,
   HamburgerButton,
   CopyForAiButton,
+  EmptyState,
+  Figure,
   type MobileNavDrawerItem,
 } from '../components/MobilePremium';
 import {
@@ -33,7 +35,6 @@ import {
   DashboardSkeleton,
   WorkoutListSkeleton,
 } from '../components/composed';
-import { EmptyState } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
 import {
   theme,
@@ -192,14 +193,12 @@ export default function HomeScreen() {
         ) : (
           <MobileSurface padding={20}>
             <View style={styles.streakRow}>
-              <View style={styles.streakHero}>
-                <Text style={[styles.streakFigure, { color: colors.brand }]}>
-                  {streak?.current ?? 0}
-                </Text>
-                <Text style={[styles.streakUnit, { color: colors.textSecondary }]}>
-                  day streak
-                </Text>
-              </View>
+              <Figure
+                value={streak?.current ?? 0}
+                label="day streak"
+                size="display"
+                tone="brand"
+              />
               <View style={styles.streakSide}>
                 <Text style={[styles.sideValue, { color: colors.text }]}>
                   best {streak?.best ?? 0}
@@ -348,14 +347,7 @@ const styles = StyleSheet.create({
   },
   launcherTitle: { ...theme.typography.mobileTitle },
   launcherSub: { ...theme.typography.mobileSubtitle, marginTop: 4 },
-  streakRow: { flexDirection: 'row', alignItems: 'center', gap: 20 },
-  streakHero: { flex: 1 },
-  streakFigure: { ...theme.typography.mobileDisplay },
-  streakUnit: {
-    ...theme.typography.mobileEyebrow,
-    textTransform: 'uppercase',
-    marginTop: 4,
-  },
+  streakRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
   streakSide: { gap: 4, alignItems: 'flex-end' },
   sideValue: { ...theme.typography.mobileLedger },
   actionsRow: { flexDirection: 'row', gap: 8 },

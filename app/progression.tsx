@@ -16,6 +16,7 @@ import {
   MobileActionFooter,
   CopyForAiButton,
   EmptyState,
+  Figure,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { useAppTheme } from '../context';
@@ -81,19 +82,14 @@ export default function ProgressionScreen() {
             <MobileSurface padding={20}>
               <View style={styles.figureRow}>
                 {figures.map((f) => (
-                  <View key={f.label} style={styles.figureCell}>
-                    <Text
-                      style={[
-                        styles.figureValue,
-                        { color: f.brand ? colors.brand : colors.text },
-                      ]}
-                    >
-                      {f.value}
-                    </Text>
-                    <Text style={[styles.figureLabel, { color: colors.textSecondary }]}>
-                      {f.label}
-                    </Text>
-                  </View>
+                  <Figure
+                    key={f.label}
+                    value={f.value}
+                    label={f.label}
+                    tone={f.brand ? 'brand' : 'ink'}
+                    align="center"
+                    style={styles.figureCell}
+                  />
                 ))}
               </View>
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
@@ -154,11 +150,6 @@ const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
   figureRow: { flexDirection: 'row' },
   figureCell: { flex: 1, alignItems: 'center', gap: 2 },
-  figureValue: { ...theme.typography.mobileFigure },
-  figureLabel: {
-    ...theme.typography.mobileEyebrow,
-    textTransform: 'uppercase',
-  },
   divider: { height: 1, marginVertical: 14 },
   metaRow: {
     flexDirection: 'row',

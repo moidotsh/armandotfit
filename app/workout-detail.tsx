@@ -25,6 +25,7 @@ import {
   MobileSectionEyebrow,
   MobileInput,
   CopyForAiButton,
+  Figure,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import {
@@ -312,30 +313,15 @@ export default function WorkoutDetailScreen() {
                   })}
                 </Text>
                 <View style={styles.receiptStats}>
-                  <View style={styles.stat}>
-                    <Text style={[styles.receiptValue, { color: colors.text }]}>
-                      {session.exercises.length}
-                    </Text>
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                      lifts
-                    </Text>
-                  </View>
-                  <View style={styles.stat}>
-                    <Text style={[styles.receiptValue, { color: colors.text }]}>
-                      {totalSets}
-                    </Text>
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                      sets
-                    </Text>
-                  </View>
-                  <View style={styles.stat}>
-                    <Text style={[styles.receiptValue, { color: colors.brand }]}>
-                      {formatVolume(totalKg)}
-                    </Text>
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                      kg
-                    </Text>
-                  </View>
+                  <Figure value={session.exercises.length} label="lifts" align="center" style={styles.stat} />
+                  <Figure value={totalSets} label="sets" align="center" style={styles.stat} />
+                  <Figure
+                    value={formatVolume(totalKg)}
+                    label="kg"
+                    tone="brand"
+                    align="center"
+                    style={styles.stat}
+                  />
                 </View>
               </MobileSurface>
               <View style={{ height: 16 }} />
@@ -446,20 +432,14 @@ export default function WorkoutDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.statsStrip, { borderBottomColor: colors.border }]}>
-          <View style={styles.stat}>
-            <Text style={[styles.statValue, { color: colors.brand }]}>{elapsed}</Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>elapsed</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={[styles.statValue, { color: colors.text }]}>{sessionSets}</Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>sets</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={[styles.statValue, { color: colors.text }]}>
-              {formatVolume(sessionKg)}
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>kg</Text>
-          </View>
+          <Figure value={elapsed} label="elapsed" tone="brand" align="center" style={styles.stat} />
+          <Figure value={sessionSets} label="sets" align="center" style={styles.stat} />
+          <Figure
+            value={formatVolume(sessionKg)}
+            label="kg"
+            align="center"
+            style={styles.stat}
+          />
         </View>
 
         <MobileSectionEyebrow>
@@ -646,7 +626,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  receiptValue: { ...theme.typography.mobileFigure },
   rxLine: { ...theme.typography.mobileMeta, marginTop: 2 },
   progressLine: { ...theme.typography.mobileMeta, marginTop: 2 },
   statsStrip: {
@@ -657,12 +636,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   stat: { alignItems: 'center', flex: 1 },
-  statValue: { ...theme.typography.mobileFigure },
-  statLabel: {
-    ...theme.typography.mobileEyebrow,
-    textTransform: 'uppercase',
-    marginTop: 2,
-  },
   tagsLine: { ...theme.typography.mobileMeta, marginBottom: 6 },
   removeExerciseCta: {
     ...theme.typography.mobileTag,
