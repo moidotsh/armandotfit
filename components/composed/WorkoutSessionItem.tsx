@@ -1,12 +1,13 @@
 // components/composed/WorkoutSessionItem.tsx
-// Reusable list row for a training session (home dashboard's recent list
-// and analytics history). A receipt line: date + day-of-split on the
-// title row, the session's shape (lifts · sets · tonnage) muted beneath.
-// All derived from the session at read time — nothing stored.
+// Reusable ledger row for a training session (home's recent page and
+// analytics history). The logbook read: the date is the row's voice
+// (display scale), the window and day-of-split ride right in mono, and
+// the session's shape murmurs beneath. No card — rows separate by
+// hairline rules. All derived from the session at read time; nothing
+// stored.
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { MobileSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
 import { theme } from '../../constants';
 import { formatVolume, sumVolume } from '../../services';
@@ -18,9 +19,11 @@ export interface WorkoutSessionItemProps {
     exercises?: LoggedExerciseWithSets[];
   };
   onPress: (id: string) => void;
+  /** Suppress the bottom hairline (the last row of a ledger closes clean). */
+  isLast?: boolean;
 }
 
-export function WorkoutSessionItem({ session, onPress }: WorkoutSessionItemProps) {
+export function WorkoutSessionItem({ session, onPress, isLast = false }: WorkoutSessionItemProps) {
   const { colors } = useAppTheme();
 
   // AM and PM are separate session rows; the start hour restores which
@@ -42,51 +45,53 @@ export function WorkoutSessionItem({ session, onPress }: WorkoutSessionItemProps
       onPress={() => onPress(session.id)}
       accessibilityRole="button"
       accessibilityLabel={`Session ${new Date(session.startedAt).toLocaleDateString()}, ${shape ?? 'details'}`}
+      style={({ pressed }) => [
+        styles.row,
+        { borderBottomColor: colors.mobilePremium.hairlineBorder },
+        isLast ? { borderBottomWidth: 0 } : null,
+        pressed ? { opacity: 0.6 } : null,
+      ]}
     >
-      <MobileSurface padding={14}>
-        <View style={styles.row}>
-          <Text style={[styles.date, { color: colors.text }]}>
-            {new Date(session.startedAt).toLocaleDateString(undefined, {
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric',
-            })}
-          </Text>
-          <View style={styles.metaRow}>
-            <Text style={[styles.window, { color: colors.textColors.tertiary }]}>
-              {windowLabel}
-            </Text>
-            <Text style={[styles.meta, { color: colors.textSecondary }]}>
-              {session.splitDay != null ? `Day ${session.splitDay}` : 'Ad-hoc'}
-            </Text>
-          </View>
-        </View>
-        {shape ? (
-          <Text style={[styles.shape, { color: colors.textSecondary }]}>{shape}</Text>
-        ) : null}
-      </MobileSurface>
+      <View style={styles.headRow}>
+        <Text style={[styles.date, { color: colors.text }]} numberOfLines={1}>
+          {new Date(session.startedAt).toLocaleDateString(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          })}
+        </Text>
+        <Text style={[styles.windowDay, { color: colors.brandText }]} numberOfLines={1}>
+          {`${windowLabel} · ${session.splitDay != null ? `DAY ${session.splitDay}` : 'AD-HOC'}`}
+        </Text>
+      </View>
+      {shape ? (
+        <Text style={[styles.shape, { color: colors.textMuted }]} numberOfLines={1}>
+          {shape}
+        </Text>
+      ) : null}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  headRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'baseline',
+    gap: 12,
   },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  date: { ...theme.typography.mobileItemTitle },
-  window: {
+  date: { ...theme.typography.mobileItemTitle, flex: 1 },
+  windowDay: {
     ...theme.typography.mobileEyebrow,
   },
-  meta: { ...theme.typography.mobileMeta },
   shape: {
     ...theme.typography.mobileMeta,
-    marginTop: 4,
+    marginTop: 3,
   },
 });
+
+export default WorkoutSessionItem;

@@ -117,7 +117,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: theme.shapes.tag,
     borderWidth: 1,
-    minHeight: 32,
+    // 44 — the touch-target floor. RN-web does not expand the DOM hit
+    // area for hitSlop (measured), so the box itself clears 44.
+    minHeight: 44,
   },
   buttonCompact: {
     paddingHorizontal: 9,

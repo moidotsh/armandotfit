@@ -95,6 +95,11 @@ export function HamburgerButton({
 
 const styles = StyleSheet.create({
   button: {
+    // 44×44 — the touch-target floor. RN-web does NOT expand the DOM
+    // hit area for hitSlop (measured: elementFromPoint 2px outside a
+    // 36px box misses), so the box itself must clear 44.
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },

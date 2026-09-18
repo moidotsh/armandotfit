@@ -1,7 +1,10 @@
 // app/index.tsx
-// Home dashboard. Surfaces the daily-driver summary a returning user
-// needs: streak, weekly goal, quick actions, recent workouts. Replaces
-// arqavellum's placeholder home.
+// Home — the daily brief, set as a logbook page (see
+// docs/architecture/logbook-thesis.md §7): the day itself is the hero,
+// the start button is the only brand fill above the fold, and every
+// section below is a ruled eyebrow + rows on paper — no cards. The
+// funnel (start today's session) answers "what am I walking into?"
+// without a box around it.
 
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -19,7 +22,6 @@ import {
 } from '@tamagui/lucide-icons-2';
 import {
   MobileAtmosphere,
-  MobileSurface,
   MobileHomeHeader,
   MobilePrimaryButton,
   MobileSectionEyebrow,
@@ -83,9 +85,6 @@ export default function HomeScreen() {
   const suggestedSlots = getSlotsForDay(preferredSplit, suggestedDay, suggestedWindow);
   const suggestedCount = suggestedSlots.length;
   const launcherTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;
-  const launcherPlan = preferredSplit === 'twoADay'
-    ? `${launcherTitle} · ${suggestedWindow.toUpperCase()} · ${suggestedCount} exercises`
-    : `${launcherTitle} · ${suggestedCount} exercises`;
   // The brief names the day's opening lift — the answer to "what am I
   // walking into?" without leaving home.
   const firstLift = suggestedSlots.length > 0
@@ -99,7 +98,7 @@ export default function HomeScreen() {
             `- Current streak: ${streak?.current ?? 0} days`,
             `- Best streak: ${streak?.best ?? 0} days`,
             `- This week: ${summary.thisWeekSessions ?? 0} sessions`,
-            `- Total sessions: ${summary.totalSessions ?? 0}`,
+            `- Total sessions: ${summary.totalSessions ?? 0} sessions`,
             `- Recent sessions: ${recent.length}`,
           ].join('\n'),
         }
@@ -177,60 +176,79 @@ export default function HomeScreen() {
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* THE launcher — one prominent path into today's session. */}
-        <MobileSectionEyebrow>Today</MobileSectionEyebrow>
-        <MobileSurface padding={20}>
-          <Text style={[styles.launcherTitle, { color: colors.text }]}>
-            Start today's session
-          </Text>
-          <Text style={[styles.launcherSub, { color: colors.textSecondary }]}>
-            {launcherPlan}
-          </Text>
-          {firstLift ? (
-            <Text style={[styles.launcherSub, { color: colors.textSecondary }]}>
-              First up: {firstLift}
+        {/* THE FUNNEL — the day itself is the hero figure; the plan
+            reads beside it; the start button is the only brand fill
+            above the fold. */}
+        <MobileSectionEyebrow rule flush={false}>
+          {`Today · ${suggestedWindow === 'am' ? 'AM' : 'PM'} window`}
+        </MobileSectionEyebrow>
+        <View style={styles.todayRow}>
+          <Figure
+            value={suggestedDay}
+            label="day of split"
+            size="hero"
+            tone="brand"
+            testID="home-day-hero"
+          />
+          <View style={styles.todaySide}>
+            <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={2}>
+              {launcherTitle}
             </Text>
-          ) : null}
-          <View style={{ height: 12 }} />
-          <MobilePrimaryButton onPress={navigateToSplitSelection} testID="home-launcher-start">
-            Start {preferredSplit === 'twoADay' ? `${suggestedWindow.toUpperCase()} ` : ''}workout
-          </MobilePrimaryButton>
-        </MobileSurface>
+            <Text style={[styles.todayMeta, { color: colors.textSecondary }]} numberOfLines={1}>
+              {suggestedCount} exercise{suggestedCount === 1 ? '' : 's'}
+            </Text>
+          </View>
+        </View>
+        {firstLift ? (
+          <Text style={[styles.firstLift, { color: colors.text }]} numberOfLines={1}>
+            First up — {firstLift}
+          </Text>
+        ) : null}
+        <MobilePrimaryButton
+          onPress={navigateToSplitSelection}
+          style={styles.launcher}
+          testID="home-launcher-start"
+        >
+          {preferredSplit === 'twoADay'
+            ? `Start ${suggestedWindow.toUpperCase()} workout`
+            : 'Start workout'}
+        </MobilePrimaryButton>
 
-        {/* Streak hero — big figure treatment */}
-        <View style={{ height: 16 }} />
-        <MobileSectionEyebrow>This week</MobileSectionEyebrow>
+        {/* This week — figures on paper, no cards. */}
+        <MobileSectionEyebrow rule flush={false}>
+          This week
+        </MobileSectionEyebrow>
         {summaryQuery.isLoading ? (
           <DashboardSkeleton />
         ) : summaryQuery.isError ? (
           <QueryErrorNote onRetry={() => void summaryQuery.refetch()} testID="home-summary-error" />
         ) : (
-          <MobileSurface padding={20}>
-            <View style={styles.streakRow}>
-              <Figure
-                value={streak?.current ?? 0}
-                label="day streak"
-                size="display"
-                tone="brand"
-              />
-              <View style={styles.streakSide}>
-                <Text style={[styles.sideValue, { color: colors.text }]}>
-                  best {streak?.best ?? 0}
-                </Text>
-                <Text style={[styles.sideValue, { color: colors.text }]}>
-                  {summary?.thisWeekSessions ?? 0} this week
-                </Text>
-                <Text style={[styles.sideValue, { color: colors.textSecondary }]}>
-                  {summary?.totalSessions ?? 0} all time
-                </Text>
-              </View>
-            </View>
-          </MobileSurface>
+          <View style={styles.statRow}>
+            <Figure
+              value={streak?.current ?? 0}
+              unit="d"
+              label="streak"
+              tone="brand"
+              style={styles.statCell}
+            />
+            <Figure
+              value={summary?.thisWeekSessions ?? 0}
+              label="sessions"
+              style={styles.statCell}
+            />
+            <Figure
+              value={summary?.totalSessions ?? 0}
+              label="all time"
+              align="right"
+              style={styles.statCell}
+            />
+          </View>
         )}
 
-        {/* Recent workouts */}
-        <View style={{ height: 16 }} />
-        <MobileSectionEyebrow>Recent workouts</MobileSectionEyebrow>
+        {/* Recent — the logbook's latest page: ledger rows, hairline rules. */}
+        <MobileSectionEyebrow rule flush={false}>
+          Recent
+        </MobileSectionEyebrow>
         {recentQuery.isLoading ? (
           <WorkoutListSkeleton />
         ) : recentQuery.isError ? (
@@ -244,11 +262,12 @@ export default function HomeScreen() {
             testID="home-empty-state"
           />
         ) : (
-          <View style={styles.recentList}>
-            {recent.map((w) => (
+          <View>
+            {recent.map((w, i) => (
               <WorkoutSessionItem
                 key={w.id}
                 session={w}
+                isLast={i === recent.length - 1}
                 onPress={navigateToWorkoutDetail}
               />
             ))}
@@ -318,20 +337,35 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 20, paddingTop: 12 },
-  rowBetween: {
+  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 32 },
+  todayRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 4,
+    alignItems: 'flex-start',
+    gap: 20,
+    marginTop: 12,
   },
-  launcherTitle: { ...theme.typography.mobileTitle },
-  launcherSub: { ...theme.typography.mobileSubtitle, marginTop: 2 },
-  streakRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
-  streakSide: { gap: 4, alignItems: 'flex-end' },
-  sideValue: { ...theme.typography.mobileLedger },
-  recentList: { gap: 8 },
-  emptyText: { ...theme.typography.mobileMeta },
+  todaySide: {
+    flex: 1,
+    paddingTop: 8,
+    gap: 2,
+  },
+  dayTitle: {
+    ...theme.typography.mobileTitle,
+  },
+  todayMeta: {
+    ...theme.typography.mobileMeta,
+  },
+  firstLift: {
+    ...theme.typography.mobileItemTitle,
+    marginTop: 12,
+  },
+  launcher: { marginTop: 16 },
+  statRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginTop: 12,
+  },
+  statCell: { flex: 1 },
   drawerHeader: {
     paddingHorizontal: 20,
   },
