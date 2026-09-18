@@ -54,7 +54,7 @@ export function WorkoutSessionItem({ session, onPress, isLast = false }: Workout
     >
       <View style={styles.headRow}>
         <Text
-          style={[styles.dayMark, { color: colors.brandText }]}
+          style={[styles.dayMark, { color: colors.textMuted }]}
           numberOfLines={1}
           accessibilityLabel={session.splitDay != null ? `Day ${session.splitDay}` : 'Ad-hoc'}
         >

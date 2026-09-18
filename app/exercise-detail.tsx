@@ -84,6 +84,7 @@ export default function ExerciseDetailScreen() {
       <MobileAtmosphere surface="instructions" />
       <MobileHeader
         onBack={safeGoBack}
+        hideAccentDot
       />
       <ScrollView
         style={styles.body}
@@ -105,7 +106,7 @@ export default function ExerciseDetailScreen() {
               {exercise.name}
             </Text>
             {lastTime ? (
-              <Text style={[styles.lastLine, { color: colors.brandText }]}>
+              <Text style={[styles.lastLine, { color: colors.text }]}>
                 {`LAST — ${lastTime.weight}×${lastTime.reps} · ${lastTime.sets} set${lastTime.sets === 1 ? '' : 's'} · ${lastTime.when}`}
               </Text>
             ) : null}
@@ -140,7 +141,7 @@ export default function ExerciseDetailScreen() {
                       {/* Muscle strokes — the tally as data-viz: four
                           struck marks for a prime mover. */}
                       <TallyStrip struck={4} size="sm" />
-                      <Text style={[styles.targetWeight, { color: colors.brandText }]}>
+                      <Text style={[styles.targetWeight, { color: colors.text }]}>
                         PRIME
                       </Text>
                     </View>

@@ -86,7 +86,11 @@ export function MobileActionFooter({
         testID={testID}
         style={[
           styles.legacyContainer,
-          !disableSafeArea ? { paddingBottom: Math.max(insets.bottom, 16) } : null,
+          {
+            paddingBottom: !disableSafeArea ? Math.max(insets.bottom, 16) : 0,
+            backgroundColor: colors.backgroundDeep,
+            borderTopColor: colors.mobilePremium.hairlineBorder,
+          },
           style,
         ]}
       >
@@ -101,7 +105,14 @@ export function MobileActionFooter({
       testID={testID}
       style={[
         styles.container,
-        { paddingBottom: safeBottom, borderTopColor: colors.mobilePremium.hairlineBorder },
+        {
+          paddingBottom: safeBottom,
+          borderTopColor: colors.mobilePremium.hairlineBorder,
+          // The footer is a plate on the field: page-toned and opaque,
+          // so scrolled content terminates at the hairline instead of
+          // visually colliding with the actions.
+          backgroundColor: colors.backgroundDeep,
+        },
         style,
       ]}
     >
@@ -114,7 +125,7 @@ export function MobileActionFooter({
             pressed ? pressedStyle : null,
           ]}
         >
-          <Text style={[styles.secondaryText, { color: accentColor ?? colors.brand }]}>
+          <Text style={[styles.secondaryText, { color: colors.textSecondary }]}>
             {secondaryLabel}
           </Text>
         </Pressable>
@@ -163,6 +174,7 @@ const styles = StyleSheet.create({
     ...MOBILE_CONTENT_WIDTH_STYLE,
     paddingHorizontal: 20,
     paddingTop: 8,
+    borderTopWidth: 1,
   },
 });
 

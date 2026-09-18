@@ -67,6 +67,7 @@ export default function AnalyticsScreen() {
         title="Analytics"
         eyebrow="History"
         onBack={safeGoBack}
+        hideAccentDot
       />
       <ScrollView
         style={styles.body}
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
   barTrack: {
     flex: 1,
     height: 16,
-    borderRadius: 4,
+    borderRadius: theme.shapes.tile,
     overflow: 'hidden',
   },
   barFill: { height: '100%' },

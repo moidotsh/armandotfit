@@ -274,6 +274,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     height: 54,
+    // WebKit's UA focus ring (`outline: auto`) ignores the kit ring and
+    // glows system blue on RN-web inputs.
+    outlineWidth: 0,
   },
   leftIcon: {
     position: 'absolute',

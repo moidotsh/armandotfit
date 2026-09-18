@@ -11,7 +11,8 @@
 // consumer's surrounding wrapper if needed.
 
 import React from 'react';
-import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useAppTheme } from '../../context';
 
 export interface FilterChipGroupProps {
   /** Typically a row of FilterChip, but accepts any children. */
@@ -32,17 +33,35 @@ export function FilterChipGroup({
   testID,
   style,
 }: FilterChipGroupProps) {
+  const { colors } = useAppTheme();
   if (oneRow) {
     return (
-      <ScrollView
-        testID={testID}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={[styles.scroll, style]}
-        contentContainerStyle={[styles.row, { gap, minWidth: '100%' }]}
-      >
-        {children}
-      </ScrollView>
+      <View style={styles.scrollWrap}>
+        <ScrollView
+          testID={testID}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={[styles.scroll, style]}
+          contentContainerStyle={[styles.row, { gap, minWidth: '100%' }]}
+        >
+          {children}
+        </ScrollView>
+        {/* Trailing fade: an overflowing row cuts a chip mid-glyph at
+            the viewport edge with no hint that it scrolls. Web-only —
+            RN native has no gradient primitive without a dependency. */}
+        {Platform.OS === 'web' ? (
+          <View
+            pointerEvents="none"
+            style={[
+              styles.fade,
+              // RN's ViewStyle has no backgroundImage (web-only prop).
+              {
+                backgroundImage: `linear-gradient(to right, transparent, ${colors.backgroundDeep})`,
+              } as unknown as ViewStyle,
+            ]}
+          />
+        ) : null}
+      </View>
     );
   }
   return (
@@ -59,6 +78,16 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+  },
+  scrollWrap: {
+    position: 'relative',
+  },
+  fade: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 24,
   },
   // RN-web gives ScrollView a default `flex: 1 1 auto`. Inside a screen's
   // flex column that is wrong on both axes: when a sibling list's content

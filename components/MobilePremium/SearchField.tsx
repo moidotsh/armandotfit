@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
     borderRadius: theme.shapes.tag,
   },
-  // FilterChip's geometry: 36 tall, pill, 13px type.
+  // FilterChip's geometry: 36 tall, marking-chip radius, 13px type.
   input: {
     flex: 1,
     minHeight: 44,
@@ -134,6 +134,10 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     paddingBottom: 8,
     paddingTop: 8,
+    // Suppress WebKit's UA focus ring — the kit's animated ring + the
+    // accent border carry focus here (a system-blue glow reads as a
+    // second accent).
+    outlineWidth: 0,
   },
   iconSlot: {
     position: 'absolute',

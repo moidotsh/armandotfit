@@ -47,7 +47,7 @@ export default function LoginScreen() {
     <SafeAreaView style={[styles.shell, { backgroundColor: colors.backgroundDeep }]} edges={['top', 'bottom']}>
       <MobileAtmosphere surface="auth" />
       <View style={[styles.brandBlock, { paddingTop: insets.top + 24 }]}>
-        <Text style={[styles.wordmark, { color: colors.textMuted }]}>
+        <Text style={[styles.wordmark, { color: colors.text }]}>
           ARMANDOTFIT
         </Text>
         <View style={[styles.wordmarkRule, { backgroundColor: colors.brand }]} />
@@ -130,13 +130,14 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   wordmarkRule: {
-    // The boot plate's mark: a 2px signal rule under the wordmark —
-    // the brand moment, once, quietly.
+    // The boot plate's mark: a 2px signal rule UNDER the wordmark,
+    // left-anchored to it — the brand moment, once, quietly. Centered,
+    // it floated detached between two left-set lines.
     width: 72,
     height: 2,
     marginTop: 8,
     marginBottom: 18,
-    alignSelf: 'center',
+    alignSelf: 'flex-start',
   },
   wordmark: {
     fontFamily: theme.fonts.display,

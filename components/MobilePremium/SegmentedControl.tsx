@@ -1,5 +1,7 @@
 // components/MobilePremium/SegmentedControl.tsx
-// Pill-track segmented control with two explicit accessibility variants.
+// Square-cut segmented control (thesis §2.4 — controls cut crisp at 3px;
+// a capsule marks nothing here) with two explicit accessibility
+// variants.
 // The variants have the same visual treatment but distinct a11y contracts
 // — pick by content semantics, not by visual preference:
 //
@@ -132,7 +134,7 @@ export function SegmentedControl<T>({
                 alignItems: 'center',
                 justifyContent: 'center',
                 paddingHorizontal: 12,
-                borderRadius: visualHeight / 2,
+                borderRadius: theme.shapes.control,
                 backgroundColor: active ? colors.brand : 'transparent',
               }}
             >

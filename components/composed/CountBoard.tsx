@@ -124,7 +124,7 @@ function CounterRow({
             autoFocus
             selectTextOnFocus
             accessibilityLabel={`${label} input`}
-            style={[styles.counterText, { color: colors.brand }]}
+            style={[styles.counterText, { color: colors.text, outlineWidth: 0 }]}
             testID={`${testID}-input`}
           />
         ) : (
@@ -138,14 +138,23 @@ function CounterRow({
             style={styles.counterTap}
             testID={`${testID}-tap`}
           >
-            <Text
-              style={[
-                styles.counterText,
-                { color: value == null ? colors.textMuted : colors.text },
-              ]}
-            >
-              {display}
-            </Text>
+            {value == null ? (
+              // Empty counter = a ruled field awaiting its figure (an
+              // underline on paper), NOT a glyph at counter scale — a
+              // 56px em-dash reads as a broken loading bar.
+              <View style={styles.counterEmpty} testID={`${testID}-empty`}>
+                <View
+                  style={[
+                    styles.counterEmptyRule,
+                    { backgroundColor: colors.mobilePremium.hairlineBorderStrong },
+                  ]}
+                />
+              </View>
+            ) : (
+              <Text style={[styles.counterText, { color: colors.text }]}>
+                {display}
+              </Text>
+            )}
             <Text style={[styles.counterUnit, { color: colors.textMuted }]}>{label}</Text>
           </Pressable>
         )}
@@ -195,7 +204,7 @@ export function CountBoard({
             {`SET ${String(setNumber).padStart(2, '0')}`}
           </Text>
           {repsHint ? (
-            <Text style={[styles.measureLabel, { color: colors.brandText }]}>
+            <Text style={[styles.measureLabel, { color: colors.textMuted }]}>
               {`TGT ${repsHint}`}
             </Text>
           ) : null}
@@ -290,6 +299,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 8,
+  },
+  counterEmpty: {
+    width: 72,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 16,
+  },
+  counterEmptyRule: {
+    width: 72,
+    height: 2,
   },
   counterText: {
     ...theme.typography.mobileCounter,

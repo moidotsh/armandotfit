@@ -282,6 +282,7 @@ export default function WorkoutDetailScreen() {
               : ''
           }
           onBack={safeGoBack}
+          hideAccentDot
         />
         <ScrollView
           style={styles.body}
@@ -408,7 +409,7 @@ export default function WorkoutDetailScreen() {
         style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
         edges={['top', 'bottom']}
       >
-        <MobileHeader title="Starting session…" />
+        <MobileHeader title="Starting session…" hideAccentDot />
         <View style={styles.body}>
           <LoadingSpinner />
         </View>
@@ -637,7 +638,7 @@ function Stage(props: StageProps) {
           ]}
           testID="stage-finish"
         >
-          <Text style={[styles.finishLabel, { color: colors.brandText }]}>
+          <Text style={[styles.finishLabel, { color: colors.textSecondary }]}>
             FINISH
           </Text>
         </Pressable>
@@ -827,7 +828,7 @@ function Stage(props: StageProps) {
       >
         <View style={styles.finishStats}>
           <Figure value={elapsed} label="elapsed" tone="ink" size="sm" style={styles.finishStat} />
-          <Figure value={sessionSets} label="sets" tone="ink" size="sm" style={styles.finishStat} />
+          <Figure value={sessionSets} label={sessionSets === 1 ? 'set' : 'sets'} tone="ink" size="sm" style={styles.finishStat} />
           <Figure
             value={formatVolume(sessionKg)}
             unit="kg"

@@ -42,9 +42,9 @@ export function TagChips({
   const [inputOpen, setInputOpen] = useState(false);
   const focus = register === 'focus';
 
-  const chipBg = focus ? colors.focus.signalSoft : `${colors.brand}14`;
-  const chipBorder = focus ? colors.focus.signal : `${colors.brand}3D`;
-  const chipText = focus ? colors.focus.signal : colors.brandText;
+  const chipBg = focus ? colors.focus.signalSoft : colors.cardAlt;
+  const chipBorder = focus ? colors.focus.signal : colors.border;
+  const chipText = focus ? colors.focus.signal : colors.textSecondary;
   const wordText = focus ? colors.focus.muted : colors.textSecondary;
   const plusText = focus ? colors.focus.signal : colors.brand;
   const inputBorder = focus ? colors.focus.border : colors.glass.emptyInputBorder;
@@ -128,6 +128,7 @@ export function TagChips({
               borderColor: inputBorder,
               backgroundColor: inputBg,
               color: inputFg,
+              outlineWidth: 0,
             },
           ]}
           value={input}
@@ -147,14 +148,14 @@ export function TagChips({
 const styles = StyleSheet.create({
   wrap: { gap: 2, marginTop: 4 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 2, alignItems: 'center' },
-  // Every pressable clears the 44px touch floor — the visual pill rides
-  // centered inside the box (RN-web hitSlop does not expand the DOM hit
-  // area; measured).
+  // Every pressable clears the 44px touch floor — the visual marking
+  // chip rides centered inside the box (RN-web hitSlop does not expand
+  // the DOM hit area; measured).
   chip: {
     minHeight: 44,
     paddingHorizontal: 10,
     justifyContent: 'center',
-    borderRadius: 999,
+    borderRadius: theme.shapes.tag,
     borderWidth: 1,
   },
   chipText: { ...theme.typography.mobileTag },

@@ -157,6 +157,7 @@ export default function SplitSelectionScreen() {
       <MobileAtmosphere surface="setup" />
       <MobileHeader
         title="Start"
+        hideAccentDot
         eyebrow={
           selectedSlot
             ? `${selectedSlot.dayLabel} · ${selectedSlot.dateLabel}`
@@ -272,7 +273,7 @@ export default function SplitSelectionScreen() {
             your own from the exercise database.
           </Text>
         ) : (
-          <Text style={[styles.targetsLine, { color: colors.brandText }]} numberOfLines={1}>
+          <Text style={[styles.targetsLine, { color: colors.textMuted }]} numberOfLines={1}>
             {`TARGETS — ${targets.join(' · ')}`}
           </Text>
         )}
@@ -301,7 +302,7 @@ export default function SplitSelectionScreen() {
                     isLast ? { borderBottomWidth: 0 } : null,
                   ]}
                 >
-                  <Text style={[styles.slotIndex, { color: colors.brandText }]}>
+                  <Text style={[styles.slotIndex, { color: colors.textMuted }]}>
                     {String(i + 1).padStart(2, '0')}
                   </Text>
                   <View style={styles.slotMain}>

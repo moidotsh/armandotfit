@@ -30,6 +30,7 @@
 
 import React, { useMemo, useRef } from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { theme } from '../../constants';
 import { useAppTheme } from '../../context';
 import { useContainerQuery, useActivityGridLayout } from '../../hooks';
 import type { ActivityGridLayoutMode } from '../../hooks';
@@ -256,7 +257,7 @@ export function ActivityGrid({
                 style={{
                   ...sizeStyle,
                   backgroundColor: levelFills[0],
-                  borderRadius: Math.max(2, Math.floor(geometry.cellSize * 0.18)),
+                  borderRadius: theme.shapes.tile,
                 }}
               />
             );
@@ -268,7 +269,7 @@ export function ActivityGrid({
           const cellStyle: ViewStyle = {
             ...sizeStyle,
             backgroundColor: fill,
-            borderRadius: Math.max(2, Math.floor(geometry.cellSize * 0.18)),
+            borderRadius: theme.shapes.tile,
           };
 
           if (onCellPress) {
@@ -311,7 +312,7 @@ export function ActivityGrid({
                 height: geometry.cellSize,
                 marginRight: isLastInRow ? 0 : cellGap,
                 backgroundColor: levelFills[0],
-                borderRadius: Math.max(2, Math.floor(geometry.cellSize * 0.18)),
+                borderRadius: theme.shapes.tile,
               }}
             />
           );
@@ -345,7 +346,7 @@ function ActivityGridLegend({
               width: 12,
               height: 12,
               backgroundColor: fill,
-              borderRadius: 3,
+              borderRadius: theme.shapes.tile,
               marginRight: idx === levelFills.length - 1 ? 0 : 3,
             }}
           />

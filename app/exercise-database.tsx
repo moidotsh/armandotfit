@@ -234,8 +234,12 @@ const styles = StyleSheet.create({
   },
   listContent: { paddingBottom: 32 },
   sectionHeader: {
+    // Page-colored sticky band. zIndex keeps the pinned header above
+    // the rows painting over it (RN-web sticky paint order; same fix
+    // as the program chapter heads).
     paddingTop: 12,
     paddingBottom: 6,
+    zIndex: 10,
   },
   addCustomCta: { marginTop: 8, alignSelf: 'flex-start' },
   addCustomText: { ...theme.typography.mobileItemTitle },

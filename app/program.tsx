@@ -89,7 +89,7 @@ export default function ProgramScreen() {
           isLast ? { borderBottomWidth: 0 } : null,
         ]}
       >
-        <Text style={[styles.slotIndex, { color: colors.brandText }]}>
+        <Text style={[styles.slotIndex, { color: colors.textMuted }]}>
             {String(position).padStart(2, '0')}
           </Text>
         <View style={styles.slotMain}>
@@ -157,7 +157,7 @@ export default function ProgramScreen() {
         style={[styles.dayHeadWrap, { backgroundColor: colors.backgroundDeep }]}
       >
         <View style={styles.dayHead}>
-          <Text style={[styles.dayNumber, { color: colors.brandText }]}>
+          <Text style={[styles.dayNumber, { color: colors.textMuted }]}>
             {`DAY ${String(day.day).padStart(2, '0')}`}
           </Text>
           <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
@@ -299,8 +299,13 @@ const styles = StyleSheet.create({
   },
   dayHeadWrap: {
     // The sticky chapter head — page-colored so slots scroll under it.
+    // zIndex: RN-web paints `position: sticky` children in DOM order
+    // among positioned siblings, so without an explicit z the pinned
+    // head renders BENEATH the slot rows scrolling past it (measured
+    // collision in light-12-program-full-1).
     paddingTop: 24,
     marginBottom: 4,
+    zIndex: 10,
   },
   dayBlock: {},
   dayHead: {

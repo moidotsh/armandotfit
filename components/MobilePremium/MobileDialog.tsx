@@ -180,6 +180,7 @@ export function MobileDialog({
                   title={headerTitle}
                   accentColor={accent}
                   onDismiss={showCloseButton ? handleClose : undefined}
+                  hideAccentDot
                 />
               ) : null}
               <View style={styles.body}>{children}</View>

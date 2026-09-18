@@ -113,7 +113,7 @@ export default function HomeScreen() {
             testID="home-header-day"
             style={[
               styles.headerDayMark,
-              { color: colors.brandText, opacity: headerMarkOpacity },
+              { color: colors.textMuted, opacity: headerMarkOpacity },
             ]}
           >
             {`D${String(suggestedDay).padStart(2, '0')}`}
@@ -253,7 +253,6 @@ export default function HomeScreen() {
             value={streak?.current ?? 0}
             unit="d"
             label="streak"
-            tone="brand"
             style={styles.statCell}
           />
           <Figure

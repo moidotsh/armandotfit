@@ -1,6 +1,8 @@
 // components/MobilePremium/FilterChip.tsx
-// Interactive pill primitive. One chip — label, optional icon, selected
-// state, tap handler. Domain-neutral: no copy, no schema, no list state.
+// Interactive marking chip (thesis §2.4 — chips are marking boxes, cut
+// at the tag radius; a capsule marks nothing). One chip — label,
+// optional icon, selected state, tap handler. Domain-neutral: no copy,
+// no schema, no list state.
 //
 // Accessibility state MUST match the chosen role:
 //   • role="button" (default) → accessibilityState.selected
@@ -103,8 +105,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 999,
+    paddingHorizontal: 12,
+    borderRadius: theme.shapes.tag,
     borderWidth: 1,
     minHeight: 44,
   },

@@ -45,7 +45,7 @@ export default function ForgotPasswordScreen() {
     <SafeAreaView style={[styles.shell, { backgroundColor: colors.backgroundDeep }]} edges={['top', 'bottom']}>
       <MobileAtmosphere surface="auth" />
       <View style={[styles.brandBlock, { paddingTop: insets.top + 24 }]}>
-        <Text style={[styles.wordmark, { color: colors.textMuted }]}>
+        <Text style={[styles.wordmark, { color: colors.text }]}>
           ARMANDOTFIT
         </Text>
         <View style={[styles.wordmarkRule, { backgroundColor: colors.brand }]} />
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     height: 2,
     marginTop: 8,
     marginBottom: 18,
-    alignSelf: 'center',
+    alignSelf: 'flex-start',
   },
   wordmark: {
     fontFamily: theme.fonts.display,

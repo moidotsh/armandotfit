@@ -152,23 +152,16 @@ export function InkRail({
               style={({ pressed }) => [
                 styles.row,
                 { borderBottomColor: colors.mobilePremium.hairlineBorder },
-                item.isCurrent
-                  ? { backgroundColor: colors.brandSoft }
-                  : null,
+                // The current pick reads as ink emphasis (quiet plate),
+                // not a brand wash — the bench has no strike moment.
+                item.isCurrent ? { backgroundColor: colors.cardAlt } : null,
                 pressed ? { opacity: 0.6 } : null,
               ]}
             >
               <View style={styles.rowMain}>
                 <Text
                   numberOfLines={1}
-                  style={[
-                    styles.name,
-                    {
-                      color: item.isCurrent
-                        ? colors.brandText
-                        : colors.text,
-                    },
-                  ]}
+                  style={[styles.name, { color: colors.text }]}
                 >
                   {item.isProgrammed ? `↺ ${item.name}` : item.name}
                 </Text>
@@ -181,7 +174,7 @@ export function InkRail({
               <Text
                 style={[
                   styles.meta,
-                  { color: item.isCurrent ? colors.brandText : colors.textMuted },
+                  { color: item.isCurrent ? colors.textSecondary : colors.textMuted },
                 ]}
               >
                 {item.isCurrent ? 'CURRENT' : item.isProgrammed ? 'RESTORE' : ''}
@@ -233,8 +226,9 @@ const styles = StyleSheet.create({
     gap: 1,
   },
   name: {
+    // Bench rows are body voice (platform sans) — the display face is
+    // reserved for statements, and these are choices, not statements.
     ...theme.typography.mobileItemTitle,
-    fontFamily: theme.fonts.display,
   },
   why: {
     ...theme.typography.mobileTag,

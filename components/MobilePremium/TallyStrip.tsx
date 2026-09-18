@@ -5,7 +5,10 @@
 // is. Struck marks are solid content color (done), the NEXT mark is the
 // brand color (the one orange stroke on the screen — it is about to be
 // struck), ghost marks are hairline outlines (slots ahead). Marks group
-// in fives: four vertical strokes, the fifth a diagonal across them.
+// in fives: four vertical strokes, the fifth a diagonal ACROSS them —
+// the diagonal IS the fifth count, so a group only crosses once its
+// fifth mark is actually struck (a half-filled group shows bare
+// verticals, never a premature slash).
 //
 //   lg  7 × 44 strokes — the count board (live session)
 //   sm  4 × 22 strokes — receipt groups, settings measures, index rows
@@ -105,11 +108,15 @@ function Group({
   style?: StyleProp<ViewStyle>;
 }) {
   const g = GEOM[size];
-  const isFull = states.length === 5;
-  const lastIndex = states.length - 1;
+  // A group only crosses when its fifth mark is STRUCK — and the
+  // diagonal then renders AS the fifth stroke (four verticals + slash),
+  // never as a sixth mark beside a full row.
+  const isFull = states.length === 5 && states[4] === 'struck';
+  const verticals = isFull ? states.slice(0, 4) : states;
+  const lastIndex = verticals.length - 1;
   return (
     <View style={[styles.group, { gap: g.gap }, style]}>
-      {states.map((state, i) => {
+      {verticals.map((state, i) => {
         const mark = <Mark state={state} size={size} palette={palette} />;
         if (strikeAnim && i === lastIndex && state === 'struck') {
           return (
@@ -177,7 +184,10 @@ export function TallyStrip({
   const palette: Palette = {
     struck: colors.text,
     next: colors.brand,
-    ghost: colors.border,
+    // Ghost slots are decorative by contract (the ledger carries the
+    // count as text) — tertiary is the sanctioned seeable-but-quiet
+    // ink for that. `border` vanishes on iron.
+    ghost: colors.textColors.tertiary,
   };
   // The animated strike belongs to the group holding the LAST struck
   // mark (1-indexed position `struck`).

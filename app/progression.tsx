@@ -71,7 +71,11 @@ export default function ProgressionScreen() {
                 </Text>
                 <Text style={[styles.sideMeta, { color: colors.textMuted }]} numberOfLines={1}>
                   {`last ${summary?.lastSessionDate
-                    ? new Date(summary.lastSessionDate).toLocaleDateString()
+                    ? new Date(summary.lastSessionDate).toLocaleDateString(undefined, {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                      })
                     : '—'}`}
                 </Text>
               </View>
@@ -128,7 +132,7 @@ export default function ProgressionScreen() {
                       <Text style={[styles.pbValue, { color: colors.text }]}>
                         {`${pb.bestWeight}×${pb.bestReps}`}
                       </Text>
-                      <Text style={[styles.pbEstimate, { color: colors.brandText }]}>
+                      <Text style={[styles.pbEstimate, { color: colors.textMuted }]}>
                         {`e1RM ${Math.round(e1rm(pb.bestWeight, pb.bestReps))}`}
                       </Text>
                     </View>

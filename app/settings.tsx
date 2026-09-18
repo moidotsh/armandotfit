@@ -48,7 +48,6 @@ export default function SettingsScreen() {
   const { session, signOut } = useAuth();
   const { preference, setPreference, colorScheme, colors } = useAppTheme();
   const { showToast } = useToast();
-  const accent = colors.brand;
   const pwaPrompt = usePwaPrompt();
   // The showcase route only exists where dev surfaces do — linking it
   // from a production build would land on the stubbed blank route.
@@ -90,6 +89,7 @@ export default function SettingsScreen() {
         title="Settings"
         eyebrow="Account"
         onBack={safeGoBack}
+        hideAccentDot
       />
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
         <MobileSurface padding={0}>
@@ -122,8 +122,8 @@ export default function SettingsScreen() {
                   pressed ? { opacity: 0.6 } : null,
                 ]}
               >
-                <View style={[styles.preferenceIconBox, { backgroundColor: `${accent}10` }]}>
-                  <PreferenceIcon pref={pref} color={accent} />
+                <View style={[styles.preferenceIconBox, { backgroundColor: colors.cardAlt }]}>
+                  <PreferenceIcon pref={pref} color={colors.textSecondary} />
                 </View>
                 <Text style={[styles.preferenceLabel, { color: colors.text }]}>
                   {PREFERENCE_LABELS[pref]}
@@ -132,13 +132,16 @@ export default function SettingsScreen() {
                   style={[
                     styles.preferenceRadio,
                     {
-                      borderColor: isActive ? accent : colors.border,
-                      backgroundColor: isActive ? accent : 'transparent',
+                      // Selection = inversion (ink fill, page-colored
+                      // check), matching the funnel's picked tile —
+                      // not a brand disc.
+                      borderColor: isActive ? colors.text : colors.border,
+                      backgroundColor: isActive ? colors.text : 'transparent',
                     },
                   ]}
                 >
                   {isActive ? (
-                    <Check size={12} color={colors.textOnBrand} strokeWidth={3} />
+                    <Check size={12} color={colors.background} strokeWidth={3} />
                   ) : null}
                 </View>
               </Pressable>
@@ -161,7 +164,9 @@ export default function SettingsScreen() {
                   style={({ pressed }) => [
                     styles.restDayTile,
                     {
-                      backgroundColor: isRest ? accent : colors.glass.inputBackground,
+                      // A rest day is a STRUCK mark — solid ink like the
+                      // tally's struck stroke, not the brand fill.
+                      backgroundColor: isRest ? colors.text : colors.glass.inputBackground,
                       opacity: pressed ? 0.6 : 1,
                     },
                   ]}
@@ -170,7 +175,7 @@ export default function SettingsScreen() {
                   <Text
                     style={[
                       styles.restDayLabel,
-                      { color: isRest ? colors.textOnBrand : colors.textSecondary },
+                      { color: isRest ? colors.background : colors.textSecondary },
                     ]}
                   >
                     {d.label.slice(0, 2)}
@@ -277,7 +282,9 @@ const styles = StyleSheet.create({
   },
   preferenceLabel: {
     flex: 1,
-    ...theme.typography.mobileAction,
+    // Row titles read in the platform sans (body voice) — the display
+    // face is for statements, not settings labels.
+    ...theme.typography.mobileItemTitle,
   },
   preferenceRadio: {
     width: 22,
