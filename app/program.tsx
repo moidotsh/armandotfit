@@ -84,11 +84,10 @@ export default function ProgramScreen() {
     const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
     const name = entry?.name ?? slot.exercise;
     const isOverridden = key in overrides;
-    const programmedSlot = getSlotsForDay(split, day, window)[position - 1];
 
     return (
-      <View key={key}>
       <View
+        key={key}
         style={[
           styles.slotRow,
           {
@@ -111,9 +110,25 @@ export default function ProgramScreen() {
           </Text>
         </View>
       </View>
-    </View>
-  );
-  }
+    );
+  };
+
+  // Per-day planned volume — the day's programmed set count across its
+  // windows (max of each slot's range). Computed from the split data at
+  // read time; nothing stored.
+  const dayVolume = (day: number) => {
+    const windows: SessionWindow[] =
+      split === 'twoADay' ? ['am', 'pm'] : ['single'];
+    let sets = 0;
+    let lifts = 0;
+    for (const w of windows) {
+      for (const slot of resolveSlots(split, day, w, overrides)) {
+        lifts += 1;
+        sets += slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
+      }
+    }
+    return { sets, lifts };
+  };
 
   return (
     <SafeAreaView
@@ -144,36 +159,41 @@ export default function ProgramScreen() {
           />
         </MobileSurface>
 
-        {days.map((day) => (
-          <View key={day.day} style={styles.dayBlock}>
-            <MobileSectionEyebrow>{day.title}</MobileSectionEyebrow>
-            {split === 'twoADay' ? (
-              (['am', 'pm'] as const).map((window) => (
-                <MobileSurface key={window} padding={14} style={styles.sessionCard}>
-                  <Text
-                    style={[styles.windowLabel, { color: colors.brand }]}
-                  >
-                    {window.toUpperCase()}
-                  </Text>
-                  {renderSlot(day.day, window, 1)}
-                  {renderSlot(day.day, window, 2)}
-                  {renderSlot(day.day, window, 3)}
-                  {renderSlot(day.day, window, 4)}
+        {days.map((day) => {
+          const volume = dayVolume(day.day);
+          return (
+            <View key={day.day} style={styles.dayBlock}>
+              <MobileSectionEyebrow>
+                {`${day.title} · ${volume.sets} sets`}
+              </MobileSectionEyebrow>
+              {split === 'twoADay' ? (
+                (['am', 'pm'] as const).map((window) => (
+                  <MobileSurface key={window} padding={14} style={styles.sessionCard}>
+                    <Text
+                      style={[styles.windowLabel, { color: colors.brandText }]}
+                    >
+                      {`${window.toUpperCase()} · ${volume.lifts / 2} lifts`}
+                    </Text>
+                    {renderSlot(day.day, window, 1)}
+                    {renderSlot(day.day, window, 2)}
+                    {renderSlot(day.day, window, 3)}
+                    {renderSlot(day.day, window, 4)}
+                  </MobileSurface>
+                ))
+              ) : (
+                <MobileSurface padding={14} style={styles.sessionCard}>
+                  {renderSlot(day.day, 'single', 1)}
+                  {renderSlot(day.day, 'single', 2)}
+                  {renderSlot(day.day, 'single', 3)}
+                  {renderSlot(day.day, 'single', 4)}
+                  {renderSlot(day.day, 'single', 5)}
+                  {renderSlot(day.day, 'single', 6)}
+                  {renderSlot(day.day, 'single', 7)}
                 </MobileSurface>
-              ))
-            ) : (
-              <MobileSurface padding={14} style={styles.sessionCard}>
-                {renderSlot(day.day, 'single', 1)}
-                {renderSlot(day.day, 'single', 2)}
-                {renderSlot(day.day, 'single', 3)}
-                {renderSlot(day.day, 'single', 4)}
-                {renderSlot(day.day, 'single', 5)}
-                {renderSlot(day.day, 'single', 6)}
-                {renderSlot(day.day, 'single', 7)}
-              </MobileSurface>
-            )}
-          </View>
-        ))}
+              )}
+            </View>
+          );
+        })}
 
         {overriddenCount > 0 ? (
           <MobilePrimaryButton
@@ -238,6 +258,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1.2,
     marginBottom: 4,
+    fontVariant: ['tabular-nums'],
   },
   slotRow: {
     flexDirection: 'row',
@@ -248,9 +269,9 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     paddingLeft: 8,
   },
-  slotIndex: { fontSize: 13, fontWeight: '700', minWidth: 18 },
+  slotIndex: { fontSize: 13, fontWeight: '700', minWidth: 18, fontVariant: ['tabular-nums'] },
   slotMain: { flex: 1, gap: 2 },
   slotName: { fontSize: 14, fontWeight: '600' },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  slotMeta: { fontSize: 12, lineHeight: 16 },
+  slotMeta: { fontSize: 12, lineHeight: 16, fontVariant: ['tabular-nums'] },
 });
