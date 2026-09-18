@@ -15,8 +15,9 @@ import {
   MobileActionFooter,
   MobileAlert,
 } from '../components/MobilePremium';
+import { ChevronLeft } from '@tamagui/lucide-icons-2';
 import { useAuth, useAppTheme } from '../context';
-import { replaceWithLogin } from '../navigation';
+import { replaceWithLogin, safeGoBack } from '../navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MOBILE_CONTENT_WIDTH_STYLE, SCREEN_BODY_STYLE, theme } from '../constants';
 
@@ -45,6 +46,15 @@ export default function ForgotPasswordScreen() {
     <SafeAreaView style={[styles.shell, { backgroundColor: colors.backgroundDeep }]} edges={['top', 'bottom']}>
       <MobileAtmosphere surface="auth" />
       <View style={[styles.brandBlock, { paddingTop: insets.top + 24 }]}>
+        <Pressable
+          onPress={safeGoBack}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+          style={({ pressed }) => [styles.backCta, pressed ? { opacity: 0.6 } : null]}
+          testID="auth-back"
+        >
+          <ChevronLeft size={26} color={colors.text} />
+        </Pressable>
         <Text style={[styles.wordmark, { color: colors.text }]}>
           ARMANDOTFIT
         </Text>
@@ -129,6 +139,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 18,
     alignSelf: 'flex-start',
+  },
+  backCta: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: -12,
+    marginTop: -6,
   },
   wordmark: {
     fontFamily: theme.fonts.display,

@@ -21,7 +21,7 @@ import {
 } from '../components/MobilePremium';
 import { DeskShell, ExerciseListItem } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
-import { navigateToExerciseDetail } from '../navigation';
+import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises, useRecentSessionDetails } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import { SYSTEM_EXERCISES, type SystemExerciseData } from '../shared/exercises';
@@ -104,6 +104,7 @@ export default function ExerciseDatabaseScreen() {
   return (
     <DeskShell
       surface="training"
+      onBack={safeGoBack}
       noScroll
       testID="library-body"
       header={

@@ -18,7 +18,7 @@ import {
 import { LoadingSpinner } from '../components/primitives';
 import { DeskShell, QueryErrorNote } from '../components/composed';
 import { useAppTheme } from '../context';
-import { navigateToAnalytics, navigateToSplitSelection } from '../navigation';
+import { navigateToAnalytics, navigateToSplitSelection, safeGoBack } from '../navigation';
 import { useDashboardSummary, usePersonalBests } from '../hooks';
 import { theme } from '../constants';
 import { e1rm } from '../services';
@@ -63,6 +63,7 @@ export default function ProgressionScreen() {
   return (
     <DeskShell
       surface="goal"
+      onBack={safeGoBack}
       header={
         <View style={styles.headerRow}>
           <View style={{ flex: 1 }}>

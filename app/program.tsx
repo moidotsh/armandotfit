@@ -18,6 +18,7 @@ import {
   SegmentedControl,
 } from '../components/MobilePremium';
 import { DeskShell, InkRail, SwapGlyph } from '../components/composed';
+import { safeGoBack } from '../navigation';
 import { useAppTheme, useToast } from '../context';
 import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots, slotKey } from '../services';
@@ -230,6 +231,7 @@ export default function ProgramScreen() {
   return (
     <DeskShell
       surface="analytics"
+      onBack={safeGoBack}
       stickyHeaderIndices={stickyIndices}
       header={
         <View style={styles.headerRow}>
