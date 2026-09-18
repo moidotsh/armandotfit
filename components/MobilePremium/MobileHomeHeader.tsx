@@ -76,6 +76,18 @@ export interface MobileHomeHeaderProps {
  * subtitle below. Shell-level: passes through React slots for the trigger
  * and the right action so the primitive carries no domain code.
  */
+// The wordmark read: the display face at poster weight, compact. A
+// dedicated in-component style (the NAV_TITLE_STYLE precedent in
+// MobileHeader) — the masthead is chrome with its own rhythm, not a
+// content title, so it does not ride mobileTitle.
+const BRAND_STYLE: TextStyle = {
+  fontSize: 20,
+  fontWeight: '800',
+  lineHeight: 24,
+  letterSpacing: -0.3,
+  fontFamily: theme.fonts.display,
+} as const;
+
 export function MobileHomeHeader({
   brand,
   subtitle,
@@ -121,7 +133,7 @@ export function MobileHomeHeader({
             accessibilityLabel={brand}
           >
             <Text
-              style={[theme.typography.mobileTitle, { color: brandColor }, colorBleed]}
+              style={[BRAND_STYLE, { color: brandColor }, colorBleed]}
               numberOfLines={1}
             >
               {brand}
@@ -129,7 +141,7 @@ export function MobileHomeHeader({
           </Pressable>
         ) : (
           <Text
-            style={[theme.typography.mobileTitle, { color: brandColor }, colorBleed]}
+            style={[BRAND_STYLE, { color: brandColor }, colorBleed]}
             numberOfLines={1}
           >
             {brand}

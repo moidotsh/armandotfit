@@ -1407,24 +1407,26 @@ export function Showcase() {
         </View>
 
         <View style={styles.section}>
-          <MobileSectionEyebrow>Figures — the labeled number, no chrome</MobileSectionEyebrow>
-          <MobileSurface>
-            <View style={styles.figureRow}>
-              <Figure value="2" label="day streak" size="display" tone="brand" />
-              <View style={styles.figureGap} />
-              <Figure value="4,250" label="kg this week" />
-              <View style={styles.figureGap} />
-              <Figure value="12" label="sets" align="right" />
-            </View>
-            <View style={styles.spacer} />
-            <View style={styles.figureRow}>
-              <Figure value="00:41" label="elapsed" size="sm" />
-              <View style={styles.figureGap} />
-              <Figure value="6" label="lifts" size="sm" align="center" />
-              <View style={styles.figureGap} />
-              <Figure value="6,695" label="tonnage" size="sm" align="right" />
-            </View>
-          </MobileSurface>
+          <MobileSectionEyebrow rule>Figures — the labeled number, no chrome</MobileSectionEyebrow>
+          {/* The logbook scale: one hero per screen, display for totals,
+              md for stat rows, sm for ledger facts. The unit whispers. */}
+          <View style={styles.figureRow}>
+            <Figure value="3" unit="d" label="day streak" size="hero" tone="brand" />
+          </View>
+          <View style={styles.spacer} />
+          <View style={styles.figureRow}>
+            <Figure value="6,695" unit="kg" label="tonnage" size="display" />
+            <View style={styles.figureGap} />
+            <Figure value="12" label="sets" align="right" />
+          </View>
+          <View style={styles.spacer} />
+          <View style={styles.figureRow}>
+            <Figure value="00:41" label="elapsed" size="sm" />
+            <View style={styles.figureGap} />
+            <Figure value="6" label="lifts" size="sm" align="center" />
+            <View style={styles.figureGap} />
+            <Figure value="4,250" unit="kg" label="this week" size="sm" align="right" />
+          </View>
         </View>
 
         <View style={styles.section}>

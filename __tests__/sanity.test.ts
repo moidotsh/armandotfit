@@ -22,7 +22,15 @@ describe('theme', () => {
   });
 
   it('exports typography tokens', () => {
-    expect(theme.typography.mobileTitle.fontSize).toBe(22);
+    // The logbook scale (docs/architecture/logbook-thesis.md §2.1):
+    // titles 28 in the display face, the hero figure at 72, action
+    // labels 16/600, every figure token tabular by construction.
+    expect(theme.typography.mobileTitle.fontSize).toBe(28);
+    expect(theme.typography.mobileTitle.fontFamily).toBe(theme.fonts.display);
+    expect(theme.typography.mobileHero.fontSize).toBe(72);
     expect(theme.typography.mobileAction.fontWeight).toBe('600');
+    expect(theme.typography.mobileHero.fontVariant).toEqual(['tabular-nums']);
+    expect(theme.typography.mobileFigure.fontVariant).toEqual(['tabular-nums']);
+    expect(theme.typography.mobileLedger.fontVariant).toEqual(['tabular-nums']);
   });
 });

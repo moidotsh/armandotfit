@@ -66,10 +66,10 @@ export interface MobileHeaderProps {
 }
 
 const NAV_TITLE_STYLE = {
-  fontSize: 15,
-  fontWeight: '600',
+  fontSize: 16,
+  fontWeight: '700',
   lineHeight: 20,
-  letterSpacing: 0.1,
+  letterSpacing: -0.2,
 } as const;
 
 /**
