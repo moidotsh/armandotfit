@@ -117,7 +117,7 @@ information.
 |---|---|
 | Page gutter | **20** (was 16), consistent ±2 on every route |
 | Block rhythm (top-level blocks) | **40** vertical between siblings (was 24) |
-| Row rhythm inside a block | **16** between row boxes; row boxes ≥ 48 tall (targets) |
+| Row rhythm inside a block | row boxes **≥ 48 tall** (targets), stacked without rules — the box is the rhythm |
 | The halo | the statement's bounding-box moat ≥ **24** to any other element |
 | The fold | SE (375×667) law unchanged: the verb never scrolls away |
 
@@ -187,10 +187,12 @@ Data sprawl resolutions (the subtraction, screen by screen):
   PB ledger shows 5 rows (name + best set; e1RM column dies).
 - **form table**: the nameplate dies; the count is the statement; bars
   keep real weight; range control stays.
-- **program**: the nameplate dies; per-day sets figure dies (the slots
-  show Rx); window labels become whispers; slot rows lose their
-  hairlines and 2px strike bars (a swap marks by a record-red dot on
-  the whisper, not chrome).
+- **program**: the nameplate, the archetype switcher (the funnel
+  owns the pick; the program reads the remembered split), the sticky
+  chapter chrome, the per-day sets figure, slot index numerals,
+  hairlines, and 2px strike bars all die. The first day's title is
+  the statement (later chapters at 22); a substitution marks by the
+  record-mark read (Rx turns record-text), never chrome.
 - **library**: the nameplate + "42 LIFTS · CATALOG IS LOCAL" die; the
   search input is the statement at 34; result-count whispers once.
 - **colophon**: the nameplate dies; the email kicker dies (it is
