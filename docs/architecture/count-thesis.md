@@ -1,4 +1,11 @@
-# THE COUNT — the tally system
+# THE COUNT — the tally system (RETIRED)
+
+**Status:** Retired by `broadsheet-thesis.md` (the 2026-12 cohesion
+pass, the fourth upending). Kept as the historical record of the tally
+system; its taste is rescinded, its §7 map served as the feature
+inventory for the BROADSHEET rebuild. `constants/theme.ts` and the
+showcase now carry the BROADSHEET tokens; when this doc and the tokens
+disagree, the tokens win.
 
 > The 2026-11 blank-slate redesign thesis (the third upending). This
 > document is the compass: the point of view, the complete token tables,
