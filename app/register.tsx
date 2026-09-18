@@ -3,13 +3,17 @@
 // sends a confirmation email; until the user clicks the link, no
 // session exists. The AuthProvider fires `session === null` and the
 // user stays on this screen with a "check your inbox" notice.
+//
+// THE QUIET PAGE's auth: the action sentence IS the statement
+// ("Create account."), the brand dies (the back chevron leads), the
+// form sits open on the field, links are underlined ink, the verb is
+// the one red.
 
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   MobileAtmosphere,
-  MobileSurface,
   MobileInput,
   MobilePrimaryButton,
   MobileActionFooter,
@@ -19,7 +23,7 @@ import { ChevronLeft } from '@tamagui/lucide-icons-2';
 import { useAuth, useAppTheme } from '../context';
 import { replaceWithLogin, safeGoBack } from '../navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MOBILE_CONTENT_WIDTH_STYLE, SCREEN_BODY_STYLE, theme } from '../constants';
+import { SCREEN_BODY_STYLE, BLOCK_GAP, theme } from '../constants';
 
 export default function RegisterScreen() {
   const { signUp } = useAuth();
@@ -57,7 +61,7 @@ export default function RegisterScreen() {
   return (
     <SafeAreaView style={[styles.shell, { backgroundColor: colors.backgroundDeep }]} edges={['top', 'bottom']}>
       <MobileAtmosphere surface="auth" />
-      <View style={[styles.brandBlock, { paddingTop: insets.top + 24 }]}>
+      <View style={[styles.backBlock, { paddingTop: insets.top + 8 }]}>
         <Pressable
           onPress={safeGoBack}
           accessibilityRole="button"
@@ -67,90 +71,85 @@ export default function RegisterScreen() {
         >
           <ChevronLeft size={26} color={colors.text} />
         </Pressable>
-        <Text style={[styles.wordmark, { color: colors.text }]}>
-          ARMANDOTFIT
-        </Text>
-        <View style={[styles.wordmarkRule, { backgroundColor: colors.brand }]} />
-        <Text style={[styles.title, { color: colors.text }]}>
-          Create account
-        </Text>
       </View>
-      <View style={styles.body}>
+      <View style={styles.body} testID="register-scroll">
+        {/* THE STATEMENT — the action sentence. */}
+        <Text style={[styles.statement, { color: colors.text }]}>
+          Create account.
+        </Text>
+
         {confirmationNeeded ? (
-          <MobileSurface padding={20}>
+          <View style={styles.block}>
             <MobileAlert
               variant="success"
               title="Check your inbox"
               body={`We sent a confirmation link to ${email}. Click it to activate your account.`}
             />
             <View style={{ height: 16 }} />
-            <Text style={[styles.help, { color: colors.textSecondary }]}>
-              Already confirmed?
-            </Text>
             <Pressable
               onPress={replaceWithLogin}
               accessibilityRole="link"
               accessibilityLabel="Sign in"
               style={styles.helpLinkBox}
             >
-              <Text style={[styles.helpLink, { color: colors.brand }]}>Sign in</Text>
+              <Text style={[styles.helpLink, { color: colors.textMuted }]}>
+                Already confirmed? <Text style={styles.helpLinkUnderline}>Sign in</Text>
+              </Text>
             </Pressable>
-          </MobileSurface>
+          </View>
         ) : (
-          <MobileSurface padding={20}>
-            <MobileInput
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              placeholder="you@example.com"
-              keyboardType="email-address"
-              autoComplete="email"
-              autoCapitalize="none"
-            />
-            <View style={{ height: 12 }} />
-            <MobileInput
-              label="Password"
-              value={password}
-              onChangeText={setPassword}
-              placeholder="At least 8 characters"
-              secureTextEntry
-              autoComplete="new-password"
-              helperText="Use at least 8 characters."
-            />
-            <View style={{ height: 12 }} />
-            <MobileInput
-              label="Confirm password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="Re-enter password"
-              secureTextEntry
-              autoComplete="new-password"
-            />
-            {error ? (
-              <>
-                <View style={{ height: 12 }} />
-                <MobileAlert variant="error" title="Sign-up failed" body={error} />
-              </>
-            ) : null}
-          </MobileSurface>
-        )}
-
-        {!confirmationNeeded ? (
           <>
-            <View style={{ height: 16 }} />
-            <Text style={[styles.help, { color: colors.textSecondary }]}>
-              Already have an account?
-            </Text>
-            <Pressable
-              onPress={replaceWithLogin}
-              accessibilityRole="link"
-              accessibilityLabel="Sign in"
-              style={styles.helpLinkBox}
-            >
-              <Text style={[styles.helpLink, { color: colors.brand }]}>Sign in</Text>
-            </Pressable>
+            <View style={styles.block}>
+              <MobileInput
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                placeholder="you@example.com"
+                keyboardType="email-address"
+                autoComplete="email"
+                autoCapitalize="none"
+              />
+              <View style={{ height: 12 }} />
+              <MobileInput
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                placeholder="At least 8 characters"
+                secureTextEntry
+                autoComplete="new-password"
+                helperText="Use at least 8 characters."
+              />
+              <View style={{ height: 12 }} />
+              <MobileInput
+                label="Confirm password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Re-enter password"
+                secureTextEntry
+                autoComplete="new-password"
+              />
+              {error ? (
+                <>
+                  <View style={{ height: 12 }} />
+                  <MobileAlert variant="error" title="Sign-up failed" body={error} />
+                </>
+              ) : null}
+            </View>
+
+            <View style={styles.block}>
+              <Pressable
+                onPress={replaceWithLogin}
+                accessibilityRole="link"
+                accessibilityLabel="Sign in"
+                style={styles.helpLinkBox}
+              >
+                <Text style={[styles.helpLink, { color: colors.textMuted }]}>
+                  Already have an account? <Text style={styles.helpLinkUnderline}>Sign in</Text>
+                </Text>
+              </Pressable>
+            </View>
           </>
-        ) : null}
+        )}
       </View>
       {!confirmationNeeded ? (
         <MobileActionFooter>
@@ -159,7 +158,7 @@ export default function RegisterScreen() {
             loading={submitting}
             disabled={!email || !password || !confirmPassword}
           >
-            Create Account
+            CREATE ACCOUNT
           </MobilePrimaryButton>
         </MobileActionFooter>
       ) : null}
@@ -171,56 +170,34 @@ const styles = StyleSheet.create({
   shell: {
     flex: 1,
   },
-  brandBlock: {
-    ...MOBILE_CONTENT_WIDTH_STYLE,
-    paddingHorizontal: 20,
-    gap: 4,
-  },
-  wordmarkRule: {
-    // The boot plate's mark: a 2px signal rule under the wordmark —
-    // the brand moment, once, quietly.
-    width: 72,
-    height: 2,
-    marginTop: 8,
-    marginBottom: 18,
-    alignSelf: 'flex-start',
+  backBlock: {
+    paddingHorizontal: 8,
   },
   backCta: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: -12,
-    marginTop: -6,
-  },
-  wordmark: {
-    fontFamily: theme.fonts.display,
-    fontSize: 21,
-    fontWeight: '800',
-    lineHeight: 26,
-    letterSpacing: 0.6,
-  },
-  title: {
-    // The auth statement at headline scale (the wordmark above is the
-    // folio masthead; the rule beneath it is the paper's red nameplate
-    // rule — the one brand mark beside the verb).
-    ...theme.typography.mobileDisplay,
   },
   body: {
     ...SCREEN_BODY_STYLE,
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 8,
   },
-  help: {
-    ...theme.typography.mobileSubtitle,
-    textAlign: 'center',
+  block: {
+    marginTop: BLOCK_GAP,
+  },
+  statement: {
+    ...theme.typography.mobileDisplay,
   },
   helpLinkBox: {
     minHeight: 44,
     justifyContent: 'center',
-    alignSelf: 'center',
   },
   helpLink: {
-    ...theme.typography.mobileAction,
+    ...theme.typography.mobileItemTitle,
+  },
+  helpLinkUnderline: {
+    textDecorationLine: 'underline',
   },
 });

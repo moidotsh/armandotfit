@@ -1,15 +1,16 @@
 // app/forgot-password.tsx
-// Password reset flow. Calls AuthService.resetPassword; Supabase sends
-// a reset link to the user's email. The link redirects back to the
-// app's configured reset URL (Supabase dashboard setting) where the
-// user lands on a "set new password" screen (consumer-implemented).
+// Password reset request. Supabase sends a reset link; nothing else
+// happens on-device until the user clicks it from their inbox.
+//
+// THE QUIET PAGE's auth: the action sentence IS the statement
+// ("Reset."), the form sits open on the field, links are underlined
+// ink, the verb is the one red.
 
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   MobileAtmosphere,
-  MobileSurface,
   MobileInput,
   MobilePrimaryButton,
   MobileActionFooter,
@@ -19,7 +20,7 @@ import { ChevronLeft } from '@tamagui/lucide-icons-2';
 import { useAuth, useAppTheme } from '../context';
 import { replaceWithLogin, safeGoBack } from '../navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MOBILE_CONTENT_WIDTH_STYLE, SCREEN_BODY_STYLE, theme } from '../constants';
+import { SCREEN_BODY_STYLE, BLOCK_GAP, theme } from '../constants';
 
 export default function ForgotPasswordScreen() {
   const { resetPassword } = useAuth();
@@ -27,8 +28,8 @@ export default function ForgotPasswordScreen() {
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = async () => {
     setError(null);
@@ -36,7 +37,7 @@ export default function ForgotPasswordScreen() {
     const result = await resetPassword(email.trim());
     setSubmitting(false);
     if (!result.success) {
-      setError(result.error ?? 'Reset request failed.');
+      setError(result.error ?? 'Reset failed.');
       return;
     }
     setSent(true);
@@ -45,7 +46,7 @@ export default function ForgotPasswordScreen() {
   return (
     <SafeAreaView style={[styles.shell, { backgroundColor: colors.backgroundDeep }]} edges={['top', 'bottom']}>
       <MobileAtmosphere surface="auth" />
-      <View style={[styles.brandBlock, { paddingTop: insets.top + 24 }]}>
+      <View style={[styles.backBlock, { paddingTop: insets.top + 8 }]}>
         <Pressable
           onPress={safeGoBack}
           accessibilityRole="button"
@@ -55,16 +56,14 @@ export default function ForgotPasswordScreen() {
         >
           <ChevronLeft size={26} color={colors.text} />
         </Pressable>
-        <Text style={[styles.wordmark, { color: colors.text }]}>
-          ARMANDOTFIT
-        </Text>
-        <View style={[styles.wordmarkRule, { backgroundColor: colors.brand }]} />
-        <Text style={[styles.title, { color: colors.text }]}>
-          Reset password
-        </Text>
       </View>
-      <View style={styles.body}>
-        <MobileSurface padding={20}>
+      <View style={styles.body} testID="forgot-scroll">
+        {/* THE STATEMENT — the action sentence. */}
+        <Text style={[styles.statement, { color: colors.text }]}>
+          Reset.
+        </Text>
+
+        <View style={styles.block}>
           {sent ? (
             <MobileAlert
               variant="success"
@@ -73,7 +72,7 @@ export default function ForgotPasswordScreen() {
             />
           ) : (
             <>
-              <Text style={[styles.help, { color: colors.textSecondary }]}>
+              <Text style={[styles.help, { color: colors.textMuted }]}>
                 Enter your email and we&rsquo;ll send a link to reset your password.
               </Text>
               <View style={{ height: 16 }} />
@@ -94,18 +93,20 @@ export default function ForgotPasswordScreen() {
               ) : null}
             </>
           )}
-        </MobileSurface>
-        <View style={{ height: 16 }} />
-        <Pressable
-          onPress={replaceWithLogin}
-          accessibilityRole="link"
-          accessibilityLabel="Back to sign in"
-          style={styles.helpLinkBox}
-        >
-          <Text style={[styles.helpLink, { color: colors.brand }]}>
-            Back to sign in
-          </Text>
-        </Pressable>
+        </View>
+
+        <View style={styles.block}>
+          <Pressable
+            onPress={replaceWithLogin}
+            accessibilityRole="link"
+            accessibilityLabel="Back to sign in"
+            style={styles.helpLinkBox}
+          >
+            <Text style={[styles.helpLink, { color: colors.textMuted }]}>
+              <Text style={styles.helpLinkUnderline}>Back to sign in</Text>
+            </Text>
+          </Pressable>
+        </View>
       </View>
       {!sent ? (
         <MobileActionFooter>
@@ -114,7 +115,7 @@ export default function ForgotPasswordScreen() {
             loading={submitting}
             disabled={!email}
           >
-            Send Reset Link
+            SEND RESET LINK
           </MobilePrimaryButton>
         </MobileActionFooter>
       ) : null}
@@ -126,55 +127,37 @@ const styles = StyleSheet.create({
   shell: {
     flex: 1,
   },
-  brandBlock: {
-    ...MOBILE_CONTENT_WIDTH_STYLE,
-    paddingHorizontal: 20,
-    gap: 4,
-  },
-  wordmarkRule: {
-    // The boot plate's mark: a 2px signal rule under the wordmark —
-    // the brand moment, once, quietly.
-    width: 72,
-    height: 2,
-    marginTop: 8,
-    marginBottom: 18,
-    alignSelf: 'flex-start',
+  backBlock: {
+    paddingHorizontal: 8,
   },
   backCta: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: -12,
-    marginTop: -6,
-  },
-  wordmark: {
-    fontFamily: theme.fonts.display,
-    fontSize: 21,
-    fontWeight: '800',
-    lineHeight: 26,
-    letterSpacing: 0.6,
-  },
-  title: {
-    // The auth statement at headline scale (the wordmark above is the
-    // folio masthead; the rule beneath it is the paper's red nameplate
-    // rule — the one brand mark beside the verb).
-    ...theme.typography.mobileDisplay,
   },
   body: {
     ...SCREEN_BODY_STYLE,
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 8,
+  },
+  block: {
+    marginTop: BLOCK_GAP,
+  },
+  statement: {
+    ...theme.typography.mobileDisplay,
   },
   help: {
-    ...theme.typography.mobileSubtitle,
+    ...theme.typography.mobileBody,
   },
   helpLinkBox: {
     minHeight: 44,
     justifyContent: 'center',
-    alignSelf: 'center',
   },
   helpLink: {
-    ...theme.typography.mobileAction,
+    ...theme.typography.mobileItemTitle,
+  },
+  helpLinkUnderline: {
+    textDecorationLine: 'underline',
   },
 });

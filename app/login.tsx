@@ -3,17 +3,18 @@
 // On success, the central AuthGuard in app/_layout.tsx routes to
 // home — no per-screen redirect effect needed.
 //
-// The auth page speaks the logbook voice: the wordmark in the display
-// face + the screen title at poster scale lead; the form rides the
-// page's one sheet beneath.
+// THE QUIET PAGE's auth: the action sentence IS the statement ("Sign
+// in."), the brand rides a folio line (same masthead as home), the
+// form sits open on the field (no panel), links are underlined ink,
+// and the verb is the page's one red. No nameplate rule.
 
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Dumbbell } from '@tamagui/lucide-icons-2';
 import {
   MobileAtmosphere,
-  MobileSurface,
   MobileInput,
   MobilePrimaryButton,
   MobileActionFooter,
@@ -21,7 +22,12 @@ import {
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
 import { navigateToRegister, navigateToForgotPassword } from '../navigation';
-import { MOBILE_CONTENT_WIDTH_STYLE, SCREEN_BODY_STYLE, theme } from '../constants';
+import {
+  MOBILE_CONTENT_WIDTH_STYLE,
+  SCREEN_BODY_STYLE,
+  BLOCK_GAP,
+  theme,
+} from '../constants';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
@@ -46,17 +52,22 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={[styles.shell, { backgroundColor: colors.backgroundDeep }]} edges={['top', 'bottom']}>
       <MobileAtmosphere surface="auth" />
-      <View style={[styles.brandBlock, { paddingTop: insets.top + 24 }]}>
-        <Text style={[styles.wordmark, { color: colors.text }]}>
-          ARMANDOTFIT
-        </Text>
-        <View style={[styles.wordmarkRule, { backgroundColor: colors.brand }]} />
-        <Text style={[styles.title, { color: colors.text }]}>
-          Welcome back
-        </Text>
+      {/* The masthead folio — the same brand line as the front page. */}
+      <View style={[styles.brandBlock, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.brandRow}>
+          <Dumbbell size={16} color={colors.text} />
+          <Text style={[styles.wordmark, { color: colors.text }]}>
+            ARMANDOTFIT
+          </Text>
+        </View>
       </View>
-      <View style={styles.body}>
-        <MobileSurface padding={20}>
+      <View style={styles.body} testID="login-scroll">
+        {/* THE STATEMENT — the action sentence. */}
+        <Text style={[styles.statement, { color: colors.text }]}>
+          Sign in.
+        </Text>
+
+        <View style={styles.block}>
           <MobileInput
             label="Email"
             value={email}
@@ -82,30 +93,25 @@ export default function LoginScreen() {
             accessibilityLabel="Forgot password"
             style={styles.linkBox}
           >
-            <Text style={[styles.link, { color: colors.brand }]}>
+            <Text style={[styles.link, { color: colors.text }]}>
               Forgot password?
             </Text>
           </Pressable>
-          {error ? (
-            <View style={{ height: 12 }} />
-          ) : null}
           {error ? <MobileAlert variant="error" title="Sign-in failed" body={error} /> : null}
-        </MobileSurface>
+        </View>
 
-        <View style={{ height: 16 }} />
-        <Text style={[styles.help, { color: colors.textSecondary }]}>
-          New here?
-        </Text>
-        <Pressable
-          onPress={navigateToRegister}
-          accessibilityRole="link"
-          accessibilityLabel="Create an account"
-          style={styles.helpLinkBox}
-        >
-          <Text style={[styles.helpLink, { color: colors.brand }]}>
-            Create an account
-          </Text>
-        </Pressable>
+        <View style={styles.block}>
+          <Pressable
+            onPress={navigateToRegister}
+            accessibilityRole="link"
+            accessibilityLabel="Create an account"
+            style={styles.helpLinkBox}
+          >
+            <Text style={[styles.helpLink, { color: colors.textMuted }]}>
+              New here? <Text style={styles.helpLinkUnderline}>Create an account</Text>
+            </Text>
+          </Pressable>
+        </View>
       </View>
       <MobileActionFooter>
         <MobilePrimaryButton
@@ -113,7 +119,7 @@ export default function LoginScreen() {
           loading={submitting}
           disabled={!email || !password}
         >
-          Sign In
+          SIGN IN
         </MobilePrimaryButton>
       </MobileActionFooter>
     </SafeAreaView>
@@ -127,35 +133,32 @@ const styles = StyleSheet.create({
   brandBlock: {
     ...MOBILE_CONTENT_WIDTH_STYLE,
     paddingHorizontal: 20,
-    gap: 4,
+    // The folio keeps its distance from the statement's halo.
+    paddingBottom: 12,
   },
-  wordmarkRule: {
-    // The boot plate's mark: a 2px signal rule UNDER the wordmark,
-    // left-anchored to it — the brand moment, once, quietly. Centered,
-    // it floated detached between two left-set lines.
-    width: 72,
-    height: 2,
-    marginTop: 8,
-    marginBottom: 18,
-    alignSelf: 'flex-start',
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    height: 44,
   },
   wordmark: {
     fontFamily: theme.fonts.display,
-    fontSize: 21,
-    fontWeight: '800',
-    lineHeight: 26,
-    letterSpacing: 0.6,
-  },
-  title: {
-    // The auth statement at headline scale (the wordmark above is the
-    // folio masthead; the rule beneath it is the paper's red nameplate
-    // rule — the one brand mark beside the verb).
-    ...theme.typography.mobileDisplay,
+    fontSize: 15,
+    fontWeight: '700',
+    lineHeight: 20,
+    letterSpacing: 0.8,
   },
   body: {
     ...SCREEN_BODY_STYLE,
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 8,
+  },
+  block: {
+    marginTop: BLOCK_GAP,
+  },
+  statement: {
+    ...theme.typography.mobileDisplay,
   },
   linkBox: {
     minHeight: 44,
@@ -163,18 +166,17 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   link: {
-    ...theme.typography.mobileAction,
-  },
-  help: {
-    ...theme.typography.mobileSubtitle,
-    textAlign: 'center',
+    ...theme.typography.mobileLedger,
+    textDecorationLine: 'underline',
   },
   helpLinkBox: {
     minHeight: 44,
     justifyContent: 'center',
-    alignSelf: 'center',
   },
   helpLink: {
-    ...theme.typography.mobileAction,
+    ...theme.typography.mobileItemTitle,
+  },
+  helpLinkUnderline: {
+    textDecorationLine: 'underline',
   },
 });
