@@ -108,6 +108,38 @@ function RootShell() {
       '*::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}',
     );
 
+    // The logbook faces — runtime restore of index.html's id'd
+    // @font-face block (static export strips <head> styles; the
+    // build-time injector covers exported routes, this covers dev and
+    // anything the strip still misses). Mirror trio: index.html,
+    // scripts/inject-critical-web.ts, this block.
+    const ensureFontLinks = () => {
+      const fontFiles = [
+        '/fonts/archivo-var.woff2',
+        '/fonts/plex-mono-500.woff2',
+        '/fonts/plex-mono-600.woff2',
+      ];
+      for (const href of fontFiles) {
+        if (document.querySelector(`link[rel="preload"][href="${href}"]`)) continue;
+        const l = document.createElement('link');
+        l.rel = 'preload';
+        l.href = href;
+        l.as = 'font';
+        l.type = 'font/woff2';
+        l.setAttribute('crossorigin', '');
+        document.head.appendChild(l);
+      }
+    };
+    ensureFontLinks();
+    ensureStyle(
+      'arq-font-faces',
+      [
+        "@font-face{font-family:'Archivo';font-style:normal;font-weight:100 900;font-display:swap;src:url('/fonts/archivo-var.woff2') format('woff2')}",
+        "@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/plex-mono-500.woff2') format('woff2')}",
+        "@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/plex-mono-600.woff2') format('woff2')}",
+      ].join(''),
+    );
+
     if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) {
       return;
     }

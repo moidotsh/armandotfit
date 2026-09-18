@@ -1,5 +1,5 @@
 // constants/theme.ts
-// armandotfit theme — "ember ink on warm paper."
+// armandotfit theme — "the logbook" (see docs/architecture/logbook-thesis.md).
 //
 // The design language is the shell's ink dialect (constants: atmosphere
 // flat, InkPanel drawer, chit toasts, curtain transitions — see DIALECT
@@ -8,9 +8,15 @@
 // ember-orange brand evolved from the original #FF9500 identity into
 // #E8590C — a fill that clears 3:1 on paper while staying unmistakably
 // armandotfit. Every text-bearing slot is measured WCAG AA on the
-// darkest surface it rides: brandText #A03A08 (6.8:1 on paper), warm-ink
+// darkest surface it rides: brandText #A03A08 (6.0:1 on paper), warm-ink
 // textOnBrand on the ember fill (4.7:1). Dark mode is the same family on
 // a warm night: #F76B1C ember on #1A1511, bone-warm plate #F1EAE0.
+//
+// The logbook rebuild (2026-01) declares two self-hosted faces (Archivo
+// for poster figures/titles, IBM Plex Mono for ledger figures/eyebrows),
+// retunes the type scale so numbers out-loud words, flattens the shape
+// family, and fixes the contrast ladder (muted retuned, tertiary is
+// decorative-only, the dark backgroundDeep is warm again).
 //
 // Structure + axes (dialect/shapes/fonts/typography/atmosphere/drawer/
 // toast/transition) are the shell's, synced from arqavellum. Only the
@@ -57,8 +63,13 @@ export interface TypeFaces {
 }
 
 const FONTS = {
-  display: undefined,
-  mono: undefined,
+  // The logbook pair (docs/architecture/logbook-thesis.md §2). Archivo
+  // ships as one variable-weight woff2 (covers 700/800); Plex Mono as
+  // two statics. Files in public/fonts/, @font-face + preloads in
+  // index.html (id'd style), runtime restore in app/_layout.tsx — the
+  // injector carries both into every exported route.
+  display: 'Archivo',
+  mono: 'IBM Plex Mono',
 } as TypeFaces;
 
 // ── Design dialect ──────────────────────────────────────────────────────
@@ -101,11 +112,11 @@ export const theme = {
       cardBorderHover: 'rgba(35, 27, 21, 0.12)',
 
       // Text colors. `textMuted` clears WCAG AA (4.5:1) on the DARKEST
-      // light background it rides (backgroundDeep #F4F0EA — the previous
-      // slate #64748B measured 4.34 there; meta text, sublabels, and
-      // eyebrows all read this token on that surface).
+      // light background it rides (backgroundDeep #F4F0EA — 5.29:1).
+      // The ladder: text (16.95 on card) → textSecondary (9.49) →
+      // textMuted (6.00) → tertiary (decorative only, see below).
       text: '#231B15',
-      textMuted: '#63574B',
+      textMuted: '#6E6154',
       textSecondary: '#4E443B',
 
       // Interactive element colors — the `brand` slot.
@@ -130,6 +141,13 @@ export const theme = {
       // already passes (6.3:1 on card), so the default mirrors `brand`
       // and nothing moves.
       brandText: '#A03A08',
+
+      // Brand-hue accent for content on the INK PLATE (the inverted
+      // surface: drawer, chits, curtain, the swap sheet). Light mode's
+      // plate is warm ink #231B15 — a lightened ember reads on it
+      // (8.24:1). Same companion discipline as brandText: one hue,
+      // adjusted for its surface. NOT a second accent slot.
+      brandOnInk: '#F0A468',
 
       // Semantic status colors (iOS-style — consistent across consumers).
       // Measured AA as TEXT: every hue here clears 4.5:1 on card AND on
@@ -170,11 +188,14 @@ export const theme = {
 
       // Text color variants. `textColors.muted` and `textMuted` are unified
       // (same value, both names) so consumers don't have to remember which
-      // "muted" to use.
+      // "muted" to use. `tertiary` is DECORATIVE ONLY (placeholders,
+      // disabled states, watermarks — 4.36 on card / 3.84 on deep): it
+      // does not clear AA and must never carry information; informative
+      // quiet text reads `textMuted`.
       textColors: {
-        muted: '#63574B',
-        secondary: '#63574B',
-        tertiary: '#9A8E80',
+        muted: '#6E6154',
+        secondary: '#6E6154',
+        tertiary: '#847767',
       },
 
       // Icon background tints (semantic — darker hue on pale tint instead
@@ -312,6 +333,11 @@ export const theme = {
       // further until it clears 4.5:1.
       brandText: '#F87F3A',
 
+      // Brand-hue accent for the INK PLATE (see `light.brandOnInk`).
+      // Dark mode's plate is BONE #F1EAE0 — a deepened ember reads on
+      // it (5.02:1).
+      brandOnInk: '#B23A08',
+
       // Semantic status colors — brightened for dark contrast.
       status: {
         success: '#34D399',
@@ -333,14 +359,17 @@ export const theme = {
       textOnBrandMuted: 'rgba(26, 21, 17, 0.8)',
 
       // Deeper background for full-bleed screens (auth, onboarding) —
-      // darker still so a central card pops.
-      backgroundDeep: '#050810',
+      // darker still so a central card pops. WARM by design: the night
+      // family (#1A1511) never goes slate (the old #050810 was a
+      // foreign blue-black).
+      backgroundDeep: '#14100C',
 
-      // Text color variants.
+      // Text color variants. `tertiary` is DECORATIVE ONLY (3.42 on
+      // card) — never carries information.
       textColors: {
         muted: '#9A8E80',
         secondary: '#D8CEC2',
-        tertiary: '#64748B',
+        tertiary: '#7D7061',
       },
 
       // Icon background tints — dark-tuned (brighter hue on dark tint).
@@ -354,16 +383,18 @@ export const theme = {
 
       // Glassmorphism (dark). Retuned from light: backdrop is smoked
       // glass instead of frosted white; borders are light hairlines.
+      // Warm-tinted to match the night family (the old slate tints
+      // were a foreign body).
       glass: {
-        background: 'rgba(22, 30, 46, 0.72)',
-        backgroundLight: 'rgba(22, 30, 46, 0.55)',
+        background: 'rgba(30, 24, 19, 0.72)',
+        backgroundLight: 'rgba(30, 24, 19, 0.55)',
         border: 'rgba(241, 234, 224, 0.08)',
         borderHighlight: 'rgba(241, 234, 224, 0.18)',
         borderHover: 'rgba(241, 234, 224, 0.12)',
         emptyInputBorder: 'rgba(241, 234, 224, 0.20)',
-        panelBackground: 'rgba(11, 15, 25, 0.6)',
+        panelBackground: 'rgba(20, 16, 12, 0.6)',
         inputBackground: 'rgba(241, 234, 224, 0.04)',
-        inputFocusBackground: 'rgba(99, 102, 241, 0.10)',
+        inputFocusBackground: 'rgba(247, 107, 28, 0.10)',
       },
 
       // Alert background tint for error containers (dark-mode red wash).
@@ -443,13 +474,13 @@ export const theme = {
   // the raw size scale for ad-hoc shapes; primitives use these semantics.
   shapes: {
     /** Cards + section surfaces (MobileSurface, StatCard, alerts). */
-    surface: 16,
+    surface: 12,
     /** Portal panels — bottom sheets, calendar/dialog bodies. */
-    sheet: 20,
+    sheet: 16,
     /** Inputs, buttons, selects — interactive controls. */
-    control: 14,
+    control: 10,
     /** Small tiles — selection rows, option containers, thumbnails. */
-    tile: 12,
+    tile: 8,
     /** Chips, tags, badges. 999 renders full round. */
     tag: 999,
   },
@@ -525,87 +556,99 @@ export const theme = {
   fonts: FONTS,
 
   // ── Named type styles ─────────────────────────────────────────────────
-  // Premium reads through type. Consumers import the named style and spread
-  // it; they do NOT pick ad-hoc fontSize/fontWeight values for titles and
-  // subtitles. Consumers pick from named styles, not ad-hoc values —
-  // retune the values here, but keep the named-style discipline.
+  // The logbook scale (docs/architecture/logbook-thesis.md §2.1): two
+  // interleaved ramps — words (11·13·15·18·28) and figures
+  // (15·28·44·72) — so a number is always one step louder than the words
+  // around it. Line-heights snap to 2; tracking goes negative as size
+  // grows, positive at tracked caps. Consumers import the named style
+  // and spread it; they do NOT pick ad-hoc fontSize/fontWeight values.
+  // Retune the values here, but keep the named-style discipline.
   typography: {
     mobileTitle: {
-      fontSize: 22,
-      fontWeight: '600',
-      lineHeight: 28,
-      letterSpacing: -0.2,
+      fontSize: 28,
+      fontWeight: '700',
+      lineHeight: 32,
+      letterSpacing: -0.8,
       fontFamily: FONTS.display,
     } satisfies TypographyToken,
     mobileSubtitle: {
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '400',
-      lineHeight: 20,
+      lineHeight: 22,
       letterSpacing: 0,
     } satisfies TypographyToken,
     mobileBody: {
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '400',
       lineHeight: 22,
       letterSpacing: 0,
     } satisfies TypographyToken,
     mobileAction: {
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: '600',
       lineHeight: 20,
-      letterSpacing: 0.4,
+      letterSpacing: 0.2,
     } satisfies TypographyToken,
     mobileEyebrow: {
       fontSize: 11,
-      fontWeight: '600',
-      lineHeight: 14,
-      letterSpacing: 1.4,
+      fontWeight: '700',
+      lineHeight: 16,
+      letterSpacing: 1.6,
       fontFamily: FONTS.mono,
     } satisfies TypographyToken,
     mobileFieldLabel: {
       fontSize: 13,
       fontWeight: '600',
       lineHeight: 16,
-      letterSpacing: 0.1,
+      letterSpacing: 0.2,
     } satisfies TypographyToken,
     // ── Figure language ────────────────────────────────────────────────
     // Numbers are the app's content, so the scale names their slots too.
     // Every figure token carries tabular figures by construction — a
-    // call site cannot forget them.
-    mobileDisplay: {
-      fontSize: 56,
+    // call site cannot forget them. Hero/display/figure set the display
+    // face; ledger sets the mono face (facts, not statements).
+    mobileHero: {
+      fontSize: 72,
       fontWeight: '800',
-      lineHeight: 56,
-      letterSpacing: -2,
+      lineHeight: 76,
+      letterSpacing: -2.5,
+      fontVariant: ['tabular-nums'],
+      fontFamily: FONTS.display,
+    } satisfies TypographyToken,
+    mobileDisplay: {
+      fontSize: 44,
+      fontWeight: '800',
+      lineHeight: 48,
+      letterSpacing: -1.5,
       fontVariant: ['tabular-nums'],
       fontFamily: FONTS.display,
     } satisfies TypographyToken,
     mobileFigure: {
-      fontSize: 22,
+      fontSize: 28,
       fontWeight: '700',
-      lineHeight: 26,
-      letterSpacing: -0.3,
+      lineHeight: 32,
+      letterSpacing: -0.5,
       fontVariant: ['tabular-nums'],
       fontFamily: FONTS.display,
     } satisfies TypographyToken,
     mobileItemTitle: {
-      fontSize: 14,
-      fontWeight: '600',
-      lineHeight: 20,
-      letterSpacing: 0,
+      fontSize: 18,
+      fontWeight: '700',
+      lineHeight: 24,
+      letterSpacing: -0.3,
     } satisfies TypographyToken,
     mobileLedger: {
-      fontSize: 13,
-      fontWeight: '500',
-      lineHeight: 18,
+      fontSize: 15,
+      fontWeight: '600',
+      lineHeight: 20,
       letterSpacing: 0,
       fontVariant: ['tabular-nums'],
       fontFamily: FONTS.mono,
     } satisfies TypographyToken,
     mobileMeta: {
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '400',
-      lineHeight: 16,
+      lineHeight: 18,
       letterSpacing: 0,
       fontVariant: ['tabular-nums'],
     } satisfies TypographyToken,
@@ -613,7 +656,7 @@ export const theme = {
       fontSize: 12,
       fontWeight: '600',
       lineHeight: 16,
-      letterSpacing: 0.1,
+      letterSpacing: 0.2,
     } satisfies TypographyToken,
   },
 };

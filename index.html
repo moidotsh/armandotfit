@@ -43,6 +43,42 @@
     <title>armandotfit</title>
 
     <!--
+      The logbook faces — self-hosted, OFL (docs/architecture/
+      logbook-thesis.md §2). Archivo ships as one variable-weight file
+      (covers the 700/800 the display tokens use); IBM Plex Mono as two
+      statics (500/600). Mirror trio discipline: this id'd style block,
+      the runtime restore in app/_layout.tsx, and the injector carry
+      them together — plus the preload lines below so the first hero
+      figure renders in its face, not a fallback.
+    -->
+    <link rel="preload" href="/fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/plex-mono-500.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/plex-mono-600.woff2" as="font" type="font/woff2" crossorigin />
+    <style id="arq-font-faces">
+      @font-face {
+        font-family: 'Archivo';
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url('/fonts/archivo-var.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'IBM Plex Mono';
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url('/fonts/plex-mono-500.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'IBM Plex Mono';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: url('/fonts/plex-mono-600.woff2') format('woff2');
+      }
+    </style>
+
+    <!--
       The ink boot plate — the pre-JS cover. armandotfit's design
       language is the ink dialect, so the first painted frame is the
       warm ink plate (#231B15) with the name stamped on it in paper
@@ -65,6 +101,7 @@
         justify-content: center;
         background: #231b15;
         color: #f4f0ea;
+        font-family: 'Archivo', -apple-system, sans-serif;
         font-size: 18px;
         font-weight: 700;
         letter-spacing: 0.18em;
