@@ -58,7 +58,7 @@ import {
   formatVolume,
   formatElapsed,
 } from '../services';
-import { SCREEN_BODY_STYLE } from '../constants';
+import { SCREEN_BODY_STYLE, theme } from '../constants';
 
 export default function WorkoutDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -112,6 +112,27 @@ export default function WorkoutDetailScreen() {
             `- Split: ${draft.splitType === 'oneADay' ? '1-a-day' : 'AM/PM'}`,
             `- Day: ${draft.day}${draft.splitType === 'twoADay' ? ` (${draft.sessionMode})` : ''}`,
             `- Exercises: ${draft.exercises.length}`,
+          ].join('\n'),
+        }
+      : undefined,
+  );
+
+  // Read-only copy payload — describes the LOADED session, not the
+  // (usually absent) draft. Computed at read; nothing stored.
+  const loadedSession = existingQuery.data;
+  const readonlyAiPayload = useAiPayload(
+    loadedSession
+      ? {
+          title: 'Session',
+          visibleContent: [
+            `- Date: ${new Date(loadedSession.startedAt).toLocaleString()}`,
+            `- Day: ${loadedSession.splitDay ?? 'ad-hoc'}`,
+            ...loadedSession.exercises.map(
+              (ex) =>
+                `- ${ex.exerciseName}: ${ex.sets
+                  .map((s) => `${s.weight}kg × ${s.reps}`)
+                  .join(', ') || 'no sets'}`,
+            ),
           ].join('\n'),
         }
       : undefined,
@@ -235,6 +256,18 @@ export default function WorkoutDetailScreen() {
   // ── Read-only mode (existing session) ──────────────────────────────
   if (id) {
     const session = existingQuery.data;
+    // AM and PM are separate rows; the start hour restores the window.
+    const windowLabel = session
+      ? new Date(session.startedAt).getHours() < 12
+        ? 'AM'
+        : 'PM'
+      : null;
+    const totalSets = session
+      ? session.exercises.reduce((n, e) => n + e.sets.length, 0)
+      : 0;
+    const totalKg = session
+      ? session.exercises.reduce((n, e) => n + sumVolume(e.sets), 0)
+      : 0;
     return (
       <SafeAreaView
         style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
@@ -252,13 +285,13 @@ export default function WorkoutDetailScreen() {
           }
           eyebrow={
             session
-              ? session.splitDay != null
-                ? `day ${session.splitDay}`
-                : 'ad-hoc'
+              ? `${
+                  session.splitDay != null ? `day ${session.splitDay}` : 'ad-hoc'
+                }${windowLabel ? ` · ${windowLabel}` : ''}`
               : ''
           }
           onBack={safeGoBack}
-          navRightAction={<CopyForAiButton payload={draftAiPayload} testID="workout-detail-readonly-copy-for-ai" />}
+          navRightAction={<CopyForAiButton payload={readonlyAiPayload} testID="workout-detail-readonly-copy-for-ai" />}
         />
         <ScrollView
           style={styles.body}
@@ -269,6 +302,43 @@ export default function WorkoutDetailScreen() {
             <LoadingSpinner />
           ) : (
             <>
+              {/* The receipt header: when it started + what it added up to. */}
+              <MobileSurface padding={16}>
+                <Text style={[styles.receiptMeta, { color: colors.textColors.tertiary }]}>
+                  Started{' '}
+                  {new Date(session.startedAt).toLocaleTimeString(undefined, {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </Text>
+                <View style={styles.receiptStats}>
+                  <View style={styles.stat}>
+                    <Text style={[styles.receiptValue, { color: colors.text }]}>
+                      {session.exercises.length}
+                    </Text>
+                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                      lifts
+                    </Text>
+                  </View>
+                  <View style={styles.stat}>
+                    <Text style={[styles.receiptValue, { color: colors.text }]}>
+                      {totalSets}
+                    </Text>
+                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                      sets
+                    </Text>
+                  </View>
+                  <View style={styles.stat}>
+                    <Text style={[styles.receiptValue, { color: colors.brand }]}>
+                      {formatVolume(totalKg)}
+                    </Text>
+                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                      kg
+                    </Text>
+                  </View>
+                </View>
+              </MobileSurface>
+              <View style={{ height: 16 }} />
               {session.note ? (
                 <>
                   <MobileSectionEyebrow>Notes</MobileSectionEyebrow>
@@ -282,7 +352,6 @@ export default function WorkoutDetailScreen() {
               ) : null}
               {session.exercises.length === 0 ? (
                 <EmptyState
-                 
                   title="No exercises logged"
                   message="This session was saved with a note only."
                   testID="workout-detail-empty"
@@ -291,7 +360,7 @@ export default function WorkoutDetailScreen() {
               {session.exercises.map((ex) => (
                 <View key={ex.id} style={{ marginBottom: 12 }}>
                   <MobileSectionEyebrow>
-                    {ex.exerciseName || 'Exercise'}
+                    {`${ex.exerciseName || 'Exercise'} · ${ex.sets.length} set${ex.sets.length === 1 ? '' : 's'}`}
                   </MobileSectionEyebrow>
                   <MobileSurface padding={12}>
                     {ex.tags.length > 0 ? (
@@ -313,26 +382,10 @@ export default function WorkoutDetailScreen() {
             </>
           )}
         </ScrollView>
-        {pickerExercise ? (
-        <InkRail
-          currentSlug={pickerExercise.exerciseSlug}
-          open={pickerFor !== null}
-          onOpenChange={(next) => {
-            if (!next) setPickerFor(null);
-          }}
-          onSwap={(next) => {
-            swapDraftExercise(pickerExercise.localId, {
-              exerciseName: next.exerciseName,
-              exerciseSlug: next.exerciseSlug,
-            });
-            showToast('success', next.exerciseName);
-          }}
-          testID="swap-picker"
-        />
-      ) : null}
-      <MobileActionFooter>
+        <MobileActionFooter>
           <MobilePrimaryButton
             variant="ghost"
+            accentColor={colors.alert}
             onPress={() => {
               if (!id) return;
               if (!confirmDelete) {
@@ -520,16 +573,22 @@ export default function WorkoutDetailScreen() {
         )}
 
         <View style={{ height: 8 }} />
-        <Pressable onPress={navigateToExerciseDatabase} accessibilityRole="button">
-          <MobileSurface padding={14}>
-            <Text style={[styles.addCta, { color: colors.brand }]}>
-              + Add exercise
-            </Text>
-          </MobileSurface>
+        <Pressable
+          onPress={navigateToExerciseDatabase}
+          accessibilityRole="button"
+          accessibilityLabel="Add exercise from library"
+          style={({ pressed }) => [
+            styles.addExerciseCta,
+            { borderColor: colors.border },
+            pressed ? { opacity: 0.6 } : null,
+          ]}
+        >
+          <Text style={[styles.addCta, { color: colors.brand }]}>
+            + Add exercise
+          </Text>
         </Pressable>
 
         <View style={{ height: 16 }} />
-        <MobileSectionEyebrow>Notes</MobileSectionEyebrow>
         <MobileInput
           label="Notes"
           value={draft.notes ?? ''}
@@ -555,7 +614,9 @@ export default function WorkoutDetailScreen() {
           loading={isSaving || logMutation.isPending}
           disabled={draft.exercises.length === 0}
         >
-          Save session
+          {sessionSets > 0
+            ? `Save session · ${sessionSets} set${sessionSets === 1 ? '' : 's'}`
+            : 'Save session'}
         </MobilePrimaryButton>
       </MobileActionFooter>
     </SafeAreaView>
@@ -576,8 +637,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
-  rxLine: { fontSize: 12, marginTop: 2 },
-  progressLine: { fontSize: 11, marginTop: 2 },
+  receiptMeta: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 10,
+  },
+  receiptStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  receiptValue: {
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+    fontVariant: ['tabular-nums'],
+  },
+  rxLine: { fontSize: 12, marginTop: 2, fontVariant: ['tabular-nums'] },
+  progressLine: { fontSize: 11, marginTop: 2, fontVariant: ['tabular-nums'] },
   statsStrip: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -588,8 +666,20 @@ const styles = StyleSheet.create({
   stat: { alignItems: 'center', flex: 1 },
   statValue: { fontSize: 22, fontWeight: '700', letterSpacing: -0.3, fontVariant: ['tabular-nums'] },
   statLabel: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 2 },
-  tagsLine: { fontSize: 12, lineHeight: 16, marginBottom: 6 },
-  removeExerciseCta: { fontSize: 12, fontWeight: '500' },
+  tagsLine: { fontSize: 12, lineHeight: 16, marginBottom: 6, fontVariant: ['tabular-nums'] },
+  removeExerciseCta: {
+    fontSize: 12,
+    fontWeight: '500',
+    paddingVertical: 8,
+  },
+  addExerciseCta: {
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderRadius: theme.shapes.tile,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   addSetCta: { marginTop: 8, alignSelf: 'flex-start' },
   addCta: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
   errorText: { fontSize: 12, lineHeight: 16 },

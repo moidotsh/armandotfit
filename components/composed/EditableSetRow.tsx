@@ -104,7 +104,7 @@ export function EditableSetRow({
           onChangeReps(parseNumber(t));
         }}
         placeholder={repsHint ?? '–'}
-        placeholderTextColor={colors.textColors.tertiary}
+        placeholderTextColor={colors.textMuted}
         keyboardType="numeric"
         returnKeyType="done"
         maxLength={6}
@@ -113,7 +113,7 @@ export function EditableSetRow({
 
       <Pressable
         onPress={onRemove}
-        hitSlop={10}
+        hitSlop={{ top: 14, bottom: 14, left: 12, right: 12 }}
         accessibilityRole="button"
         accessibilityLabel={`Remove set ${position}`}
       >
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     gap: 8,
   },
-  setPosition: { fontSize: 12, fontWeight: '600', minWidth: 18 },
+  setPosition: { fontSize: 12, fontWeight: '600', minWidth: 18, fontVariant: ['tabular-nums'] },
   input: {
     borderWidth: 1.5,
     borderRadius: 10,
@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     minWidth: 64,
     textAlign: 'center',
+    fontVariant: ['tabular-nums'],
   },
   repsInput: {
     minWidth: 56,
