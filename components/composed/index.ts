@@ -13,9 +13,8 @@ export { TagChips, type TagChipsProps } from './TagChips';
 export { InkRail, SwapGlyph, type InkRailProps } from './InkRail';
 export { SplitExerciseRow, type SplitExerciseRowProps } from './SplitExerciseRow';
 export { ExerciseListItem, type ExerciseListItemProps } from './ExerciseListItem';
-export { WorkoutSessionItem, type WorkoutSessionItemProps } from './WorkoutSessionItem';
+export { EditionLine, type EditionLineProps } from './EditionLine';
 export { TrainingConsistencyGrid, type TrainingConsistencyGridProps } from './TrainingConsistencyGrid';
-export { DashboardSkeleton } from './DashboardSkeleton';
 export { WorkoutListSkeleton } from './WorkoutListSkeleton';
 export { QueryErrorNote, type QueryErrorNoteProps } from './QueryErrorNote';
 
