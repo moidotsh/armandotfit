@@ -1,9 +1,11 @@
 // app/exercise-database.tsx
-// Exercise library browse. Search + tap-through to detail. The catalog
-// is local (data.ts — sole display source); filtering is client-side.
+// Exercise library browse. Search + modality chips + tap-through to
+// detail. The catalog is local (data.ts — sole display source);
+// filtering is client-side. Sections group by display category with
+// sticky headers so scrolling a long list keeps its place.
 
 import React, { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SectionList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   MobileAtmosphere,
@@ -39,7 +41,7 @@ function groupedByCategory(entries: SystemExerciseData[]) {
       (a, b) =>
         CATEGORY_ORDER.indexOf(a[0]) - CATEGORY_ORDER.indexOf(b[0]),
     )
-    .map(([category, list]) => ({ category, entries: list }));
+    .map(([category, entries]) => ({ category, data: entries, key: category }));
 }
 
 export default function ExerciseDatabaseScreen() {
@@ -145,23 +147,29 @@ export default function ExerciseDatabaseScreen() {
             testID="exercise-database-empty"
           />
         ) : (
-          <FlatList
-            data={groupedByCategory(query.data ?? [])}
-            keyExtractor={(item) => item.category}
+          <SectionList
+            // flex:1 — the list is the screen's remaining height. Without
+            // it the section content contributes to the body column's
+            // layout and RN-web's default flex-shrink collapses the chip
+            // row above it to a sliver.
+            style={{ flex: 1 }}
+            sections={groupedByCategory(query.data ?? [])}
+            keyExtractor={(e) => e.slug}
             renderItem={({ item }) => (
-              <View>
-                <View style={{ height: 4 }} />
-                <MobileSectionEyebrow>
-                  {item.category} · {item.entries.length}
-                </MobileSectionEyebrow>
-                <View style={{ height: 8 }} />
-                {item.entries.map((e) => (
-                  <View key={e.slug} style={{ marginBottom: 8 }}>
-                    <ExerciseListItem exercise={e} onPress={navigateToExerciseDetail} />
-                  </View>
-                ))}
+              <View style={styles.itemWrap}>
+                <ExerciseListItem exercise={item} onPress={navigateToExerciseDetail} />
               </View>
             )}
+            renderSectionHeader={({ section }) => (
+              <View
+                style={[styles.sectionHeader, { backgroundColor: colors.backgroundDeep }]}
+              >
+                <MobileSectionEyebrow>
+                  {`${section.category} · ${section.data.length}`}
+                </MobileSectionEyebrow>
+              </View>
+            )}
+            stickySectionHeadersEnabled
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
           />
@@ -179,6 +187,11 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   listContent: { paddingBottom: 24 },
+  itemWrap: { marginBottom: 8 },
+  sectionHeader: {
+    paddingTop: 12,
+    paddingBottom: 6,
+  },
   addCustomCta: { marginTop: 8, alignSelf: 'flex-start' },
   addCustomText: { fontSize: 14, fontWeight: '600' },
 });
