@@ -137,14 +137,17 @@ The system's one invented glyph, rendered with Views (no canvas, no
 icon font):
 
 - **Stroke (large):** 7 × 44. **Small:** 4 × 22. Corner radius 1.
-- **Group:** five strokes — four vertical, the fifth a diagonal across
-  them (the prison-wall convention; sets beyond five start a new
-  group).
+- **Group:** five counts — four vertical strokes, the fifth count
+  rendered AS the diagonal across them (the prison-wall convention;
+  sets beyond five start a new group). The diagonal appears only when
+  the fifth count of the group is actually struck — a half-filled
+  group shows bare verticals, never a premature slash.
 - **States:** *struck* — solid content color (ink on chalk, chalk on
   iron); *next* — brand color, solid, with a 2px brand baseline under
   it (the one orange mark on the screen — it is the next strike);
-  *ghost* — 1px hairline outline at 40% border strength (target slots
-  ahead, from the Rx max).
+  *ghost* — 1px outline in the decorative tertiary ink (slots ahead,
+  from the Rx max — quiet but seeable in both modes; `border`
+  strength vanished on iron).
 - **Semantics:** a struck mark is a logged set — immutable once
   struck (deleting the set un-strikes it; there is no editing a mark).
 - **Accessibility:** the strip is `aria-hidden` decoration — the
@@ -281,7 +284,7 @@ Per screen: **focal → second read → quiet tail**, with the reason.
 |---|---|---|---|---|
 | **Home** | The day statement: measure strip (4 day-marks, today = the orange next) above the day title `mobileDisplay` + first lift + START (primary, full width) | THE INDEX: three ruled rows — PROGRAM / LIBRARY / PROGRESS — each with a mono count caption (`4d · am/pm`, `42 lifts`, `12d streak`) | This-week figures (mono row: streak · sessions · sets) + recent ledger (hairline rows: day mark, title, sets × tonnage mono) | Home answers "what am I walking into?" and is the whole Desk's hub — the day is the statement, the index replaces the tab bar |
 | **Funnel (split-selection)** | The day measure: 7 tiles, each weekday mono + day-of-split numeral; the picked tile INVERTS (ink plate on chalk / chalk plate on iron — inversion is selection) | Archetype + window markings; the plan preview: numbered ruled rows (index mono, name, Rx right) | GO (primary) pinned in the footer | The choice being made is the content; three picks then GO, all visible in one column |
-| **Stage (live session)** | THE COUNT BOARD, docked: the exercise's tally strip (struck/next/ghost) + the armed counter (`100` `×` `10` at `mobileCounter`, ± steppers 44) + LOG SET 56 | The station: name `mobileDisplay`, Rx + tags as marking chips; the station rail (01·02·03·04 marks) under the header; running session count (set N · tonnage mono) | The set ledger (mono rows, remove per row); SWAP / ADD / NOTE ruled actions | Mid-set the question is "what's next" — the board answers in marks + digits + one verb; everything else waits its turn |
+| **Stage (live session)** | THE COUNT BOARD, docked: the exercise's tally strip (struck/next/ghost) + the armed counter (`100` `×` `10` at `mobileCounter`, ± steppers 44; an unset counter is a ruled empty field — an underline on paper, never a glyph at counter scale) + LOG SET 56 | The station: name `mobileDisplay`, Rx + tags as marking chips; the station rail (01·02·03·04 marks) under the header; running session count (set N · tonnage mono) | The set ledger (mono rows, remove per row); SWAP / ADD / NOTE ruled actions | Mid-set the question is "what's next" — the board answers in marks + digits + one verb; everything else waits its turn |
 | **Receipt (workout-detail?id=)** | Tonnage as `mobileHero` + date/day eyebrow | Per-exercise blocks: name + the session's tally group (sets as struck marks) + mono set rows | Note; delete (two-step, error-toned) | A receipt sums itself; tonnage is the headline of history, the tallies are its shape |
 | **Program** | Day chapters: `DAY 01` mono eyebrow + title `mobileDisplay` + planned-sets `mobileFigure`; heads pin + ruler-compress under scroll | Slot ledger rows — the same numbered slot language as the funnel preview (one slot language everywhere) | Standing-substitution marks (2px strike left rule) + reset | The program is a document; days are chapters; the pin keeps the reader oriented |
 | **Library** | The search field (48 — the screen's instrument) + equipment zone markings (BB · DB · MACHINE · CABLE · BW — the gym walked as zones) | Recently-logged rail + category sections with sticky mono headers; ruled rows (name + primary muscle + modality) | Result counts; custom-name adder (during a session) | Browsing is scanning; equipment is how the room is actually arranged |
