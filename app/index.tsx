@@ -1,19 +1,19 @@
 // app/index.tsx
-// Home — THE COUNT's command surface (docs/architecture/
-// count-thesis.md §7). No tab bar: the Desk is a stack and home is
-// its hub. The masthead is the day's MEASURE — the 4-day tally strip
-// with today as the orange next mark above the day title in the
-// display face, first lift named, and START (or RESUME) as the one
-// primary verb. THE INDEX — three ruled rows leading to Program,
-// Library, Progress — replaces navigation chrome. The week's figures
-// and the recent ledger ride beneath on the ruled field. While a
-// session runs, DeskShell pins the iron session strip under the
-// header (count-thesis §6).
+// Home — THE BROADSHEET's front page (docs/architecture/
+// broadsheet-thesis.md §7). No tab bar: the Desk is a stack and home
+// is its hub. The page opens with the masthead (wordmark + settings),
+// then the day's statement: the kicker (TODAY · edition window · DAY
+// N OF 4) above the day-title HEADLINE in Rokkitt, the lede naming
+// the first lift, and START (or RESUME) as the one primary verb. The
+// JUMP LINES — three ruled rows leading to Program, Library, Progress
+// — replace navigation chrome. This week's figures and the recent
+// editions ride beneath as agate on the ruled field. While a session
+// runs, DeskShell pins the wire ticker under the header (thesis §6).
 //
-// Scroll choreography (ruler-compress): the title compresses under
+// Scroll choreography (the fold): the headline compresses under
 // scroll — it scales down and lifts while the header's compact day
 // marking fades in (transform/opacity only; collapsed to static under
-// reduced motion — count-thesis §5).
+// reduced motion — thesis §5).
 
 import React, { useMemo, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -23,7 +23,6 @@ import {
   MobileSectionEyebrow,
   EmptyState,
   Figure,
-  TallyStrip,
 } from '../components/MobilePremium';
 import {
   DeskShell,
@@ -81,13 +80,13 @@ export default function HomeScreen() {
   );
   const suggestedCount = suggestedSlots.length;
   const launcherTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;
-  // The brief names the day's opening lift — the answer to "what am I
-  // walking into?" without leaving home.
+  // The lede names the day's opening lift — the answer to "what am I
+  // walking into?" without leaving the front page.
   const firstLift = suggestedSlots.length > 0
     ? SYSTEM_EXERCISES_BY_SLUG[suggestedSlots[0].exercise]?.name ?? null
     : null;
 
-  // Ruler-compress — one Animated value driven by onScroll
+  // The fold — one Animated value driven by onScroll
   // (transform/opacity only); reduced motion never attaches the
   // listener and the masthead renders static.
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -132,7 +131,7 @@ export default function HomeScreen() {
     </View>
   );
 
-  const indexRow = (
+  const jumpLine = (
     label: string,
     caption: string,
     onPress: () => void,
@@ -164,21 +163,12 @@ export default function HomeScreen() {
       onScroll={reduced ? undefined : onScrollAnimated}
       testID="home-scroll"
     >
-      {/* THE MASTHEAD — the day's measure. The tally strip is the
-          hero: past days struck, today the orange next mark, the rest
-          ghost. The title is the statement. */}
+      {/* THE HEADLINE — the day's statement. The kicker carries the
+          edition facts (window, day-of-split position); the title is
+          the one display-scale element on the page. */}
       <MobileSectionEyebrow flush={false}>
-        {`TODAY · ${suggestedWindow === 'am' ? 'AM' : 'PM'} WINDOW · DAY ${suggestedDay} OF 4`}
+        {`TODAY · ${suggestedWindow === 'am' ? 'AM' : 'PM'} EDITION · DAY ${suggestedDay} OF 4`}
       </MobileSectionEyebrow>
-      <View style={styles.measureRow} testID="home-measure">
-        <TallyStrip
-          struck={Math.max(0, suggestedDay - 1)}
-          next
-          ghost={Math.max(0, 4 - suggestedDay)}
-          size="lg"
-          testID="home-day-measure"
-        />
-      </View>
       <Animated.Text
         testID="home-masthead-title"
         style={[
@@ -202,7 +192,7 @@ export default function HomeScreen() {
       ) : (
         <Text style={[styles.firstLift, { color: colors.textMuted }]} numberOfLines={2}>
           {isSessionActive
-            ? 'Session in progress — the strip above returns to the stage.'
+            ? 'Session on the floor — the ticker above returns you to it.'
             : 'Start from the button below when you hit the floor.'}
         </Text>
       )}
@@ -213,25 +203,25 @@ export default function HomeScreen() {
         {isSessionActive ? 'RESUME SESSION' : 'START'}
       </MobilePrimaryButton>
 
-      {/* THE INDEX — the tab bar's replacement. Three ruled rows,
-          each with its count; the Desk navigates from here. */}
+      {/* THE JUMP LINES — the tab bar's replacement. Three ruled rows,
+          each with its agate caption; the Desk navigates from here. */}
       <MobileSectionEyebrow rule flush={false}>
-        Index
+        In this app
       </MobileSectionEyebrow>
       <View style={styles.indexStack} testID="home-index">
-        {indexRow(
+        {jumpLine(
           'PROGRAM',
           '4-day · AM/PM',
           navigateToProgram,
           'home-index-program',
         )}
-        {indexRow(
+        {jumpLine(
           'LIBRARY',
           `${SYSTEM_EXERCISES.length} lifts`,
           navigateToExerciseDatabase,
           'home-index-library',
         )}
-        {indexRow(
+        {jumpLine(
           'PROGRESS',
           streak?.current != null ? `${streak.current}-day streak` : 'streak + bests',
           navigateToProgression,
@@ -239,7 +229,7 @@ export default function HomeScreen() {
         )}
       </View>
 
-      {/* This week — mono figures on the field. */}
+      {/* This week — agate figures on the field. */}
       <MobileSectionEyebrow rule flush={false}>
         This week
       </MobileSectionEyebrow>
@@ -269,9 +259,9 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Recent — the ledger: rows on hairlines. */}
+      {/* Recent — the edition archive: agate rows on hairlines. */}
       <MobileSectionEyebrow rule flush={false}>
-        Recent
+        Recent editions
       </MobileSectionEyebrow>
       {recentQuery.isLoading ? (
         <WorkoutListSkeleton />
@@ -279,9 +269,8 @@ export default function HomeScreen() {
         <QueryErrorNote onRetry={() => void recentQuery.refetch()} testID="home-recent-error" />
       ) : recent.length === 0 ? (
         <EmptyState
-          title="No sessions yet"
+          title="No editions yet"
           message="Your logged AM/PM sessions land here — streaks, day-of-split, and history start with the first one."
-          icon={<TallyStrip struck={0} next ghost={4} size="sm" />}
           action={{ label: 'Start workout', onPress: navigateToSplitSelection }}
           testID="home-empty-state"
         />
@@ -330,15 +319,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  measureRow: {
-    marginTop: 2,
-    minHeight: 44,
-  },
   dayTitle: {
     ...theme.typography.mobileDisplay,
-    fontSize: 46,
-    lineHeight: 48,
-    marginTop: 12,
+    marginTop: 8,
     textTransform: 'uppercase',
   },
   firstLift: {

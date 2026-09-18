@@ -1,11 +1,13 @@
 // app/split-selection.tsx
-// The FUNNEL — set the count (docs/architecture/count-thesis.md §7):
-// three picks, in order, and GO. The day measure leads: seven tiles,
-// each carrying its weekday marking above its DAY-OF-SPLIT numeral in
-// the display face — the count is the tile's voice. The picked tile
-// INVERTS (ink plate on chalk, chalk plate on iron — inversion is
+// The FUNNEL — set the edition (docs/architecture/broadsheet-thesis.md
+// §7): three picks, in order, and GO. The page opens with its headline
+// — WHAT today's edition trains (the day's target muscles, in ink) —
+// the deck carries the counts, and the seven-day measure is the second
+// voice: weekday agate + day-of-split numeral, the picked tile
+// INVERTING (ink plate on paper, paper on iron — inversion is
 // selection; borders do not survive glare). The plan previews as a
-// numbered ledger — the same slot language as the program document.
+// numbered agate ledger — the same slot language as the rotation
+// document.
 //   1. Workout day — a rolling 7-day measure. Each non-rest day
 //      carries its day-of-split (1..4), derived from the user's last
 //      logged session via getNextSplitDay. Rest days render muted but
@@ -51,6 +53,7 @@ import {
 import {
   SYSTEM_EXERCISES_BY_SLUG,
   MUSCLE_DISPLAY_NAMES,
+  getDayTitle,
   type MuscleSlug,
 } from '../shared/exercises';
 import type { PreferredSplit } from '../shared/types';
@@ -149,6 +152,22 @@ export default function SplitSelectionScreen() {
     navigateToWorkoutDetail();
   };
 
+  // THE HEADLINE — what today's edition trains: the day's distinct
+  // primary targets in slot order, uppercased. Falls back to the day
+  // title when the catalog carries no muscle data; a rest-day override
+  // says so.
+  const headline = useMemo(() => {
+    if (selectedSlot?.isRestDay) return 'Rest day override';
+    if (targets.length > 0) return targets.join(' · ');
+    return getDayTitle(split, draftDay) || `Day ${draftDay}`;
+  }, [selectedSlot, targets, split, draftDay]);
+
+  const deck = [
+    `${previewSlots.length} lift${previewSlots.length === 1 ? '' : 's'}`,
+    isTwoADay ? `${session.toUpperCase()} session` : null,
+    selectedSlot ? `${selectedSlot.dayLabel}` : null,
+  ].filter(Boolean).join(' · ');
+
   return (
     <SafeAreaView
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
@@ -158,11 +177,7 @@ export default function SplitSelectionScreen() {
       <MobileHeader
         title="Start"
         hideAccentDot
-        eyebrow={
-          selectedSlot
-            ? `${selectedSlot.dayLabel} · ${selectedSlot.dateLabel}`
-            : 'Set the count'
-        }
+        eyebrow="Set the edition"
         onBack={safeGoBack}
       />
       <ScrollView
@@ -170,9 +185,21 @@ export default function SplitSelectionScreen() {
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* THE DAY MEASURE — seven tiles; the day-of-split numeral is
-            the tile's voice. The pick inverts: ink plate on chalk,
-            chalk plate on iron. */}
+        {/* THE HEADLINE + DECK — the one statement this page makes:
+            what today's edition trains. */}
+        <Text style={[styles.headlineKicker, { color: colors.textMuted }]}>
+          {`TODAY'S EDITION · DAY ${String(draftDay).padStart(2, '0')}`}
+        </Text>
+        <Text style={[styles.headline, { color: colors.text }]} numberOfLines={2} testID="funnel-headline">
+          {headline.toUpperCase()}
+        </Text>
+        <Text style={[styles.deck, { color: colors.textSecondary }]} numberOfLines={1}>
+          {deck}
+        </Text>
+
+        {/* THE MEASURE — seven tiles; weekday agate above the
+            day-of-split numeral. The pick inverts: ink plate on paper,
+            paper on iron. */}
         <MobileSectionEyebrow rule flush={false}>
           Workout day
         </MobileSectionEyebrow>
@@ -272,11 +299,7 @@ export default function SplitSelectionScreen() {
             No exercises planned for this day. Start a session anyway and add
             your own from the exercise database.
           </Text>
-        ) : (
-          <Text style={[styles.targetsLine, { color: colors.textMuted }]} numberOfLines={1}>
-            {`TARGETS — ${targets.join(' · ')}`}
-          </Text>
-        )}
+        ) : null}
         {previewSlots.length === 0 ? null : (
           <View>
             {previewSlots.map((slot, i) => {
@@ -351,7 +374,20 @@ export default function SplitSelectionScreen() {
 const styles = StyleSheet.create({
   shell: { flex: 1 },
   body: { ...SCREEN_BODY_STYLE },
-  bodyContent: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 32 },
+  bodyContent: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32 },
+  headlineKicker: {
+    ...theme.typography.mobileEyebrow,
+  },
+  headline: {
+    ...theme.typography.mobileDisplay,
+    marginTop: 8,
+    textTransform: 'uppercase',
+  },
+  deck: {
+    ...theme.typography.mobileSubtitle,
+    marginTop: 8,
+    marginBottom: 4,
+  },
   dayRow: {
     flexDirection: 'row',
     gap: 6,
@@ -359,28 +395,28 @@ const styles = StyleSheet.create({
   },
   dayTile: {
     flex: 1,
-    minHeight: 84,
+    minHeight: 80,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
     gap: 3,
   },
   dayDow: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
     fontFamily: theme.fonts.mono,
     letterSpacing: 1,
     lineHeight: 12,
   },
   dayNumeral: {
-    fontFamily: theme.fonts.display,
-    fontSize: 26,
-    fontWeight: '800',
-    lineHeight: 28,
+    fontFamily: theme.fonts.mono,
+    fontSize: 22,
+    fontWeight: '700',
+    lineHeight: 26,
     fontVariant: ['tabular-nums'],
   },
   dayDate: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '500',
     fontFamily: theme.fonts.mono,
     lineHeight: 12,
@@ -393,12 +429,6 @@ const styles = StyleSheet.create({
   splitDescription: {
     ...theme.typography.mobileMeta,
     marginTop: 10,
-  },
-  targetsLine: {
-    ...theme.typography.mobileEyebrow,
-    fontSize: 10,
-    marginTop: 10,
-    marginBottom: 2,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: 12 },
   slotRow: {

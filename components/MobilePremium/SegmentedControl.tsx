@@ -135,7 +135,10 @@ export function SegmentedControl<T>({
                 justifyContent: 'center',
                 paddingHorizontal: 12,
                 borderRadius: theme.shapes.control,
-                backgroundColor: active ? colors.brand : 'transparent',
+                // Selection is INK INVERSION, not the accent — the
+                // brand slot belongs to the primary verb (one accent
+                // per screen; the funnel's GO, the stage's LOG).
+                backgroundColor: active ? colors.text : 'transparent',
               }}
             >
               <Text
@@ -143,7 +146,7 @@ export function SegmentedControl<T>({
                   styles.label,
                   {
                     color: active
-                      ? colors.textOnBrand
+                      ? colors.background
                       : chromeless
                         ? colors.text
                         : colors.textSecondary,

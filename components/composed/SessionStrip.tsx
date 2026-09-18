@@ -1,15 +1,15 @@
 // components/composed/SessionStrip.tsx
 //
-// THE SESSION STRIP (count-thesis §6): while a session is active, an
-// iron bar pins under every Desk header — LIVE dot (the living pulse)
-// · the running elapsed count in mono · RETURN →. One tap goes back to
-// the stage, from anywhere. The session never hides and never falls
+// THE TICKER (broadsheet-thesis §6): while a session runs, a wire
+// plate pins under every Desk header — LIVE dot (the living pulse) ·
+// the running elapsed count in agate · RETURN →. One tap goes back to
+// the Floor, from anywhere. The session never hides and never falls
 // out of the thumb arc; this is what replaces the tab bar's center
 // action when the bar itself is gone.
 //
 // The strip reads the workout store directly — no prop threading from
-// every screen. It renders the iron interrupt register
-// (colors.focus.*): the heaviest plate in the system, in both modes.
+// every screen. It renders the wire register (colors.focus.*): the
+// heaviest ink in the system, identical in both modes.
 
 import React, { useEffect, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
