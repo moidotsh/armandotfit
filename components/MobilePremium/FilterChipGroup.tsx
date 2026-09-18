@@ -38,7 +38,7 @@ export function FilterChipGroup({
         testID={testID}
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={style}
+        style={[styles.scroll, style]}
         contentContainerStyle={[styles.row, { gap, minWidth: '100%' }]}
       >
         {children}
@@ -59,6 +59,16 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+  },
+  // RN-web gives ScrollView a default `flex: 1 1 auto`. Inside a screen's
+  // flex column that is wrong on both axes: when a sibling list's content
+  // overflows, flex-shrink collapses the chip row to a sliver (chips
+  // paint half-hidden); when the list is sized flex:1, flex-grow makes
+  // THIS row balloon and pushes the rest of the body to the bottom. The
+  // row must take exactly its content height: grow 0, shrink 0.
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 0,
   },
 });
 
