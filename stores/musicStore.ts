@@ -3,10 +3,10 @@
 // transport flags + the volume preference. Picking a search result
 // plays it and continues with the rest of the results ("a playlist
 // that includes it"); picking from the recents list or a loaded list
-// continues THAT list. A pasted YouTube playlist switches to playlist
-// mode (the iframe streams the list; transport forwards to the
-// player). When a queue exhausts, the station continues (the gym's
-// radio never stops mid-set). The player host
+// continues THAT list. A pasted YouTube link switches to playlist
+// mode (the iframe streams the list) or plays the single video. When
+// a queue exhausts, playback STOPS — nothing the owner didn't pick
+// ever auto-plays. The player host
 // (utils/youtube/playerHost.ts) reacts to changes and reports state
 // back — including playback ERRORS, which land in the Error section
 // as a notice the sheet surfaces. The 5 SECTION markers below are
@@ -47,7 +47,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from '../utils/storage';
-import { DEFAULT_STATION_ID } from '../constants';
 
 export interface QueuedTrack {
   videoId: string;
@@ -96,6 +95,10 @@ interface MusicState {
   playNow: (track: QueuedTrack, rest: QueuedTrack[]) => void;
   /** Stream a pasted YouTube playlist (mode shift; queue unused). */
   playPlaylist: (playlistId: string) => void;
+  /** Replace the current track's display meta (the paste-a-video path
+   *  plays immediately with a placeholder; the real title lands when
+   *  the API answers). No-op when the video is no longer current. */
+  updateCurrentMeta: (videoId: string, title: string, artist: string | null) => void;
   next: () => void;
   prev: () => void;
   setPlaying: (playing: boolean) => void;
@@ -148,6 +151,14 @@ export const useMusicStore = create<MusicState>()(
       playPlaylist: (playlistId) =>
         set({ playlistId, queue: [], index: 0, current: null, playing: true }),
 
+      updateCurrentMeta: (videoId, title, artist) => {
+        const { current, queue, index } = get();
+        if (current?.videoId !== videoId) return;
+        const updated = { ...current, title, artist };
+        const nextQueue = queue.map((t, i) => (i === index ? updated : t));
+        set({ current: updated, queue: nextQueue });
+      },
+
       next: () => {
         const { queue, index, playlistId } = get();
         if (playlistId) {
@@ -157,15 +168,9 @@ export const useMusicStore = create<MusicState>()(
         }
         const nextIndex = index + 1;
         if (nextIndex >= queue.length) {
-          // An exhausted queue (something WAS playing) hands off to the
-          // station — music continues instead of stopping mid-gym. A
-          // next() with nothing queued keeps the old behavior (stop).
-          if (queue.length === 0) {
-            set({ playing: false });
-            return;
-          }
-          get().playPlaylist(DEFAULT_STATION_ID);
-          get().reportPlaybackError('Queue done — the station continues');
+          // Queue done — stop. Nothing the owner didn't pick ever
+          // auto-plays (no station fall-in, by owner decision).
+          set({ playing: false });
           return;
         }
         set({ index: nextIndex, current: queue[nextIndex], playing: true });

@@ -19,8 +19,14 @@ import { useAppTheme, useToast } from '../../context';
 import { useMusicStore, type QueuedTrack } from '../../stores';
 import { useMusicPicks } from '../../hooks/queries';
 import { useSaveMusicPick } from '../../hooks/mutations';
-import { searchTracks, parsePlaylistId, type MusicTrack } from '../../services/musicService';
-import { YOUTUBE_SEARCH_ENABLED, DEFAULT_STATION_ID } from '../../constants';
+import {
+  searchTracks,
+  parseVideoTitle,
+  parseYouTubeRef,
+  fetchVideoTitle,
+  type MusicTrack,
+} from '../../services/musicService';
+import { YOUTUBE_SEARCH_ENABLED } from '../../constants';
 import { GAUGE, theme } from '../../constants';
 import { bootMusicPlayer, syncFromStore } from '../../utils/youtube/playerHost';
 
@@ -43,6 +49,7 @@ export function MusicSheet() {
   const setSheetOpen = useMusicStore((s) => s.setSheetOpen);
   const playNow = useMusicStore((s) => s.playNow);
   const playPlaylist = useMusicStore((s) => s.playPlaylist);
+  const updateCurrentMeta = useMusicStore((s) => s.updateCurrentMeta);
   const current = useMusicStore((s) => s.current);
   const playlistId = useMusicStore((s) => s.playlistId);
   const playing = useMusicStore((s) => s.playing);
@@ -70,6 +77,7 @@ export function MusicSheet() {
   const [results, setResults] = useState<MusicTrack[] | null>(null);
   const [searchFailed, setSearchFailed] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [pasteOpen, setPasteOpen] = useState(false);
   const [pasteValue, setPasteValue] = useState('');
 
   // R1: a search in flight when the sheet unmounts must not touch
@@ -100,6 +108,35 @@ export function MusicSheet() {
     setResults(found);
     setSearchFailed(found == null);
     setSearching(false);
+  };
+
+  // The paste path takes ANY YouTube link: a video (plays now, with
+  // the real title landing when the API answers) or a playlist
+  // (playlist mode). Search is the primary path; this is the escape
+  // hatch, so it sits behind its own button until wanted.
+  const playFromPaste = async () => {
+    const ref = parseYouTubeRef(pasteValue);
+    if (!ref) {
+      showToast('error', 'That is not a YouTube link.');
+      return;
+    }
+    if (ref.kind === 'playlist') {
+      playPlaylist(ref.playlistId);
+    } else {
+      const placeholder: QueuedTrack = {
+        videoId: ref.videoId,
+        title: 'Pasted track',
+        artist: null,
+      };
+      playNow(placeholder, []);
+      savePick.mutate(placeholder);
+      const real = await fetchVideoTitle(ref.videoId);
+      if (!aliveRef.current || real == null) return;
+      const parsed = parseVideoTitle(real);
+      updateCurrentMeta(ref.videoId, parsed.title, parsed.artist);
+    }
+    setPasteValue('');
+    setPasteOpen(false);
   };
 
   const recentsAsTracks: MusicTrack[] = useMemo(
@@ -137,7 +174,7 @@ export function MusicSheet() {
         </View>
       ) : (
         <Text style={[styles.hint, { color: colors.textMuted }]}>
-          Paste a playlist below — or set EXPO_PUBLIC_YOUTUBE_API_KEY to enable song search.
+          Use the link button below — or set EXPO_PUBLIC_YOUTUBE_API_KEY to enable song search.
         </Text>
       )}
 
@@ -189,62 +226,55 @@ export function MusicSheet() {
         </View>
       ) : null}
 
-      {/* THE STATION — the default mix, one tap (moidotsh parity,
-          zero setup). */}
+      {/* THE PASTE — any YouTube link (video or playlist), behind its
+          own button: search is the primary path, this is the escape
+          hatch (the owner's call — collapsed until wanted). */}
       <View style={styles.block}>
-        <Pressable
-          onPress={() => playPlaylist(DEFAULT_STATION_ID)}
-          accessibilityRole="button"
-          accessibilityLabel="Play the default station"
-          style={({ pressed }) => [
-            styles.stationButton,
-            { borderColor: colors.mobilePremium.hairlineBorderStrong },
-            pressed ? { opacity: 0.6 } : null,
-          ]}
-          testID="music-station"
-        >
-          <Play size={16} color={colors.text} />
-          <Text style={[styles.stationWord, { color: colors.text }]}>
-            THE STATION · DEFAULT MIX
-          </Text>
-        </Pressable>
-      </View>
-
-      {/* THE PASTE — any playlist link. */}
-      <View style={styles.block}>
-        <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
-          PLAY FROM A PLAYLIST LINK
-        </Text>
-        <View style={styles.pasteRow}>
-          <View style={styles.pasteInputHold}>
-            <MobileInput
-              label=""
-              value={pasteValue}
-              onChangeText={setPasteValue}
-              placeholder="youtube.com/playlist?list=…"
-              testID="music-paste"
-            />
+        {pasteOpen ? (
+          <View style={styles.pasteRow}>
+            <View style={styles.pasteInputHold}>
+              <MobileInput
+                label=""
+                value={pasteValue}
+                onChangeText={setPasteValue}
+                placeholder="YouTube link — song or playlist…"
+                onSubmitEditing={() => void playFromPaste()}
+                returnKeyType="go"
+                testID="music-paste"
+              />
+            </View>
+            <Pressable
+              onPress={() => void playFromPaste()}
+              accessibilityRole="button"
+              accessibilityLabel="Play pasted link"
+              style={({ pressed }) => [
+                styles.pasteVerb,
+                { borderColor: colors.mobilePremium.hairlineBorderStrong },
+                pressed ? { opacity: 0.6 } : null,
+              ]}
+              testID="music-paste-play"
+            >
+              <Text style={[styles.pasteVerbWord, { color: colors.text }]}>PLAY</Text>
+            </Pressable>
           </View>
+        ) : (
           <Pressable
-            onPress={() => {
-              const id = parsePlaylistId(pasteValue);
-              if (id) {
-                playPlaylist(id);
-                setPasteValue('');
-              }
-            }}
+            onPress={() => setPasteOpen(true)}
             accessibilityRole="button"
-            accessibilityLabel="Play playlist"
+            accessibilityLabel="Play from a YouTube link"
             style={({ pressed }) => [
-              styles.pasteVerb,
+              styles.stationButton,
               { borderColor: colors.mobilePremium.hairlineBorderStrong },
               pressed ? { opacity: 0.6 } : null,
             ]}
-            testID="music-paste-play"
+            testID="music-paste-open"
           >
-            <Text style={[styles.pasteVerbWord, { color: colors.text }]}>PLAY</Text>
+            <Play size={16} color={colors.text} />
+            <Text style={[styles.stationWord, { color: colors.text }]}>
+              PLAY FROM A LINK
+            </Text>
           </Pressable>
-        </View>
+        )}
       </View>
 
       {/* THE TRANSPORT — now playing + prev/play/next. */}

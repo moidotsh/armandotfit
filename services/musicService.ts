@@ -92,3 +92,58 @@ export function parsePlaylistId(input: string): string | null {
   const m = v.match(/[?&]list=([A-Za-z0-9_-]+)/);
   return m ? m[1] : null;
 }
+
+/** What a pasted YouTube reference resolves to. */
+export type YouTubeRef =
+  | { kind: 'video'; videoId: string }
+  | { kind: 'playlist'; playlistId: string };
+
+/**
+ * Resolve ANY pasted YouTube reference — a video link (youtu.be/ID,
+ * watch?v=ID), a playlist link or bare playlist ID, or a bare 11-char
+ * video ID. The paste path is link-shaped: paste what YouTube gives
+ * you and it plays. Order matters: list= beats v= when both ride one
+ * URL (a video URL with a list context plays the LIST, matching what
+ * the user copied from).
+ */
+export function parseYouTubeRef(input: string): YouTubeRef | null {
+  const v = input.trim();
+  if (v.length === 0) return null;
+  // Playlist first: bare playlist-shaped IDs, then any URL with list=.
+  const playlist = parsePlaylistId(v);
+  if (playlist) return { kind: 'playlist', playlistId: playlist };
+  // Video URL forms.
+  const watch = v.match(/[?&]v=([A-Za-z0-9_-]{11})/);
+  if (watch) return { kind: 'video', videoId: watch[1] };
+  const short = v.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
+  if (short) return { kind: 'video', videoId: short[1] };
+  const shorts = v.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/);
+  if (shorts) return { kind: 'video', videoId: shorts[1] };
+  // Bare 11-char token — a video ID by elimination (playlists matched
+  // their longer prefixed shapes above).
+  if (/^[A-Za-z0-9_-]{11}$/.test(v)) return { kind: 'video', videoId: v };
+  return null;
+}
+
+/**
+ * Fetch one video's display title (the paste-a-video path has no
+ * title until asked). Keyed only; null when keyless or the API
+ * declines — the caller plays with a placeholder label instead.
+ */
+export async function fetchVideoTitle(videoId: string): Promise<string | null> {
+  if (!YOUTUBE_API_KEY) return null;
+  const url =
+    `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}` +
+    `&key=${YOUTUBE_API_KEY}`;
+  try {
+    const res = await fetchWithRetry(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new AppError(`YouTube videos HTTP ${res.status}`, ErrorCode.SERVER_ERROR);
+    const payload = (await res.json()) as {
+      items?: Array<{ snippet?: { title?: string } }>;
+    };
+    return payload.items?.[0]?.snippet?.title ?? null;
+  } catch (e) {
+    logger.warn('api', 'YouTube video lookup failed:', e instanceof Error ? e.message : e);
+    return null;
+  }
+}

@@ -6,7 +6,7 @@ export { APP_DISPLAY_NAME } from './displayName';
 // repos, not the shell.
 
 export { theme } from './theme';
-export { YOUTUBE_API_KEY, YOUTUBE_SEARCH_ENABLED, DEFAULT_STATION_ID } from './youtube';
+export { YOUTUBE_API_KEY, YOUTUBE_SEARCH_ENABLED } from './youtube';
 export type { ColorScheme, ColorPalette } from './theme';
 export { DURATION, ANIMATION_CONFIG, RESIZE_MEASUREMENT_DEBOUNCE, ANIMATION } from './animation';
 export {

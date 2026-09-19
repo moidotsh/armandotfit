@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { parseVideoTitle, parseSearchResponse, parsePlaylistId } from '../../services/musicService';
+import {
+  parseVideoTitle,
+  parseSearchResponse,
+  parsePlaylistId,
+  parseYouTubeRef,
+} from '../../services/musicService';
 import { useMusicStore } from '../../stores/musicStore';
 
 describe('parseVideoTitle (the moidotsh convention)', () => {
@@ -32,6 +37,40 @@ describe('parseSearchResponse', () => {
       { videoId: 'abc', title: 'One', artist: 'A' },
       { videoId: 'def', title: 'Two', artist: null },
     ]);
+  });
+});
+
+describe('parseYouTubeRef (the paste path)', () => {
+  it('resolves video URLs in every common shape', () => {
+    expect(parseYouTubeRef('https://youtu.be/dQw4w9WgXcQ')).toEqual({
+      kind: 'video',
+      videoId: 'dQw4w9WgXcQ',
+    });
+    expect(parseYouTubeRef('https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=3')).toEqual({
+      kind: 'video',
+      videoId: 'dQw4w9WgXcQ',
+    });
+    expect(parseYouTubeRef('https://www.youtube.com/shorts/dQw4w9WgXcQ')).toEqual({
+      kind: 'video',
+      videoId: 'dQw4w9WgXcQ',
+    });
+    expect(parseYouTubeRef('dQw4w9WgXcQ')).toEqual({
+      kind: 'video',
+      videoId: 'dQw4w9WgXcQ',
+    });
+  });
+  it('resolves playlists — and list= beats v= when both ride one URL', () => {
+    expect(parseYouTubeRef('PL6fhs6TSspZv0F0YgsG-p7Mn189CU2XKS')).toEqual({
+      kind: 'playlist',
+      playlistId: 'PL6fhs6TSspZv0F0YgsG-p7Mn189CU2XKS',
+    });
+    expect(
+      parseYouTubeRef('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLabc1234567890xyz'),
+    ).toEqual({ kind: 'playlist', playlistId: 'PLabc1234567890xyz' });
+  });
+  it('rejects nothing-shaped input', () => {
+    expect(parseYouTubeRef('')).toBeNull();
+    expect(parseYouTubeRef('nonsense')).toBeNull();
   });
 });
 
@@ -74,19 +113,37 @@ describe('the music store queue semantics', () => {
     expect(useMusicStore.getState().current?.videoId).toBe('b');
     next();
     expect(useMusicStore.getState().current?.videoId).toBe('c');
-    // Queue exhausted → the STATION continues (music never stops
-    // mid-gym), announced by a playback notice.
+    // Queue exhausted → playback STOPS: nothing the owner didn't
+    // pick ever auto-plays (owner decision — no station fall-in).
     next();
     const after = useMusicStore.getState();
-    expect(after.playlistId).not.toBeNull();
-    expect(after.playing).toBe(true);
-    expect(after.playbackNotice?.message).toMatch(/station continues/i);
+    expect(after.playing).toBe(false);
+    expect(after.playlistId).toBeNull();
+    expect(after.current?.videoId).toBe('c');
   });
 
-  it('next with nothing queued still stops (no phantom station)', () => {
+  it('next with nothing queued stops quietly', () => {
     useMusicStore.getState().next();
     expect(useMusicStore.getState().playing).toBe(false);
     expect(useMusicStore.getState().playlistId).toBeNull();
+  });
+
+  it('updateCurrentMeta lands the real title on a pasted video', () => {
+    useMusicStore.getState().playNow(
+      { videoId: 'abcdefghijk', title: 'Pasted track', artist: null },
+      [],
+    );
+    useMusicStore.getState().updateCurrentMeta('abcdefghijk', 'Come As You Are', 'Nirvana');
+    const st = useMusicStore.getState();
+    expect(st.current).toEqual({
+      videoId: 'abcdefghijk',
+      title: 'Come As You Are',
+      artist: 'Nirvana',
+    });
+    expect(st.queue[0]).toEqual(st.current);
+    // A stale answer for a different video is ignored.
+    useMusicStore.getState().updateCurrentMeta('other video!', 'Nope', null);
+    expect(useMusicStore.getState().current?.title).toBe('Come As You Are');
   });
 
   it('prev walks back; handleEnded advances', () => {
