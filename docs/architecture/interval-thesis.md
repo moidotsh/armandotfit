@@ -54,6 +54,24 @@
 > r−b ≈ +3, the vignette even and subtle); the press dip; the 404;
 > the auth screens' composition (statement, open field, red links,
 > ink verb — generic by prescription, tightened by deltas 3–4).
+>
+> **LANDING.** Delta 1 grew in the landing, as sight findings do:
+> hunting the ring's radius exposed that NO gate could see any
+> `borderRadius` literal, and the sweep found the alert plate (12),
+> its icon disc (12), and the dev-only error boundary (8) — states
+> no walk had ever captured. All square now; the marks stay marks
+> (a 7px status dot's circle is information, not corner decoration —
+> the gate's threshold is mark scale 4). The square cut is enforced
+> at the source: `verify-design.ts` scans `borderRadius` literals in
+> the authored layer plus Motion.tsx. Deltas 1–6 landed across
+> 0d39fec2c (kit), ddbe908f7 (adder verb), aacf4a1de (auth mends),
+> 012acdb1b (empty state + edition pair); the same kit edits landed
+> domain-neutrally in the starter. The probe suite grew 15 → 21
+> optical assertions (focus ink+square, register one fact, forgot
+> verb, no-slash segments, one-line empty state, adder verb), each
+> proven failing against the before-gallery (`sight/twelfth-before`)
+> before its fix; after-gallery `sight/touch/` walks 21/21 green in
+> both modes, SE heights green.
 
 > **REVISION 2027-02 — THE SIGHT AMENDMENT (the eleventh pass; an
 > amendment, not a succession).** The first pass written with eyes.

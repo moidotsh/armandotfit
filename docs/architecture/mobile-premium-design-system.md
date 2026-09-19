@@ -202,7 +202,7 @@ via the path alias, or `../MobilePremium` relatively).
 
 | Component | Purpose |
 |---|---|
-| `MobileInput` | Text input with label, optional helper / error slot, and focus ring. Optional `onSubmitEditing` + `returnKeyType` expose the submit path (Enter / return key) for search boxes, chat composers, and quick-add fields. |
+| `MobileInput` | Text input with label, optional helper / error slot, and focus ring. The focus cue is ink on the square cut (see Respond below). Optional `onSubmitEditing` + `returnKeyType` expose the submit path (Enter / return key) for search boxes, chat composers, and quick-add fields. |
 | `MobileSelect` | Bottom-sheet selector with a 54px trigger. Takes a `sheetRenderer` slot for the sheet content. Both the trigger (`group` style) and the portal sheet panel spread `...MOBILE_CONTENT_WIDTH_STYLE` so the sheet stays in the 420pt centered column on any viewport — SB2-portal enforces the spread on the panel by naming convention. |
 
 ### Buttons
@@ -237,7 +237,7 @@ via the path alias, or `../MobilePremium` relatively).
 
 | Component | Purpose |
 |---|---|
-| `MobileAlert` | Inline alert with a 24px icon circle. `variant: 'success' \| 'warning' \| 'error' \| 'info'`. |
+| `MobileAlert` | Inline alert with a 24px square icon plate (rides `theme.shapes.control`). `variant: 'success' \| 'warning' \| 'error' \| 'info'`. |
 | `Toast` (primitives) | The transient-message surface (`ToastContainer`, mounted by the shell). Two surface languages read `theme.toast.style` (§5.3): `'card'` — bordered card, colored icon, left stripe (the glass default); `'chit'` — the ink plate with paper type, one 7px status dot, receipt-mono message when `fonts.mono` is declared, flat air. Items carry `accessibilityLiveRegion="polite"`; the card radius reads `theme.shapes.control`. |
 | `EmptyState` | The canonical empty-state primitive. Domain-neutral: consumer supplies title, optional message, optional icon, and optional action. The action renders through `MobilePrimaryButton` so the tap target + variant language (primary/secondary/ghost) match the rest of the kit — pick the variant by context (primary when EmptyState is the screen's main content, secondary/ghost when nested). Compact mode trims the vertical rhythm for nested use. No preset copy, no icon library, no variant codes — those stay consumer-side. |
 | `OfflineBanner` | Pinned connectivity / sync banner. Three variants carry distinct semantics: `'offline'` (error red — device is offline; optional pending count), `'syncing'` (brand — online and flushing pending work), `'sync-failed'` (warning amber — a sync attempt failed; pair with `actionLabel="Retry"` + `onAction`). Purely presentational: the consumer owns network state, queue state, and mount/unmount. No store subscription, no polling, no auto-hide. Respects its parent's layout — does not pin itself to the screen. Uses `accessibilityLiveRegion="polite"` so screen readers announce state changes; the `status` role is omitted because RN's `AccessibilityRole` enum does not include it. |
@@ -627,7 +627,14 @@ new. Under reduced motion: fade-only.
 
 `useFocusRing()` is the input-focus counterpart. Apply to `MobileInput`
 — it already wires it internally; reach for the hook directly only if
-you're building a new input primitive.
+you're building a new input primitive. The ring takes the host's
+`radius` (default 0 — a ring never invents a corner the trigger
+doesn't have). `MobileInput` passes `theme.shapes.control`, snaps the
+ring (no fade), draws no halo, and defaults its accent to the mode's
+ink: **focus is an ink moment, never a brand moment** — on any
+consumer whose brand reads as an alarm hue, a brand focus ring is
+indistinguishable from the error state. Pass `accentColor` to borrow
+the brand deliberately.
 
 ### Placeholder — `useShimmer`
 
