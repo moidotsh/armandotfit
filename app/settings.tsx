@@ -1,6 +1,6 @@
 // app/settings.tsx
-// THE BOARD PAGE's colophon (docs/architecture/
-// quiet-page-thesis.md §6): "This is how it's set." No nameplate, no
+// THE PANEL — the scoreboard's colophon (docs/architecture/
+// scoreboard-thesis.md §8): "This is how it's set." No nameplate, no
 // email kicker, no info panel, no section chrome — the current theme
 // IS the statement (restating with every pick); the preference rows
 // keep their ink-invert selection; the rest-day measure keeps its
@@ -18,15 +18,15 @@ import { BoardShell } from '../components/composed';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile, usePwaPrompt } from '../hooks';
-import { DAY_OF_WEEK_LABELS, BLOCK_GAP, GAUGE, theme } from '../constants';
+import { DAY_OF_WEEK_LABELS, BLOCK_GAP, SCOREBOARD, theme } from '../constants';
 import { useToast } from '../context';
 import { useRestStore } from '../stores';
 import { logger } from '../utils/logger';
 import type { WeightUnit } from '../shared/types';
 
 const PREFERENCE_LABELS: Record<ColorSchemePreference, string> = {
-  light: 'Enamel',
-  dark: 'Night gym',
+  light: 'Card',
+  dark: 'Board',
   system: 'System',
 };
 
@@ -70,9 +70,9 @@ export default function SettingsScreen() {
   // throughout; utils/weight.ts owns the arithmetic).
   const weightUnit = profileQuery.data?.weightUnit ?? 'kg';
 
-  // THE REST INSTRUMENT's remembered default (gauge-thesis §7): the
-  // interval a fresh rest starts with. ±15s steppers, mono readout —
-  // the panel row that tunes the Floor's clock.
+  // THE REST INSTRUMENT's remembered default (scoreboard-thesis §7):
+  // the interval a fresh rest starts with. ±15s steppers, mono
+  // readout — the panel row that tunes the Floor's clock.
   const restDefaultSec = useRestStore((s) => s.defaultSec);
   const setRestDefault = useCallback((next: number) => {
     useRestStore.setState({
@@ -123,7 +123,7 @@ export default function SettingsScreen() {
                     { color: isActive ? colors.background : colors.text },
                   ]}
                 >
-                  {pref === 'light' ? 'ENAMEL' : pref === 'dark' ? 'NIGHT' : 'SYSTEM'}
+                  {pref === 'light' ? 'CARD' : pref === 'dark' ? 'BOARD' : 'SYSTEM'}
                 </Text>
               </Pressable>
             );
@@ -348,19 +348,19 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
   },
   block: {
-    ...GAUGE.block,
+    ...SCOREBOARD.block,
   },
   statement: {
-    ...GAUGE.statement,
+    ...SCOREBOARD.statement,
   },
   // The unit measure's inline label — the printed word beside its
   // tiles, on one line.
   unitInlineLabel: {
-    ...GAUGE.whisper,
+    ...SCOREBOARD.whisper,
     marginRight: 8,
   },
   whisper: {
-    ...GAUGE.whisper,
+    ...SCOREBOARD.whisper,
     marginBottom: 8,
   },
   // THE REST INSTRUMENT's panel row: the printed label, the ±
@@ -390,7 +390,6 @@ const styles = StyleSheet.create({
   },
   restIntervalFigure: {
     ...theme.typography.mobileFigure,
-    fontSize: 21,
     fontWeight: '600',
     fontVariant: ['tabular-nums'],
     minWidth: 64,
