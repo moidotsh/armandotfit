@@ -169,16 +169,11 @@ export default function SplitSelectionScreen() {
   const statement = selectedSlot?.isRestDay
     ? 'Rest day'
     : getDayTitle(split, draftDay) || `Day ${draftDay}`;
-  // One fact line — what the edition trains, and the counts. The
-  // AM/PM window is NOT in the line: the segmented control right
-  // below is the state display, and the repeated segment was what
-  // pushed the fact past one printed line (the sight amendment).
-  const fact = [
-    targets.length > 0 && !selectedSlot?.isRestDay ? targets.join(' · ') : null,
-    `${previewSlots.length} lift${previewSlots.length === 1 ? '' : 's'}`,
-  ]
-    .filter(Boolean)
-    .join(' — ');
+  // One fact line — what the edition trains. The lift count is NOT
+  // in the line: the plan register below IS the count (four rows say
+  // four), and the dropped segment keeps one wide-mono line inside
+  // the column on SE (the 490px law + the no-ellipsis law together).
+  const fact = targets.length > 0 && !selectedSlot?.isRestDay ? targets.join(' · ') : null;
 
   return (
     <BoardShell
