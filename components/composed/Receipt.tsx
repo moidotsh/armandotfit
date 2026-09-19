@@ -185,7 +185,7 @@ export function Receipt({ id }: ReceiptProps) {
                 loading={deleteSessionMutation.isPending}
                 testID="workout-detail-delete"
               >
-                {confirmDelete ? 'Tap again to delete' : 'Delete session'}
+                {confirmDelete ? 'TAP AGAIN TO DELETE' : 'DELETE SESSION'}
               </MobilePrimaryButton>
             </MobileActionFooter>
           </View>
