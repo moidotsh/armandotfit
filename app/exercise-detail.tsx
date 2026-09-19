@@ -147,9 +147,15 @@ export default function ExerciseDetailScreen() {
               owner excludes/re-includes at will. */}
           {trajectory && trajectory.points.length >= 2 ? (
             <View style={styles.block}>
-              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
-                THE TRAJECTORY
-              </Text>
+              {trajectory && trajectory.points.length >= 2 ? (
+                <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+                  {`THE TRAJECTORY · ${trajectory.points.length} SESSIONS`}
+                </Text>
+              ) : (
+                <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+                  THE TRAJECTORY
+                </Text>
+              )}
               {trajectory.groups.length > 1 ? (
                 <View style={styles.variantChips}>
                   <FilterChipGroup>
@@ -174,8 +180,10 @@ export default function ExerciseDetailScreen() {
               ) : null}
               {visiblePoints.length >= 2 ? (
                 <View testID="entry-trajectory">
-                  {/* The trajectory's own first line — first → last,
-                      the trend stated in one figure. */}
+                  {/* The trajectory's own first line — first → last, the
+                      trend stated in one line of pure figures (the
+                      session count rides the section whisper; a word
+                      inside a figure line broke the line mid-figure). */}
                   {(() => {
                     const first = visiblePoints[0];
                     const last = visiblePoints[visiblePoints.length - 1];
@@ -184,7 +192,7 @@ export default function ExerciseDetailScreen() {
                     const pct = w0 > 0 ? Math.round(((w1 - w0) / w0) * 100) : 0;
                     return (
                       <Text style={[styles.trendLine, { color: colors.text }]} testID="entry-trend">
-                        {`${w0} → ${w1} ${unit} · ${pct >= 0 ? '+' : ''}${pct}% · ${visiblePoints.length} SESSIONS`}
+                        {`${w0} → ${w1} ${unit} · ${pct >= 0 ? '+' : ''}${pct}%`}
                       </Text>
                     );
                   })()}

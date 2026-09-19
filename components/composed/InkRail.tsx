@@ -142,7 +142,7 @@ export function InkRail({
     >
       <View style={[styles.plate, { backgroundColor: colors.card }]}>
         <Text style={[styles.plateEyebrow, { color: colors.textMuted }]}>
-          SWAP BENCH · RANKED BY MUSCLES + EQUIPMENT
+          THE SWAP BENCH
         </Text>
         <View style={styles.list}>
           {items.rows.map((item) => (

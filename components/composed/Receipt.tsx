@@ -107,11 +107,23 @@ export function Receipt({ id }: ReceiptProps) {
               testID="receipt-tonnage"
             />
             <Text style={[styles.factLine, { color: colors.textMuted }]} numberOfLines={1}>
-              {`${new Date(session.startedAt).toLocaleDateString(undefined, {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-              })} · ${eraFor(new Date(session.startedAt).toISOString().slice(0, 10))} · ${session.splitDay != null ? `D${session.splitDay}` : 'ad-hoc'}${windowLabel ? ` · ${windowLabel}` : ''} · ${session.exercises.length} lifts · ${totalSets} sets`}
+              {[
+                new Date(session.startedAt).toLocaleDateString(undefined, {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                }),
+                // The era can be empty (a date before the first era) —
+                // empty parts never join (the printed `· ·` was a
+                // fact line lying about its segments).
+                eraFor(new Date(session.startedAt).toISOString().slice(0, 10)) || null,
+                session.splitDay != null ? `D${session.splitDay}` : 'ad-hoc',
+                windowLabel,
+                `${session.exercises.length} lifts`,
+                `${totalSets} sets`,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </Text>
           </View>
 
