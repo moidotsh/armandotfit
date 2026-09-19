@@ -55,6 +55,12 @@ export const queryKeys = {
     history: (daysBack = 30) => [...queryKeys.analytics.all, 'history', daysBack] as const,
   },
 
+  /** Music picks (the persisted recents list). */
+  music: {
+    all: ['music'] as const,
+    picks: () => [...queryKeys.music.all, 'picks'] as const,
+  },
+
   /** Streaks (RPC-computed). */
   streaks: {
     current: () => ['streaks', 'current'] as const,

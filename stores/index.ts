@@ -33,3 +33,4 @@ export {
 // THE REST INSTRUMENT (gauge-thesis §7) — the rest countdown's
 // ephemeral deadline + the persisted interval preference.
 export { useRestStore, REST_MAX_SEC } from './restStore';
+export { useMusicStore, type QueuedTrack } from './musicStore';

@@ -47,7 +47,7 @@ import {
   SYSTEM_EXERCISES,
   SYSTEM_EXERCISES_BY_SLUG,
 } from '../shared/exercises';
-import { useSplitPreferenceStore, useWorkoutStore } from '../stores';
+import { useSplitPreferenceStore, useWorkoutStore, useMusicStore } from '../stores';
 import { useDashboardSummary, useRecentSessionDetails, useTopSetsByName } from '../hooks';
 
 const RECENT_COUNT = 3;
@@ -59,6 +59,7 @@ export default function HomeScreen() {
   const topSets = useTopSetsByName();
   const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
+  const setMusicOpen = useMusicStore((s) => s.setSheetOpen);
 
   const streak = summaryQuery.data?.streak;
   const recent = recentQuery.data ?? [];
@@ -225,6 +226,7 @@ export default function HomeScreen() {
           navigateToProgression,
           'home-index-progress',
         )}
+        {jumpLine('Music', 'search · play', () => setMusicOpen(true), 'home-index-music')}
       </View>
 
       {/* Recent sessions — one Martian line each; the latest leads. */}

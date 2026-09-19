@@ -11,4 +11,8 @@ export {
   UserProfileRepository,
 } from './UserProfileRepository';
 export { BaseRepository } from './BaseRepository';
+export {
+  musicPickRepository,
+  MusicPickRepository,
+} from './MusicPickRepository';
 export * from './types';

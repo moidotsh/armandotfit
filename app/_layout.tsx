@@ -38,6 +38,7 @@ import { AuthProvider, ToastProvider, ThemeProvider, useAppTheme } from '../cont
 import { AuthGuard, ToastContainer, AppErrorBoundary } from '../components/primitives';
 import { QueryProvider } from '../lib/react-query';
 import { RouteCurtain, OfflineBanner } from '../components/MobilePremium';
+import { MusicSheet } from '../components/composed';
 import { Z_INDEX } from '../constants';
 import { useIsOnline } from '../stores';
 
@@ -190,6 +191,9 @@ function RootShell() {
                   }}
                 />
                 <ToastContainer />
+                {/* THE MUSIC SURFACE — the hidden player + sheet mount
+                    once at the root: audio persists across routes. */}
+                <MusicSheet />
                 {!isOnline ? (
                   <OfflineBanner
                     variant="offline"

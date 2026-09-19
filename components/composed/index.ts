@@ -34,3 +34,4 @@ export { QueryErrorNote, type QueryErrorNoteProps } from './QueryErrorNote';
 export { AppShellHeader } from './AppShellHeader';
 export { RootGestureProvider } from './RootGestureProvider';
 export { ScreenScaffold } from './ScreenScaffold';
+export { MusicSheet } from './MusicSheet';
