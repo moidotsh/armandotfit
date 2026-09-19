@@ -263,9 +263,10 @@ corrects only its RANK:
 - **While rest runs:** the clock reads `1:30` at THE COUNTER (72,
   red — the live pulse), the ±15 steppers flanking it, the figure
   itself the dismiss target. The armed expression demotes to the
-  statement rank (36, muted — both fields; the armed field keeps
-  its 2px rule, so the steppers' target is never in doubt). LOG SET
-  stays full-width ink: logging early is always one tap.
+  statement rank (36 mono, muted — both fields; the armed field at
+  500 keeps its 2px rule against the unarmed 400, so the steppers'
+  target is never in doubt). LOG SET stays full-width ink: logging
+  early is always one tap.
 - **At settle:** the haptic fires, NEXT brightens, the expression
   re-weights to the counter (72, ink, armed 700 / unarmed 400
   muted), and the rest collapses to the quiet row (`REST 0:00`
@@ -433,9 +434,11 @@ balance line (computed → rendered); the receipt head (36 → 72).
    step; LOG still commits. At settle, the expression re-weights to
    72/700/ink and the readout mutes. Across both exchanges no
    content node's `transform` differs from `none`.
-5. **THE ARMED LADDER:** exactly one `armed-field-mark`; the armed
-   figure's computed weight 700 / full ink; the unarmed 400 /
-   muted — in both logger states.
+5. **THE ARMED LADDER:** exactly one `armed-field-mark`, and the
+   ladder is countable in both logger states — WORK: armed 700 /
+   full ink vs unarmed 400 / muted at the counter; REST: the whole
+   expression demoted to muted at the statement rank with the armed
+   field 500 + the rule against the unarmed 400.
 6. **Geometry:** every interactive box ≥44px; the primary verb
    fully visible at 390×667 AND 390×844 (rest state included on
    the Floor); desktop 1280×800 — nothing straddles the centered

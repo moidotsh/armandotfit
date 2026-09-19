@@ -1,17 +1,19 @@
 // components/composed/Floor.tsx
 //
 // THE FLOOR — the live session, the flagship (docs/architecture/
-// scoreboard-thesis.md §8). ONE scrollable document: the session
-// board sits ABOVE the station as REGISTER LINES (name · leader ·
-// the done/target figure — position is the order, the figure is the
-// progress; status words and tiles are gone), the station follows
-// (name statement, TARGET whisper + THE COUNT figure, SWAP / REMOVE
-// furniture), the ledger audits in register lines (ordinal · leader ·
-// weight × reps), and THE LOGGER — THE ONE-FIELD INSTRUMENT — docks
-// below it all under the screen's one 2px rule, with THE REST LINE
-// counting recovery after every log. THE STILL SYSTEM: no pinned
-// strip, no crossfade — the logger never scrolls away and it carries
-// the rest.
+// interval-thesis.md §8). ONE scrollable document: the session
+// board sits ABOVE the station as RULED ROWS under a hairline (name
+// left · air · the done/target figure right — position is the
+// order, the figure is the progress; status words and tiles are
+// gone, and so is the board's title-row toggle: MAP is the board's
+// ONE toggle), the station follows (name statement, TARGET whisper
+// + THE COUNT figure, SWAP / REMOVE furniture), the ledger audits
+// in ruled rows (ordinal left · air · weight × reps right), and THE
+// LOGGER — THE ONE-FIELD INSTRUMENT — docks below it all under the
+// screen's one 2px rule. THE LIVE FIGURE alternates by the current
+// question: the rest clock while rest runs, the armed expression
+// otherwise — exchanged by REPAINT (THE STILL SYSTEM holds: no
+// pinned strip, no crossfade, the logger never scrolls away).
 //
 // Self-sufficient: reads the workout store directly (no prop drilling
 // of store actions) and composes useFloorSession for the draft
@@ -47,7 +49,7 @@ import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, type TopSe
 import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight, weightStep, hapticImpactLight } from '../../utils';
 import { useWorkoutStore, useIsOnline, useDeloadStore } from '../../stores';
 import { sessionSaveQueue } from '../../services';
-import { getDayTitle, TAG_VOCABULARY_SEED } from '../../shared/exercises';
+import { TAG_VOCABULARY_SEED } from '../../shared/exercises';
 import {
   theme,
   MOBILE_CONTENT_WIDTH_STYLE,
@@ -391,7 +393,6 @@ export function Floor() {
     setFinishOpen(false);
   };
 
-  const dayTitle = draft ? getDayTitle(draft.splitType, draft.day) : null;
 
   // The pips' ask: the program's set count when present, extended as
   // extra sets land; a free draw when the station has no Rx.
@@ -453,7 +454,7 @@ export function Floor() {
             testID="stage-map"
           >
             <Text style={[styles.headerWord, { color: colors.text }]}>
-              {mapCollapsed || !atTop ? 'MAP ▲' : 'MAP ▼'}
+              MAP
             </Text>
           </Pressable>
           <View style={styles.stageHeaderCenter}>
@@ -496,10 +497,13 @@ export function Floor() {
           onLayout={(e) => setScrollerH(Math.floor(e.nativeEvent.layout.height))}
           testID="floor-scroll"
         >
-          {/* THE SESSION BOARD — the whole day at a glance, ruled
-              register lines under a hairline. Pull up (or tap MAP) to
-              read it; every row is a jump; the current row sets bold
-              ink, done rows carry their figure. */}
+          {/* THE SESSION BOARD — the whole day at a glance: hairline +
+              ruled rows, nothing else (the title-row toggle is
+              deleted — MAP is the board's one toggle; the day's name
+              already states itself on the statement above). Pull up
+              (or tap MAP) to read it; every row is a jump; the
+              current row sets bold ink, done rows carry their
+              figure. */}
           <View
             style={[styles.boardPanel, { borderTopColor: colors.mobilePremium.hairlineBorder }]}
             onLayout={(e) => {
@@ -509,30 +513,6 @@ export function Floor() {
             }}
             testID="floor-map"
           >
-            {/* The board's title row IS the collapse toggle: the day
-                at a glance, or folded to one line when the station
-                owns the screen. */}
-            <Pressable
-              onPress={() => {
-                openingSettledRef.current = true;
-                setMapCollapsed((c) => !c);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={
-                mapCollapsed
-                  ? `Expand session board, ${exercises.length} stations`
-                  : `Collapse session board, ${exercises.length} stations`
-              }
-              style={({ pressed }) => [styles.boardToggle, pressed ? { opacity: 0.6 } : null]}
-              testID="floor-map-toggle"
-            >
-              <Text style={[styles.boardTitle, { color: colors.textMuted }]} numberOfLines={1}>
-                {`${dayTitle ? `${dayTitle} · ` : ''}${exercises.length} STATIONS`}
-              </Text>
-              <Text style={[styles.boardChevron, { color: colors.textMuted }]}>
-                {mapCollapsed ? '▾' : '▴'}
-              </Text>
-            </Pressable>
             {mapCollapsed ? null : exercises.map((ex, i) => {
               const isCurrent = i === index;
               const done = ex.sets.length;
@@ -888,22 +868,6 @@ const styles = StyleSheet.create({
   boardPanel: {
     borderTopWidth: 1,
     paddingVertical: 6,
-  },
-  boardToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-    minHeight: 44,
-    marginBottom: 4,
-  },
-  boardChevron: {
-    ...theme.typography.mobileEyebrow,
-    fontSize: 12,
-  },
-  boardTitle: {
-    ...theme.typography.mobileEyebrow,
-    flex: 1,
   },
   stationHead: {
     gap: 4,

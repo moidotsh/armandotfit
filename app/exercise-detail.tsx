@@ -114,16 +114,19 @@ export default function ExerciseDetailScreen() {
             </Text>
           </View>
 
-          {/* THE NUMBER TO BEAT — the last top set as a register line
-              under the red whisper; the date rides the fact line. */}
+          {/* THE NUMBER TO BEAT — the last top set as a ruled row
+              under its whisper. The FIGURE is the record (red); the
+              LABEL is furniture — muted ink, never red
+              (interval-thesis §2: furniture never wears the red). */}
           <View style={styles.lastBlock}>
             {lastTime ? (
               <>
-                <Text style={[styles.lastLabel, { color: colors.brandText }]}>
+                <Text style={[styles.lastLabel, { color: colors.textMuted }]}>
                   THE NUMBER TO BEAT
                 </Text>
                 <RegisterLine
                   label={`${lastTime.weight} × ${lastTime.reps}`}
+                  labelTone="record"
                   figure={lastTime.when}
                   figureTone="muted"
                   testID="entry-last-line"

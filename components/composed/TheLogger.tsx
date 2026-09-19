@@ -1,30 +1,35 @@
 // components/composed/TheLogger.tsx
 //
-// THE LOGGER — THE ONE-FIELD INSTRUMENT (docs/architecture/
-// scoreboard-thesis.md §8, the flagship's fastest surface). The
-// armed set reads as ONE EXPRESSION at figure scale — `62.5 × 8` in
-// mono 72, the biggest mark in the system — and THE ONE-FIELD LAW
-// governs it: exactly one field is armed at a time (the 2px ink
-// underline), one shared stepper pair steps the armed field by its
-// own step (2.5 kg / 1 rep), and tapping a field arms it — tapping
-// the armed field again opens the numeric keyboard for large jumps.
-// The most common log in existence (same weight, same reps as the
-// last set) still costs ONE THUMB, ONE TAP on LOG SET.
+// THE LOGGER — THE ONE-FIELD INSTRUMENT under THE INTERVAL (docs/
+// architecture/interval-thesis.md §2, §7 — the flagship's fastest
+// surface). THE LIVE FIGURE owns the counter rank, and the question
+// changes by the second:
 //
-// After every log, THE REST LINE counts recovery (thesis §7) —
-// steppers ±15s, tap the readout to dismiss, red while running.
+//   WORK  — the armed expression `62.5 × 8` at mono 72: the armed
+//           field 700 ink + the 2px rule, the UNARMED field demoted
+//           (400, muted — ink is state; three countable signals:
+//           rule, weight, ink).
+//   REST  — the clock takes the counter (72, red — the live pulse),
+//           the ±15 steppers flanking it, the figure itself the
+//           dismiss target; the armed expression demotes to the
+//           statement rank (36, muted — both fields; the armed one
+//           keeps its 2px rule so the steppers' target is never in
+//           doubt). LOG SET stays full-width ink: logging early is
+//           always one tap.
 //
-// 2027-01 refinements: the steppers HOLD TO REPEAT (400 ms delay,
-// 80 ms cadence — paired cleanup per R4a); the armed field RE-ARMS
-// PREDICTIVELY per set (`suggestArm` — the field the recent sets
-// were actually changing); and an EARNED step (`earnedStep`, the
-// double-progression derivation) offers itself as one tappable
-// whisper beside the kicker — advice in muted ink, never red.
+// The exchange is THE RE-WEIGHT — a repaint at LOG and at settle,
+// never an animation (THE STILL SYSTEM holds). THE ONE-FIELD LAW
+// governs both states: exactly one armed field, ONE shared stepper
+// pair stepping it by its own step (2.5 kg / 1 rep), tap to arm,
+// tap again to type. The most common log in existence still costs
+// ONE THUMB, ONE TAP on LOG SET.
 //
-// THE STILL SYSTEM: nothing here moves. The odometer roll, the pin
-// drop, and the shadow die with THE GAUGE — values swap instantly,
-// the logger docks under the screen's one 2px rule, and it is
-// tappable at frame 1, forever. Inputs parse to number|null (empty
+// 2027-01 refinements (behavior, unchanged): steppers HOLD TO
+// REPEAT (400 ms delay, 80 ms cadence — paired cleanup per R4a);
+// the armed field RE-ARMS PREDICTIVELY per set (`suggestArm`); an
+// EARNED step (`earnedStep`, the double-progression derivation)
+// offers itself as one tappable whisper beside the kicker — advice
+// in muted ink, never red. Inputs parse to number|null (empty
 // string → null — Number('') is 0, which would false-positive as
 // "0 kg").
 
@@ -138,13 +143,17 @@ function StepButton({
   );
 }
 
-/** One figure of the armed expression: the printed value (mono 72),
- * or the numeric keyboard while editing. The 2px ink underline marks
- * the ARMED field — position is state, not motion. */
+/** One figure of the armed expression: the printed value (mono) or
+ * the numeric keyboard while editing. INK IS STATE — the armed field
+ * carries the full voice (700 ink in work; 500 muted in rest), the
+ * unarmed field is always demoted (400, muted), and the 2px ink
+ * rule marks the ARMED field in both states — position is state,
+ * not motion (interval-thesis §2, §7). */
 function ExpressionField({
   value,
   editing,
   armed,
+  demoted,
   boxStyle,
   onDraft,
   commitDraft,
@@ -157,6 +166,10 @@ function ExpressionField({
   value: string;
   editing: boolean;
   armed: boolean;
+  /** The rest clock owns the counter — the whole expression demotes
+   * to the statement rank in muted ink (the rule still marks the
+   * armed field). */
+  demoted: boolean;
   boxStyle: object;
   onDraft: (text: string) => void;
   commitDraft: () => void;
@@ -181,7 +194,10 @@ function ExpressionField({
           autoFocus
           selectTextOnFocus
           accessibilityLabel={inputAccessibilityLabel}
-          style={[styles.input, { color: colors.text, outlineWidth: 0 }]}
+          style={[
+            demoted ? styles.inputDemoted : styles.input,
+            { color: colors.text, outlineWidth: 0 },
+          ]}
           testID={`${testID}-input`}
         />
       </View>
@@ -201,12 +217,17 @@ function ExpressionField({
       testID={testID}
     >
       <Text
-        style={[styles.figure, { color: colors.text }]}
+        style={[
+          demoted ? styles.figureDemoted : styles.figure,
+          !armed && (demoted ? styles.figureUnarmedDemoted : styles.figureUnarmed),
+          { color: armed && !demoted ? colors.text : colors.textMuted },
+        ]}
         numberOfLines={1}
       >
         {value}
       </Text>
-      {/* THE ARMED MARK — the 2px ink rule under the armed field. */}
+      {/* THE ARMED MARK — the 2px ink rule under the armed field,
+          in both states (the steppers' target is never in doubt). */}
       <View
         style={[styles.armedRule, { backgroundColor: armed ? colors.text : 'transparent' }]}
         testID={armed ? 'armed-field-mark' : undefined}
@@ -285,6 +306,10 @@ export function TheLogger({
   const weightText = weight == null ? '···' : String(weight);
   const repsText = reps == null ? '··' : String(Math.max(0, Math.round(reps)));
 
+  // THE LIVE QUESTION — while rest runs, the clock owns the counter
+  // and the expression demotes (interval-thesis §7).
+  const restRunning = rest != null && !rest.settled;
+
   return (
     <View
       testID={testID}
@@ -296,36 +321,66 @@ export function TheLogger({
       ]}
       accessibilityLabel={`Logger, set ${setNumber}: ${weight ?? 'no weight'} ${unit} by ${reps ?? 'no reps'} reps`}
     >
-      {/* THE REST LINE — recovery counts after every log (thesis §7).
-          Running: the readout carries the red (the live pulse);
-          settled: muted until the next log. ±15 steppers; tap the
-          readout to dismiss. */}
+      {/* THE REST INSTRUMENT, rank-corrected (thesis §7). While rest
+          RUNS the clock owns THE LIVE FIGURE — 72 mono in RED INK
+          (the live pulse), the ±15 steppers flanking it, the figure
+          itself the dismiss target; at settle the expression
+          re-weights back to the counter and recovery collapses to
+          the QUIET ROW (muted readout, tap to clear). The exchange
+          is a repaint — nothing moves (THE STILL SYSTEM). */}
       {rest ? (
-        <View style={styles.restRow} testID={`${tid}-rest`}>
-          <Pressable
-            onPress={rest.onDismiss}
-            accessibilityRole="button"
-            accessibilityLabel={`Rest ${rest.readout}${rest.settled ? ', finished' : ' running'} — tap to clear`}
-            style={({ pressed }) => [styles.restReadoutTap, pressed ? { opacity: 0.6 } : null]}
-            testID={`${tid}-rest-readout`}
-          >
-            <Text style={[styles.restWord, { color: colors.textMuted }]}>REST</Text>
-            <Text
-              style={[
-                styles.restFigure,
-                { color: rest.settled ? colors.textMuted : colors.brandText },
-              ]}
+        rest.settled ? (
+          <View style={styles.restRow} testID={`${tid}-rest`}>
+            <Pressable
+              onPress={rest.onDismiss}
+              accessibilityRole="button"
+              accessibilityLabel={`Rest ${rest.readout}, finished — tap to clear`}
+              style={({ pressed }) => [styles.restReadoutTap, pressed ? { opacity: 0.6 } : null]}
+              testID={`${tid}-rest-readout`}
             >
-              {rest.readout}
-            </Text>
-          </Pressable>
-          <View style={styles.restSteppers}>
+              <Text style={[styles.restWord, { color: colors.textMuted }]}>REST</Text>
+              <Text style={[styles.restFigure, { color: colors.textMuted }]}>
+                {rest.readout}
+              </Text>
+            </Pressable>
+            <View style={styles.restSteppers}>
+              <StepButton
+                dir={-1}
+                label="Decrease rest by 15 seconds"
+                onPress={() => rest.onAdjust(-REST_STEP_SEC)}
+                testID={`${tid}-rest-dec`}
+              />
+              <StepButton
+                dir={1}
+                label="Increase rest by 15 seconds"
+                onPress={() => rest.onAdjust(REST_STEP_SEC)}
+                testID={`${tid}-rest-inc`}
+              />
+            </View>
+          </View>
+        ) : (
+          <View style={styles.clockRow} testID={`${tid}-rest`}>
             <StepButton
               dir={-1}
               label="Decrease rest by 15 seconds"
               onPress={() => rest.onAdjust(-REST_STEP_SEC)}
               testID={`${tid}-rest-dec`}
             />
+            {/* The clock IS the dismiss target — the whole block. */}
+            <Pressable
+              onPress={rest.onDismiss}
+              accessibilityRole="button"
+              accessibilityLabel={`Rest ${rest.readout} running — tap to clear`}
+              style={({ pressed }) => [styles.clockTap, pressed ? { opacity: 0.6 } : null]}
+              testID={`${tid}-rest-readout`}
+            >
+              <Text style={[styles.clockWord, { color: colors.textMuted }]}>REST</Text>
+              <Text
+                style={[styles.clockFigure, { color: colors.brandText }]}
+              >
+                {rest.readout}
+              </Text>
+            </Pressable>
             <StepButton
               dir={1}
               label="Increase rest by 15 seconds"
@@ -333,7 +388,7 @@ export function TheLogger({
               testID={`${tid}-rest-inc`}
             />
           </View>
-        </View>
+        )
       ) : null}
 
       {/* The kicker — the set ordinal + the target, printed caps —
@@ -357,14 +412,17 @@ export function TheLogger({
         ) : null}
       </View>
 
-      {/* THE ARMED EXPRESSION — `62.5 × 8` at figure scale. The armed
-          field wears the 2px rule; values swap, nothing moves. */}
+      {/* THE ARMED EXPRESSION — `62.5 × 8` at the counter in work;
+          the statement rank, muted, while the clock runs. The armed
+          field wears the 2px rule in both states; values swap,
+          nothing moves — THE RE-WEIGHT is a repaint. */}
       <View style={styles.expressionRow}>
         <ExpressionField
           value={editing === 'weight' ? draftText : weightText}
           editing={editing === 'weight'}
           armed={field === 'weight' && editing === null}
-          boxStyle={styles.weightBox}
+          demoted={restRunning}
+          boxStyle={restRunning ? styles.weightBoxRest : styles.weightBox}
           onDraft={setDraftText}
           commitDraft={commitDraft}
           accessibilityLabel={`Weight, currently ${weight == null ? 'not set' : `${weight} ${unit}`} — tap to arm weight`}
@@ -376,12 +434,21 @@ export function TheLogger({
           }}
           testID={`${tid}-weight-tap`}
         />
-        <Text style={[styles.multiplier, { color: colors.textMuted }]}>×</Text>
+        <Text
+          style={[
+            styles.multiplier,
+            restRunning ? styles.multiplierDemoted : null,
+            { color: colors.textMuted },
+          ]}
+        >
+          ×
+        </Text>
         <ExpressionField
           value={editing === 'reps' ? draftText : repsText}
           editing={editing === 'reps'}
           armed={field === 'reps' && editing === null}
-          boxStyle={styles.repsBox}
+          demoted={restRunning}
+          boxStyle={restRunning ? styles.repsBoxRest : styles.repsBox}
           onDraft={setDraftText}
           commitDraft={commitDraft}
           accessibilityLabel={`Reps, currently ${reps == null ? 'not set' : reps} — tap to arm reps`}
@@ -465,6 +532,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
+  // ── THE CLOCK — the live figure while rest runs (thesis §7) ──────
+  // Steppers flank the readout; the whole clock block is the dismiss
+  // target (≥44px many times over). Red is the live pulse.
+  clockRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 2,
+    minHeight: 96,
+  },
+  clockTap: {
+    alignItems: 'center',
+    minWidth: 150,
+    minHeight: 96,
+    justifyContent: 'center',
+  },
+  clockWord: {
+    ...theme.typography.mobileEyebrow,
+    marginBottom: 2,
+  },
+  clockFigure: {
+    ...theme.typography.mobileCounter,
+  },
   kickerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -507,12 +598,50 @@ const styles = StyleSheet.create({
     minHeight: 78,
     justifyContent: 'flex-end',
   },
+  // The demoted boxes keep the WORK row's widths (nothing reflows
+  // horizontally when the question changes) and shrink to the
+  // statement rank's height.
+  weightBoxRest: {
+    width: 218,
+    minHeight: 42,
+    justifyContent: 'flex-end',
+  },
+  repsBoxRest: {
+    width: 96,
+    minHeight: 42,
+    justifyContent: 'flex-end',
+  },
+  // ── THE EXPRESSION'S LADDER (ink is state, thesis §2) ────────────
+  // Work: the armed figure rides the counter (700 ink); the unarmed
+  // demotes to 400 muted. Rest: the whole expression demotes to the
+  // statement rank in muted mono (armed 500 + the rule, unarmed 400).
   figure: {
     ...theme.typography.mobileCounter,
   },
-  // The edit-state input carries the counter's own geometry.
+  figureUnarmed: {
+    fontWeight: '400',
+  },
+  figureDemoted: {
+    ...theme.typography.mobileHero,
+    fontFamily: theme.typography.mobileCounter.fontFamily,
+    fontWeight: '500',
+    fontVariant: ['tabular-nums'],
+  },
+  figureUnarmedDemoted: {
+    fontWeight: '400',
+  },
+  // The edit-state input carries its rank's own geometry — typing
+  // never moves anything, in either state.
   input: {
     ...theme.typography.mobileCounter,
+    width: '100%',
+    textAlign: 'center',
+  },
+  inputDemoted: {
+    ...theme.typography.mobileHero,
+    fontFamily: theme.typography.mobileCounter.fontFamily,
+    fontWeight: '500',
+    fontVariant: ['tabular-nums'],
     width: '100%',
     textAlign: 'center',
   },
@@ -524,6 +653,9 @@ const styles = StyleSheet.create({
   multiplier: {
     ...theme.typography.mobileFigure,
     marginBottom: 16,
+  },
+  multiplierDemoted: {
+    marginBottom: 6,
   },
   stepperRow: {
     flexDirection: 'row',

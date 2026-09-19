@@ -25,6 +25,9 @@ export interface RegisterLineProps {
   figure?: string | null;
   /** The figure's read: ink (default), muted, or record (RED INK). */
   figureTone?: 'ink' | 'muted' | 'record';
+  /** The label's read — 'record' sets the name in RED INK (a label
+   * that IS the record figure: the spec sheet's number to beat). */
+  labelTone?: 'ink' | 'record';
   /** The current row — full ink + 700 weight (the Floor's board). */
   bold?: boolean;
   /** Quiets the whole line (past entries). */
@@ -41,6 +44,7 @@ export function RegisterLine({
   monoLabel = false,
   figure = null,
   figureTone = 'ink',
+  labelTone = 'ink',
   bold = false,
   muted = false,
   onPress,
@@ -52,7 +56,12 @@ export function RegisterLine({
   // The ink ladder on a register: full ink for content (the default —
   // a register's entries ARE the content), muted for quiet/past rows.
   // Three inks on a screen, never more (thesis §5).
-  const labelColor = muted ? colors.textMuted : colors.text;
+  const labelColor =
+    labelTone === 'record'
+      ? colors.brandText
+      : muted
+        ? colors.textMuted
+        : colors.text;
   const figColor =
     figureTone === 'record'
       ? colors.brandText
