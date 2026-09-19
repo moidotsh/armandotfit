@@ -40,7 +40,10 @@ export const WORKOUT_SPLITS: Record<PreferredSplit, WorkoutSplitInfo> = {
   },
   twoADay: {
     id: 'twoADay',
-    label: 'AM / PM',
+    // THE EDITION PAIR SPEAKS ONE GRAMMAR (revision 2027-03, delta 6):
+    // the segment pair reads `1-a-day | two-a-day` — a count naming a
+    // count. The windows stay the AM/PM measure's job.
+    label: 'two-a-day',
     description: 'Two sessions today (morning + evening).',
   },
 };

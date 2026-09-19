@@ -216,8 +216,14 @@ export default function ExerciseDatabaseScreen() {
         {resultCount === 0 ? (
           <EmptyState
             compact
-            title="No exercises found"
-            message={filter.search ? `Nothing matches “${filter.search}”.` : undefined}
+            // THE EMPTY STATE SAYS IT ONCE (revision 2027-03, delta 5):
+            // a present query gets one line that carries the miss and
+            // echoes the query; no title restating it above.
+            title={
+              filter.search
+                ? `Nothing matches “${filter.search}”.`
+                : 'No exercises found'
+            }
             testID="exercise-database-empty"
           />
         ) : (
