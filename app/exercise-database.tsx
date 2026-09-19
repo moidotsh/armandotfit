@@ -24,6 +24,7 @@ import { BoardShell, ExerciseListItem, SearchStatement } from '../components/com
 import { useAppTheme, useToast } from '../context';
 import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises, useRecentSessionDetails } from '../hooks';
+import { SYSTEM_EXERCISES as FULL_CATALOG } from '../shared/exercises';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import { SYSTEM_EXERCISES, ZONES, type SystemExerciseData } from '../shared/exercises';
 import { SCOREBOARD, BLOCK_GAP, ROW_GAP, PAGE_GUTTER, theme } from '../constants';
@@ -87,6 +88,24 @@ export default function ExerciseDatabaseScreen() {
 
   const query = useExercises(filter);
   const recentQuery = useRecentSessionDetails(10);
+  // TAG SEARCH — the query also reaches HISTORY tags ("rope", "wide-
+  // grip"): exercises logged under a matching tag join the results
+  // even when their name/muscles don't match. Computed at read from
+  // recent sessions; identity joins by NAME.
+  const tagIndexQuery = useRecentSessionDetails(30);
+  const tagIndex = useMemo(() => {
+    const m = new Map<string, Set<string>>();
+    for (const session of tagIndexQuery.data ?? []) {
+      for (const ex of session.exercises) {
+        for (const tag of ex.tags ?? []) {
+          const key = tag.toLowerCase();
+          if (!m.has(key)) m.set(key, new Set());
+          m.get(key)!.add(ex.exerciseName);
+        }
+      }
+    }
+    return m;
+  }, [tagIndexQuery.data]);
 
   // The Recent section only leads the UNFILTERED browse — the moment the
   // user searches or filters, the list answers the query alone.
@@ -97,8 +116,18 @@ export default function ExerciseDatabaseScreen() {
       recent.length > 0
         ? [{ category: 'Recently logged', data: recent, key: RECENT_SECTION_KEY }]
         : [];
-    return [...recentSection, ...groupedByZone(query.data ?? [])];
-  }, [isUnfiltered, recentQuery.data, query.data]);
+    // The tag-matched union: names logged under the query-as-tag that
+    // the name/muscle filter missed.
+    let base = query.data ?? [];
+    const q = (filter.search ?? '').trim().toLowerCase();
+    if (q.length > 0 && tagIndex.has(q)) {
+      const names = tagIndex.get(q)!;
+      const present = new Set(base.map((e) => e.slug));
+      const extra = FULL_CATALOG.filter((e) => names.has(e.name) && !present.has(e.slug));
+      if (extra.length > 0) base = [...base, ...extra];
+    }
+    return [...recentSection, ...groupedByZone(base)];
+  }, [isUnfiltered, recentQuery.data, query.data, tagIndex, filter.search]);
 
   useEffect(() => {
     return () => {

@@ -18,7 +18,8 @@ import { LoadingSpinner } from '../components/primitives';
 import { BoardShell, BoardHead, QueryErrorNote, RegisterLine } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
-import { useAnalyticsHistory } from '../hooks';
+import { useAnalyticsHistory, useRecentSessionDetails } from '../hooks';
+import { deriveMuscleShare, MUSCLE_GROUPS } from '../services';
 import { AnalyticsService } from '../services';
 import { addDays } from '../utils';
 import { BLOCK_GAP, SCOREBOARD, theme, PAGE_GUTTER } from '../constants';
@@ -37,6 +38,25 @@ export default function AnalyticsScreen() {
   const { colors } = useAppTheme();
   const [range, setRange] = useState<Range>(30);
   const historyQuery = useAnalyticsHistory(range);
+
+  // THE BALANCE — where the work landed over the picked range (the
+  // deleted chart's honest remnant: ONE register line naming the
+  // most-neglected group; the full per-lift story lives on each
+  // spec sheet). Computed at read; nothing stored.
+  const detailsQuery = useRecentSessionDetails(60);
+  const lowestGroup = useMemo(() => {
+    const rows = deriveMuscleShare(detailsQuery.data ?? [], range);
+    if (rows.length < 2) return null;
+    const byGroup = new Map<string, number>();
+    for (const r of rows) byGroup.set(r.muscle, r.share);
+    let worst: { group: string; share: number } | null = null;
+    for (const g of MUSCLE_GROUPS) {
+      const share = byGroup.get(g);
+      if (share == null) continue;
+      if (!worst || share < worst.share) worst = { group: g, share };
+    }
+    return worst;
+  }, [detailsQuery.data, range]);
 
   const weekly = useMemo(() => {
     if (!historyQuery.data) return [];

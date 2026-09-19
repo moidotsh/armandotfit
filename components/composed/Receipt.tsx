@@ -22,7 +22,7 @@ import { Figure } from '../MobilePremium';
 import { RegisterLine } from './RegisterLine';
 import { QueryErrorNote } from './QueryErrorNote';
 import { useToast, useAppTheme } from '../../context';
-import { useWorkoutDetail, useDeleteSession, useWeightUnit } from '../../hooks';
+import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags } from '../../hooks';
 import { safeGoBack } from '../../navigation';
 import { sumVolume } from '../../services';
 import { SCOREBOARD, PAGE_GUTTER, theme } from '../../constants';
@@ -54,6 +54,12 @@ export function Receipt({ id }: ReceiptProps) {
   }, [deleteSessionMutation.isSuccess, showToast]);
 
   const session = existingQuery.data;
+  // The untagged nudge: an exercise logged bare, that HAS tags in
+  // other sessions, whispers what it wore last time — history stays
+  // immutable; the nudge aims the NEXT session's prefill.
+  const lastTags = useLastUsedTags(
+    session ? session.exercises.filter((e) => e.tags.length === 0).map((e) => e.exerciseName) : null,
+  ).data ?? new Map<string, string[]>();
   // AM and PM are separate rows; the start hour restores the window.
   const windowLabel = session
     ? new Date(session.startedAt).getHours() < 12
@@ -134,6 +140,11 @@ export function Receipt({ id }: ReceiptProps) {
                   </Text>
                 ) : null}
               </View>
+              {ex.tags.length === 0 && (lastTags.get(ex.exerciseName)?.length ?? 0) > 0 ? (
+                <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
+                  {`no tags · last time: ${lastTags.get(ex.exerciseName)!.join(' · ')}`}
+                </Text>
+              ) : null}
               {ex.sets.map((s) => (
                 <RegisterLine
                   key={s.id}

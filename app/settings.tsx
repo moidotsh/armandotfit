@@ -17,7 +17,7 @@ import {
 import { BoardShell } from '../components/composed';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
-import { useProfile, useUpdateProfile, usePwaPrompt } from '../hooks';
+import { useProfile, useUpdateProfile, usePwaPrompt, useRecentSessionDetails } from '../hooks';
 import { DAY_OF_WEEK_LABELS, BLOCK_GAP, SCOREBOARD, theme } from '../constants';
 import { useToast } from '../context';
 import { useRestStore, useDeloadStore } from '../stores';
@@ -78,6 +78,21 @@ export default function SettingsScreen() {
   // THE REST INSTRUMENT's remembered default (scoreboard-thesis §7):
   // the interval a fresh rest starts with. ±15s steppers, mono
   // readout — the panel row that tunes the Floor's clock.
+  // THE PROMOTION AUDIT (invariant 7's numeric half, computed at
+  // read): tags with ≥10 consistent uses have earned their half of
+  // the promotion rule — the row names them so the second half (the
+  // twice-attempted filter) has a place to happen.
+  const historyQuery = useRecentSessionDetails(60);
+  const earnedTags = (() => {
+    const counts = new Map<string, number>();
+    for (const session of historyQuery.data ?? []) {
+      for (const ex of session.exercises) {
+        for (const tag of ex.tags ?? []) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      }
+    }
+    return [...counts.entries()].filter(([, n]) => n >= 10).map(([t]) => t).sort();
+  })();
+
   const restDefaultSec = useRestStore((s) => s.defaultSec);
   const setRestDefault = useCallback((next: number) => {
     useRestStore.setState({
@@ -325,6 +340,21 @@ export default function SettingsScreen() {
           />
         </View>
       ) : null}
+
+      <View style={styles.block}>
+        <ColophonRow
+          label="Tag promotions"
+          value={earnedTags.length > 0 ? earnedTags.join(' · ') : 'none earned yet'}
+          onPress={() =>
+            showToast(
+              'info',
+              earnedTags.length > 0
+                ? `${earnedTags.join(', ')} — 10+ uses each. Promote a tag when the same filter has been needed twice.`
+                : 'Tags earn promotion after 10 consistent uses and a twice-attempted filter.',
+            )
+          }
+        />
+      </View>
 
       <View style={styles.block}>
         {devSurfaces ? (

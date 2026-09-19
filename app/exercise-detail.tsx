@@ -171,6 +171,20 @@ export default function ExerciseDetailScreen() {
               ) : null}
               {visiblePoints.length >= 2 ? (
                 <View testID="entry-trajectory">
+                  {/* The trajectory's own first line — first → last,
+                      the trend stated in one figure. */}
+                  {(() => {
+                    const first = visiblePoints[0];
+                    const last = visiblePoints[visiblePoints.length - 1];
+                    const w0 = roundDisplayWeight(toDisplayWeight(first.weight, unit));
+                    const w1 = roundDisplayWeight(toDisplayWeight(last.weight, unit));
+                    const pct = w0 > 0 ? Math.round(((w1 - w0) / w0) * 100) : 0;
+                    return (
+                      <Text style={[styles.trendLine, { color: colors.text }]} testID="entry-trend">
+                        {`${w0} → ${w1} ${unit} · ${pct >= 0 ? '+' : ''}${pct}% · ${visiblePoints.length} SESSIONS`}
+                      </Text>
+                    );
+                  })()}
                   {[...visiblePoints].reverse().map((p) => {
                     const d = new Date(p.at).toLocaleDateString(undefined, {
                       month: 'short',
@@ -311,6 +325,13 @@ const styles = StyleSheet.create({
   },
   lastLabel: {
     ...theme.typography.mobileEyebrow,
+    marginBottom: 2,
+  },
+  // The trajectory's trend line — the summary before the entries.
+  trendLine: {
+    ...theme.typography.mobileFigure,
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
     marginBottom: 2,
   },
   typeLine: {
