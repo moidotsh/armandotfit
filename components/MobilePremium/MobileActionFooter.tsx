@@ -88,10 +88,13 @@ export function MobileActionFooter({
           styles.legacyContainer,
           {
             paddingBottom: !disableSafeArea ? Math.max(insets.bottom, 16) : 0,
-            // THE FOOTER IS THE GROUND (the sight amendment): a panel
-            // tier the material law abolished — the hairline is the
-            // only edge; the verb sits on air.
-            backgroundColor: colors.background,
+            // THE FOOTER IS THE GROUND: it wears the shell's own ground
+            // token (backgroundDeep, washed by the atmosphere exactly
+            // like the page) — the hairline is the only edge. A sight
+            // pass that tried `background` here pixel-sampled the
+            // result and found the original already seamless; the
+            // perceived slab was the vignette.
+            backgroundColor: colors.backgroundDeep,
             borderTopColor: colors.mobilePremium.hairlineBorder,
           },
           style,
@@ -111,10 +114,8 @@ export function MobileActionFooter({
         {
           paddingBottom: safeBottom,
           borderTopColor: colors.mobilePremium.hairlineBorder,
-          // THE FOOTER IS THE GROUND (the sight amendment): page-toned
-          // was a panel tier the material law abolished — the hairline
-          // alone terminates scrolled content; the verb sits on air.
-          backgroundColor: colors.background,
+          // THE FOOTER IS THE GROUND — see the children-mode note.
+          backgroundColor: colors.backgroundDeep,
         },
         style,
       ]}
