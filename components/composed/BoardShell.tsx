@@ -114,10 +114,16 @@ export function BoardShell({
     [onScroll, fadeScroll],
   );
 
-  const compactBar = compact ? (
+  // F4 — THE COMPRESS's restatement. On a pushed page (onBack set) it
+  // rides THE SAME ROW as the back chevron — the condensed nav-bar
+  // read: [‾<] title ····· figure — one chrome row, never a blank
+  // chevron line stacked over its own bar. On a root page it keeps
+  // the standalone 48px bar under the header. Both fade in under
+  // scroll (transform/opacity only); static under reduced motion.
+  const compactRestate = compact ? (
     <View
       pointerEvents="none"
-      style={[styles.compactBar, { borderBottomColor: colors.border }]}
+      style={onBack ? styles.compactInline : styles.compactBar}
       testID="board-compact-bar"
     >
       <Animated.Text
@@ -147,11 +153,18 @@ export function BoardShell({
       {/* Header + ticker ride the same mobile column as the body —
           nothing straddles the constraint on desktop. The back
           chevron renders whenever onBack is set, with or without a
-          header node beside it (a board page may have nothing else to
-          say up top — the back law holds regardless). */}
+          header node beside it; when `compact` is declared the
+          restatement fills the row beside the chevron and the row
+          carries the bar's hairline. */}
       <View testID="desk-header-col" style={MOBILE_CONTENT_WIDTH_STYLE}>
         {onBack ? (
-          <View style={styles.headerWithBack}>
+          <View
+            style={[
+              styles.headerWithBack,
+              compact ? styles.headerWithCompact : null,
+              compact ? { borderBottomColor: colors.border } : null,
+            ]}
+          >
             <Pressable
               onPress={onBack}
               accessibilityRole="button"
@@ -162,13 +175,20 @@ export function BoardShell({
               <ChevronLeft size={26} color={colors.text} />
             </Pressable>
             {header ? <View style={styles.headerFlex}>{header}</View> : null}
+            {compact ? compactRestate : null}
           </View>
         ) : (
-          header
+          <>
+            {header}
+            {compact ? (
+              <View style={[styles.compactBarHold, { borderBottomColor: colors.border }]}>
+                {compactRestate}
+              </View>
+            ) : null}
+          </>
         )}
         {isSessionActive ? <SessionStrip /> : null}
       </View>
-      {compactBar}
       {noScroll ? (
         <View testID={testID} style={[styles.body, MOBILE_CONTENT_WIDTH_STYLE]}>
           {children}
@@ -205,6 +225,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
   },
+  // The pushed header row when `compact` is declared: one chrome row
+  // — the chevron, the restatement filling the space beside it, and
+  // the compress bar's hairline under the whole row.
+  headerWithCompact: {
+    alignItems: 'center',
+    minHeight: 52,
+    borderBottomWidth: 1,
+    paddingRight: 12,
+  },
   backButton: {
     width: 44,
     height: 44,
@@ -216,9 +245,20 @@ const styles = StyleSheet.create({
   headerFlex: {
     flex: 1,
   },
-  // THE COMPRESS bar — fixed 48px; its content fades in as the hero
-  // leaves (never a layout change; the bar is always in the tree so
-  // the pin never jumps).
+  // THE COMPRESS's inline restatement — fills the header row beside
+  // the chevron; fades in under scroll (never a layout change; the
+  // node is always in the tree so the row never jumps).
+  compactInline: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  // The standalone compress bar (root pages): fixed 48px under the
+  // header.
+  compactBarHold: {
+    borderBottomWidth: 1,
+  },
   compactBar: {
     height: 48,
     flexDirection: 'row',
@@ -226,7 +266,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
     paddingHorizontal: PAGE_GUTTER,
-    borderBottomWidth: 1,
   },
   compactTitle: {
     fontSize: 17,

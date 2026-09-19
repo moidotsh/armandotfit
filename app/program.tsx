@@ -105,21 +105,32 @@ export default function ProgramScreen() {
     >
       {days.map((day, di) => {
         const windows: SessionWindow[] = isTwoADay ? ['am', 'pm'] : ['single'];
+        const dayFact = `${isTwoADay ? 'AM + PM · ' : ''}${dayLifts(day.day)} lifts`;
         return (
           <View key={day.day} style={di === 0 ? styles.dayFirst : styles.day}>
-            {/* Day head: the first day is the page's statement; the
-                rest are subheads. One fact line beneath. */}
-            <Text
-              style={[di === 0 ? styles.dayTitleLead : styles.dayTitle, { color: colors.text }]}
-              numberOfLines={1}
-            >
-              {day.title}
-            </Text>
+            {/* Day head: the first day is the page's statement under
+                the page-identity whisper (THE ROTATION · N DAYS —
+                spoken at rest, held in the column); the rest are
+                subheads. One fact line beneath each. */}
+            {di === 0 ? (
+              <>
+                <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
+                  {`THE ROTATION · ${days.length} DAYS`}
+                </Text>
+                <Text style={[styles.dayTitleLead, { color: colors.text }]} numberOfLines={1}>
+                  {day.title}
+                </Text>
+              </>
+            ) : (
+              <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
+                {day.title}
+              </Text>
+            )}
             <Text
               style={[styles.dayFact, { color: colors.textMuted }]}
               numberOfLines={1}
             >
-              {`${isTwoADay ? 'AM + PM · ' : ''}${dayLifts(day.day)} lifts`}
+              {dayFact}
             </Text>
             {windows.map((window) => (
               <View key={window} style={styles.windowBlock}>
@@ -206,6 +217,12 @@ const styles = StyleSheet.create({
   },
   day: {
     ...GAUGE.block,
+  },
+  // The page-identity whisper — the compress bar's restatement,
+  // spoken at rest where the column holds it.
+  pageWhisper: {
+    ...GAUGE.whisper,
+    marginBottom: 6,
   },
   dayTitleLead: {
     ...GAUGE.statement,
