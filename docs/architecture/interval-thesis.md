@@ -1,5 +1,60 @@
 # THE INTERVAL — the live figure owns the counter
 
+> **REVISION 2027-03 — THE TOUCH AMENDMENT (the twelfth pass; an
+> amendment, not a succession).** The second pass written with eyes,
+> and the first that looked at what TOUCH does: the walk now covers
+> the auth screens, the empty states, the micro-states (press,
+> focus), the finish dialog, the ticker, the desktop straddle, and
+> dark mode pixel-sampled — the surfaces the eleventh pass never
+> spent its authority on. The verdict: the spine survives touch —
+> the live figure, ink-is-state, the red ration, the square cut,
+> the still system, and the 490px budget all hold in both modes, at
+> SE, and at 1280. What failed is the state between states — FOCUS —
+> plus four mends, each asserted:
+>
+> 1. **FOCUS IS AN INK MOMENT ON THE SQUARE CUT.** Seen: a focused
+>    field wears a ROUNDED (14px) brand-red ring, a red halo glow,
+>    and flips its label red — on the square-cut app whose red is
+>    rationed to record/link/live. Focus-red is indistinguishable
+>    from error-red at arm's length; the halo is elevation by
+>    another name; the 220ms fade is a fourth motion the still
+>    system never sanctioned. The field you are writing in is
+>    ARMED — it reads ink, square, instant: the ring's radius rides
+>    the shape law (no magic 14), the accent is the mode's ink, the
+>    glow dies, the cue snaps. (Shell-portable: the same edits land
+>    domain-neutrally in the starter.) Probe: a focused input's
+>    ring radius is 0, its ring and label ride ink not brand, no
+>    box-shadow, no transition.
+> 2. **THE VERB PRINTS CAPS, IN INK — THE ADDER INCLUDED.** Seen:
+>    "Add to session" — sentence case in red, on the library's
+>    custom adder: the one verb left speaking both sins. It prints
+>    ADD TO SESSION in ink. Probe: the adder verb's text and color.
+> 3. **ONE FACT, ONE PLACE.** Seen: register's password field
+>    carrying the 8-character rule twice — placeholder AND helper
+>    line. The helper dies. Probe: register renders no second copy.
+> 4. **THE VERB IS THE SENTENCE.** Seen: forgot-password explaining
+>    in a helper sentence what SEND RESET LINK already says. The
+>    sentence dies. Probe: no helper line on forgot.
+> 5. **THE EMPTY STATE SAYS IT ONCE.** Seen: "No exercises found"
+>    above `Nothing matches "zzzz".` — the miss stated twice. When
+>    a query exists, one line carries it. Probe: one line under a
+>    present query.
+> 6. **THE EDITION PAIR SPEAKS ONE GRAMMAR.** Seen: the picker's
+>    archetype segments reading `1-a-day | AM / PM` — a count
+>    paired with a toggle-pair spelling of the windows. The second
+>    segment reads `two-a-day`; the windows stay the AM/PM
+>    measure's job. Probe: the split segmented's labels carry no
+>    slash.
+>
+> Held without change, now SEEN: the desktop straddle (the dock
+> spans exactly the 420px column at 1280×800; the air outside reads
+> as authored quiet ground); the ticker's rank beside every Desk
+> counter; the finish dialog's stat trio (already folio-disciplined);
+> dark mode's warmth (pixel-sampled: the ground keeps its warm bias
+> r−b ≈ +3, the vignette even and subtle); the press dip; the 404;
+> the auth screens' composition (statement, open field, red links,
+> ink verb — generic by prescription, tightened by deltas 3–4).
+
 > **REVISION 2027-02 — THE SIGHT AMENDMENT (the eleventh pass; an
 > amendment, not a succession).** The first pass written with eyes.
 > The verdict after looking at every screen in both modes and at SE:
