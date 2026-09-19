@@ -1,13 +1,15 @@
 // components/composed/Receipt.tsx
 //
-// THE RECEIPT — the read-only session view (scoreboard-thesis §8):
+// THE RECEIPT — the read-only session view (interval-thesis §8):
 // "That was N kg." Self-contained: owns its detail query and the
 // delete flow (two-step, toast + back on success). The tonnage is
-// the FIGURE-STATEMENT — Martian at the 36 statement rank (a figure
-// IS the statement here, unit riding beside it at the whisper
-// scale); one fact line carries date/window/counts; exercises read
-// as REGISTERS: name + tags whisper + one set line per logged set
-// (ordinal · leader · weight × reps in mono). No panels, no rails.
+// THE LIVE FIGURE'S Desk case — Martian at the 72 counter rank (the
+// figure the screen's question names; a receipt is settled fact,
+// not record — ink, never red), unit riding beside it at the
+// whisper scale; one fact line carries date/era/window/counts;
+// exercises read as RULED ROWS: name + tags whisper + one set line
+// per logged set (ordinal left · air · weight × reps in mono). No
+// panels, no rails.
 
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -91,9 +93,9 @@ export function Receipt({ id }: ReceiptProps) {
         <LoadingSpinner />
       ) : (
         <>
-          {/* THE FIGURE-STATEMENT — tonnage at the 36 mono statement
-              rank, the unit whispering beside it (Figure display).
-              The receipt's one sentence: "that was N kg". */}
+          {/* THE LIVE FIGURE — tonnage at the 72 counter rank, the
+              unit whispering beside it (Figure hero). The receipt's
+              one sentence: "that was N kg" (interval-thesis §2). */}
           <View>
             <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
               THE RECEIPT
@@ -101,7 +103,7 @@ export function Receipt({ id }: ReceiptProps) {
             <Figure
               value={formatVolumeWeight(totalKg, unit)}
               unit={weightUnitLabel(unit)}
-              size="display"
+              size="hero"
               testID="receipt-tonnage"
             />
             <Text style={[styles.factLine, { color: colors.textMuted }]} numberOfLines={1}>

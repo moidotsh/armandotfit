@@ -1,14 +1,16 @@
 // app/index.tsx
-// Home — THE SCOREBOARD's front (docs/architecture/
-// scoreboard-thesis.md §8). Question: "what am I walking into today?"
+// Home — THE INTERVAL's front (docs/architecture/
+// interval-thesis.md §8). Question: "what am I walking into today?"
 // The day's title is the statement (the page carries no name of its
-// own); **THE DAY REGISTER** — the day's plan as register lines (name
-// · leader · the prefill weight as a right-aligned mono figure),
+// own); **THE DAY REGISTER** — the day's plan as ruled rows (name
+// left · air · the prefill weight as a right-aligned mono figure),
 // wearing the screen's one 2px rule — shows the session's numbers
-// before you start it. START (or RESUME) is the one verb (ink). Jump
-// rows keep their one fact each (the streak lives on the Progress
-// row); recent sessions close the page as Martian lines. While a
-// session runs, BoardShell pins the ticker under the folio.
+// before you start it. The window whisper is FURNITURE — printed
+// caps in muted ink (red never rides furniture; interval-thesis
+// §2). START (or RESUME) is the one verb (ink). Jump rows keep
+// their one fact each (the streak lives on the Progress row);
+// recent sessions close the page as Martian lines. While a session
+// runs, BoardShell pins the ticker under the folio.
 
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -145,12 +147,12 @@ export default function HomeScreen() {
   return (
     <BoardShell surface="training" header={header} testID="home-scroll">
       {/* THE STATEMENT — the day itself, with the window whisper in
-          red-ink furniture above it (the living position). */}
+          muted furniture caps above it (the living position is
+          furniture — red is strictly record/link/live). */}
       <BoardHead
         statement={dayTitle}
         statementTestID="home-day-title"
         whisper={`${suggestedWindow === 'am' ? 'MORNING' : 'EVENING'} · DAY ${suggestedDay}${daysSinceLast != null && daysSinceLast > 0 ? ` · ${daysSinceLast}D BACK` : ''}${deload ? ' · DELOAD' : ''}`}
-        whisperTone="record"
       />
 
       {/* The long-gap honesty line — computed at read, one whisper. */}
@@ -160,8 +162,8 @@ export default function HomeScreen() {
         </Text>
       ) : null}
 
-      {/* THE DAY REGISTER — the day's plan as register lines wearing
-          the screen's one 2px rule: name · leader · the prefill
+      {/* THE DAY REGISTER — the day's plan as ruled rows wearing
+          the screen's one 2px rule: name · air · the prefill
           weight. The session's numbers, stated before you start. */}
       <View style={styles.block}>
         <View style={[styles.dayRegister, { borderTopColor: colors.text }]} testID="home-board">

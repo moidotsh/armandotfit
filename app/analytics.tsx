@@ -1,15 +1,17 @@
 // app/analytics.tsx
-// THE LEDGER (docs/architecture/scoreboard-thesis.md §8): "How
-// regular?" The COUNT is the statement (the page's one sentence,
-// restating with the range pick). THE REGISTER GRID renders the
-// calendar as TYPE: one mono character per day — the session count
-// (1, 2, 3…), '·' for days off, TODAY in red — seven columns,
-// tabular by construction; density reads as ink weight. The weeks
-// read as register lines: date · leader · the session figure, the
-// record week red. The muscle-share bars and the stacked balance
-// chart are DELETED — they answered a different question ("where
-// did work land"), and that answer lives on each lift's spec sheet.
-// Daily aggregates + weekly bucketing computed at read.
+// THE LEDGER (docs/architecture/interval-thesis.md §8): "How
+// regular?" The COUNT is THE LIVE FIGURE (mono 72 — the screen's
+// question is a quantity in play; it restates with the range pick).
+// THE REGISTER GRID renders the calendar as TYPE: one mono
+// character per day — the session count (1, 2, 3…), '·' for days
+// off, TODAY in red — seven columns, tabular by construction (and
+// ON the ramp: the grid's ad-hoc 13px character died with the
+// incumbent's own drift); density reads as ink weight. The weeks
+// read as ruled rows: date left · air · the session figure right,
+// the record week red. THE BALANCE — the deleted chart's honest
+// remnant, RESTORED to the page (the incumbent computed it and
+// never rendered it): one row naming the most-neglected group and
+// its share. Daily aggregates + weekly bucketing computed at read.
 
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -131,8 +133,8 @@ export default function AnalyticsScreen() {
             )}
           </View>
 
-          {/* The weeks — register lines: date · leader · the session
-              figure; the record week's figure in red. */}
+          {/* The weeks — ruled rows: date left · air · the session
+              figure right; the record week's figure in red. */}
           {historyQuery.isLoading ? null : weekly.length === 0 ? (
             <Text style={[styles.emptyText, { color: colors.textMuted }]}>
               No workouts in this range yet.
@@ -158,6 +160,24 @@ export default function AnalyticsScreen() {
               })}
             </View>
           )}
+
+          {/* THE BALANCE — one row: the most-neglected group and its
+              share (computed at read; the full per-lift story lives
+              on each spec sheet). */}
+          {lowestGroup ? (
+            <View style={styles.block}>
+              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+                THE BALANCE
+              </Text>
+              <RegisterLine
+                label={`${lowestGroup.group} carries the least work`}
+                figure={`${Math.round(lowestGroup.share)}%`}
+                figureTone="muted"
+                accessibilityLabel={`Balance: ${lowestGroup.group} carries the least work, ${Math.round(lowestGroup.share)} percent of volume`}
+                testID="analytics-balance"
+              />
+            </View>
+          ) : null}
         </>
       )}
     </BoardShell>

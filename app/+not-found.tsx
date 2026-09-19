@@ -1,11 +1,13 @@
 // app/+not-found.tsx
 //
-// THE QUIET PAGE's dead end (docs/architecture/quiet-page-thesis.md
-// §6): "Nothing runs here." The 404 is the statement (34, in the
-// record red — the page's one mark beside the verb), one line of
-// copy, one way back. No wordmark, no title stack. Excluded from SB1
-// by filename, but it composes ScreenScaffold anyway (the centered
-// column + atmosphere read is the same as every other screen).
+// THE DEAD END (docs/architecture/interval-thesis.md §8): "Nothing
+// runs here." The 404 is THE LIVE FIGURE's last case — the counter
+// rank in INK (the incumbent's red 404 broke the red law: a dead
+// end is neither record nor live; furniture and dead figures never
+// wear the red), one line of copy, one way back. No wordmark, no
+// title stack. Excluded from SB1 by filename, but it composes
+// ScreenScaffold anyway (the centered column + atmosphere read is
+// the same as every other screen).
 
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -29,7 +31,7 @@ export default function NotFoundScreen() {
   return (
     <ScreenScaffold surface="analytics">
       <View style={styles.center} testID="notfound-body">
-        <Text style={[styles.statement, { color: colors.brand }]} testID="not-found-hero">
+        <Text style={[styles.statement, { color: colors.text }]} testID="not-found-hero">
           404
         </Text>
         <Text style={[styles.copy, { color: colors.textMuted }]}>
@@ -52,7 +54,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   statement: {
-    ...INTERVAL.statement,
+    ...INTERVAL.liveFigure,
   },
   copy: {
     ...theme.typography.mobileItemTitle,
