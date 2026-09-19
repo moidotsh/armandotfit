@@ -1,13 +1,13 @@
 // app/program.tsx
-// My Program — THE BOARD's rotation (docs/architecture/
-// board-thesis.md §7): "The rotation, day by day." The FIRST day's
-// title is the statement (later chapters at subhead scale), each day
-// is one air-separated block, and slots are board rows: name + Rx
-// whisper. A standing substitution marks in the record-mark read (the
-// name and Rx turn record-text); the authored program in splits.ts is
-// never edited. Plan-time Swap rides the same InkRail bench as the
-// Floor. M3 THE COMPRESS: once day one scrolls away, the pinned bar
-// restates the page with its live figure (the day count).
+// THE TIMETABLE (docs/architecture/scoreboard-thesis.md §8): "The
+// rotation, day by day." The FIRST day's title is the statement
+// (later chapters at subhead scale), each day is one air-separated
+// block, and slots are LINES: name + the Rx as a right-aligned mono
+// figure (here the Rx IS the content — this page answers "what's the
+// program"). Air separates the chapters; no panels, no rules. A
+// standing substitution reads in RED INK (the live edit); the
+// authored program in splits.ts is never edited. Plan-time Swap rides
+// the same bench as the Floor.
 
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -24,7 +24,7 @@ import {
   getSlotsForDay,
   type SessionWindow,
 } from '../shared/exercises';
-import { GAUGE, ROW_GAP, theme, PAGE_GUTTER } from '../constants';
+import { SCOREBOARD, ROW_GAP, theme, PAGE_GUTTER } from '../constants';
 import type { PreferredSplit } from '../shared/types';
 
 function rxLabel(sets: [number, number], reps: [number, number]): string {
@@ -69,7 +69,7 @@ export default function ProgramScreen() {
         </Text>
         <SwapGlyph onPress={() => setPickerFor(key)} label={name} />
         <Text
-          style={[styles.slotRx, { color: isOverridden ? colors.brandText : colors.textMuted }]}
+          style={[styles.slotRx, { color: isOverridden ? colors.brandText : colors.text }]}
         >
           {rxLabel(slot.sets, slot.reps)}
         </Text>
@@ -131,16 +131,9 @@ export default function ProgramScreen() {
                     {window.toUpperCase()}
                   </Text>
                 ) : null}
-                <View
-                  style={[
-                    styles.windowPanel,
-                    { backgroundColor: colors.card, borderColor: colors.cardBorder },
-                  ]}
-                >
-                  {resolveSlots(split, day.day, window, overrides).map((_, i) =>
-                    renderSlot(day.day, window, i + 1),
-                  )}
-                </View>
+                {resolveSlots(split, day.day, window, overrides).map((_, i) =>
+                  renderSlot(day.day, window, i + 1),
+                )}
               </View>
             ))}
           </View>
@@ -202,44 +195,38 @@ export default function ProgramScreen() {
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 80 },
   dayFirst: {
-    ...GAUGE.blockFirst,
+    ...SCOREBOARD.blockFirst,
   },
   day: {
-    ...GAUGE.block,
+    ...SCOREBOARD.block,
   },
-  // The page-identity whisper — the compress bar's restatement,
-  // spoken at rest where the column holds it.
+  // The page-identity whisper, spoken at rest where the column holds
+  // it.
   pageWhisper: {
-    ...GAUGE.whisper,
+    ...SCOREBOARD.whisper,
     marginBottom: 6,
   },
   dayTitleLead: {
-    ...GAUGE.statement,
+    ...SCOREBOARD.statement,
   },
   dayTitle: {
     ...theme.typography.mobileTitle,
   },
   // The statement's halo: the fact line waits outside the moat.
   dayFact: {
-    ...GAUGE.fact,
+    ...SCOREBOARD.fact,
     marginBottom: 8,
   },
   windowBlock: {
     marginTop: ROW_GAP / 2,
-  },
-  // The timetable's window panel — the day's slots on one enamel
-  // panel (the printed timetable row).
-  windowPanel: {
-    borderWidth: 1,
-    borderRadius: theme.shapes.surface,
-    paddingVertical: 4,
-    paddingHorizontal: 12,
   },
   windowLabel: {
     ...theme.typography.mobileEyebrow,
     marginTop: 8,
     marginBottom: 4,
   },
+  // The timetable's slot line — name, the swap furniture, and the Rx
+  // as a right-aligned mono figure. Air separates the chapters.
   slotRow: {
     minHeight: 48,
     flexDirection: 'row',
@@ -251,6 +238,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   slotRx: {
-    ...theme.typography.mobileLedger,
+    ...theme.typography.mobileFigure,
+    fontWeight: '600',
   },
 });
