@@ -16,7 +16,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { BoardShell, QueryErrorNote, PlateStack } from '../components/composed';
+import { BoardShell, BoardHead, QueryErrorNote, PlateStack } from '../components/composed';
 import { useAppTheme } from '../context';
 import {
   navigateToExerciseDetail,
@@ -68,14 +68,12 @@ export default function ProgressionScreen() {
         <>
           {/* THE FIGURE-STATEMENT — the streak itself, in record
               orange at counter scale, alone in its halo. */}
-          <View>
-            <Text style={[styles.streak, { color: colors.brand }]}>
-              {summary?.streak.current ?? 0}
-            </Text>
-            <Text style={[styles.streakFact, { color: colors.textMuted }]} numberOfLines={1}>
-              {`day streak · best ${summary?.streak.best ?? 0}`}
-            </Text>
-          </View>
+          <BoardHead
+            statement={String(summary?.streak.current ?? 0)}
+            fact={`day streak · best ${summary?.streak.best ?? 0}`}
+            variant="figure"
+            tone="record"
+          />
 
           {/* Totals — one figure line. */}
           <View style={styles.block}>
@@ -137,13 +135,6 @@ const styles = StyleSheet.create({
   },
   block: {
     ...BOARD.block,
-  },
-  streak: {
-    ...theme.typography.mobileCounter,
-  },
-  // The fact line waits outside the statement's halo.
-  streakFact: {
-    ...BOARD.fact,
   },
   totals: {
     ...BOARD.figure,

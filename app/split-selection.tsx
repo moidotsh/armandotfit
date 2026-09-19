@@ -28,7 +28,7 @@ import {
   MobileActionFooter,
   SegmentedControl,
 } from '../components/MobilePremium';
-import { BoardShell, PlateStack } from '../components/composed';
+import { BoardShell, BoardHead, PlateStack } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, replaceWithWorkoutDetail, safeGoBack } from '../navigation';
 import { useProfile, useRecentWorkouts, useTopSetsByName } from '../hooks';
@@ -173,14 +173,7 @@ export default function SplitSelectionScreen() {
       contentContainerStyle={styles.bodyContent}
     >
       {/* THE STATEMENT + fact — restating with every pick. */}
-      <View>
-        <Text style={[styles.statement, { color: colors.text }]} numberOfLines={2} testID="funnel-headline">
-          {statement}
-        </Text>
-        <Text style={[styles.fact, { color: colors.textMuted }]} numberOfLines={1}>
-          {fact}
-        </Text>
-      </View>
+      <BoardHead statement={statement} statementTestID="funnel-headline" fact={fact} />
 
       {/* THE MEASURE — seven tiles; weekday caps above the day-of-split
           figure. The pick inverts to the ink plate. */}
@@ -315,13 +308,6 @@ const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 40 },
   block: {
     ...BOARD.block,
-  },
-  statement: {
-    ...BOARD.statement,
-  },
-  // The fact line waits outside the statement's halo.
-  fact: {
-    ...BOARD.fact,
   },
   dayRow: {
     flexDirection: 'row',

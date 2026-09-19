@@ -16,6 +16,7 @@ import {
 } from '../MobilePremium';
 import { LoadingSpinner } from '../primitives';
 import { BoardShell } from './BoardShell';
+import { BoardHead } from './BoardHead';
 import { SetRow } from './SetRow';
 import { QueryErrorNote } from './QueryErrorNote';
 import { useToast, useAppTheme } from '../../context';
@@ -77,18 +78,15 @@ export function Receipt({ id }: ReceiptProps) {
           {/* THE FIGURE-STATEMENT — tonnage. The receipt's one
               sentence is "that was N kg"; the fact line carries
               the rest. */}
-          <View>
-            <Text style={[styles.receiptStatement, { color: colors.text }]}>
-              {`${formatVolume(totalKg)} kg`}
-            </Text>
-            <Text style={[styles.receiptFact, { color: colors.textMuted }]} numberOfLines={1}>
-              {`${new Date(session.startedAt).toLocaleDateString(undefined, {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-              })} · ${session.splitDay != null ? `D${session.splitDay}` : 'ad-hoc'}${windowLabel ? ` · ${windowLabel}` : ''} · ${session.exercises.length} lifts · ${totalSets} sets`}
-            </Text>
-          </View>
+          <BoardHead
+            statement={`${formatVolume(totalKg)} kg`}
+            fact={`${new Date(session.startedAt).toLocaleDateString(undefined, {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+            })} · ${session.splitDay != null ? `D${session.splitDay}` : 'ad-hoc'}${windowLabel ? ` · ${windowLabel}` : ''} · ${session.exercises.length} lifts · ${totalSets} sets`}
+            variant="figure"
+          />
 
           {session.note ? (
             <View style={styles.receiptBlock}>
@@ -157,12 +155,6 @@ const styles = StyleSheet.create({
   bodyText: { ...theme.typography.mobileBody },
   receiptBlock: {
     ...BOARD.block,
-  },
-  receiptStatement: {
-    ...theme.typography.mobileCounter,
-  },
-  receiptFact: {
-    ...BOARD.fact,
   },
   receiptExHead: {
     flexDirection: 'row',

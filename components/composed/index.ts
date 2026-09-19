@@ -21,6 +21,7 @@ export { PlateStack, type PlateStackProps } from './PlateStack';
 export { TallyGates, type TallyGatesProps } from './TallyGates';
 export { Floor } from './Floor';
 export { Receipt, type ReceiptProps } from './Receipt';
+export { BoardHead, type BoardHeadProps } from './BoardHead';
 export { QueryErrorNote, type QueryErrorNoteProps } from './QueryErrorNote';
 
 // Shell composed layer (synced from arqavellum)

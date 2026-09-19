@@ -15,6 +15,7 @@ import { Dumbbell, Settings } from '@tamagui/lucide-icons-2';
 import { MobilePrimaryButton, EmptyState } from '../components/MobilePremium';
 import {
   BoardShell,
+  BoardHead,
   EditionLine,
   WorkoutListSkeleton,
   QueryErrorNote,
@@ -120,18 +121,12 @@ export default function HomeScreen() {
     <BoardShell surface="training" header={header} testID="home-scroll">
       {/* THE STATEMENT — the day itself, with the window whisper in
           record-orange furniture above it. */}
-      <View>
-        <Text style={[styles.windowWhisper, { color: colors.brandText }]}>
-          {`${suggestedWindow === 'am' ? 'MORNING' : 'EVENING'} · DAY ${suggestedDay}`}
-        </Text>
-        <Text
-          testID="home-day-title"
-          style={[styles.dayTitle, { color: colors.text }]}
-          numberOfLines={2}
-        >
-          {dayTitle}
-        </Text>
-      </View>
+      <BoardHead
+        statement={dayTitle}
+        statementTestID="home-day-title"
+        whisper={`${suggestedWindow === 'am' ? 'MORNING' : 'EVENING'} · DAY ${suggestedDay}`}
+        whisperTone="record"
+      />
 
       {/* THE BOARD — the day's plan between the 2px rule pair: name +
           Rx whisper + the plate stack at the prefill weight. You see
@@ -254,14 +249,6 @@ const styles = StyleSheet.create({
   // Top-level blocks carry the air law.
   block: {
     ...BOARD.block,
-  },
-  windowWhisper: {
-    ...theme.typography.mobileEyebrow,
-    marginBottom: 6,
-  },
-  dayTitle: {
-    ...BOARD.statement,
-    ...BOARD.blockFirst,
   },
   // THE BOARD — the framed plan block.
   boardBlock: {

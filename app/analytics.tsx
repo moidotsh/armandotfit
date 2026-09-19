@@ -16,7 +16,7 @@ import {
   SegmentedControl,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { BoardShell, QueryErrorNote, TrainingConsistencyGrid } from '../components/composed';
+import { BoardShell, BoardHead, QueryErrorNote, TrainingConsistencyGrid } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory } from '../hooks';
@@ -64,14 +64,11 @@ export default function AnalyticsScreen() {
     >
       {/* THE STATEMENT — the count. The page's sentence is "you
           trained N of R days"; the number carries it. */}
-      <View>
-        <Text style={[styles.count, { color: colors.text }]}>
-          {sessionsInRange}
-        </Text>
-        <Text style={[styles.countFact, { color: colors.textMuted }]} numberOfLines={1}>
-          {`sessions · last ${range} days`}
-        </Text>
-      </View>
+      <BoardHead
+        statement={String(sessionsInRange)}
+        fact={`sessions · last ${range} days`}
+        variant="figure"
+      />
 
       {/* The range pick. */}
       <View style={styles.block}>
@@ -163,13 +160,6 @@ const styles = StyleSheet.create({
   },
   block: {
     ...BOARD.block,
-  },
-  count: {
-    ...theme.typography.mobileCounter,
-  },
-  // The fact line waits outside the statement's halo.
-  countFact: {
-    ...BOARD.fact,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: BLOCK_GAP },
   // The grid breathes narrower than the column — the field is the
