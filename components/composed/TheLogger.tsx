@@ -35,10 +35,27 @@ import {
 } from 'react-native';
 import { useAppTheme } from '../../context';
 import { theme, railMaxFor } from '../../constants';
+import { weightStep } from '../../utils';
+import type { WeightUnit } from '../../utils/weight';
 import { parseNumber } from './parseNumber';
 import { PinRail } from './PinRail';
 import { RollingCounter } from './RollingCounter';
-import { formatLoad } from './PinRail';
+
+/**
+ * THE ODOMETER FORMAT — fixed wheels with leading zeros, the
+ * mechanical counter's own convention: the weight always carries
+ * three integer wheels + one decimal wheel ("062.5"), the reps two
+ * ("08"). The column count NEVER changes, so a stepper tap that adds
+ * a ".5" rolls the wheels instead of reflowing the instrument row.
+ */
+function odometerWeight(value: number): string {
+  const rounded = Math.round(Math.abs(value) * 10) / 10;
+  const [int, dec] = rounded.toFixed(1).split('.');
+  return `${int.padStart(3, '0')}.${dec}`;
+}
+function odometerReps(value: number): string {
+  return String(Math.max(0, Math.round(value))).padStart(2, '0');
+}
 
 /** The rest instrument's read-side shape (Floor owns the clock). */
 export interface RestLine {
@@ -60,6 +77,8 @@ export interface TheLoggerProps {
   railMax?: number;
   /** THE REST LINE — present while a rest runs or has settled. */
   rest?: RestLine | null;
+  /** The display unit — steppers step in it (2.5 kg / 5 lb). */
+  unit?: WeightUnit;
   onLog: () => void;
   onChangeWeight: (weight: number | null) => void;
   onChangeReps: (reps: number | null) => void;
@@ -107,12 +126,14 @@ function WeightSide({
   weight,
   step,
   stepLabel,
+  unit,
   onChange,
   testID,
 }: {
   weight: number | null;
   step: number;
   stepLabel: string;
+  unit: WeightUnit;
   onChange: (next: number | null) => void;
   testID: string;
 }) {
@@ -154,11 +175,14 @@ function WeightSide({
             setEditing(true);
           }}
           accessibilityRole="button"
-          accessibilityLabel={`Edit weight, currently ${weight == null ? 'not set' : `${weight} kilograms`}`}
-          style={styles.counterTap}
+          accessibilityLabel={`Edit weight, currently ${weight == null ? 'not set' : `${weight} ${unit}`}`}
+          style={styles.counterTapWeight}
           testID={`${testID}-tap`}
         >
-          <RollingCounter value={weight == null ? '—' : formatLoad(weight)} testID={`${testID}-roll`} />
+          <RollingCounter
+            value={weight == null ? '···' : odometerWeight(weight)}
+            testID={`${testID}-roll`}
+          />
         </Pressable>
       )}
       <View style={styles.stepperRow}>
@@ -233,10 +257,13 @@ function RepsSide({
           }}
           accessibilityRole="button"
           accessibilityLabel={`Edit reps, currently ${reps == null ? 'not set' : reps}`}
-          style={styles.counterTap}
+          style={styles.counterTapReps}
           testID={`${testID}-tap`}
         >
-          <RollingCounter value={reps == null ? '—' : String(reps)} testID={`${testID}-roll`} />
+          <RollingCounter
+            value={reps == null ? '··' : odometerReps(reps)}
+            testID={`${testID}-roll`}
+          />
         </Pressable>
       )}
       <View style={styles.stepperRow}>
@@ -265,6 +292,7 @@ export function TheLogger({
   repsHint = null,
   railMax,
   rest = null,
+  unit = 'kg',
   onLog,
   onChangeWeight,
   onChangeReps,
@@ -285,7 +313,7 @@ export function TheLogger({
           boxShadow: colors.mobilePremium.instrumentShadow,
         },
       ]}
-      accessibilityLabel={`Logger, set ${setNumber}: ${weight ?? 'no weight'} kilograms by ${reps ?? 'no reps'} reps`}
+      accessibilityLabel={`Logger, set ${setNumber}: ${weight ?? 'no weight'} ${unit} by ${reps ?? 'no reps'} reps`}
     >
       {/* THE REST LINE — recovery counts after every log (thesis §7).
           Running: the readout pulses signal (the live pulse); settled:
@@ -340,12 +368,14 @@ export function TheLogger({
           kg={weight}
           scale="counter"
           railMax={railMax ?? railMaxFor(weight)}
+          unit={unit}
           testID={`${tid}-rail`}
         />
         <WeightSide
           weight={weight}
-          step={2.5}
-          stepLabel="2.5"
+          step={weightStep(unit)}
+          stepLabel={String(weightStep(unit))}
+          unit={unit}
           onChange={onChangeWeight}
           testID={`${tid}-weight`}
         />
@@ -362,7 +392,7 @@ export function TheLogger({
       <Pressable
         onPress={onLog}
         accessibilityRole="button"
-        accessibilityLabel={ready ? `Log set, ${weight} kilograms, ${reps} reps` : 'Log set'}
+        accessibilityLabel={ready ? `Log set, ${weight} ${unit}, ${reps} reps` : 'Log set'}
         style={({ pressed }) => [
           styles.logButton,
           { backgroundColor: colors.buttonBackground },
@@ -428,22 +458,34 @@ const styles = StyleSheet.create({
   counterSide: {
     alignItems: 'center',
   },
-  counterTap: {
+  // FIXED-WHEEL BOXES — 5 wheels for the weight, 2 for the reps.
+  // The widths never change, so the instrument row never reflows.
+  counterTapWeight: {
     minHeight: 60,
-    minWidth: 72,
+    width: 168,
     alignItems: 'center',
     justifyContent: 'center',
     paddingBottom: 4,
   },
+  counterTapReps: {
+    minHeight: 60,
+    width: 74,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 4,
+  },
+  // The edit-state inputs carry the SAME fixed geometry as the boxes
+  // they replace — tapping a counter to type never moves anything (a
+  // bare web input otherwise sizes to its intrinsic ~20ch width).
   weightInput: {
     ...theme.typography.mobileCounter,
-    minWidth: 96,
+    width: 168,
     minHeight: 60,
     textAlign: 'center',
   },
   repsInput: {
     ...theme.typography.mobileCounter,
-    minWidth: 72,
+    width: 74,
     minHeight: 60,
     textAlign: 'center',
   },

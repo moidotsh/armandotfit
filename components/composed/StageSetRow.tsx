@@ -14,6 +14,7 @@ import { X } from '@tamagui/lucide-icons-2';
 import { FadeIn } from '../premium/shared';
 import { useAppTheme } from '../../context';
 import { theme, DURATION, railMaxFor } from '../../constants';
+import type { WeightUnit } from '../../utils/weight';
 import { PinRail } from './PinRail';
 
 export interface StageSetRowProps {
@@ -23,6 +24,8 @@ export interface StageSetRowProps {
   /** The rail's ceiling — defaults to railMaxFor(weight). Pass the
    * day's max so every row's pin reads against one scale. */
   railMax?: number;
+  /** The values' unit words for the a11y read ('kg' | 'lb'). */
+  unit?: WeightUnit;
   onRemove?: () => void;
   testID?: string;
 }
@@ -32,6 +35,7 @@ export function StageSetRow({
   weight,
   reps,
   railMax,
+  unit = 'kg',
   onRemove,
   testID,
 }: StageSetRowProps) {
@@ -43,7 +47,7 @@ export function StageSetRow({
     <FadeIn duration={DURATION.fast} y={6}>
       <View
         testID={testID}
-        accessibilityLabel={`Set ${position}: ${weight} kilograms, ${reps} reps`}
+        accessibilityLabel={`Set ${position}: ${weight} ${unit}, ${reps} reps`}
         style={styles.row}
       >
         <Text style={[styles.position, { color: colors.textMuted }]}>
@@ -54,6 +58,7 @@ export function StageSetRow({
             kg={weight}
             scale="row"
             railMax={railMax ?? railMaxFor(weight)}
+            unit={unit}
             testID={`${testID ?? 'stage-set-row'}-rail`}
           />
         </View>

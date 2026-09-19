@@ -11,6 +11,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
 import { theme, railMaxFor } from '../../constants';
+import type { WeightUnit } from '../../utils/weight';
 import { PinRail } from './PinRail';
 
 export interface SetRowProps {
@@ -19,9 +20,11 @@ export interface SetRowProps {
   weight: number;
   /** The session's rail ceiling — defaults to railMaxFor(weight). */
   railMax?: number;
+  /** The values' unit words for the a11y read ('kg' | 'lb'). */
+  unit?: WeightUnit;
 }
 
-export function SetRow({ position, reps, weight, railMax }: SetRowProps) {
+export function SetRow({ position, reps, weight, railMax, unit = 'kg' }: SetRowProps) {
   const { colors } = useAppTheme();
   return (
     <View style={styles.row}>
@@ -29,7 +32,7 @@ export function SetRow({ position, reps, weight, railMax }: SetRowProps) {
         {position}
       </Text>
       <View style={styles.railHold}>
-        <PinRail kg={weight} scale="row" railMax={railMax ?? railMaxFor(weight)} />
+        <PinRail kg={weight} scale="row" railMax={railMax ?? railMaxFor(weight)} unit={unit} />
       </View>
       <Text style={[styles.reps, { color: colors.text }]}>{reps}</Text>
     </View>

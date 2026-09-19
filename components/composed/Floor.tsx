@@ -42,10 +42,10 @@ import {
   replaceWithHome,
   safeGoBack,
 } from '../../navigation';
-import { useLogWorkout, useFloorSession, useRestClock, type TopSetFact } from '../../hooks';
+import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, type TopSetFact } from '../../hooks';
+import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight } from '../../utils';
 import { useWorkoutStore } from '../../stores';
 import { getDayTitle, TAG_VOCABULARY_SEED } from '../../shared/exercises';
-import { formatVolume } from '../../services';
 import {
   theme,
   MOBILE_CONTENT_WIDTH_STYLE,
@@ -71,6 +71,13 @@ interface Armed {
 export function Floor() {
   const { colors } = useAppTheme();
   const { showToast } = useToast();
+
+  // THE WEIGHT UNIT — the display conversion (storage stays kg; the
+  // armed values live in DISPLAY units and cross the store boundary
+  // through fromDisplayWeight at log time).
+  const unit = useWeightUnit();
+  const toArmed = (kg: number | null) =>
+    kg == null ? null : roundDisplayWeight(toDisplayWeight(kg, unit));
 
   // Session lifecycle + stats + prefills (the composite hook).
   const {
@@ -112,6 +119,7 @@ export function Floor() {
   const swapDraftExercise = useWorkoutStore((s) => s.swapDraftExercise);
 
   const [stationIndex, setStationIndex] = useState(0);
+  const [mapCollapsed, setMapCollapsed] = useState(false);
   const [finishOpen, setFinishOpen] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [tagsOpen, setTagsOpen] = useState(false);
@@ -215,14 +223,14 @@ export function Floor() {
   useEffect(() => {
     let m = 0;
     for (const ex of exercises) {
-      for (const s of ex.sets) m = Math.max(m, s.weight ?? 0);
+      for (const s of ex.sets) m = Math.max(m, toDisplayWeight(s.weight ?? 0, unit));
       const pre = armedPrefill.get(ex.exerciseName.toLowerCase());
-      if (pre) m = Math.max(m, pre.weight);
+      if (pre) m = Math.max(m, toDisplayWeight(pre.weight, unit));
     }
     for (const a of Object.values(armedByExercise)) m = Math.max(m, a.weight ?? 0);
     const next = railMaxFor(m);
     setDayRailMax((prev) => (next > prev ? next : prev));
-  }, [exercises, armedPrefill, armedByExercise]);
+  }, [exercises, armedPrefill, armedByExercise, unit]);
 
   // The armed set for the current station: whatever the user has set,
   // else carry-forward from this exercise's last logged set, else the
@@ -235,13 +243,13 @@ export function Floor() {
     const lastSet = exercise && exercise.sets.length > 0
       ? exercise.sets[exercise.sets.length - 1]
       : null;
-    if (lastSet) return { weight: lastSet.weight, reps: lastSet.reps };
+    if (lastSet) return { weight: toArmed(lastSet.weight), reps: lastSet.reps };
     const lastTime: TopSetFact | undefined = exercise
       ? armedPrefill.get(exercise.exerciseName.toLowerCase())
       : undefined;
-    if (lastTime) return { weight: lastTime.weight, reps: lastTime.reps };
+    if (lastTime) return { weight: toArmed(lastTime.weight), reps: lastTime.reps };
     return { weight: null, reps: targetRepsLow };
-  }, [armedByExercise, exercise, armedPrefill, targetRepsLow]);
+  }, [armedByExercise, exercise, armedPrefill, targetRepsLow, unit]);
 
   const setArmed = (next: Armed) => {
     if (!exercise) return;
@@ -256,10 +264,12 @@ export function Floor() {
       showToast('error', 'Set the reps first');
       return;
     }
-    // A logged set is a done set: weight null → 0 (bodyweight). The
-    // armed values CARRY — the next set defaults to what just worked.
+    // A logged set is a done set: weight null → 0 (bodyweight), and
+    // the DISPLAY units cross into storage kilograms HERE — the one
+    // conversion boundary on the Floor. The armed values CARRY — the
+    // next set defaults to what just worked.
     addSetToDraft(exercise.localId, {
-      weight: armed.weight ?? 0,
+      weight: fromDisplayWeight(armed.weight ?? 0, unit),
       reps: armed.reps,
     });
     setArmedByExercise((prev) => ({
@@ -327,7 +337,10 @@ export function Floor() {
             <ChevronLeft size={24} color={colors.text} />
           </Pressable>
           <Pressable
-            onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+            onPress={() => {
+              setMapCollapsed(false);
+              scrollRef.current?.scrollTo({ y: 0, animated: true });
+            }}
             accessibilityRole="button"
             accessibilityLabel="Show session board"
             style={({ pressed }) => [styles.iconButton, pressed ? { opacity: 0.6 } : null]}
@@ -434,10 +447,28 @@ export function Floor() {
             }}
             testID="floor-map"
           >
-            <Text style={[styles.boardTitle, { color: colors.textMuted }]}>
-              {`${dayTitle ? `${dayTitle} · ` : ''}${exercises.length} STATIONS`}
-            </Text>
-            {exercises.map((ex, i) => {
+            {/* The board's title row IS the collapse toggle: the day
+                at a glance, or folded to one line when the station
+                owns the screen. */}
+            <Pressable
+              onPress={() => setMapCollapsed((c) => !c)}
+              accessibilityRole="button"
+              accessibilityLabel={
+                mapCollapsed
+                  ? `Expand session board, ${exercises.length} stations`
+                  : `Collapse session board, ${exercises.length} stations`
+              }
+              style={({ pressed }) => [styles.boardToggle, pressed ? { opacity: 0.6 } : null]}
+              testID="floor-map-toggle"
+            >
+              <Text style={[styles.boardTitle, { color: colors.textMuted }]} numberOfLines={1}>
+                {`${dayTitle ? `${dayTitle} · ` : ''}${exercises.length} STATIONS`}
+              </Text>
+              <Text style={[styles.boardChevron, { color: colors.textMuted }]}>
+                {mapCollapsed ? '▾' : '▴'}
+              </Text>
+            </Pressable>
+            {mapCollapsed ? null : exercises.map((ex, i) => {
               const isCurrent = i === index;
               const done = ex.sets.length;
               const status = statusFor(i, done);
@@ -575,8 +606,9 @@ export function Floor() {
                     <StageSetRow
                       key={s.localId}
                       position={s.position}
-                      weight={s.weight ?? 0}
+                      weight={roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))}
                       reps={s.reps ?? 0}
+                      unit={unit}
                       railMax={dayRailMax || undefined}
                       onRemove={() => removeSetFromDraft(exercise.localId, s.localId)}
                       testID={`stage-set-row-${s.position}`}
@@ -597,14 +629,19 @@ export function Floor() {
                 />
               ) : null}
 
+              {/* The adder — a FOOTNOTE, deliberately quiet: the way
+                  forward is the NEXT panel above; adding mid-session
+                  is the exception, not the path. Isolated by air so a
+                  mid-set thumb cannot land on it by accident. */}
               <Pressable
                 onPress={navigateToExerciseDatabase}
                 accessibilityRole="button"
                 accessibilityLabel="Add exercise from library"
                 style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
+                testID="stage-add-exercise"
               >
-                <Text style={[styles.furnitureWord, { color: colors.textMuted }]}>
-                  + ADD EXERCISE
+                <Text style={[styles.addExerciseWord, { color: colors.textMuted }]}>
+                  + add exercise
                 </Text>
               </Pressable>
 
@@ -624,9 +661,10 @@ export function Floor() {
                 accessibilityRole="button"
                 accessibilityLabel="Add exercise from library"
                 style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
+                testID="stage-add-exercise"
               >
-                <Text style={[styles.furnitureWord, { color: colors.textMuted }]}>
-                  + ADD EXERCISE
+                <Text style={[styles.addExerciseWord, { color: colors.textMuted }]}>
+                  + add exercise
                 </Text>
               </Pressable>
             </View>
@@ -645,6 +683,7 @@ export function Floor() {
             repsHint={repsHint}
             railMax={dayRailMax || undefined}
             rest={restLine}
+            unit={unit}
             onLog={handleLog}
             onChangeWeight={(weight) => setArmed({ ...armed, weight })}
             onChangeReps={(reps) => setArmed({ ...armed, reps })}
@@ -665,8 +704,8 @@ export function Floor() {
             <Figure value={elapsed} label="elapsed" tone="ink" size="sm" style={styles.finishStat} />
             <Figure value={sessionSets} label={sessionSets === 1 ? 'set' : 'sets'} tone="ink" size="sm" style={styles.finishStat} />
             <Figure
-              value={formatVolume(sessionKg)}
-              unit="kg"
+              value={formatVolumeWeight(sessionKg, unit)}
+              unit={weightUnitLabel(unit)}
               label="moved"
               tone="ink"
               size="sm"
@@ -811,9 +850,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     gap: 2,
   },
+  boardToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    minHeight: 44,
+    marginBottom: 4,
+  },
+  boardChevron: {
+    ...theme.typography.mobileEyebrow,
+    fontSize: 12,
+  },
   boardTitle: {
     ...theme.typography.mobileEyebrow,
-    marginBottom: 6,
+    flex: 1,
   },
   boardRow: {
     flexDirection: 'row',
@@ -878,7 +929,12 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 4,
+    marginTop: 28,
+  },
+  // The footnote adder — whisper scale, sentence case: content-quiet,
+  // never competing with the NEXT panel.
+  addExerciseWord: {
+    ...theme.typography.mobileLedger,
   },
   errorText: { ...theme.typography.mobileMeta, marginTop: 12 },
   finishStats: {

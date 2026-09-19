@@ -20,10 +20,16 @@ import { BoardHead } from './BoardHead';
 import { SetRow } from './SetRow';
 import { QueryErrorNote } from './QueryErrorNote';
 import { useToast, useAppTheme } from '../../context';
-import { useWorkoutDetail, useDeleteSession } from '../../hooks';
+import { useWorkoutDetail, useDeleteSession, useWeightUnit } from '../../hooks';
 import { safeGoBack } from '../../navigation';
-import { sumVolume, formatVolume } from '../../services';
+import { sumVolume } from '../../services';
 import { GAUGE, PAGE_GUTTER, railMaxFor, theme } from '../../constants';
+import {
+  toDisplayWeight,
+  roundDisplayWeight,
+  formatVolumeWeight,
+  weightUnitLabel,
+} from '../../utils';
 
 export interface ReceiptProps {
   /** The session id from the route (?id=). */
@@ -33,6 +39,7 @@ export interface ReceiptProps {
 export function Receipt({ id }: ReceiptProps) {
   const { colors } = useAppTheme();
   const { showToast } = useToast();
+  const unit = useWeightUnit();
   const existingQuery = useWorkoutDetail(id);
   const deleteSessionMutation = useDeleteSession();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -61,7 +68,11 @@ export function Receipt({ id }: ReceiptProps) {
   const sessionRailMax = session
     ? railMaxFor(
         session.exercises.reduce(
-          (m, e) => Math.max(m, ...e.sets.map((s) => s.weight ?? 0)),
+          (m, e) =>
+            Math.max(
+              m,
+              ...e.sets.map((s) => toDisplayWeight(s.weight ?? 0, unit)),
+            ),
           0,
         ),
       )
@@ -89,7 +100,7 @@ export function Receipt({ id }: ReceiptProps) {
               sentence is "that was N kg"; the fact line carries
               the rest. */}
           <BoardHead
-            statement={`${formatVolume(totalKg)} kg`}
+            statement={`${formatVolumeWeight(totalKg, unit)} ${weightUnitLabel(unit)}`}
             fact={`${new Date(session.startedAt).toLocaleDateString(undefined, {
               weekday: 'short',
               month: 'short',
@@ -136,8 +147,9 @@ export function Receipt({ id }: ReceiptProps) {
                     key={s.id}
                     position={s.position}
                     reps={s.reps}
-                    weight={s.weight}
+                    weight={roundDisplayWeight(toDisplayWeight(s.weight, unit))}
                     railMax={sessionRailMax}
+                    unit={unit}
                   />
                 ))}
               </View>

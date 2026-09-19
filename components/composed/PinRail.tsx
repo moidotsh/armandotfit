@@ -3,21 +3,26 @@
 // THE PIN RAIL — THE GAUGE's load figure (docs/architecture/
 // gauge-thesis.md §4.3). A printed tick scale with the engaged range
 // 0→load filled and THE PIN — a steel bar crossing the rail at the
-// load, carrying a mono label beside it at counter scale (the
-// machine-decal read). Vertical, so the pin travels a proportional
-// fraction of the column at ANY magnitude (monotone by construction —
-// probe it). A bodyweight set (≤0) parks the pin at 0 with the empty
-// sleeve.
+// load. Vertical, so the pin travels a proportional fraction of the
+// column at ANY magnitude (monotone by construction — probe it). A
+// bodyweight set (≤0) parks the pin at 0 with the empty sleeve.
+//
+// THE RAIL CARRIES NO WORDS: the digits beside it are the number (the
+// logger's 56px counter, the ledger's row figures) — the rail is pure
+// magnitude, a VU meter, not a second readout. Micro-labels on the
+// column proved illegible under glare and collided at the extremes;
+// the accessibility label carries the exact values instead.
 //
 // Motion: THE PIN DROP (F3) — the pin slides to its new position and
 // the engaged fill re-steps when the weight changes. Post-interactive
 // only; instant under reduced motion; static in jsdom.
 
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { useAppTheme } from '../../context';
-import { theme, RAIL_SCALE, railMaxFor, pinRatio, PIN_DROP_DURATION_MS, type RailScale } from '../../constants';
+import { RAIL_SCALE, railMaxFor, pinRatio, PIN_DROP_DURATION_MS, type RailScale } from '../../constants';
 import { useReducedMotion } from '../premium/shared';
+import type { WeightUnit } from '../../utils/weight';
 
 export interface PinRailProps {
   /** The load in kg. null/0 parks the pin at 0 (the empty sleeve). */
@@ -26,6 +31,8 @@ export interface PinRailProps {
   /** The rail's ceiling — defaults to railMaxFor(kg). Pass a shared
    * day max so multiple rails read on one scale. */
   railMax?: number;
+  /** The values' unit words for the a11y read ('kg' | 'lb'). */
+  unit?: WeightUnit;
   testID?: string;
   accessibilityLabel?: string;
 }
@@ -40,6 +47,7 @@ export function PinRail({
   kg,
   scale = 'row',
   railMax,
+  unit = 'kg',
   testID,
   accessibilityLabel,
 }: PinRailProps) {
@@ -51,7 +59,6 @@ export function PinRail({
   const height = geom.height;
   const railW = geom.width + geom.majorTickWidth + 2;
   const counter = scale === 'counter';
-  const labelCol = counter ? 26 : 0;
 
   // THE PIN DROP — one animated value drives both the pin's travel
   // and the fill's growth (both derive from the same ratio;
@@ -98,36 +105,15 @@ export function PinRail({
       style={{ height, flexDirection: 'row', alignItems: 'flex-end' }}
       accessibilityRole="image"
       accessibilityLabel={
-        accessibilityLabel ?? (kg && kg > 0 ? `load ${kg} kilograms on a ${max} kilogram rail` : 'bodyweight, no load')
+        accessibilityLabel ??
+        (kg && kg > 0
+          ? `load ${formatLoad(kg)} ${unit === 'lb' ? 'pounds' : 'kilograms'} on a ${max} ${unit} rail`
+          : 'bodyweight, no load')
       }
       testID={testID}
     >
-      {/* The scale's printed words (counter only): the ceiling at the
-          top, zero at the bottom, and THE PIN'S LABEL riding the pin. */}
-      {counter ? (
-        <View style={[StyleSheet.absoluteFill, { left: 0, width: labelCol }]}>
-          <Text
-            style={[styles.scaleWord, { color: colors.textMuted }]}
-            testID={testID ? `${testID}-max` : undefined}
-          >
-            {String(max)}
-          </Text>
-          <Animated.Text
-            style={[
-              styles.pinWord,
-              { color: colors.text, bottom: 2 },
-              reduced ? {} : { transform: [{ translateY: -pinBottom }] },
-            ]}
-            testID={testID ? `${testID}-label` : undefined}
-          >
-            {kg != null && kg > 0 ? formatLoad(kg) : '—'}
-          </Animated.Text>
-          <Text style={[styles.scaleWord, { color: colors.textMuted, position: 'absolute', bottom: 0 }]}>
-            0
-          </Text>
-        </View>
-      ) : null}
-      {/* The rail itself: ticks + engaged fill + the pin. */}
+      {/* The rail itself: ticks + engaged fill + the pin. No words —
+          the digits beside the rail are the number. */}
       <View style={{ height, width: railW }}>
         <View style={[StyleSheet.absoluteFill, { alignItems: 'flex-end' }]}>{ticks}</View>
         <Animated.View
@@ -166,23 +152,5 @@ export function PinRail({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  scaleWord: {
-    ...theme.typography.mobileLedger,
-    fontSize: 10,
-    lineHeight: 12,
-    position: 'absolute',
-    top: -2,
-    left: 0,
-  },
-  pinWord: {
-    ...theme.typography.mobileLedger,
-    fontSize: 11,
-    lineHeight: 13,
-    position: 'absolute',
-    left: 0,
-  },
-});
 
 export default PinRail;

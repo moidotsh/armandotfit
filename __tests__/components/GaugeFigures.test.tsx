@@ -25,9 +25,11 @@ describe('PinRail', () => {
     expect(byTestId('rail-pin')).toBeTruthy();
   });
 
-  it('labels the load at counter scale and parks at BW for bodyweight', () => {
+  it('carries no words at counter scale (the digits beside it are the number)', () => {
     renderUi(<PinRail kg={0} scale="counter" testID="crail" />);
-    expect(byTestId('crail-label')?.textContent).toBe('—');
+    expect(byTestId('crail-label')).toBeNull();
+    expect(byTestId('crail-max')).toBeNull();
+    expect(byTestId('crail-pin')).toBeTruthy();
   });
 
   it('speaks its load in the accessibility label', () => {

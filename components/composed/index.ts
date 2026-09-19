@@ -21,6 +21,7 @@ export { WorkoutListSkeleton } from './WorkoutListSkeleton';
 // rail (load), the set pips, the flip tile, the rolling counter.
 export { PinRail, formatLoad, type PinRailProps } from './PinRail';
 export { SetPips, type SetPipsProps } from './SetPips';
+export { WallGauge, type WallGaugeProps } from './WallGauge';
 export { FlipTile, type FlipTileProps, type FlipTileTone } from './FlipTile';
 export { RollingCounter, type RollingCounterProps } from './RollingCounter';
 export { Floor } from './Floor';

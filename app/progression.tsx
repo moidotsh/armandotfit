@@ -16,7 +16,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { BoardShell, BoardHead, QueryErrorNote, PinRail } from '../components/composed';
+import { BoardShell, BoardHead, QueryErrorNote, WallGauge } from '../components/composed';
 import { useAppTheme } from '../context';
 import {
   navigateToExerciseDetail,
@@ -24,9 +24,10 @@ import {
   navigateToSplitSelection,
   safeGoBack,
 } from '../navigation';
-import { useDashboardSummary, usePersonalBests } from '../hooks';
+import { useDashboardSummary, usePersonalBests, useWeightUnit } from '../hooks';
 import { SYSTEM_EXERCISES } from '../shared/exercises';
 import { GAUGE, theme, PAGE_GUTTER, railMaxFor } from '../constants';
+import { toDisplayWeight, roundDisplayWeight, weightUnitLabel } from '../utils';
 
 const PB_COUNT = 5;
 
@@ -34,11 +35,16 @@ export default function ProgressionScreen() {
   const { colors } = useAppTheme();
   const summaryQuery = useDashboardSummary();
   const pbQuery = usePersonalBests();
+  const unit = useWeightUnit();
   const summary = summaryQuery.data;
   const isEmpty = (summary?.totalSessions ?? 0) === 0;
-  const pbs = (pbQuery.data ?? []).slice(0, PB_COUNT);
+  const pbs = (pbQuery.data ?? []).slice(0, PB_COUNT)
+    .map((pb) => ({
+      ...pb,
+      bestWeight: roundDisplayWeight(toDisplayWeight(pb.bestWeight, unit)),
+    }));
   // The wall's one ceiling — the highest best-load, rounded up: every
-  // rail reads against the same scale, so the wall IS the ranking.
+  // gauge reads against the same scale, so the wall IS the ranking.
   const wallRailMax = railMaxFor(Math.max(0, ...pbs.map((pb) => pb.bestWeight)));
 
   return (
@@ -70,9 +76,12 @@ export default function ProgressionScreen() {
       ) : (
         <>
           {/* THE FIGURE-STATEMENT — the streak itself, in record
-              orange at counter scale, alone in its halo. */}
+              orange at counter scale, alone in its halo, under the
+              page-identity whisper (spoken at rest, held in the
+              column — the compress bar restates it scrolled). */}
           <BoardHead
             statement={String(summary?.streak.current ?? 0)}
+            whisper="THE RECORD BOOK"
             fact={`day streak · best ${summary?.streak.best ?? 0}`}
             variant="figure"
             tone="record"
@@ -102,16 +111,27 @@ export default function ProgressionScreen() {
                       key={pb.exerciseName}
                       onPress={slug ? () => navigateToExerciseDetail(slug) : undefined}
                       accessibilityRole="button"
-                      accessibilityLabel={`${pb.exerciseName} — best ${pb.bestWeight} kilograms for ${pb.bestReps}`}
+                      accessibilityLabel={`${pb.exerciseName} — best ${pb.bestWeight} ${weightUnitLabel(unit)} for ${pb.bestReps}`}
                       style={({ pressed }) => [styles.pbRow, pressed ? { opacity: 0.6 } : null]}
                     >
-                      <Text style={[styles.pbName, { color: colors.text }]} numberOfLines={1}>
-                        {pb.exerciseName}
-                      </Text>
-                      <PinRail kg={pb.bestWeight} scale="counter" railMax={wallRailMax} testID={`gauge-wall-rail-${pb.exerciseName}`} />
-                      <Text style={[styles.pbReps, { color: colors.brandText }]}>
-                        {String(pb.bestReps)}
-                      </Text>
+                      <View style={styles.pbLabelHold}>
+                        <Text style={[styles.pbName, { color: colors.text }]} numberOfLines={1}>
+                          {pb.exerciseName}
+                        </Text>
+                        <Text style={[styles.pbReps, { color: colors.textMuted }]}>
+                          {`× ${pb.bestReps} REPS`}
+                        </Text>
+                      </View>
+                      {/* THE WALL GAUGE — the wide-format rail: a ruler
+                          track, the pin at the best load, and the load
+                          figure riding right beside the pin. Reads at
+                          a glance, from one entry to five. */}
+                      <WallGauge
+                        kg={pb.bestWeight}
+                        railMax={wallRailMax}
+                        unit={unit}
+                        testID={`gauge-wall-rail-${pb.exerciseName}`}
+                      />
                     </Pressable>
                   );
                 })}
@@ -148,19 +168,24 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   pbRow: {
-    minHeight: 128,
+    paddingVertical: 14,
+    gap: 4,
+  },
+  // The wall row's label line: the name left, the reps figure right;
+  // the wall gauge runs full-width beneath them.
+  pbLabelHold: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   pbName: {
     ...GAUGE.row,
     flex: 1,
   },
   pbReps: {
-    ...GAUGE.figure,
-    minWidth: 24,
-    textAlign: 'right',
+    ...GAUGE.whisperLine,
+    letterSpacing: 0.6,
   },
   analyticsLink: { marginTop: GAUGE.block.marginTop, minHeight: 48, justifyContent: 'center' },
   analyticsLinkText: {

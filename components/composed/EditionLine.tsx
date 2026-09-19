@@ -10,7 +10,9 @@ import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { useAppTheme } from '../../context';
 import { theme } from '../../constants';
-import { formatVolume, sumVolume } from '../../services';
+import { sumVolume } from '../../services';
+import { useWeightUnit } from '../../hooks';
+import { formatVolumeWeight, weightUnitLabel } from '../../utils';
 import type { LoggedExerciseWithSets, TrainingSession } from '../../shared/types';
 
 export interface EditionLineProps {
@@ -29,6 +31,7 @@ export interface EditionLineProps {
 
 export function EditionLine({ session, onPress, lead = false }: EditionLineProps) {
   const { colors } = useAppTheme();
+  const unit = useWeightUnit();
 
   // AM and PM are separate session rows; the start hour restores which
   // window this row was. 12:00 boundary — a noon session reads as PM.
@@ -44,7 +47,7 @@ export function EditionLine({ session, onPress, lead = false }: EditionLineProps
     date,
     session.splitDay != null ? `D${session.splitDay}` : null,
     windowLabel,
-    tonnage > 0 ? `${formatVolume(tonnage)} kg` : null,
+    tonnage > 0 ? `${formatVolumeWeight(tonnage, unit)} ${weightUnitLabel(unit)}` : null,
   ].filter(Boolean);
 
   const line = parts.join(' · ');
@@ -52,7 +55,7 @@ export function EditionLine({ session, onPress, lead = false }: EditionLineProps
     new Date(session.startedAt).toLocaleDateString(),
     session.splitDay != null ? `day ${session.splitDay}` : 'ad-hoc',
     `${windowLabel} edition`,
-    tonnage > 0 ? `${formatVolume(tonnage)} kilograms` : null,
+    tonnage > 0 ? `${formatVolumeWeight(tonnage, unit)} ${unit === 'lb' ? 'pounds' : 'kilograms'}` : null,
   ].filter(Boolean).join(', ');
 
   return (

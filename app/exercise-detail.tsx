@@ -19,7 +19,7 @@ import {
 import { BoardShell, PinRail } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
-import { useExerciseDetail, useTopSetsByName } from '../hooks';
+import { useExerciseDetail, useTopSetsByName, useWeightUnit } from '../hooks';
 import { useWorkoutStore } from '../stores';
 import {
   EQUIPMENT_DISPLAY_NAMES,
@@ -29,6 +29,7 @@ import {
   type MuscleSlug,
 } from '../shared/exercises';
 import { GAUGE, theme, PAGE_GUTTER } from '../constants';
+import { toDisplayWeight, roundDisplayWeight } from '../utils';
 import type { ExerciseKey } from '../shared/exercises';
 
 export default function ExerciseDetailScreen() {
@@ -37,6 +38,7 @@ export default function ExerciseDetailScreen() {
   const { showToast } = useToast();
   const query = useExerciseDetail(slug ?? null);
   const topSets = useTopSetsByName();
+  const unit = useWeightUnit();
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
   const addExerciseToDraft = useWorkoutStore((s) => s.addExerciseToDraft);
 
@@ -50,7 +52,7 @@ export default function ExerciseDetailScreen() {
     const fact = topSets.map.get(exercise.name.toLowerCase());
     if (!fact) return null;
     return {
-      weight: fact.weight,
+      weight: roundDisplayWeight(toDisplayWeight(fact.weight, unit)),
       reps: fact.reps,
       sets: fact.sets,
       when: new Date(fact.startedAt).toLocaleDateString(undefined, {
@@ -92,7 +94,7 @@ export default function ExerciseDetailScreen() {
                 <Text style={[styles.lastLabel, { color: colors.brandText }]}>
                   THE NUMBER TO BEAT
                 </Text>
-                <PinRail kg={lastTime.weight} scale="counter" testID="entry-last-rail" />
+                <PinRail kg={lastTime.weight} scale="counter" unit={unit} testID="entry-last-rail" />
                 <Text style={[styles.lastLine, { color: colors.text }]} numberOfLines={1}>
                   {`${lastTime.weight} × ${lastTime.reps} · ${lastTime.sets} set${lastTime.sets === 1 ? '' : 's'} · ${lastTime.when}`}
                 </Text>
