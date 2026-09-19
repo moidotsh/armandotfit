@@ -61,13 +61,44 @@ export function parseSearchResponse(payload: unknown): MusicTrack[] {
 }
 
 /**
+ * Decode the HTML entities YouTube ships in snippet titles
+ * (&quot; &#39; &amp; &#8212; …) — the API escapes, the UI must not.
+ * Named entities cover what titles actually carry; numeric forms
+ * (decimal + hex) decode any codepoint. Unknown entities pass
+ * through untouched.
+ */
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&',
+  quot: '"',
+  apos: "'",
+  lt: '<',
+  gt: '>',
+  nbsp: ' ',
+};
+
+export function decodeHtmlEntities(raw: string): string {
+  return raw.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (match, body: string) => {
+    if (body.startsWith('#x') || body.startsWith('#X')) {
+      const code = Number.parseInt(body.slice(2), 16);
+      return code > 0 ? String.fromCodePoint(code) : match;
+    }
+    if (body.startsWith('#')) {
+      const code = Number.parseInt(body.slice(1), 10);
+      return code > 0 ? String.fromCodePoint(code) : match;
+    }
+    return NAMED_ENTITIES[body] ?? match;
+  });
+}
+
+/**
  * Split a YouTube video title into artist + song, the moidotsh
- * convention: cut the tail at "~", "Lo-Fi", or "Remix", then split
- * the remainder on the first " - ". "Artist - Song" → both; a lone
- * word stays a title with no artist.
+ * convention: entity-decode first (the API escapes titles), cut the
+ * tail at "~", "Lo-Fi", or "Remix", then split the remainder on the
+ * first " - ". "Artist - Song" → both; a lone word stays a title with
+ * no artist.
  */
 export function parseVideoTitle(raw: string): { artist: string | null; title: string } {
-  const cleaned = raw
+  const cleaned = decodeHtmlEntities(raw)
     .split('~')[0]
     .split('Lo-Fi')[0]
     .split('Lo-FI')[0]

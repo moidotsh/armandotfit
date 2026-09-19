@@ -4,10 +4,32 @@ import {
   parseSearchResponse,
   parsePlaylistId,
   parseYouTubeRef,
+  decodeHtmlEntities,
 } from '../../services/musicService';
 import { useMusicStore } from '../../stores/musicStore';
 
+describe('decodeHtmlEntities (the API escapes titles; the UI must not)', () => {
+  it('decodes the entities YouTube actually ships', () => {
+    // The owner's console report, verbatim shapes.
+    expect(decodeHtmlEntities('ANSWER TO &quot;D.O.R.&quot;')).toBe('ANSWER TO "D.O.R."');
+    expect(decodeHtmlEntities('I&#39;m God')).toBe("I'm God");
+    expect(decodeHtmlEntities('Suck My D*&amp;*')).toBe('Suck My D*&*');
+  });
+  it('decodes numeric forms (decimal + hex) and passes unknowns through', () => {
+    expect(decodeHtmlEntities('A &#8212; B')).toBe('A — B');
+    expect(decodeHtmlEntities('A &#x2014; B')).toBe('A — B');
+    expect(decodeHtmlEntities('&lt;tag&gt; &nbsp;')).toBe('<tag>  ');
+    expect(decodeHtmlEntities('&bogus; 100% &amp')).toBe('&bogus; 100% &amp');
+  });
+});
+
 describe('parseVideoTitle (the moidotsh convention)', () => {
+  it('decodes entities before splitting', () => {
+    expect(parseVideoTitle('Lil B - I&#39;m God (Produced By Clams Casino)')).toEqual({
+      artist: 'Lil B',
+      title: "I'm God (Produced By Clams Casino)",
+    });
+  });
   it('splits artist - song', () => {
     expect(parseVideoTitle('Nirvana - Come As You Are')).toEqual({
       artist: 'Nirvana',
