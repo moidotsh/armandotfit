@@ -1,15 +1,9 @@
 // services/progressionService.ts
 // Dashboard summary + streaks — computed from raw session history at
 // read time. Nothing aggregated is ever stored (the design forbids it).
+// Pure derivations over rows the shared activity log already fetched.
 
-import { WorkoutService } from './workoutService';
-import type { RepositoryResult } from '../utils/supabase/repositories';
-import { ok } from '../utils/supabase/repositories';
-import type {
-  ID,
-  ProgressionSummary,
-  StreakInfo,
-} from '../shared/types';
+import type { ProgressionSummary, StreakInfo, TrainingSession } from '../shared/types';
 import { e1rm } from './sessionMath';
 
 /** Local calendar date ('YYYY-MM-DD') of an ISO timestamp. */
@@ -118,29 +112,22 @@ export function computePersonalBests(
 }
 
 export class ProgressionService {
-  /** Home-dashboard summary. Zeros across the board for fresh accounts. */
-  static async getDashboardSummary(
-    userId: ID,
-  ): Promise<RepositoryResult<ProgressionSummary>> {
-    const res = await WorkoutService.getRecentSessions(userId, 200);
-    if (!res.success) return res;
-    const sessions = res.data;
+  /**
+   * Home-dashboard summary over the shared activity log. Zeros across
+   * the board for fresh accounts.
+   */
+  static summarizeActivity(
+    sessions: ReadonlyArray<Pick<TrainingSession, 'startedAt'>>,
+  ): ProgressionSummary {
     const startedAts = sessions.map((s) => s.startedAt);
     const ws = weekStart();
     const thisWeek = sessions.filter((s) => localDate(s.startedAt) >= ws).length;
-    return ok({
+    return {
       streak: computeStreaks(startedAts),
       totalSessions: sessions.length,
       thisWeekSessions: thisWeek,
       lastSessionDate: sessions[0]?.startedAt ?? null,
-    });
-  }
-
-  /** Standalone streak read (header badges). */
-  static async getStreaks(userId: ID): Promise<RepositoryResult<StreakInfo>> {
-    const res = await WorkoutService.getRecentSessions(userId, 200);
-    if (!res.success) return res;
-    return ok(computeStreaks(res.data.map((s) => s.startedAt)));
+    };
   }
 }
 

@@ -22,8 +22,10 @@ export function SessionSyncWatcher() {
     void (async () => {
       const result = await sessionSaveQueue.flush();
       if (cancelled || result.synced === 0) return;
+      // The workouts root prefix-matches the shared history, the
+      // activity log, detail, and last-tags — every derived surface
+      // recomputes from the refetched entries.
       queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
       showToast(
         'success',
         result.synced === 1

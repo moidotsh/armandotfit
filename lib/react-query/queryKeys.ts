@@ -1,8 +1,8 @@
 // lib/react-query/queryKeys.ts
-// Centralized query-key factory. Arqavellum's cross-cutting keys (auth, user)
-// + armandotfit's domain keys (profile, exercises, workouts, analytics,
-// streaks, reference). Hooks use these via the `queryKeys` factory —
-// inline `queryKey: [...]` arrays are banned by the S13 audit.
+// Centralized query-key factory. Arqavellum's cross-cutting keys (auth,
+// user) + armandotfit's domain keys (profile, exercises, workouts,
+// music). Hooks use these via the `queryKeys` factory — inline
+// `queryKey: [...]` arrays are banned by the S13 audit.
 
 import type { ID } from '../../shared/types';
 
@@ -36,33 +36,32 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.exercises.all, 'detail', id] as const,
   },
 
-  /** Workout sessions: header list + per-session detail. */
+  /** Workout sessions: the shared history + activity log + detail. */
   workouts: {
     all: ['workouts'] as const,
-    recent: (limit = 10) => [...queryKeys.workouts.all, 'recent', limit] as const,
+    /**
+     * THE SHARED HISTORY — nested sessions (exercises + sets), one
+     * generous limit for the single user. Every details consumer
+     * (recent lists, top sets, PBs, trajectory, PR timeline, muscle
+     * share) derives from this one cache entry via select/useMemo —
+     * the payload never rides the wire twice under different keys.
+     */
+    history: () => [...queryKeys.workouts.all, 'history'] as const,
+    /**
+     * Headers-only activity log — deeper than history (streaks and
+     * the consistency grid look further back than any details
+     * consumer needs).
+     */
+    activity: () => [...queryKeys.workouts.all, 'activity'] as const,
     detail: (id: string) => [...queryKeys.workouts.all, 'detail', id] as const,
     /** Most-recent tags per exercise-name list (session-start prefill). */
     lastTags: (namesKey: string) =>
       [...queryKeys.workouts.all, 'last-tags', namesKey] as const,
-    /** Personal bests per exercise across history (computed at read). */
-    personalBests: () => [...queryKeys.workouts.all, 'personal-bests'] as const,
-  },
-
-  /** Dashboard summary + chart data. */
-  analytics: {
-    all: ['analytics'] as const,
-    summary: () => [...queryKeys.analytics.all, 'summary'] as const,
-    history: (daysBack = 30) => [...queryKeys.analytics.all, 'history', daysBack] as const,
   },
 
   /** Music picks (the persisted recents list). */
   music: {
     all: ['music'] as const,
     picks: () => [...queryKeys.music.all, 'picks'] as const,
-  },
-
-  /** Streaks (RPC-computed). */
-  streaks: {
-    current: () => ['streaks', 'current'] as const,
   },
 } as const;

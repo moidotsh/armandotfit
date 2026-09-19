@@ -1,9 +1,9 @@
 // hooks/mutations/useLogWorkout.ts
 // Log-session mutation with optimistic update (D2). Previews the new
-// session in the recent-sessions cache while the write is in flight,
-// rolls back on error, and invalidates on success so the server-
-// authoritative list takes over. Touches setQueryData +
-// invalidateQueries to satisfy D3.
+// session at the head of the SHARED HISTORY — the key every details
+// consumer (home's recent list, top sets, PBs) actually reads — rolls
+// back on error, and invalidates on success so the server-authoritative
+// history takes over. Touches setQueryData + invalidateQueries (D3).
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { WorkoutService } from '../../services';
@@ -13,17 +13,16 @@ import { useAuthStore } from '../../stores';
 import type {
   LogSessionDTO,
   SessionWithDetails,
-  TrainingSession,
 } from '../../shared/types';
 
 interface LogSessionContext {
-  previousRecent?: TrainingSession[];
+  previousHistory?: SessionWithDetails[];
 }
 
 export function useLogWorkout() {
   const queryClient = useQueryClient();
   const userId = useAuthStore((s) => s.userId);
-  const recentKey = queryKeys.workouts.recent(10);
+  const historyKey = queryKeys.workouts.history();
 
   return useMutation<
     SessionWithDetails,
@@ -37,36 +36,37 @@ export function useLogWorkout() {
       return res.data;
     },
     onMutate: async (dto): Promise<LogSessionContext> => {
-      await queryClient.cancelQueries({ queryKey: recentKey });
-      const previousRecent = queryClient.getQueryData<TrainingSession[]>(recentKey);
+      await queryClient.cancelQueries({ queryKey: historyKey });
+      const previousHistory = queryClient.getQueryData<SessionWithDetails[]>(historyKey);
 
-      if (previousRecent) {
-        const optimistic: TrainingSession = {
+      if (previousHistory) {
+        const optimistic: SessionWithDetails = {
           id: `pending-${Date.now()}`,
           userId: userId ?? 'pending',
           startedAt: dto.startedAt,
           note: dto.note ?? null,
           splitDay: dto.splitDay ?? null,
+          exercises: [],
         };
-        queryClient.setQueryData<TrainingSession[]>(recentKey, [
+        queryClient.setQueryData<SessionWithDetails[]>(historyKey, [
           optimistic,
-          ...previousRecent,
+          ...previousHistory,
         ]);
       }
-      return { previousRecent };
+      return { previousHistory };
     },
     onError: (err, _dto, context) => {
       logger.warn('mutations', 'useLogWorkout failed, rolling back cache:', err.message);
-      if (context?.previousRecent) {
-        queryClient.setQueryData(recentKey, context.previousRecent);
+      if (context?.previousHistory) {
+        queryClient.setQueryData(historyKey, context.previousHistory);
       }
     },
     onSettled: () => {
-      // Server-authoritative refresh of the recent list + every
-      // computed-at-read surface (summary, streaks, analytics).
+      // Server-authoritative refresh of the shared history + activity
+      // log + per-session detail + last-tags (the workouts root
+      // prefix-matches every sessions key; activity/grid/streak
+      // derivations recompute from the refetched entries).
       queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.streaks.current() });
     },
   });
 }

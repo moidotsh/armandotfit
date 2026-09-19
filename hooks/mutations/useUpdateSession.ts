@@ -35,9 +35,9 @@ export function useUpdateSession(
 }
 
 /** Delete a session. Invalidates every computed-at-read surface the
- *  deletion changes — recent lists, the detail, streaks, and the
- *  dashboard/analytics summaries — mirroring the log path so the
- *  streak corrects immediately, not on the next refocus. */
+ *  deletion changes — the shared history, the activity log, and the
+ *  detail — mirroring the log path so the streak corrects
+ *  immediately, not on the next refocus. */
 export function useDeleteSession() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -48,8 +48,6 @@ export function useDeleteSession() {
     onSettled: (_data, _err, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.workouts.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.streaks.current() });
     },
   });
 }

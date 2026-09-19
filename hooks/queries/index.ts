@@ -7,12 +7,15 @@
 export {
   useRecentWorkouts,
   useRecentSessionDetails,
+  useSessionHistory,
+  useActivityLog,
   useWorkoutDetail,
+  HISTORY_LIMIT,
+  ACTIVITY_LIMIT,
 } from './useWorkouts';
 export { useExercises, useExerciseDetail } from './useExercises';
 export {
   useDashboardSummary,
-  useStreaks,
   useAnalyticsHistory,
   usePersonalBests,
 } from './useProgression';

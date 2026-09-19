@@ -1,12 +1,10 @@
 // services/analyticsService.ts
-// Analytics-screen read path: daily activity + weekly buckets computed
-// from raw session history at read time. Stateless — no writes, and no
-// aggregates are ever stored.
+// Analytics-screen derivations: daily activity + weekly buckets
+// computed from raw session history at read time. Stateless — no
+// writes, and no aggregates are ever stored. Pure functions over the
+// rows the shared activity log already fetched.
 
-import { WorkoutService } from './workoutService';
-import type { RepositoryResult } from '../utils/supabase/repositories';
-import { ok } from '../utils/supabase/repositories';
-import type { ID, DayActivity } from '../shared/types';
+import type { DayActivity, TrainingSession } from '../shared/types';
 
 function localDate(iso: string): string {
   const d = new Date(iso);
@@ -18,26 +16,22 @@ function localDate(iso: string): string {
 
 export class AnalyticsService {
   /** Per-day session counts for the last `daysBack` days. */
-  static async getDailyActivity(
-    userId: ID,
+  static dailyActivity(
+    sessions: ReadonlyArray<Pick<TrainingSession, 'startedAt'>>,
     daysBack = 30,
-  ): Promise<RepositoryResult<DayActivity[]>> {
-    const res = await WorkoutService.getRecentSessions(userId, 200);
-    if (!res.success) return res;
+  ): DayActivity[] {
     const since = new Date();
     since.setDate(since.getDate() - daysBack);
     const sinceStr = localDate(since.toISOString());
     const byDay = new Map<string, number>();
-    for (const s of res.data) {
+    for (const s of sessions) {
       const d = localDate(s.startedAt);
       if (d < sinceStr) continue;
       byDay.set(d, (byDay.get(d) ?? 0) + 1);
     }
-    return ok(
-      Array.from(byDay.entries())
-        .map(([date, sessions]) => ({ date, sessions }))
-        .sort((a, b) => a.date.localeCompare(b.date)),
-    );
+    return Array.from(byDay.entries())
+      .map(([date, sessions]) => ({ date, sessions }))
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
 
   /** Bucket daily activity into weekly totals (Monday-start weeks). */

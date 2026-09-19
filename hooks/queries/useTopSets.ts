@@ -11,7 +11,7 @@
 // they could silently disagree.
 
 import { useMemo } from 'react';
-import { useRecentSessionDetails } from './useWorkouts';
+import { useSessionHistory } from './useWorkouts';
 
 export interface TopSetFact {
   /** Best loaded weight in that session (ties → the later set). */
@@ -24,11 +24,6 @@ export interface TopSetFact {
   startedAt: string;
 }
 
-/**
- * Top-set facts keyed by lowercase exercise name. First (most recent)
- * session wins per name — matching what the lifter walked in on, not
- * a lifetime max (that's `usePersonalBests`).
- */
 /**
  * The derivation, pure: top-set facts from recent sessions (most
  * recent session wins per name; within it, the highest weight with
@@ -66,8 +61,14 @@ export function deriveTopSets(
   return out;
 }
 
-export function useTopSetsByName(limit = 10) {
-  const recentQuery = useRecentSessionDetails(limit);
-  const map = useMemo(() => deriveTopSets(recentQuery.data ?? []), [recentQuery.data]);
-  return { map, isLoading: recentQuery.isLoading };
+/**
+ * Top-set facts keyed by lowercase exercise name. First (most recent)
+ * session wins per name — matching what the lifter walked in on, not
+ * a lifetime max (that's `usePersonalBests`). Derives over the FULL
+ * shared history: a lift last done 30 sessions ago still prefills.
+ */
+export function useTopSetsByName() {
+  const historyQuery = useSessionHistory();
+  const map = useMemo(() => deriveTopSets(historyQuery.data ?? []), [historyQuery.data]);
+  return { map, isLoading: historyQuery.isLoading };
 }
