@@ -184,8 +184,18 @@ export function Floor() {
   // rest) crossfades in under scroll as the station head leaves.
   const { compress, handleScroll: fadeScroll, static: fadeStatic } =
     useCompressFade(true);
+  // The scroller's position, for the MAP chip's toggle rule (at the
+  // top the chip folds the board; anywhere else it reveals the board).
+  const scrollYRef = useRef(0);
+  const [atTop, setAtTop] = useState(true);
   const handleScroll = React.useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const y = event.nativeEvent.contentOffset.y;
+      scrollYRef.current = y;
+      setAtTop((prev) => {
+        const next = y < 40;
+        return prev === next ? prev : next;
+      });
       fadeScroll(event);
     },
     [fadeScroll],
@@ -336,17 +346,28 @@ export function Floor() {
           >
             <ChevronLeft size={24} color={colors.text} />
           </Pressable>
+          {/* THE MAP CHIP — the board's one toggle: folded or scrolled
+              away, it reveals the board (expand + scroll to top); board
+              showing at the top, it folds the board away. */}
           <Pressable
             onPress={() => {
-              setMapCollapsed(false);
-              scrollRef.current?.scrollTo({ y: 0, animated: true });
+              if (mapCollapsed || !atTop) {
+                setMapCollapsed(false);
+                scrollRef.current?.scrollTo({ y: 0, animated: true });
+              } else {
+                setMapCollapsed(true);
+              }
             }}
             accessibilityRole="button"
-            accessibilityLabel="Show session board"
+            accessibilityLabel={
+              mapCollapsed || !atTop ? 'Show session board' : 'Collapse session board'
+            }
             style={({ pressed }) => [styles.iconButton, pressed ? { opacity: 0.6 } : null]}
             testID="stage-map"
           >
-            <Text style={[styles.headerWord, { color: colors.text }]}>MAP ▲</Text>
+            <Text style={[styles.headerWord, { color: colors.text }]}>
+              {mapCollapsed || !atTop ? 'MAP ▲' : 'MAP ▼'}
+            </Text>
           </Pressable>
           <View style={styles.stageHeaderCenter}>
             <Text style={[styles.stageClock, { color: colors.text }]} numberOfLines={1}>

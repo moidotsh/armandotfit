@@ -1,20 +1,19 @@
 // components/composed/NextStation.tsx
 //
-// THE QUIET PAGE's way-forward row (Floor). "What's next" is one of
-// the three glance questions — the row must be APPARENT without
-// becoming a second verb. The recipe, all on-law: the NEXT label
-// carries the record-mark read (the next position is the living
-// position — the record law's mark, same brandText as the set
-// ordinal), the station's name rides the row scale in full ink, a
-// chevron points the way, and the row is isolated by air above so
-// nothing competes beside it. Full-width ≥52px target. No new size,
-// no new ink, no fill — the LOG verb stays the only red plate.
+// The way-forward row (Floor, gauge-thesis §8). "What's next" is one
+// of the three glance questions — and the ACTUAL path of the
+// session, so it carries the station's one demarcated block: an
+// enamel panel row with the NEXT flip tile, the station's name in
+// full ink, and a chevron pointing the way. It is deliberately the
+// loudest thing after the statement and the verb — the flow should
+// read ledger → NEXT → (footnote adder), never the reverse.
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight } from '@tamagui/lucide-icons-2';
 import { useAppTheme } from '../../context';
 import { theme } from '../../constants';
+import { FlipTile } from './FlipTile';
 
 export interface NextStationProps {
   /** The next station's exercise name. */
@@ -30,10 +29,14 @@ export function NextStation({ name, onPress, testID }: NextStationProps) {
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Next station: ${name}`}
-      style={({ pressed }) => [styles.row, pressed ? { opacity: 0.6 } : null]}
+      style={({ pressed }) => [
+        styles.row,
+        { backgroundColor: colors.card, borderColor: colors.cardBorder },
+        pressed ? { opacity: 0.7 } : null,
+      ]}
       testID={testID}
     >
-      <Text style={[styles.nextLabel, { color: colors.brandText }]}>NEXT</Text>
+      <FlipTile word="NEXT" tone="ink" testID={testID ? `${testID}-tile` : undefined} />
       <Text style={[styles.nextName, { color: colors.text }]} numberOfLines={1}>
         {name}
       </Text>
@@ -43,16 +46,19 @@ export function NextStation({ name, onPress, testID }: NextStationProps) {
 }
 
 const styles = StyleSheet.create({
-  // Isolated by air above — the ledger ends, then the way forward.
+  // THE WAY FORWARD — the demarcated block: an enamel panel row,
+  // isolated by air above so nothing competes beside it. Full-width
+  // ≥56px target; the only filled row on the station (besides the
+  // verb) because it IS the session's direction.
   row: {
-    minHeight: 52,
+    minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     marginTop: 24,
-  },
-  nextLabel: {
-    ...theme.typography.mobileEyebrow,
+    borderWidth: 1,
+    borderRadius: theme.shapes.surface,
+    paddingHorizontal: 12,
   },
   nextName: {
     ...theme.typography.mobileItemTitle,
