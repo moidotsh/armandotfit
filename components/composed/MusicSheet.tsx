@@ -27,7 +27,7 @@ import {
   type MusicTrack,
 } from '../../services/musicService';
 import { YOUTUBE_SEARCH_ENABLED } from '../../constants';
-import { GAUGE, theme } from '../../constants';
+import { SCOREBOARD, theme } from '../../constants';
 import { bootMusicPlayer, syncFromStore } from '../../utils/youtube/playerHost';
 
 export function MusicSheet() {
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   sectionWhisper: {
-    ...GAUGE.whisper,
+    ...SCOREBOARD.whisper,
     marginBottom: 6,
   },
   hint: {
@@ -566,47 +566,10 @@ const styles = StyleSheet.create({
     gap: 1,
   },
   resultTitle: {
-    ...GAUGE.row,
-    fontSize: 15,
+    ...SCOREBOARD.row,
   },
   resultArtist: {
     ...theme.typography.mobileLedger,
-  },
-  pasteRow: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'flex-end',
-  },
-  pasteInputHold: {
-    flex: 1,
-  },
-  pasteVerb: {
-    height: 44,
-    minWidth: 64,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderRadius: theme.shapes.control,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 1,
-  },
-  pasteVerbWord: {
-    ...theme.typography.mobileAction,
-    fontSize: 13,
-  },
-  // THE STATION — one tap, full width.
-  stationButton: {
-    minHeight: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    borderWidth: 1,
-    borderRadius: theme.shapes.control,
-  },
-  stationWord: {
-    ...theme.typography.mobileAction,
-    fontSize: 13,
   },
   transport: {
     marginTop: 20,
@@ -619,8 +582,7 @@ const styles = StyleSheet.create({
     gap: 1,
   },
   nowTitle: {
-    ...GAUGE.row,
-    fontSize: 15,
+    ...SCOREBOARD.row,
   },
   nowArtist: {
     ...theme.typography.mobileLedger,
@@ -669,7 +631,7 @@ const styles = StyleSheet.create({
   miniPip: {
     width: 6,
     height: 6,
-    borderRadius: 1,
+    borderRadius: 0,
   },
   miniState: {
     ...theme.typography.mobileEyebrow,
@@ -686,8 +648,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   volumeFigure: {
-    ...theme.typography.mobileLedger,
-    fontSize: 15,
+    ...theme.typography.mobileFigure,
     minWidth: 34,
     textAlign: 'center',
   },
