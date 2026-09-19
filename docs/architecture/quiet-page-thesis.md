@@ -1,4 +1,11 @@
-# THE QUIET PAGE — reduction as the design language
+# THE QUIET PAGE — reduction as the design language (RETIRED)
+
+**Status:** Retired by `board-thesis.md` (the 2026-12 blank-slate
+redesign, the sixth upending). Kept as the historical record of THE
+QUIET PAGE; its taste is rescinded, its §6 map served as the feature
+inventory for THE BOARD rebuild. `constants/theme.ts` and the routes
+now carry the BOARD tokens; when this doc and the tokens disagree,
+the tokens win.
 
 > The fifth upending (2026-12). This document is the compass: the
 > point of view, the pillars, the shrunken type inventory, the air
