@@ -130,12 +130,13 @@ export default function SettingsScreen() {
       </View>
 
       {/* THE REST INSTRUMENT's default — the interval the Floor's
-          clock counts after every log. */}
+          clock counts after every log. One inline row: the printed
+          label, the mono figure, the ± steppers. */}
       <View style={styles.block}>
-        <Text style={[styles.whisper, { color: colors.textMuted }]}>
-          REST INTERVAL
-        </Text>
         <View style={styles.restIntervalRow}>
+          <Text style={[styles.restIntervalLabel, { color: colors.textMuted }]}>
+            REST INTERVAL
+          </Text>
           <Pressable
             onPress={() => setRestDefault(restDefaultSec - 15)}
             accessibilityRole="button"
@@ -248,9 +249,6 @@ export default function SettingsScreen() {
         <Text style={[styles.signedInAs, { color: colors.textMuted }]} numberOfLines={1}>
           {`signed in as ${session?.email ?? '—'}`}
         </Text>
-      </View>
-
-      <View style={styles.block}>
         <MobileActionFooter>
           <MobilePrimaryButton onPress={() => void signOut()}>Sign Out</MobilePrimaryButton>
         </MobileActionFooter>
@@ -298,7 +296,7 @@ function ColophonRow({
 const styles = StyleSheet.create({
   bodyContent: {
     paddingHorizontal: 20,
-    paddingTop: 4,
+    paddingTop: 0,
     paddingBottom: 140,
   },
   block: {
@@ -310,7 +308,7 @@ const styles = StyleSheet.create({
   preferenceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 48,
+    minHeight: 44,
     gap: 12,
   },
   preferenceLabel: {
@@ -331,11 +329,17 @@ const styles = StyleSheet.create({
     ...GAUGE.whisper,
     marginBottom: 8,
   },
-  // THE REST INSTRUMENT's panel row: steppers flanking the mono figure.
+  // THE REST INSTRUMENT's panel row: the printed label, the ±
+  // steppers, and the mono figure on one line.
   restIntervalRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
+    minHeight: 44,
+  },
+  restIntervalLabel: {
+    ...theme.typography.mobileEyebrow,
+    flex: 1,
   },
   restStep: {
     width: 44,
@@ -355,7 +359,7 @@ const styles = StyleSheet.create({
     fontSize: 21,
     fontWeight: '600',
     fontVariant: ['tabular-nums'],
-    flex: 1,
+    minWidth: 64,
     textAlign: 'center',
   },
   // The rest-day MEASURE — seven marks; a rest day is a struck mark

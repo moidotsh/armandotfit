@@ -160,15 +160,23 @@ rim, same keys both repos); armandotfit's values are the zones.
 
 ### 4.3 The pin rail
 
-The load figure: a vertical tick column (steel ticks, major ticks
-every 10 kg at counter scale), the engaged range 0→load filled ink
-12%, and THE PIN — a 3px steel bar crossing the rail with a small
-mono label of the load beside it (counter scale only). Scales:
-counter (rail height 128, labeled majors), row (height 28), whisper
-(height 20). `railMax = ceil(max(load, 50) / 25) × 25` — the rail
-rescales to the day, pin position is always proportional and
-monotone; probe it. A bodyweight set (≤0) draws the empty sleeve:
-ticks, no fill, the pin parked at 0 with the sleeve mark.
+The load figure: a vertical tick column (steel ticks, majors at the
+halves), the engaged range 0→load filled ink ~28%, and THE PIN — a
+3px steel bar crossing the rail with a small mono label of the load
+beside it (counter scale only). Scales: counter (rail height 128,
+ceiling + pin labeled), row (height 28), whisper (height 20).
+
+**The auto-range law.** `railMax = ceil(max(load, 50) / 25) × 25`,
+and the ceiling is STICKY within a session: it grows to cover the
+heaviest load seen or armed and never shrinks mid-session (the scale
+never re-zeros under a reading — the Floor ratchets it, home and the
+funnel compute the day's). Within a fixed ceiling, pin position is
+strictly proportional to load (`load / railMax`, clamped at the top)
+and therefore strictly monotone; across a range bump the position may
+step down exactly as a multimeter's does when it up-ranges. Probe all
+three: proportionality, ceiling-covers-load + only-grows, and
+monotonicity at fixed ceiling. A bodyweight set (≤0) draws the empty
+sleeve: ticks, no fill, the pin parked at 0.
 
 ### 4.4 The contrast matrix (computed, WCAG 2.1 — `.shots/upend7/contrast-gauge.ts`)
 
@@ -414,8 +422,9 @@ analytics (tally grid → punch rings).
    visible at 390×667 AND 390×844; desktop 1280×800 — nothing
    straddles the centered 350px column; the statement's halo ≥24.
 4. **The mechanical laws:** pin position strictly monotone in load
-   (probe a sweep 20…200 at each scale); rail fill height ∝ load /
-   railMax; pip count == set count; the live pip is the only signal
+   within a fixed ceiling (probe a sweep 20…200 at each scale); rail
+   fill height ∝ load / railMax; the ceiling covers the load and only
+   grows; pip count == set count; the live pip is the only signal
    pixel mass on the Floor while rest is settled; the odometer rolls
    ONLY on user-driven changes (probe: elapsed updates do not
    animate the clock's transform); the flip tile's word swaps exactly

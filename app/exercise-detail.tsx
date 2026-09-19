@@ -3,7 +3,7 @@
 // this lift is." The NAME is the statement; the number to beat
 // renders AS A PLATE STACK — LAST in furniture caps, the row-scale
 // stack of your most recent top load, the figure line (weight ×
-// reps · sets · date) in Spline — you see the iron you're walking in
+// reps · sets · date) in Martian — you see the iron you're walking in
 // to beat, not just read it. Instructions read as one body block;
 // the muscle measure draws as bare INK lines (color is load's —
 // muscles never borrow the ramp); equipment whispers once. When a

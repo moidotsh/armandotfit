@@ -3,7 +3,7 @@
 // THE RECEIPT — the read-only session view (board-thesis §7): "That
 // was N kg". Self-contained: owns its detail query and the delete
 // flow (two-step, toast + back on success). The tonnage is the
-// FIGURE-STATEMENT (Spline at counter scale — a figure IS the
+// FIGURE-STATEMENT (Martian at counter scale — a figure IS the
 // statement here); one fact whisper carries date/window/counts;
 // exercises read as ledgers with drawn plate stacks per set.
 

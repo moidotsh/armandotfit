@@ -4,7 +4,7 @@
 // verb. The PICKED day's title is the statement (restating with every
 // pick); one fact line carries the targets and counts outside the
 // halo. The seven-day measure is the second voice: weekday caps + the
-// day-of-split figure in Spline, the picked tile INVERTING to the ink
+// day-of-split figure in Martian, the picked tile INVERTING to the ink
 // plate — inversion is selection; borders do not survive glare. The
 // plan previews as THE BOARD rows: name + Rx + the plate stack at the
 // prefill weight.
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   previewPanel: {
     borderWidth: 1,
     borderRadius: theme.shapes.surface,
-    paddingVertical: 10,
+    paddingVertical: 4,
     paddingHorizontal: 12,
   },
   dayRow: {

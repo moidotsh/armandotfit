@@ -1,7 +1,7 @@
 // app/progression.tsx
 // THE BOARD's record book (docs/architecture/board-thesis.md §7):
 // "The streak is 12." No nameplate, no "COMPUTED AT READ" shout —
-// the streak NUMBER is the figure-statement (Spline at counter
+// the streak NUMBER is the figure-statement (Martian at counter
 // scale, in record-orange — one of the brand hue's three
 // appearances), alone in its halo; one fact line carries "day
 // streak · best"; the totals collapse to one figure line; the

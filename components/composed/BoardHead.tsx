@@ -31,7 +31,7 @@ export interface BoardHeadProps {
   whisper?: string | null;
   /** The whisper's read — record-orange for the living position. */
   whisperTone?: 'record' | 'quiet';
-  /** Statement face: words (Archivo Cond) or figure (Spline counter). */
+  /** Statement face: words (Instrument Cond) or figure (Martian counter). */
   variant?: 'words' | 'figure';
   /** Statement ink — the record-orange read for record figures. */
   tone?: 'ink' | 'record';
