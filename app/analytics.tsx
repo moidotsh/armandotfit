@@ -19,8 +19,8 @@ import { LoadingSpinner } from '../components/primitives';
 import { BoardShell, BoardHead, QueryErrorNote, TrainingConsistencyGrid } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
-import { useAnalyticsHistory } from '../hooks';
-import { AnalyticsService } from '../services';
+import { useAnalyticsHistory, useRecentSessionDetails, useWeightUnit } from '../hooks';
+import { AnalyticsService, deriveMuscleShare } from '../services';
 import { addDays } from '../utils';
 import { BLOCK_GAP, GAUGE, theme, PAGE_GUTTER } from '../constants';
 
@@ -37,6 +37,16 @@ export default function AnalyticsScreen() {
   const { colors } = useAppTheme();
   const [range, setRange] = useState<Range>(30);
   const historyQuery = useAnalyticsHistory(range);
+  const unit = useWeightUnit();
+
+  // THE MUSCLE SHARE — volume credited to the catalog's muscles over
+  // the picked range (primaries full, secondaries half), computed at
+  // read from raw history.
+  const detailsQuery = useRecentSessionDetails(60);
+  const muscleRows = useMemo(
+    () => deriveMuscleShare(detailsQuery.data ?? [], range),
+    [detailsQuery.data, range],
+  );
 
   const weekly = useMemo(() => {
     if (!historyQuery.data) return [];
@@ -91,8 +101,12 @@ export default function AnalyticsScreen() {
         <QueryErrorNote onRetry={() => void historyQuery.refetch()} testID="analytics-error" />
       ) : (
         <>
-          {/* The field — ink density, today outlined in the record red. */}
           <View style={styles.block}>
+            {/* THE CALENDAR — trained days fill in; today outlined in
+                signal; density is the day's session count. */}
+            <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+              CALENDAR · TRAINED DAYS
+            </Text>
             {historyQuery.isLoading ? (
               <LoadingSpinner />
             ) : (
@@ -151,6 +165,44 @@ export default function AnalyticsScreen() {
               </View>
             </View>
           )}
+
+          {/* THE MUSCLE SHARE — where the work landed. Ranked
+              proportional bars; a muscle's share of credited volume. */}
+          {muscleRows.length > 0 ? (
+            <View style={styles.block}>
+              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+                {`MUSCLES · VOLUME SHARE · ${unit}`}
+              </Text>
+              <View style={styles.muscleList} testID="analytics-muscles">
+                {muscleRows.slice(0, 8).map((row) => (
+                  <View
+                    key={row.muscle}
+                    style={styles.muscleRow}
+                    accessibilityLabel={`${row.muscle}: ${Math.round(row.share * 100)} percent of volume`}
+                  >
+                    <Text style={[styles.muscleName, { color: colors.text }]} numberOfLines={1}>
+                      {row.muscle}
+                    </Text>
+                    <View style={styles.muscleTrack}>
+                      <View
+                        style={[
+                          styles.muscleBar,
+                          {
+                            width: `${Math.max(row.share * 100, 1.5)}%`,
+                            backgroundColor: colors.text,
+                          },
+                        ]}
+                        testID={`muscle-bar-${row.muscle}`}
+                      />
+                    </View>
+                    <Text style={[styles.musclePct, { color: colors.textMuted }]}>
+                      {`${Math.round(row.share * 100)}%`}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
         </>
       )}
     </BoardShell>
@@ -192,5 +244,38 @@ const styles = StyleSheet.create({
   barFill: {
     height: 8,
     borderRadius: theme.shapes.tile,
+  },
+  sectionWhisper: {
+    ...GAUGE.whisper,
+    marginBottom: 8,
+  },
+  // THE MUSCLE SHARE — ranked proportional bars (the honest mobile
+  // pie: length reads, labels ride, nothing rotates).
+  muscleList: {
+    gap: 10,
+  },
+  muscleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 20,
+  },
+  muscleName: {
+    ...theme.typography.mobileItemTitle,
+    fontSize: 15,
+    width: 108,
+  },
+  muscleTrack: {
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  muscleBar: {
+    height: 8,
+    borderRadius: theme.shapes.tile,
+  },
+  musclePct: {
+    ...theme.typography.mobileLedger,
+    minWidth: 34,
+    textAlign: 'right',
   },
 });

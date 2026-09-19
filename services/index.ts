@@ -11,6 +11,14 @@ export {
   type PersonalBest,
 } from './progressionService';
 export { AnalyticsService } from './analyticsService';
+export {
+  deriveTrajectory,
+  deriveMuscleShare,
+  type Trajectory,
+  type TrajectoryPoint,
+  type TrajectoryGroup,
+  type MuscleShareRow,
+} from './chartData';
 export { slotKey, resolveSlots } from './programService';
 export {
   e1rm,

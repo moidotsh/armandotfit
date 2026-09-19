@@ -9,17 +9,19 @@
 // muscles never borrow the ramp); equipment whispers once. When a
 // draft session is active, ADD TO SESSION is the page's one verb.
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import {
   MobilePrimaryButton,
   MobileActionFooter,
 } from '../components/MobilePremium';
-import { BoardShell, PinRail } from '../components/composed';
+import { BoardShell, PinRail, TrajectoryChart } from '../components/composed';
+import { FilterChip, FilterChipGroup } from '../components/MobilePremium';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
-import { useExerciseDetail, useTopSetsByName, useWeightUnit } from '../hooks';
+import { useExerciseDetail, useTopSetsByName, useWeightUnit, useRecentSessionDetails } from '../hooks';
+import { deriveTrajectory } from '../services';
 import { useWorkoutStore } from '../stores';
 import {
   EQUIPMENT_DISPLAY_NAMES,
@@ -66,6 +68,21 @@ export default function ExerciseDetailScreen() {
     ? (EXERCISE_TYPE_DISPLAY[exercise.exerciseType] ?? '')
     : '';
 
+  // THE TRAJECTORY — this lift's top set per session, each point
+  // carrying its TAG SIGNATURE (machine / grip / technique). Variants
+  // merge by default; the owner excludes or re-includes them at will —
+  // a different machine IS a different trajectory.
+  const historyQuery = useRecentSessionDetails(60);
+  const trajectory = useMemo(
+    () => (exercise ? deriveTrajectory(historyQuery.data ?? [], exercise.name) : null),
+    [historyQuery.data, exercise],
+  );
+  const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set());
+  const visiblePoints = useMemo(() => {
+    if (!trajectory) return [];
+    return trajectory.points.filter((p) => !excluded.has(p.signature));
+  }, [trajectory, excluded]);
+
   return (
     <BoardShell
       surface="instructions"
@@ -105,6 +122,44 @@ export default function ExerciseDetailScreen() {
               </Text>
             )}
           </View>
+
+          {/* THE TRAJECTORY — progress over time, split by variant. */}
+          {trajectory && trajectory.points.length >= 2 ? (
+            <View style={styles.block}>
+              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+                THE TRAJECTORY
+              </Text>
+              {trajectory.groups.length > 1 ? (
+                <View style={styles.variantChips}>
+                  <FilterChipGroup>
+                    {trajectory.groups.map((g) => (
+                      <FilterChip
+                        key={g.signature}
+                        label={g.label}
+                        selected={!excluded.has(g.signature)}
+                        onPress={() =>
+                          setExcluded((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(g.signature)) next.delete(g.signature);
+                            else next.add(g.signature);
+                            return next;
+                          })
+                        }
+                        accessibilityLabel={`${excluded.has(g.signature) ? 'Include' : 'Exclude'} variant ${g.label}`}
+                      />
+                    ))}
+                  </FilterChipGroup>
+                </View>
+              ) : null}
+              {visiblePoints.length >= 2 ? (
+                <TrajectoryChart points={visiblePoints} unit={unit} testID="entry-trajectory" />
+              ) : (
+                <Text style={[styles.trajectoryEmpty, { color: colors.textMuted }]}>
+                  Every variant is excluded — re-enable one to read the line.
+                </Text>
+              )}
+            </View>
+          ) : null}
 
           {/* The reading block. */}
           <View style={styles.block}>
@@ -247,5 +302,16 @@ const styles = StyleSheet.create({
   },
   equipmentLine: {
     ...theme.typography.mobileLedger,
+  },
+  sectionWhisper: {
+    ...GAUGE.whisper,
+    marginBottom: 8,
+  },
+  variantChips: {
+    marginBottom: 12,
+  },
+  trajectoryEmpty: {
+    ...theme.typography.mobileMeta,
+    paddingVertical: 12,
   },
 });
