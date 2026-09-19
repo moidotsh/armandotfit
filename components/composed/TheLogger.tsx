@@ -321,13 +321,40 @@ export function TheLogger({
       ]}
       accessibilityLabel={`Logger, set ${setNumber}: ${weight ?? 'no weight'} ${unit} by ${reps ?? 'no reps'} reps`}
     >
+      {/* THE KICKER — the dock's folio: the set ordinal + the target,
+          printed caps, with THE EARNED STEP riding beside it (one
+          tappable whisper — muted ink; advice is neither record nor
+          live). Fixed ABOVE the exchanged figure in BOTH states, so
+          THE RE-WEIGHT swaps only the figure below it — the dock
+          keeps one constant grammar (the sight amendment). */}
+      <View style={styles.kickerRow}>
+        <Text style={[styles.kicker, { color: colors.textMuted }]}>
+          {`SET ${String(setNumber).padStart(2, '0')}${repsHint ? ` · TGT ${repsHint}` : ''}`}
+        </Text>
+        {earnedStep != null && weight != null ? (
+          <Pressable
+            onPress={() => onChangeWeight(Math.round((weight! + earnedStep) * 100) / 100)}
+            accessibilityLabel={`Add ${earnedStep} — earned: last time hit the top of the rep range at this weight`}
+            style={({ pressed }) => [styles.earnedTap, pressed ? { opacity: 0.6 } : null]}
+            testID={`${testID ?? 'the-logger'}-earned`}
+          >
+            <Text style={[styles.earnedWord, { color: colors.textSecondary }]}>
+              {`+${earnedStep} EARNED`}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
+
       {/* THE REST INSTRUMENT, rank-corrected (thesis §7). While rest
           RUNS the clock owns THE LIVE FIGURE — 72 mono in RED INK
           (the live pulse), the ±15 steppers flanking it, the figure
-          itself the dismiss target; at settle the expression
-          re-weights back to the counter and recovery collapses to
-          the QUIET ROW (muted readout, tap to clear). The exchange
-          is a repaint — nothing moves (THE STILL SYSTEM). */}
+          itself the dismiss target. The old REST caption is deleted
+          (the sight amendment): a whisper labeling the loudest red
+          mark on the page was furniture explaining furniture. At
+          settle the expression re-weights back to the counter and
+          recovery collapses to the QUIET ROW (muted readout, tap to
+          clear). The exchange is a repaint — nothing moves (THE
+          STILL SYSTEM). */}
       {rest ? (
         rest.settled ? (
           <View style={styles.restRow} testID={`${tid}-rest`}>
@@ -366,7 +393,9 @@ export function TheLogger({
               onPress={() => rest.onAdjust(-REST_STEP_SEC)}
               testID={`${tid}-rest-dec`}
             />
-            {/* The clock IS the dismiss target — the whole block. */}
+            {/* The clock IS the dismiss target — the whole block. The
+                red figure alone; the kicker above already carries the
+                set facts. */}
             <Pressable
               onPress={rest.onDismiss}
               accessibilityRole="button"
@@ -374,7 +403,6 @@ export function TheLogger({
               style={({ pressed }) => [styles.clockTap, pressed ? { opacity: 0.6 } : null]}
               testID={`${tid}-rest-readout`}
             >
-              <Text style={[styles.clockWord, { color: colors.textMuted }]}>REST</Text>
               <Text
                 style={[styles.clockFigure, { color: colors.brandText }]}
               >
@@ -390,27 +418,6 @@ export function TheLogger({
           </View>
         )
       ) : null}
-
-      {/* The kicker — the set ordinal + the target, printed caps —
-          with THE EARNED STEP riding beside it: one tappable whisper
-          (muted ink — advice is neither record nor live). */}
-      <View style={styles.kickerRow}>
-        <Text style={[styles.kicker, { color: colors.textMuted }]}>
-          {`SET ${String(setNumber).padStart(2, '0')}${repsHint ? ` · TGT ${repsHint}` : ''}`}
-        </Text>
-        {earnedStep != null && weight != null ? (
-          <Pressable
-            onPress={() => onChangeWeight(Math.round((weight! + earnedStep) * 100) / 100)}
-            accessibilityLabel={`Add ${earnedStep} — earned: last time hit the top of the rep range at this weight`}
-            style={({ pressed }) => [styles.earnedTap, pressed ? { opacity: 0.6 } : null]}
-            testID={`${testID ?? 'the-logger'}-earned`}
-          >
-            <Text style={[styles.earnedWord, { color: colors.textSecondary }]}>
-              {`+${earnedStep} EARNED`}
-            </Text>
-          </Pressable>
-        ) : null}
-      </View>
 
       {/* THE ARMED EXPRESSION — `62.5 × 8` at the counter in work;
           the statement rank, muted, while the clock runs. The armed
@@ -548,10 +555,6 @@ const styles = StyleSheet.create({
     minWidth: 150,
     minHeight: 96,
     justifyContent: 'center',
-  },
-  clockWord: {
-    ...theme.typography.mobileEyebrow,
-    marginBottom: 2,
   },
   clockFigure: {
     ...theme.typography.mobileCounter,

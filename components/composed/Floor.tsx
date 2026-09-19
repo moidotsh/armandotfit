@@ -501,9 +501,9 @@ export function Floor() {
               ruled rows, nothing else (the title-row toggle is
               deleted — MAP is the board's one toggle; the day's name
               already states itself on the statement above). Pull up
-              (or tap MAP) to read it; every row is a jump; the
-              current row sets bold ink, done rows carry their
-              figure. */}
+              (or tap MAP) to read it; every row is a jump; INK IS
+              STATE (the sight amendment): the current row is the only
+              full-ink row, done rows carry their figure in muted. */}
           <View
             style={[styles.boardPanel, { borderTopColor: colors.mobilePremium.hairlineBorder }]}
             onLayout={(e) => {
@@ -524,7 +524,7 @@ export function Floor() {
                   key={ex.localId}
                   label={ex.exerciseName}
                   figure={figure}
-                  figureTone={isCurrent ? 'ink' : 'muted'}
+                  muted={!isCurrent}
                   bold={isCurrent}
                   onPress={() => {
                     openingSettledRef.current = true;
@@ -652,11 +652,7 @@ export function Floor() {
                     </View>
                   ))}
                 </View>
-              ) : (
-                <Text style={[styles.ledgerEmpty, { color: colors.textMuted }]}>
-                  No sets logged yet — the logger below arms your first.
-                </Text>
-              )}
+              ) : null}
 
               {index < exercises.length - 1 ? (
                 <NextStation
@@ -679,7 +675,7 @@ export function Floor() {
                 testID="stage-add-exercise"
               >
                 <Text style={[styles.addExerciseWord, { color: colors.textMuted }]}>
-                  + add exercise
+                  + ADD EXERCISE
                 </Text>
               </Pressable>
 
@@ -702,7 +698,7 @@ export function Floor() {
                 testID="stage-add-exercise"
               >
                 <Text style={[styles.addExerciseWord, { color: colors.textMuted }]}>
-                  + add exercise
+                  + ADD EXERCISE
                 </Text>
               </Pressable>
             </View>
@@ -765,8 +761,8 @@ export function Floor() {
             testID="stage-save"
           >
             {sessionSets > 0
-              ? `Save session · ${sessionSets} set${sessionSets === 1 ? '' : 's'}`
-              : 'Log a set first'}
+              ? `SAVE SESSION · ${sessionSets} SET${sessionSets === 1 ? '' : 'S'}`
+              : 'LOG A SET FIRST'}
           </MobilePrimaryButton>
           <View style={{ height: 8 }} />
           <MobilePrimaryButton
@@ -783,7 +779,7 @@ export function Floor() {
             }}
             testID="stage-discard"
           >
-            {confirmDiscard ? 'Tap again to discard' : 'Discard session'}
+            {confirmDiscard ? 'TAP AGAIN TO DISCARD' : 'DISCARD SESSION'}
           </MobilePrimaryButton>
         </MobileDialog>
 
