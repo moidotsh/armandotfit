@@ -133,7 +133,7 @@ export default function HomeScreen() {
       testID={testID}
       style={({ pressed }) => [styles.jumpRow, pressed ? { opacity: 0.6 } : null]}
     >
-      <Text style={[styles.jumpLabel, { color: colors.text }]}>{label}</Text>
+      <Text style={[styles.jumpLabel, { color: colors.textSecondary }]}>{label}</Text>
       {/* The caption is the row's one FACT — the number that makes the
           destination worth its tap. Content, not chrome. */}
       {caption ? (
@@ -302,7 +302,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   jumpLabel: {
+    // THE FRONT SORTS ITS THREE VOICES (the sight amendment): the
+    // plan register is the answer and keeps the ink; the jumps are
+    // navigation — row rank, secondary ink, unbold — so one look
+    // sorts plan → verb → moves → archive.
     ...INTERVAL.row,
+    fontWeight: '400',
   },
   jumpCaption: {
     ...theme.typography.mobileLedger,

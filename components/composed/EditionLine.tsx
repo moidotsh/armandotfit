@@ -22,9 +22,9 @@ export interface EditionLineProps {
   };
   onPress: (id: string) => void;
   /**
-   * The archive's head: the LATEST edition renders at row scale in
-   * full ink (the second voice of the front page); older ones whisper.
-   * Same one line — hierarchy by scale and ink, not extra elements.
+   * The archive's head: the LATEST edition keeps the secondary ink
+   * (older ones whisper). Same one line, same whisper rank — the
+   * sight amendment retired the row-scale lead.
    */
   lead?: boolean;
 }
@@ -67,7 +67,7 @@ export function EditionLine({ session, onPress, lead = false }: EditionLineProps
       style={({ pressed }) => [styles.row, pressed ? { opacity: 0.6 } : null]}
     >
       <Text
-        style={[lead ? styles.lineLead : styles.line, { color: lead ? colors.text : colors.textMuted }]}
+        style={[styles.line, { color: lead ? colors.textSecondary : colors.textMuted }]}
         numberOfLines={1}
       >
         {line}
@@ -81,12 +81,12 @@ const styles = StyleSheet.create({
     minHeight: 48,
     justifyContent: 'center',
   },
+  // THE ARCHIVE WHISPERS (the sight amendment): every edition line —
+  // the lead included — reads at the whisper rank; the lead keeps
+  // the secondary ink. The front page's loud ranks belong to the
+  // plan and the verb.
   line: {
     ...theme.typography.mobileLedger,
-  },
-  // The archive's head — the figure line at row scale, full ink.
-  lineLead: {
-    ...theme.typography.mobileFigure,
   },
 });
 
