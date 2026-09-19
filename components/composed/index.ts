@@ -6,7 +6,6 @@ export { BoardShell, type BoardShellProps } from './BoardShell';
 export { SessionStrip } from './SessionStrip';
 export { RegisterLine, type RegisterLineProps } from './RegisterLine';
 export { TheLogger, type TheLoggerProps } from './TheLogger';
-export { StageSetRow, type StageSetRowProps } from './StageSetRow';
 export { TagChips, type TagChipsProps } from './TagChips';
 export { InkRail, SwapGlyph, type InkRailProps } from './InkRail';
 export { ExerciseListItem, type ExerciseListItemProps } from './ExerciseListItem';
@@ -15,12 +14,6 @@ export { SearchStatement, type SearchStatementProps } from './SearchStatement';
 export { NextStation, type NextStationProps } from './NextStation';
 export { TrainingConsistencyGrid, type TrainingConsistencyGridProps } from './TrainingConsistencyGrid';
 export { WorkoutListSkeleton } from './WorkoutListSkeleton';
-// THE GAUGE figures (docs/architecture/gauge-thesis.md) — the pin
-// rail (load), the set pips, the flip tile, the rolling counter.
-export { PinRail, formatLoad, type PinRailProps } from './PinRail';
-export { SetPips, type SetPipsProps } from './SetPips';
-export { FlipTile, type FlipTileProps, type FlipTileTone } from './FlipTile';
-export { RollingCounter, type RollingCounterProps } from './RollingCounter';
 export { Floor } from './Floor';
 export { Receipt, type ReceiptProps } from './Receipt';
 export { BoardHead, type BoardHeadProps } from './BoardHead';

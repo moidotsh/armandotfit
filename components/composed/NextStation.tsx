@@ -1,19 +1,18 @@
 // components/composed/NextStation.tsx
 //
-// The way-forward row (Floor, gauge-thesis §8). "What's next" is one
-// of the three glance questions — and the ACTUAL path of the
-// session, so it carries the station's one demarcated block: an
-// enamel panel row with the NEXT flip tile, the station's name in
-// full ink, and a chevron pointing the way. It is deliberately the
-// loudest thing after the statement and the verb — the flow should
-// read ledger → NEXT → (footnote adder), never the reverse.
+// The way-forward row (Floor, scoreboard-thesis §8). "What's next"
+// is one of the three glance questions — and the ACTUAL path of the
+// session, so it carries its own hairline-ruled row: the NEXT
+// furniture word, the station's name in full ink, and a chevron
+// pointing the way. It is deliberately the loudest thing after the
+// statement and the verb — the flow should read ledger → NEXT →
+// (footnote adder), never the reverse.
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight } from '@tamagui/lucide-icons-2';
 import { useAppTheme } from '../../context';
 import { theme } from '../../constants';
-import { FlipTile } from './FlipTile';
 
 export interface NextStationProps {
   /** The next station's exercise name. */
@@ -31,12 +30,12 @@ export function NextStation({ name, onPress, testID }: NextStationProps) {
       accessibilityLabel={`Next station: ${name}`}
       style={({ pressed }) => [
         styles.row,
-        { backgroundColor: colors.card, borderColor: colors.cardBorder },
+        { borderTopColor: colors.mobilePremium.hairlineBorder },
         pressed ? { opacity: 0.7 } : null,
       ]}
       testID={testID}
     >
-      <FlipTile word="NEXT" tone="ink" testID={testID ? `${testID}-tile` : undefined} />
+      <Text style={[styles.nextWord, { color: colors.textMuted }]}>NEXT</Text>
       <Text style={[styles.nextName, { color: colors.text }]} numberOfLines={1}>
         {name}
       </Text>
@@ -46,19 +45,20 @@ export function NextStation({ name, onPress, testID }: NextStationProps) {
 }
 
 const styles = StyleSheet.create({
-  // THE WAY FORWARD — the demarcated block: an enamel panel row,
-  // isolated by air above so nothing competes beside it. Full-width
-  // ≥56px target; the only filled row on the station (besides the
-  // verb) because it IS the session's direction.
+  // THE WAY FORWARD — a hairline-ruled row, isolated by air above so
+  // nothing competes beside it. Full-width ≥56px target; it IS the
+  // session's direction.
   row: {
     minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     marginTop: 24,
-    borderWidth: 1,
-    borderRadius: theme.shapes.surface,
-    paddingHorizontal: 12,
+    borderTopWidth: 1,
+    paddingHorizontal: 2,
+  },
+  nextWord: {
+    ...theme.typography.mobileEyebrow,
   },
   nextName: {
     ...theme.typography.mobileItemTitle,

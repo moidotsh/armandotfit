@@ -86,20 +86,6 @@ export {
 // the shell's; values live in theme.colors.*.meter).
 export type { MeterStep } from './scoreboard';
 
-// THE GAUGE's retired machinery (docs/architecture/gauge-thesis.md)
-// — the pin-rail/pip/flip/roll geometry. Exported ONLY while
-// gauge-era screens still import it; dies with their rebuilds.
-export {
-  GAUGE,
-  RAIL_SCALE,
-  railMaxFor,
-  pinRatio,
-  PIP_SCALE,
-  FLIP_DURATION_MS,
-  ROLL_DURATION_MS,
-  PIN_DROP_DURATION_MS,
-} from './gauge';
-export type { RailScale, PipScale } from './gauge';
 
 // Workout split metadata (decoupled from theme for SOC). The day→exercise
 // assignments live in shared/exercises/splits.ts because they're typed

@@ -1,27 +1,23 @@
 // components/composed/TheLogger.tsx
 //
-// THE LOGGER — the Floor's docked instrument and the app's fastest
-// surface (docs/architecture/gauge-thesis.md §8, the flagship). The
-// armed set rides pre-armed at carry-forward weight and reads as the
-// gym's own instruments: the WEIGHT lives on THE PIN RAIL (a printed
-// scale with the steel pin at the load — you aim the pin the way you
-// aim a stack pin), the WEIGHT and REPS speak as ROLLING COUNTERS
-// (odometer digits that roll when the user changes them), and the
-// exact digits ride beside their rails for the audit glance. The most
-// common log in existence (same weight, same reps as the last set)
-// costs ONE THUMB, ONE TAP on LOG SET. Corrections are ± steppers
-// (44px) under each counter; tapping a counter opens a numeric
-// keyboard for large jumps. After every log, THE REST LINE counts
-// recovery (thesis §7) — steppers ±15s, tap the readout to dismiss.
+// THE LOGGER — THE ONE-FIELD INSTRUMENT (docs/architecture/
+// scoreboard-thesis.md §8, the flagship's fastest surface). The
+// armed set reads as ONE EXPRESSION at figure scale — `62.5 × 8` in
+// mono 72, the biggest mark in the system — and THE ONE-FIELD LAW
+// governs it: exactly one field is armed at a time (the 2px ink
+// underline), one shared stepper pair steps the armed field by its
+// own step (2.5 kg / 1 rep), and tapping a field arms it — tapping
+// the armed field again opens the numeric keyboard for large jumps.
+// The most common log in existence (same weight, same reps as the
+// last set) still costs ONE THUMB, ONE TAP on LOG SET.
 //
-// The room is flat everywhere EXCEPT here: the logger carries the
-// system's one shadow (mobilePremium.instrumentShadow) — the app's
-// single physical object, sitting ON the concrete. It never scrolls
-// away and is tappable at frame 1.
+// After every log, THE REST LINE counts recovery (thesis §7) —
+// steppers ±15s, tap the readout to dismiss, red while running.
 //
-// F2 — THE ROLL: stepper changes roll the changed digit columns
-// (140ms, post-interactive, never gating the LOG tap). F3 — THE PIN
-// DROP rides inside the rail. Inputs parse to number|null (empty
+// THE STILL SYSTEM: nothing here moves. The odometer roll, the pin
+// drop, and the shadow die with THE GAUGE — values swap instantly,
+// the logger docks under the screen's one 2px rule, and it is
+// tappable at frame 1, forever. Inputs parse to number|null (empty
 // string → null — Number('') is 0, which would false-positive as
 // "0 kg").
 
@@ -34,29 +30,10 @@ import {
   View,
 } from 'react-native';
 import { useAppTheme } from '../../context';
-import { theme, railMaxFor } from '../../constants';
+import { theme, REST_STEP_SEC } from '../../constants';
 import { weightStep } from '../../utils';
 import type { WeightUnit } from '../../utils/weight';
 import { parseNumber } from './parseNumber';
-import { PinRail } from './PinRail';
-import { RollingCounter } from './RollingCounter';
-
-/**
- * THE ODOMETER FORMAT — anchored at the DECIMAL, not the leading
- * edge. The integer wheels render unpadded and right-aligned against
- * a RESERVED decimal slot: whole numbers leave the slot blank (one
- * mono space — a full wheel's width, nothing painted), a ".5" fills
- * pre-reserved space to the right. No leading zeros, and when a
- * decimal appears the digits you were reading DO NOT MOVE. Integer
- * growth ("99"→"100") extends leftward into the fixed box, so the
- * instrument row never reflows either.
- */
-function weightWheels(value: number): { int: string; dec: string | null } {
-  const rounded = Math.round(Math.abs(value) * 10) / 10;
-  const [int, dec] = rounded.toFixed(1).split('.');
-  // A whole value carries no decimal paint — just the reserved slot.
-  return { int, dec: dec === '0' ? null : `.${dec}` };
-}
 
 /** The rest instrument's read-side shape (Floor owns the clock). */
 export interface RestLine {
@@ -73,12 +50,9 @@ export interface TheLoggerProps {
   reps: number | null;
   /** Programmed rep-range hint ("8–10") — display only. */
   repsHint?: string | null;
-  /** The rail's ceiling — defaults to railMaxFor(weight). Pass the
-   * day's max so the pin reads against the whole session's scale. */
-  railMax?: number;
   /** THE REST LINE — present while a rest runs or has settled. */
   rest?: RestLine | null;
-  /** The display unit — steppers step in it (2.5 kg / 5 lb). */
+  /** The display unit — the stepper steps in it (2.5 kg / 5 lb). */
   unit?: WeightUnit;
   onLog: () => void;
   onChangeWeight: (weight: number | null) => void;
@@ -107,7 +81,7 @@ function StepButton({
       style={({ pressed }) => [
         styles.stepper,
         {
-          backgroundColor: colors.backgroundAlt,
+          backgroundColor: colors.cardAlt,
           borderColor: colors.mobilePremium.hairlineBorderStrong,
         },
         pressed ? { opacity: 0.6 } : null,
@@ -121,186 +95,81 @@ function StepButton({
   );
 }
 
-/** The weight side: the rolling counter + steppers (the rail spans
- * both sides from the caller — one scale for the whole instrument). */
-function WeightSide({
-  weight,
-  step,
-  stepLabel,
-  unit,
-  onChange,
+/** One figure of the armed expression: the printed value (mono 72),
+ * or the numeric keyboard while editing. The 2px ink underline marks
+ * the ARMED field — position is state, not motion. */
+function ExpressionField({
+  value,
+  editing,
+  armed,
+  boxStyle,
+  onDraft,
+  commitDraft,
+  accessibilityLabel,
+  inputAccessibilityLabel,
+  onOpenKeyboard,
+  onPressField,
   testID,
 }: {
-  weight: number | null;
-  step: number;
-  stepLabel: string;
-  unit: WeightUnit;
-  onChange: (next: number | null) => void;
+  value: string;
+  editing: boolean;
+  armed: boolean;
+  boxStyle: object;
+  onDraft: (text: string) => void;
+  commitDraft: () => void;
+  accessibilityLabel: string;
+  inputAccessibilityLabel: string;
+  onOpenKeyboard: () => void;
+  onPressField: () => void;
   testID: string;
 }) {
   const { colors } = useAppTheme();
-  const [editing, setEditing] = useState(false);
-  const [draftText, setDraftText] = useState('');
-
-  const bump = (dir: 1 | -1) => {
-    const base = weight ?? 0;
-    const next = Math.round((base + dir * step) * 100) / 100;
-    onChange(next <= 0 ? null : next);
-  };
-
-  return (
-    <View style={styles.counterSide}>
-      {editing ? (
+  if (editing) {
+    return (
+      <View style={[boxStyle, styles.fieldHold]}>
+        {/* The edit-state input carries the SAME fixed geometry as the
+            figure it replaces — typing never moves anything. */}
         <TextInput
-          value={draftText}
-          onChangeText={setDraftText}
-          onSubmitEditing={() => {
-            onChange(parseNumber(draftText));
-            setEditing(false);
-          }}
-          onBlur={() => {
-            onChange(parseNumber(draftText));
-            setEditing(false);
-          }}
+          value={value}
+          onChangeText={onDraft}
+          onSubmitEditing={commitDraft}
+          onBlur={commitDraft}
           keyboardType="number-pad"
           autoFocus
           selectTextOnFocus
-          accessibilityLabel="Weight input"
-          style={[styles.weightInput, { color: colors.text, outlineWidth: 0 }]}
+          accessibilityLabel={inputAccessibilityLabel}
+          style={[styles.input, { color: colors.text, outlineWidth: 0 }]}
           testID={`${testID}-input`}
         />
-      ) : (
-        <Pressable
-          onPress={() => {
-            setDraftText(weight == null ? '' : String(weight));
-            setEditing(true);
-          }}
-          accessibilityRole="button"
-          accessibilityLabel={`Edit weight, currently ${weight == null ? 'not set' : `${weight} ${unit}`}`}
-          style={styles.counterTapWeight}
-          testID={`${testID}-tap`}
-        >
-          {/* The wheels, anchored at the decimal: unpadded integers
-              right-aligned against the reserved decimal slot — the
-              slot always spans the full two-glyph extent (".d");
-              whole numbers paint two non-breaking spaces there, so
-              the slot's width is constant and the integer wheels
-              never move when a decimal appears. */}
-          {weight != null ? (
-            <View style={styles.wheelsRow}>
-              <RollingCounter
-                value={weightWheels(weight).int}
-                testID={`${testID}-roll-int`}
-              />
-              <RollingCounter
-                value={weightWheels(weight).dec ?? '\u00A0\u00A0'}
-                testID={`${testID}-roll-dec`}
-              />
-            </View>
-          ) : (
-            <RollingCounter value="···" testID={`${testID}-roll`} />
-          )}
-        </Pressable>
-      )}
-      <View style={styles.stepperRow}>
-        <StepButton
-          dir={-1}
-          label={`Decrease weight by ${stepLabel}`}
-          onPress={() => bump(-1)}
-          testID={`${testID}-dec`}
-        />
-        <Text style={[styles.stepperStep, { color: colors.textMuted }]}>{stepLabel}</Text>
-        <StepButton
-          dir={1}
-          label={`Increase weight by ${stepLabel}`}
-          onPress={() => bump(1)}
-          testID={`${testID}-inc`}
-        />
       </View>
-    </View>
-  );
-}
-
-/** The reps side: the rolling counter + steppers. */
-function RepsSide({
-  reps,
-  step,
-  stepLabel,
-  onChange,
-  testID,
-}: {
-  reps: number | null;
-  step: number;
-  stepLabel: string;
-  onChange: (next: number | null) => void;
-  testID: string;
-}) {
-  const { colors } = useAppTheme();
-  const [editing, setEditing] = useState(false);
-  const [draftText, setDraftText] = useState('');
-
-  const bump = (dir: 1 | -1) => {
-    const base = reps ?? 0;
-    const next = base + dir * step;
-    onChange(next <= 0 ? null : next);
-  };
-
+    );
+  }
   return (
-    <View style={styles.counterSide}>
-      {editing ? (
-        <TextInput
-          value={draftText}
-          onChangeText={setDraftText}
-          onSubmitEditing={() => {
-            onChange(parseNumber(draftText));
-            setEditing(false);
-          }}
-          onBlur={() => {
-            onChange(parseNumber(draftText));
-            setEditing(false);
-          }}
-          keyboardType="number-pad"
-          autoFocus
-          selectTextOnFocus
-          accessibilityLabel="Reps input"
-          style={[styles.repsInput, { color: colors.text, outlineWidth: 0 }]}
-          testID={`${testID}-input`}
-        />
-      ) : (
-        <Pressable
-          onPress={() => {
-            setDraftText(reps == null ? '' : String(reps));
-            setEditing(true);
-          }}
-          accessibilityRole="button"
-          accessibilityLabel={`Edit reps, currently ${reps == null ? 'not set' : reps}`}
-          style={styles.counterTapReps}
-          testID={`${testID}-tap`}
-        >
-          {/* Reps: unpadded, right-anchored in the fixed box — growth
-              extends leftward into reserved space. */}
-          <RollingCounter
-            value={reps == null ? '··' : String(Math.max(0, Math.round(reps)))}
-            testID={`${testID}-roll`}
-          />
-        </Pressable>
-      )}
-      <View style={styles.stepperRow}>
-        <StepButton
-          dir={-1}
-          label={`Decrease reps by ${stepLabel}`}
-          onPress={() => bump(-1)}
-          testID={`${testID}-dec`}
-        />
-        <Text style={[styles.stepperStep, { color: colors.textMuted }]}>{stepLabel}</Text>
-        <StepButton
-          dir={1}
-          label={`Increase reps by ${stepLabel}`}
-          onPress={() => bump(1)}
-          testID={`${testID}-inc`}
-        />
-      </View>
-    </View>
+    <Pressable
+      onPress={onPressField}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ selected: armed }}
+      style={({ pressed }) => [
+        boxStyle,
+        styles.fieldHold,
+        pressed ? { opacity: 0.75 } : null,
+      ]}
+      testID={testID}
+    >
+      <Text
+        style={[styles.figure, { color: colors.text }]}
+        numberOfLines={1}
+      >
+        {value}
+      </Text>
+      {/* THE ARMED MARK — the 2px ink rule under the armed field. */}
+      <View
+        style={[styles.armedRule, { backgroundColor: armed ? colors.text : 'transparent' }]}
+        testID={armed ? 'armed-field-mark' : undefined}
+        accessibilityElementsHidden
+      />
+    </Pressable>
   );
 }
 
@@ -309,7 +178,6 @@ export function TheLogger({
   weight,
   reps,
   repsHint = null,
-  railMax,
   rest = null,
   unit = 'kg',
   onLog,
@@ -321,23 +189,64 @@ export function TheLogger({
   const ready = weight != null && reps != null;
   const tid = testID ?? 'the-logger';
 
+  // THE ONE-FIELD LAW: exactly one armed field at a time. The steppers
+  // step the armed field; tapping the other field arms it; tapping the
+  // armed field opens the keyboard.
+  const [field, setField] = useState<'weight' | 'reps'>('weight');
+  const [editing, setEditing] = useState<'weight' | 'reps' | null>(null);
+  const [draftText, setDraftText] = useState('');
+
+  const openKeyboard = (which: 'weight' | 'reps') => {
+    setDraftText(
+      which === 'weight'
+        ? weight == null
+          ? ''
+          : String(weight)
+        : reps == null
+          ? ''
+          : String(reps),
+    );
+    setField(which);
+    setEditing(which);
+  };
+  const commitDraft = () => {
+    if (editing === 'weight') onChangeWeight(parseNumber(draftText));
+    if (editing === 'reps') onChangeReps(parseNumber(draftText));
+    setEditing(null);
+  };
+
+  const step = field === 'weight' ? weightStep(unit) : 1;
+  const stepLabel = String(step);
+  const bump = (dir: 1 | -1) => {
+    if (field === 'weight') {
+      const base = weight ?? 0;
+      const next = Math.round((base + dir * step) * 100) / 100;
+      onChangeWeight(next <= 0 ? null : next);
+    } else {
+      const base = reps ?? 0;
+      const next = base + dir * step;
+      onChangeReps(next <= 0 ? null : next);
+    }
+  };
+
+  const weightText = weight == null ? '···' : String(weight);
+  const repsText = reps == null ? '··' : String(Math.max(0, Math.round(reps)));
+
   return (
     <View
       testID={testID}
       style={[
         styles.plate,
         {
-          backgroundColor: colors.card,
-          borderTopColor: colors.mobilePremium.hairlineBorder,
-          boxShadow: colors.mobilePremium.instrumentShadow,
+          borderTopColor: colors.text,
         },
       ]}
       accessibilityLabel={`Logger, set ${setNumber}: ${weight ?? 'no weight'} ${unit} by ${reps ?? 'no reps'} reps`}
     >
       {/* THE REST LINE — recovery counts after every log (thesis §7).
-          Running: the readout pulses signal (the live pulse); settled:
-          muted until the next log. ±15 steppers; tap the readout to
-          dismiss. */}
+          Running: the readout carries the red (the live pulse);
+          settled: muted until the next log. ±15 steppers; tap the
+          readout to dismiss. */}
       {rest ? (
         <View style={styles.restRow} testID={`${tid}-rest`}>
           <Pressable
@@ -361,13 +270,13 @@ export function TheLogger({
             <StepButton
               dir={-1}
               label="Decrease rest by 15 seconds"
-              onPress={() => rest.onAdjust(-15)}
+              onPress={() => rest.onAdjust(-REST_STEP_SEC)}
               testID={`${tid}-rest-dec`}
             />
             <StepButton
               dir={1}
               label="Increase rest by 15 seconds"
-              onPress={() => rest.onAdjust(15)}
+              onPress={() => rest.onAdjust(REST_STEP_SEC)}
               testID={`${tid}-rest-inc`}
             />
           </View>
@@ -379,32 +288,60 @@ export function TheLogger({
         {`SET ${String(setNumber).padStart(2, '0')}${repsHint ? ` · TGT ${repsHint}` : ''}`}
       </Text>
 
-      {/* THE INSTRUMENT — the pin rail spans the row; the rolling
-          counters meet at the ×, each side's steppers beneath its
-          figure. */}
-      <View style={styles.callRow}>
-        <PinRail
-          kg={weight}
-          scale="counter"
-          railMax={railMax ?? railMaxFor(weight)}
-          unit={unit}
-          testID={`${tid}-rail`}
-        />
-        <WeightSide
-          weight={weight}
-          step={weightStep(unit)}
-          stepLabel={String(weightStep(unit))}
-          unit={unit}
-          onChange={onChangeWeight}
-          testID={`${tid}-weight`}
+      {/* THE ARMED EXPRESSION — `62.5 × 8` at figure scale. The armed
+          field wears the 2px rule; values swap, nothing moves. */}
+      <View style={styles.expressionRow}>
+        <ExpressionField
+          value={editing === 'weight' ? draftText : weightText}
+          editing={editing === 'weight'}
+          armed={field === 'weight' && editing === null}
+          boxStyle={styles.weightBox}
+          onDraft={setDraftText}
+          commitDraft={commitDraft}
+          accessibilityLabel={`Weight, currently ${weight == null ? 'not set' : `${weight} ${unit}`} — tap to arm weight`}
+          inputAccessibilityLabel="Weight input"
+          onOpenKeyboard={() => openKeyboard('weight')}
+          onPressField={() => {
+            if (field === 'weight') openKeyboard('weight');
+            else setField('weight');
+          }}
+          testID={`${tid}-weight-tap`}
         />
         <Text style={[styles.multiplier, { color: colors.textMuted }]}>×</Text>
-        <RepsSide
-          reps={reps}
-          step={1}
-          stepLabel="1"
-          onChange={onChangeReps}
-          testID={`${tid}-reps`}
+        <ExpressionField
+          value={editing === 'reps' ? draftText : repsText}
+          editing={editing === 'reps'}
+          armed={field === 'reps' && editing === null}
+          boxStyle={styles.repsBox}
+          onDraft={setDraftText}
+          commitDraft={commitDraft}
+          accessibilityLabel={`Reps, currently ${reps == null ? 'not set' : reps} — tap to arm reps`}
+          inputAccessibilityLabel="Reps input"
+          onOpenKeyboard={() => openKeyboard('reps')}
+          onPressField={() => {
+            if (field === 'reps') openKeyboard('reps');
+            else setField('reps');
+          }}
+          testID={`${tid}-reps-tap`}
+        />
+      </View>
+
+      {/* THE ONE STEPPER PAIR — steps the ARMED field by its own step. */}
+      <View style={styles.stepperRow}>
+        <StepButton
+          dir={-1}
+          label={`Decrease ${field === 'weight' ? `weight by ${stepLabel}` : 'reps by 1'}`}
+          onPress={() => bump(-1)}
+          testID={`${tid}-step-dec`}
+        />
+        <Text style={[styles.stepperStep, { color: colors.textMuted }]} testID={`${tid}-step-label`}>
+          {field === 'weight' ? `${stepLabel} ${unit}` : '1 rep'}
+        </Text>
+        <StepButton
+          dir={1}
+          label={`Increase ${field === 'weight' ? `weight by ${stepLabel}` : 'reps by 1'}`}
+          onPress={() => bump(1)}
+          testID={`${tid}-step-inc`}
         />
       </View>
 
@@ -426,8 +363,10 @@ export function TheLogger({
 }
 
 const styles = StyleSheet.create({
+  // THE DOCK — the screen's one 2px rule carries the logger (no
+  // shadow: nothing in the app is lifted; the still law).
   plate: {
-    borderTopWidth: 1,
+    borderTopWidth: 2,
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 12,
@@ -450,7 +389,6 @@ const styles = StyleSheet.create({
   },
   restFigure: {
     ...theme.typography.mobileFigure,
-    fontSize: 21,
     fontWeight: '600',
     fontVariant: ['tabular-nums'],
   },
@@ -464,67 +402,52 @@ const styles = StyleSheet.create({
     minHeight: 20,
     marginTop: 2,
   },
-  // THE INSTRUMENT reads as one line: the rail at the left (one scale
-  // for the whole instrument), the counters meeting at the ×, each
-  // side's steppers beneath its figure.
-  callRow: {
+  // THE ARMED EXPRESSION — fixed boxes so growth never reflows the
+  // row: weight spans the decimal's room, reps two digits.
+  expressionRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'flex-end',
     justifyContent: 'center',
-    gap: 14,
+    gap: 10,
     marginTop: 4,
   },
-  counterSide: {
+  fieldHold: {
     alignItems: 'center',
   },
-  // FIXED-WHEEL BOXES — room for 5 wheels (weight incl. the decimal
-  // slot) and 2 (reps). The widths never change, so the instrument
-  // row never reflows; the wheels ANCHOR at the right edge (the
-  // decimal side), growing leftward into reserved space.
-  counterTapWeight: {
-    minHeight: 60,
-    width: 184,
-    alignItems: 'center',
+  weightBox: {
+    width: 218,
+    minHeight: 78,
     justifyContent: 'flex-end',
-    paddingBottom: 4,
   },
-  counterTapReps: {
-    minHeight: 60,
-    width: 74,
-    alignItems: 'center',
+  repsBox: {
+    width: 96,
+    minHeight: 78,
     justifyContent: 'flex-end',
-    paddingBottom: 4,
   },
-  wheelsRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  // The edit-state inputs carry the SAME fixed geometry as the boxes
-  // they replace — tapping a counter to type never moves anything (a
-  // bare web input otherwise sizes to its intrinsic ~20ch width).
-  weightInput: {
+  figure: {
     ...theme.typography.mobileCounter,
-    width: 184,
-    minHeight: 60,
-    textAlign: 'right',
-    paddingRight: 2,
   },
-  repsInput: {
+  // The edit-state input carries the counter's own geometry.
+  input: {
     ...theme.typography.mobileCounter,
-    width: 74,
-    minHeight: 60,
-    textAlign: 'right',
-    paddingRight: 2,
+    width: '100%',
+    textAlign: 'center',
+  },
+  armedRule: {
+    width: '100%',
+    height: 2,
+    marginTop: 2,
   },
   multiplier: {
     ...theme.typography.mobileFigure,
-    marginTop: 22,
+    marginBottom: 16,
   },
   stepperRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 2,
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 6,
   },
   stepper: {
     width: 44,
@@ -537,11 +460,10 @@ const styles = StyleSheet.create({
   stepperGlyph: {
     ...theme.typography.mobileFigure,
     fontWeight: '600',
-    fontSize: 18,
   },
   stepperStep: {
     ...theme.typography.mobileEyebrow,
-    minWidth: 28,
+    minWidth: 52,
     textAlign: 'center',
   },
   logButton: {
