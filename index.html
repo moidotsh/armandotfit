@@ -23,15 +23,15 @@
       Expo Web's static export strips every tag below from <head>
       except <link rel="icon"> when generating dist/index.html. The
       three places are a deliberate mirror set — keep them in sync in
-      the same change. The theme-color values are armandotfit's BOARD
-      palette (the white board's edge tone on every width — the chrome never
+      the same change. The theme-color values are armandotfit's GAUGE
+      palette (the concrete's edge tone on every width — the chrome never
       shouts); update this file, the injector's extraction, and
       app/_layout.tsx together so the deployed HTML and the runtime
       injection agree.
       Full design + debugging checklist: docs/architecture/pwa-installability.md.
     -->
-    <meta name="theme-color" content="#F1F1EC" media="(min-width: 701px)" />
-    <meta name="theme-color" content="#F1F1EC" media="(max-width: 700px)" />
+    <meta name="theme-color" content="#E1E4E0" media="(min-width: 701px)" />
+    <meta name="theme-color" content="#E1E4E0" media="(max-width: 700px)" />
 
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icons/192.png" />
@@ -44,51 +44,54 @@
     <title>armandotfit</title>
 
     <!--
-      THE BOARD faces — self-hosted, OFL (docs/architecture/
-      board-thesis.md §3.1). Archivo (one variable file, wght
-      100–900 + wdth 62–125) speaks the board's words; 'Archivo
-      Cond' is the SAME file declared a second time with
+      THE GAUGE faces — self-hosted, OFL (docs/architecture/
+      gauge-thesis.md §3.1). Instrument Sans (one variable file,
+      wght 400–700 + wdth 75–100) speaks the instrument's words;
+      'Instrument Cond' is the SAME file declared a second time with
       font-stretch pinned at 75% — one download, two families, the
-      STATEMENT position. Spline Sans Mono (one variable file, wght
-      300–700) keeps EVERY figure; mono is tabular by construction.
-      Mirror trio discipline: this id'd style block, the runtime
-      restore in app/_layout.tsx, and the injector carry them
-      together — plus the preload lines so the first statement and
-      the first figure render in their faces, not fallbacks.
+      STATEMENT position. Martian Mono (one variable file, wght
+      100–800 + wdth 75–112.5) keeps EVERY figure; mono is tabular
+      by construction and reads like a machine readout. Mirror trio
+      discipline: this id'd style block, the runtime restore in
+      app/_layout.tsx, and the injector carry them together — plus
+      the preload lines so the first statement and the first figure
+      render in their faces, not fallbacks.
     -->
-    <link rel="preload" href="/fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/spline-sans-mono-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/instrument-sans-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/martian-mono-var.woff2" as="font" type="font/woff2" crossorigin />
     <style id="arq-font-faces">
       @font-face {
-        font-family: 'Archivo';
+        font-family: 'Instrument Sans';
         font-style: normal;
-        font-weight: 100 900;
+        font-weight: 400 700;
+        font-stretch: 75% 100%;
         font-display: swap;
-        src: url('/fonts/archivo-var.woff2') format('woff2');
+        src: url('/fonts/instrument-sans-var.woff2') format('woff2');
       }
       @font-face {
-        font-family: 'Archivo Cond';
+        font-family: 'Instrument Cond';
         font-style: normal;
-        font-weight: 100 900;
+        font-weight: 400 700;
         font-stretch: 75%;
         font-display: swap;
-        src: url('/fonts/archivo-var.woff2') format('woff2');
+        src: url('/fonts/instrument-sans-var.woff2') format('woff2');
       }
       @font-face {
-        font-family: 'Spline Sans Mono';
+        font-family: 'Martian Mono';
         font-style: normal;
-        font-weight: 300 700;
+        font-weight: 100 800;
+        font-stretch: 75% 112.5%;
         font-display: swap;
-        src: url('/fonts/spline-sans-mono-var.woff2') format('woff2');
+        src: url('/fonts/martian-mono-var.woff2') format('woff2');
       }
     </style>
 
     <!--
-      THE BOARD boot plate — the pre-JS cover. armandotfit's design
-      language opens as the board: the white board's edge tone
-      (#F1F1EC) with the name stamped in ink Archivo caps and a 2px
-      record-orange rule beneath it — not a white flash, not a
-      colored plate. The root layout lifts it via markBootReady() →
+      THE GAUGE boot plate — the pre-JS cover. armandotfit's design
+      language opens as the instrument room: the concrete's edge tone
+      (#E1E4E0) with the name stamped in ink Instrument caps and a
+      2px signal rule beneath it — not a white flash, not a colored
+      plate. The root layout lifts it via markBootReady() →
       html[data-boot-ready] as soon as React mounts (see
       utils/routeTransition.ts); reduced-motion users keep it as a
       static cover that simply disappears on lift. Pure CSS + one
@@ -96,7 +99,7 @@
     -->
     <style id="ink-boot-plate">
       html:not([data-boot-ready]) body {
-        background: #f1f1ec;
+        background: #e1e4e0;
       }
       html:not([data-boot-ready]) #root::before {
         content: 'ARMANDOTFIT';
@@ -105,11 +108,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f1f1ec;
-        color: #16181c;
-        font-family: 'Archivo', -apple-system, sans-serif;
+        background: #e1e4e0;
+        color: #12161a;
+        font-family: 'Instrument Sans', -apple-system, sans-serif;
         font-size: 24px;
-        font-weight: 800;
+        font-weight: 700;
         letter-spacing: 0.14em;
         text-transform: uppercase;
         z-index: 9999;
@@ -122,7 +125,7 @@
         width: 84px;
         height: 2px;
         margin-left: -42px;
-        background: #c24100;
+        background: #c23a00;
         z-index: 9999;
       }
       html[data-boot-ready] #root::before,
@@ -145,7 +148,7 @@
         height: 100%;
         margin: 0;
         padding: 0;
-        background: #f1f1ec;
+        background: #e1e4e0;
       }
       #root {
         display: flex;

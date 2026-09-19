@@ -1,19 +1,20 @@
 // constants/theme.ts
-// armandotfit theme — "THE BOARD" (see
-// docs/architecture/board-thesis.md).
+// armandotfit theme — "THE GAUGE" (see
+// docs/architecture/gauge-thesis.md).
 //
-// The training whiteboard: quantities drawn, not written. One flat
-// board per mode — the WHITE BOARD in daylight (near-white neutral +
-// ink), the CHALKBOARD at night (near-black neutral + chalk) — no
-// cards, no shadows except the docked logger. On the shell's `ink`
-// dialect (flat atmosphere, chit toasts, curtain transitions — see
-// DIALECT below).
+// The gym's instrument panel: machined enamel panels floating on a
+// concrete ground, loads set on a printed pin rail, figures on
+// rolling counters, and the clock as a first-class instrument
+// (elapsed + the rest countdown). On the shell's `ink` dialect
+// (flat atmosphere, chit toasts, curtain transitions — see DIALECT
+// below).
 //
-//   • COLOR HAS TWO JOBS — the `meter` ramp encodes LOAD (the plate
-//     code: red 25 / blue 20 / yellow 15 / green 10 / white 5 / steel
-//     1.25, drawn as proportional slabs), and the record-orange
-//     `brand` slot marks PRs, links, and the living pulse. Everything
-//     else is ink; the verb is the heaviest ink on the page.
+//   • COLOR HAS TWO JOBS — the `meter` ramp encodes the GYM'S
+//     GEOGRAPHY (the zone ramp: barbell oxide / dumbbell brass /
+//     cable blue / machine green / bodyweight violet + steel), and
+//     the signal hue (safety orange, the `brand` slot) marks
+//     records, links, and the live pulse. Everything else is ink;
+//     the verb is the heaviest ink on the page.
 //   • THE WIRE (colors.focus.*) — the mode-independent interrupt
 //     register for the chit toast and the route curtain only.
 //
@@ -43,7 +44,7 @@ type TypographyToken = Pick<
 // it inside the same object literal. A consumer whose design language is
 // printed matter declares a display face (poster titles, hero figures,
 // totals) and/or a mono face (every figure that reads as ledger output —
-// prices, stock, dates, metrics, eyebrows); body/UI text stays the
+// prices, stock, dates, metrics, eyebrows); body/UI text stays on the
 // platform sans for legibility. All default to undefined — the starter
 // renders the platform sans everywhere, and every read below is a no-op
 // until a consumer fills them, so declaring the axis never moves the
@@ -65,8 +66,8 @@ export interface TypeFaces {
    * @font-face over the SAME variable file with `font-stretch` pinned
    * (see index.html): one download, two families, and RN code never
    * touches fontStretch (which RN's TextStyle does not carry).
-   * THE BOARD pins Archivo's width axis at 75% as 'Archivo Cond' —
-   * the STATEMENT position.
+   * THE GAUGE pins Instrument Sans's width axis at 75% as
+   * 'Instrument Cond' — the STATEMENT position.
    */
   displayCondensed?: string;
   /** Mono face — ledger figures: prices, stock, dates, metrics, eyebrows. */
@@ -74,18 +75,20 @@ export interface TypeFaces {
 }
 
 const FONTS = {
-  // THE BOARD pair (docs/architecture/board-thesis.md §3.1) — Archivo
-  // (one variable file, wght 100–900 + wdth 62–125) speaks the board's
-  // words: statements (as 'Archivo Cond', the width-pinned second
-  // family), subheads, row names, furniture caps, verb labels. Spline
-  // Sans Mono (one variable file, wght 300–700) keeps EVERY figure —
-  // armed values, ledgers, dates, timers; mono is tabular by
-  // construction. Files in public/fonts/, @font-face + preloads in
-  // index.html (id'd style), runtime restore in app/_layout.tsx —
-  // the injector carries both into every exported route.
-  display: 'Archivo',
-  displayCondensed: 'Archivo Cond',
-  mono: 'Spline Sans Mono',
+  // THE GAUGE pair (docs/architecture/gauge-thesis.md §3.1) —
+  // Instrument Sans (one variable file, wght 400–700 + wdth 75–100)
+  // speaks the instrument's words: statements (as 'Instrument Cond',
+  // the width-pinned second family), subheads, row names, furniture
+  // caps, verb labels. Martian Mono (one variable file, wght 100–800
+  // + wdth 75–112.5) keeps EVERY figure — counters, ledgers, dates,
+  // clocks, rest; mono is tabular by construction, and its hardware
+  // register is the point: digits read like a machine readout. Files
+  // in public/fonts/, @font-face + preloads in index.html (id'd
+  // style), runtime restore in app/_layout.tsx — the injector
+  // carries both into every exported route.
+  display: 'Instrument Sans',
+  displayCondensed: 'Instrument Cond',
+  mono: 'Martian Mono',
 } as TypeFaces;
 
 // ── Design dialect ──────────────────────────────────────────────────────
@@ -115,93 +118,96 @@ const DIALECT_PRESETS = {
 // surface family (like `glass` / `mobilePremium`), not a third color
 // scheme — `useAppTheme()` still resolves exactly two.
 const WIRE = {
-  background: '#0A0B0C',
-  surface: '#131416',
-  surfaceAlt: '#191B1E',
+  background: '#0B0D0F',
+  surface: '#131518',
+  surfaceAlt: '#1A1D20',
   border: '#232629',
-  text: '#EDE9DE',
-  muted: '#9A9B96',
-  signal: '#FF8A4A',
-  onSignal: '#0A0B0C',
-  track: '#1E2023',
-  signalSoft: 'rgba(255, 138, 74, 0.16)',
+  text: '#ECF0F2',
+  muted: '#9AA0A6',
+  signal: '#FF8A3D',
+  onSignal: '#0B0D0F',
+  track: '#1E2124',
+  signalSoft: 'rgba(255, 138, 61, 0.16)',
 } as const;
 
 // The categorical meter ramp — six steps + the rim that guarantees
 // each step's edge on light grounds. Structure is the shell's (same
-// keys both repos); armandotfit's values are the PLATE CODE (thesis
-// §4.2): red 25 / blue 20 / yellow 15 / green 10 / white 5 / steel
-// 1.25. Arqavellum keeps its own (indigo-tinted) values.
+// keys both repos); armandotfit's values are the ZONE RAMP (thesis
+// §4.2): the gym's geography — barbell oxide red / dumbbell brass /
+// cable blue / machine green / bodyweight violet / steel. Arqavellum
+// keeps its own (indigo-tinted) values.
 const METER_LIGHT = {
-  step1: '#C0281C',
-  step2: '#1E4FB8',
-  step3: '#D9A62E',
-  step4: '#23714A',
-  step5: '#ECECE5',
-  step6: '#8D9299',
-  rim: '#16181C',
+  step1: '#B02A1C',
+  step2: '#8F6A12',
+  step3: '#2559B7',
+  step4: '#256B4A',
+  step5: '#6D44B5',
+  step6: '#7C858E',
+  rim: '#12161A',
 } as const;
 
 const METER_DARK = {
   step1: '#E4604F',
-  step2: '#6C9EF2',
-  step3: '#F0C64F',
+  step2: '#E0B44F',
+  step3: '#6C9EF2',
   step4: '#4DB87E',
-  step5: '#F5F5F0',
-  step6: '#A9AEB5',
-  rim: '#0C0D0F',
+  step5: '#B18CF2',
+  step6: '#A5ADB5',
+  rim: '#0C0E10',
 } as const;
 
 export const theme = {
   colors: {
-    // ── The white board (light default) ─────────────────────────────
-    // A neutral near-white ground — no cream cast, no blue-steel cast:
-    // the board is the neutral field the plates sing against. Every
-    // MobilePremium primitive defaults to this palette unless the
-    // consumer flips `colorScheme` to 'dark'. Measured ladder (thesis
-    // §4.4): text ~17 on card → secondary ~10 → muted ≥ 5.7 on the
-    // darkest surface it rides.
+    // ── Enamel (light default) ──────────────────────────────────────
+    // Concrete ground + machined enamel panels: a cool-neutral two-tier
+    // material (no cream cast, no blue-steel cast) whose depth comes
+    // from the ground step, never from shadow. Every MobilePremium
+    // primitive defaults to this palette unless the consumer flips
+    // `colorScheme` to 'dark'. Measured ladder (thesis §4.4): text
+    // ~17 on panel → secondary ~10 → muted ≥ 5.4 on the darkest
+    // surface it rides.
     light: {
       // UI element colors
-      background: '#FAFAF7',
-      backgroundAlt: '#F1F1EC',
-      card: '#FFFFFF',
-      cardAlt: '#F4F4EF',
-      border: '#DDDDD3',
+      background: '#EBEDEA',
+      backgroundAlt: '#E4E6E3',
+      card: '#FCFDFB',
+      cardAlt: '#F2F4F1',
+      border: '#D8DBD6',
 
-      // Card border colors — 1px precision edges on the board.
-      cardBorder: 'rgba(22, 24, 28, 0.14)',
-      cardBorderHover: 'rgba(22, 24, 28, 0.22)',
+      // Panel edge colors — the enamel's 1px steel hairline.
+      cardBorder: 'rgba(18, 22, 26, 0.16)',
+      cardBorderHover: 'rgba(18, 22, 26, 0.26)',
 
       // Text colors. Every informative slot clears WCAG AA (4.5:1) on
-      // every board surface it rides (matrix in thesis §4.4).
-      text: '#16181C',
-      textMuted: '#5C6067',
-      textSecondary: '#3E4148',
+      // every surface it rides (matrix in thesis §4.4).
+      text: '#12161A',
+      textMuted: '#57606A',
+      textSecondary: '#384049',
 
-      // Interactive element colors — the `brand` slot: RECORD ORANGE.
-      // Marks PRs, links, and the living pulse; appears as a fill only
-      // in toasts/tints (measured 4.82 with its on-fill text).
-      brand: '#C24100',
-      brandHover: '#B03A00',
-      brandPress: '#9E3300',
-      brandMuted: 'rgba(194, 65, 0, 0.08)',
-      brandSoft: 'rgba(194, 65, 0, 0.12)',
-      // THE VERB IS INK (thesis pillar 2): the heaviest mark on the
-      // page is the board's own ink, not a hue. 17.0:1 with its label.
-      buttonBackground: '#16181C',
-      buttonBackgroundDisabled: 'rgba(22, 24, 28, 0.4)',
+      // Interactive element colors — the `brand` slot: THE SIGNAL.
+      // Safety orange; marks records, links, and the live pulse;
+      // appears as a fill only in toasts/tints (measured 4.98 with
+      // its on-fill text).
+      brand: '#C23A00',
+      brandHover: '#B23400',
+      brandPress: '#A12E00',
+      brandMuted: 'rgba(194, 58, 0, 0.08)',
+      brandSoft: 'rgba(194, 58, 0, 0.12)',
+      // THE VERB IS INK (thesis pillar 6): the heaviest mark on the
+      // page is the panel's own ink, not a hue. 17.8:1 with its label.
+      buttonBackground: '#12161A',
+      buttonBackgroundDisabled: 'rgba(18, 22, 26, 0.4)',
 
       // The brand slot's TEXT companion — the same hue darkened until
       // it clears WCAG AA (4.5:1) as small text (labels, kickers,
-      // links) on the board surfaces.
-      brandText: '#9A3300',
+      // links) on the panel surfaces.
+      brandText: '#9C3100',
 
       // Brand-hue accent for wire plates (the chit, the curtain) —
-      // a brightened record reads on the near-black wire.
-      brandOnInk: '#FF8A4A',
+      // a brightened signal reads on the near-black wire.
+      brandOnInk: '#FF8A3D',
 
-      // Semantic status colors. Measured AA as TEXT on page AND card
+      // Semantic status colors. Measured AA as TEXT on page AND panel
       // (matrix in thesis §4.4).
       status: {
         success: '#1E7A4C',
@@ -216,96 +222,96 @@ export const theme = {
       alert: '#B3261E',
 
       // Text color for content rendered on top of the ink verb (button
-      // labels, the selected check). One paint per plate: board-ground
+      // labels, the selected check). One paint per plate: panel-ground
       // on ink.
-      textOnBrand: '#FAFAF7',
+      textOnBrand: '#FCFDFB',
 
       // Secondary text on ink fills. One paint per plate: hierarchy on
       // an ink fill comes from size/face, not alpha.
-      textOnBrandMuted: '#FAFAF7',
+      textOnBrandMuted: '#FCFDFB',
 
-      // Deeper background for full-bleed screens — the board's edge
+      // Deeper background for full-bleed screens — the concrete's edge
       // tone.
-      backgroundDeep: '#F1F1EC',
+      backgroundDeep: '#E1E4E0',
 
       // Text color variants. `textColors.muted` and `textMuted` are
       // unified (same value, both names). `tertiary` is DECORATIVE ONLY
-      // (fails AA on card): placeholders, disabled states, watermarks —
+      // (fails AA on panel): placeholders, disabled states, watermarks —
       // it never carries information; informative quiet text reads
       // `textMuted`.
       textColors: {
-        muted: '#5C6067',
-        secondary: '#3E4148',
-        tertiary: '#9A9DA3',
+        muted: '#57606A',
+        secondary: '#384049',
+        tertiary: '#8A939C',
       },
 
       // Icon background tints (semantic — darker hue on pale tint).
       iconBackground: {
-        blue: 'rgba(30, 79, 184, 0.10)',
-        green: 'rgba(35, 113, 74, 0.10)',
-        purple: 'rgba(126, 34, 206, 0.10)',
-        orange: 'rgba(194, 65, 0, 0.10)',
-        white: 'rgba(22, 24, 28, 0.06)',
+        blue: 'rgba(37, 89, 183, 0.10)',
+        green: 'rgba(37, 107, 74, 0.10)',
+        purple: 'rgba(109, 68, 181, 0.10)',
+        orange: 'rgba(194, 58, 0, 0.10)',
+        white: 'rgba(18, 22, 26, 0.06)',
       },
 
       // Glass tokens (kept for the shell's glass-dialect primitives).
-      // On the board these read as neutral tints, not frosted windows.
+      // On the panels these read as neutral tints, not frosted windows.
       glass: {
-        background: 'rgba(255, 255, 255, 0.72)',
-        backgroundLight: 'rgba(255, 255, 255, 0.55)',
-        border: 'rgba(22, 24, 28, 0.14)',
-        borderHighlight: 'rgba(22, 24, 28, 0.22)',
-        borderHover: 'rgba(22, 24, 28, 0.18)',
-        emptyInputBorder: 'rgba(22, 24, 28, 0.26)',
-        panelBackground: 'rgba(250, 250, 247, 0.6)',
-        inputBackground: 'rgba(22, 24, 28, 0.04)',
-        inputFocusBackground: 'rgba(22, 24, 28, 0.07)',
+        background: 'rgba(252, 253, 251, 0.72)',
+        backgroundLight: 'rgba(252, 253, 251, 0.55)',
+        border: 'rgba(18, 22, 26, 0.16)',
+        borderHighlight: 'rgba(18, 22, 26, 0.24)',
+        borderHover: 'rgba(18, 22, 26, 0.20)',
+        emptyInputBorder: 'rgba(18, 22, 26, 0.28)',
+        panelBackground: 'rgba(235, 237, 234, 0.6)',
+        inputBackground: 'rgba(18, 22, 26, 0.04)',
+        inputFocusBackground: 'rgba(18, 22, 26, 0.07)',
       },
 
       // Alert background tint for error containers.
       alertBackground: 'rgba(179, 38, 30, 0.08)',
 
       // ── Mobile premium primitive kit tokens ───────────────────────────
-      // The board is FLAT and RULED: hairlines declare structure, no
-      // glow. Elevation = rule / tint step; the ONE real shadow in the
-      // system is instrumentShadow — the docked logger is the app's
-      // single physical object (thesis §5).
+      // The room is FLAT: panels sit on concrete with a hairline steel
+      // edge, no glow. Elevation = rule / tint step; the ONE real
+      // shadow in the system is instrumentShadow — the docked logger
+      // is the app's single physical object (thesis §5).
       mobilePremium: {
-        // Hairline border (inner) — ink at low opacity.
-        hairlineBorder: 'rgba(22, 24, 28, 0.14)',
-        hairlineBorderStrong: 'rgba(22, 24, 28, 0.24)',
+        // Hairline border (inner) — steel at low opacity.
+        hairlineBorder: 'rgba(18, 22, 26, 0.16)',
+        hairlineBorderStrong: 'rgba(18, 22, 26, 0.26)',
 
-        // Surface gradient stops — the board runs flat; the gradient is
+        // Surface gradient stops — the panels run flat; the gradient is
         // a whisper, kept for primitives that composite it.
-        surfaceGradientTop: 'rgba(22, 24, 28, 0.02)',
-        surfaceGradientBottom: 'rgba(22, 24, 28, 0.0)',
+        surfaceGradientTop: 'rgba(18, 22, 26, 0.02)',
+        surfaceGradientBottom: 'rgba(18, 22, 26, 0.0)',
 
         // Contact shadow — a 1px seat, not a glow.
-        surfaceGlow: '0 1px 2px rgba(22, 24, 28, 0.05)',
+        surfaceGlow: '0 1px 2px rgba(18, 22, 26, 0.05)',
 
         // THE INSTRUMENT LIFT — the docked logger's shadow (the one
-        // physical object; thesis pillar 2). Nothing else uses it.
+        // physical object; thesis pillar 1). Nothing else uses it.
         instrumentShadow:
-          '0 -2px 6px rgba(22, 24, 28, 0.08), 0 -12px 32px rgba(22, 24, 28, 0.16)',
+          '0 -2px 6px rgba(18, 22, 26, 0.07), 0 -14px 36px rgba(18, 22, 26, 0.14)',
 
-        // Backdrop blur for web (saturate is safe on the board).
+        // Backdrop blur for web (saturate is safe on the panels).
         surfaceBackdropBlur: 'blur(24px) saturate(160%)',
 
         // Android Chrome fallback — near-solid surface + milder blur.
-        androidChromeSurfaceBackground: 'rgba(255, 255, 255, 0.88)',
+        androidChromeSurfaceBackground: 'rgba(252, 253, 251, 0.88)',
         androidChromeSurfaceBlur: 'blur(12px)',
 
         // Nav drawer (shell parity; the drawer stays synced but unwired
-        // — THE BOARD has no tab bar and no drawer chrome).
+        // — THE GAUGE has no tab bar and no drawer chrome).
         navScrimBackdropBlur: 'blur(8px)',
         navScrimAlpha: 'dd',
         navPanelShadow: '4px 0 32px rgba(0, 0, 0, 0.36), 0 2px 8px rgba(0, 0, 0, 0.2)',
 
-        // Faint vignette to settle the board into its edges (web).
-        atmosphereVignette: 'inset 0 0 160px 60px rgba(22, 24, 28, 0.03)',
+        // Faint vignette to settle the concrete into its edges (web).
+        atmosphereVignette: 'inset 0 0 160px 60px rgba(18, 22, 26, 0.04)',
 
         // Rail (progress) — fill travels across a 2px track.
-        railTrack: 'rgba(22, 24, 28, 0.12)',
+        railTrack: 'rgba(18, 22, 26, 0.12)',
         railFillShadow: 'none',
       },
 
@@ -316,50 +322,50 @@ export const theme = {
       focus: WIRE,
     },
 
-    // ── The chalkboard (dark, opt-in) ───────────────────────────────
+    // ── Night gym (dark, opt-in) ───────────────────────────────────
     // Mirror of `light` with every key retuned for dark surfaces:
-    // near-black neutral, chalk text, brightened plates. The structural
-    // shape MUST match `light` so `theme.colors[colorScheme].*` is
-    // type-safe.
+    // concrete night ground, lit panels, chalk text, brightened
+    // zones. The structural shape MUST match `light` so
+    // `theme.colors[colorScheme].*` is type-safe.
     dark: {
-      background: '#101113',
-      backgroundAlt: '#15171A',
-      card: '#17191C',
-      cardAlt: '#1D2023',
-      border: '#2A2D31',
+      background: '#0D0F11',
+      backgroundAlt: '#121417',
+      card: '#171A1F',
+      cardAlt: '#1D2127',
+      border: '#282C32',
 
-      // Card border colors — chalk hairlines on the black board.
-      cardBorder: 'rgba(242, 243, 240, 0.14)',
-      cardBorderHover: 'rgba(242, 243, 240, 0.22)',
+      // Panel edge colors — chalk hairlines on the night panels.
+      cardBorder: 'rgba(236, 239, 241, 0.15)',
+      cardBorderHover: 'rgba(236, 239, 241, 0.24)',
 
-      // Text colors — measured (thesis §4.4): text ~16 on card,
-      // secondary ~10, muted ≥ 5.8 on cardAlt.
-      text: '#F2F3F0',
-      textMuted: '#989B95',
-      textSecondary: '#C4C7C2',
+      // Text colors — measured (thesis §4.4): text ~15 on panel,
+      // secondary ~10, muted ≥ 6.1 on cardAlt.
+      text: '#ECEFF1',
+      textMuted: '#96A0A8',
+      textSecondary: '#C0C7CD',
 
-      // The `brand` slot at night: bright record orange — high
-      // contrast on the board as fill/large type; `brandText` carries
+      // The `brand` slot at night: bright signal orange — high
+      // contrast on the panels as fill/large type; `brandText` carries
       // small text.
-      brand: '#FF7E45',
-      brandHover: '#FF8E5C',
-      brandPress: '#E96E35',
-      brandMuted: 'rgba(255, 126, 69, 0.14)',
-      brandSoft: 'rgba(255, 126, 69, 0.18)',
+      brand: '#FF8A3D',
+      brandHover: '#FF9752',
+      brandPress: '#E97C30',
+      brandMuted: 'rgba(255, 138, 61, 0.14)',
+      brandSoft: 'rgba(255, 138, 61, 0.18)',
       // THE VERB IS INK: at night the ink is chalk — the heaviest mark
-      // inverts with the board. 16.96:1 with its label.
-      buttonBackground: '#F2F3F0',
-      buttonBackgroundDisabled: 'rgba(242, 243, 240, 0.4)',
+      // inverts with the room. 16.6:1 with its label.
+      buttonBackground: '#ECEFF1',
+      buttonBackgroundDisabled: 'rgba(236, 239, 241, 0.4)',
 
       // Text companion of `brand` (see `light.brandText`).
-      brandText: '#FF9E6E',
+      brandText: '#FFA368',
 
       // Brand-hue accent for wire plates (identical register both
       // modes — see light.brandOnInk).
-      brandOnInk: '#FF8A4A',
+      brandOnInk: '#FF8A3D',
 
       // Semantic status colors — brightened for dark contrast (all AA
-      // as text on page and card; matrix in thesis §4.4).
+      // as text on page and panel; matrix in thesis §4.4).
       status: {
         success: '#40C98E',
         warning: '#E5B54B',
@@ -371,43 +377,43 @@ export const theme = {
       success: '#40C98E',
       alert: '#F27F72',
 
-      // Board ink on the chalk verb — one paint per plate.
-      textOnBrand: '#101113',
+      // Night ink on the chalk verb — one paint per plate.
+      textOnBrand: '#0D0F11',
 
       // One paint per plate (see light.textOnBrandMuted).
-      textOnBrandMuted: '#101113',
+      textOnBrandMuted: '#0D0F11',
 
-      // Page tone for full-bleed screens — the black board's edge.
-      backgroundDeep: '#0C0D0F',
+      // Page tone for full-bleed screens — the night floor's edge.
+      backgroundDeep: '#080A0C',
 
       // Text color variants. `tertiary` is DECORATIVE ONLY — never
       // carries information.
       textColors: {
-        muted: '#989B95',
-        secondary: '#C4C7C2',
-        tertiary: '#6A6D68',
+        muted: '#96A0A8',
+        secondary: '#C0C7CD',
+        tertiary: '#656F78',
       },
 
       // Icon background tints — bright hue on dark tint.
       iconBackground: {
         blue: 'rgba(108, 158, 242, 0.16)',
         green: 'rgba(77, 184, 126, 0.16)',
-        purple: 'rgba(192, 132, 252, 0.16)',
-        orange: 'rgba(255, 126, 69, 0.16)',
-        white: 'rgba(242, 243, 240, 0.08)',
+        purple: 'rgba(177, 140, 242, 0.16)',
+        orange: 'rgba(255, 138, 61, 0.16)',
+        white: 'rgba(236, 239, 241, 0.08)',
       },
 
-      // Glassmorphism (dark) — smoked board tints.
+      // Glassmorphism (dark) — smoked panel tints.
       glass: {
-        background: 'rgba(21, 23, 26, 0.72)',
-        backgroundLight: 'rgba(21, 23, 26, 0.55)',
-        border: 'rgba(242, 243, 240, 0.14)',
-        borderHighlight: 'rgba(242, 243, 240, 0.24)',
-        borderHover: 'rgba(242, 243, 240, 0.18)',
-        emptyInputBorder: 'rgba(242, 243, 240, 0.26)',
-        panelBackground: 'rgba(12, 13, 15, 0.6)',
-        inputBackground: 'rgba(242, 243, 240, 0.05)',
-        inputFocusBackground: 'rgba(242, 243, 240, 0.09)',
+        background: 'rgba(23, 26, 31, 0.72)',
+        backgroundLight: 'rgba(23, 26, 31, 0.55)',
+        border: 'rgba(236, 239, 241, 0.15)',
+        borderHighlight: 'rgba(236, 239, 241, 0.24)',
+        borderHover: 'rgba(236, 239, 241, 0.18)',
+        emptyInputBorder: 'rgba(236, 239, 241, 0.28)',
+        panelBackground: 'rgba(8, 10, 12, 0.6)',
+        inputBackground: 'rgba(236, 239, 241, 0.05)',
+        inputFocusBackground: 'rgba(236, 239, 241, 0.09)',
       },
 
       // Alert background tint for error containers (dark red wash).
@@ -416,29 +422,29 @@ export const theme = {
       // ── Mobile premium primitive kit tokens (dark) ───────────────────
       // Flat at night too: hairlines up, the instrument lift softened.
       mobilePremium: {
-        hairlineBorder: 'rgba(242, 243, 240, 0.14)',
-        hairlineBorderStrong: 'rgba(242, 243, 240, 0.24)',
+        hairlineBorder: 'rgba(236, 239, 241, 0.15)',
+        hairlineBorderStrong: 'rgba(236, 239, 241, 0.26)',
 
-        surfaceGradientTop: 'rgba(242, 243, 240, 0.03)',
-        surfaceGradientBottom: 'rgba(242, 243, 240, 0.0)',
+        surfaceGradientTop: 'rgba(236, 239, 241, 0.03)',
+        surfaceGradientBottom: 'rgba(236, 239, 241, 0.0)',
 
         surfaceGlow: '0 1px 2px rgba(0, 0, 0, 0.4)',
 
         instrumentShadow:
-          '0 -2px 6px rgba(0, 0, 0, 0.35), 0 -12px 32px rgba(0, 0, 0, 0.5)',
+          '0 -2px 6px rgba(0, 0, 0, 0.35), 0 -14px 36px rgba(0, 0, 0, 0.5)',
 
         surfaceBackdropBlur: 'blur(24px) saturate(140%)',
 
-        androidChromeSurfaceBackground: 'rgba(16, 17, 19, 0.88)',
+        androidChromeSurfaceBackground: 'rgba(13, 15, 17, 0.88)',
         androidChromeSurfaceBlur: 'blur(12px)',
 
         navScrimBackdropBlur: 'blur(8px)',
         navScrimAlpha: 'cc',
         navPanelShadow: '4px 0 32px rgba(0, 0, 0, 0.36), 0 2px 8px rgba(0, 0, 0, 0.2)',
 
-        atmosphereVignette: 'inset 0 0 160px 60px rgba(0, 0, 0, 0.28)',
+        atmosphereVignette: 'inset 0 0 160px 60px rgba(0, 0, 0, 0.3)',
 
-        railTrack: 'rgba(242, 243, 240, 0.14)',
+        railTrack: 'rgba(236, 239, 241, 0.14)',
         railFillShadow: 'none',
       },
 
@@ -480,21 +486,21 @@ export const theme = {
   },
 
   // ── Shape tokens ────────────────────────────────────────────────────
-  // Semantic corner radii for the MobilePremium kit. THE BOARD runs
-  // BUTT JOINTS on surfaces (the board is one piece — radius 0),
-  // softens only where a thumb lands: controls 10, portals 14, small
-  // tiles 6, tags 4. A pill marks nothing here.
+  // Semantic corner radii for the MobilePremium kit. THE GAUGE runs
+  // MACHINED corners: enamel panels barely broken (radius 2), the
+  // sheet softens where the thumb lands (12), controls 4, small tiles
+  // and tags 2. A pill marks nothing here.
   shapes: {
     /** Cards + section surfaces (MobileSurface, StatCard, alerts). */
-    surface: 0,
+    surface: 2,
     /** Portal panels — bottom sheets, calendar/dialog bodies. */
-    sheet: 14,
+    sheet: 12,
     /** Inputs, buttons, selects — interactive controls. */
-    control: 10,
+    control: 4,
     /** Small tiles — selection rows, option containers, thumbnails. */
-    tile: 6,
+    tile: 2,
     /** Chips, tags, badges. */
-    tag: 4,
+    tag: 2,
   },
 
   // ── Atmosphere tokens ────────────────────────────────────────────────
@@ -565,21 +571,21 @@ export const theme = {
   fonts: FONTS,
 
   // ── Named type styles ─────────────────────────────────────────────────
-  // THE BOARD ramp (docs/architecture/board-thesis.md §3.2): SIX sizes
-  // — 56 (the armed figures) · 36 (the statement, Archivo Cond) · 22
-  // (the subhead) · 17 (the row name) · 15 (reading + row figures) ·
-  // 12 (whisper furniture) — with at most four on any screen. One
+  // THE GAUGE ramp (docs/architecture/gauge-thesis.md §3.2): SIX sizes
+  // — 56 (the armed figures) · 36 (the statement, Instrument Cond) ·
+  // 21 (the subhead) · 17 (the row name) · 15 (reading + row figures)
+  // · 11 (whisper furniture) — with at most four on any screen. One
   // statement per screen at 36 (the content itself, sentence case —
-  // never a page nameplate), second voice ≥ 1.4× quieter (36/22 =
-  // 1.64 ✓). FURNITURE SHOUTS (caps, Archivo, tracked), CONTENT
-  // SPEAKS (sentence case). Retired ranks collapse onto the ramp
-  // rather than deleting keys (the token structure is the shell's).
-  // Consumers import the named style and spread it; they do NOT pick
-  // ad-hoc fontSize/fontWeight.
+  // never a page nameplate), second voice ≥ 1.4× quieter (36/21 =
+  // 1.71 ✓). FURNITURE IS PRINTED CAPS (caps, Instrument, tracked),
+  // CONTENT SPEAKS (sentence case). Retired ranks collapse onto the
+  // ramp rather than deleting keys (the token structure is the
+  // shell's). Consumers import the named style and spread it; they do
+  // NOT pick ad-hoc fontSize/fontWeight.
   typography: {
     mobileTitle: {
-      fontSize: 22,
-      fontWeight: '700',
+      fontSize: 21,
+      fontWeight: '600',
       lineHeight: 26,
       letterSpacing: -0.2,
       fontFamily: FONTS.display,
@@ -600,16 +606,16 @@ export const theme = {
     } satisfies TypographyToken,
     mobileAction: {
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '700',
       lineHeight: 20,
       letterSpacing: 1.2,
       fontFamily: FONTS.display,
     } satisfies TypographyToken,
     mobileEyebrow: {
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: '500',
       lineHeight: 16,
-      letterSpacing: 1.2,
+      letterSpacing: 1.0,
       fontFamily: FONTS.mono,
     } satisfies TypographyToken,
     mobileFieldLabel: {
@@ -620,27 +626,27 @@ export const theme = {
       fontFamily: undefined,
     } satisfies TypographyToken,
     // ── Figure language ────────────────────────────────────────────────
-    // Spline keeps EVERY working figure (anything that changes, aligns,
-    // or ledger-reads — at any size; mono is tabular by construction).
-    // The counter is the logger's editable digit pair — the one place
-    // figures speak at display scale.
+    // Martian keeps EVERY working figure (anything that changes,
+    // aligns, or ledger-reads — at any size; mono is tabular by
+    // construction). The counter is the logger's editable digit pair —
+    // the one place figures speak at display scale.
     mobileHero: {
       fontSize: 36,
-      fontWeight: '800',
+      fontWeight: '700',
       lineHeight: 40,
-      letterSpacing: -0.5,
+      letterSpacing: -0.4,
       fontFamily: FONTS.displayCondensed,
     } satisfies TypographyToken,
     mobileDisplay: {
       fontSize: 36,
-      fontWeight: '800',
+      fontWeight: '700',
       lineHeight: 40,
-      letterSpacing: -0.5,
+      letterSpacing: -0.4,
       fontFamily: FONTS.displayCondensed,
     } satisfies TypographyToken,
     mobileFigure: {
       fontSize: 15,
-      fontWeight: '600',
+      fontWeight: '500',
       lineHeight: 20,
       letterSpacing: 0,
       fontVariant: ['tabular-nums'],
@@ -657,9 +663,9 @@ export const theme = {
     // display face (width axis pinned at 75%, one file two families).
     mobileTitleCondensed: {
       fontSize: 36,
-      fontWeight: '800',
+      fontWeight: '700',
       lineHeight: 40,
-      letterSpacing: -0.5,
+      letterSpacing: -0.4,
       fontFamily: FONTS.displayCondensed,
     } satisfies TypographyToken,
     // THE ARMED FIGURES — the logger's editable weight/reps digits.
@@ -667,7 +673,7 @@ export const theme = {
       fontSize: 56,
       fontWeight: '700',
       lineHeight: 60,
-      letterSpacing: -1,
+      letterSpacing: -0.5,
       fontVariant: ['tabular-nums'],
       fontFamily: FONTS.mono,
     } satisfies TypographyToken,
