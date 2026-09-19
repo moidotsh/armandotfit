@@ -1,5 +1,16 @@
 # THE SCOREBOARD — numerals you read across the room
 
+> **RETIRED (2027-02) — superseded by `interval-thesis.md` (the
+> tenth thesis).** Whatever survives below survives there on its own
+> argument: the harmonic ramp, the two faces, the warm grounds and
+> their computed matrix, the square cut, the still system, the
+> one-field law. What died with it: the leader dots, the board's
+> title-row toggle, furniture's borrow of the red ink, and the
+> static counter (the rank now follows the live question — the clock
+> while rest runs, the load otherwise). The succession: logbook →
+> signal → count → broadsheet → quiet page → board → gauge →
+> scoreboard → interval.
+
 > The eighth upending (2027-01). This document is the compass: the
 > point of view, the pillars, the type law, the color law with its
 > computed contrast matrix, the material law, the still-motion

@@ -1,0 +1,464 @@
+# THE INTERVAL — the live figure owns the counter
+
+> The tenth upending (2027-02). The compass: the point of view, the
+> pillars, the type law with its rank arithmetic, the color law with
+> its computed contrast matrix, the material law, the still-motion
+> contract with the re-weight event, the rest instrument recomposed,
+> and the per-screen map with its budgets and measurement spec.
+> `constants/theme.ts`, `constants/interval.ts`, the MobilePremium
+> kit, and the routes build to THIS doc. It supersedes
+> `scoreboard-thesis.md` (retired with thanks — whatever survives
+> below survives on its own argument, not THE SCOREBOARD's
+> authority). The succession: logbook → signal → count → broadsheet
+> → quiet page → board → gauge → scoreboard → **interval**.
+
+## 1. The point of view
+
+Mid-set, the app answers one question at a time, and the question
+changes by the second: while the rest runs it is **"how long"**;
+when the bar is racked it is **"what's the load"**; between stations
+it is **"what's next."** THE SCOREBOARD printed every quantity at
+its rank and let position sort them — but its Floor gives the
+biggest mark (72) to the load even while a ninety-second rest runs,
+and answers "how long" in an 18px figure on a quiet row. That is a
+hierarchy tuned for the wall, not for the bench. THE INTERVAL's
+law: **the counter rank belongs to the question you are currently
+asking.** At LOG the rest clock takes the counter (72, red — the
+live pulse); at settle the armed expression takes it back (72, ink);
+the exchange is a repaint at exactly the two moments the question
+changes, so THE STILL SYSTEM survives it untouched. Around that one
+live figure everything else is furniture that never moves: ink is
+state (armed/live carries the full ink; everything settled, past,
+or unarmed reads muted), the air is the leader (THE SCOREBOARD's
+dotted leaders were texture, not information — deleted), and red is
+strictly the record, the link, and the live pulse (furniture never
+wears it). What can be a number is never a drawing; what can be air
+is never a rule; what can be silence is never a label.
+
+Why this beats THE SCOREBOARD HERE: the scoreboard's own motion law
+already licensed re-weighting ("boards re-weight… by repaint") but
+never spent it on the one re-weight that matters — the bench
+glance. A lifter checks the rest clock three or four times per
+interval and the load once; the incumbent answered the frequent
+question at the whisper rank. THE INTERVAL answers it at the
+counter rank, which is where the succession's three facts (one
+user, mid-set, at arm's length) actually point. Everything the
+scoreboard proved by arithmetic — the harmonic ramp, the two faces,
+the warm grounds, the square cut, the contrast matrix, the still
+system — is kept here on the same arithmetic, not on reverence; the
+kill list in §9 is what survived only by precedent.
+
+The retention test carries over unchanged and stays law: an element
+stays only if it answers the screen's one question or offers its
+one action.
+
+## 2. The pillars
+
+1. **THE LIVE FIGURE.** At most ONE figure rides the counter rank
+   (72) per screen — the figure that answers the screen's current
+   question. On the Floor it is STATE-DEPENDENT: the rest clock
+   while rest runs, the armed expression otherwise; the exchange is
+   the re-weight (§6). On the Desk it is the screen's own answer
+   (the streak, the count, the tonnage). A screen whose question is
+   not a quantity carries no counter at all.
+2. **INK IS STATE.** The full ink ladder belongs to the live, the
+   armed, and the current: the armed logger field (700 + the 2px
+   rule) against its demoted partner (400, muted); the current
+   board row against the muted done rows; the LIVE ticker against
+   its muted neighbors. Settled, past, and unarmed content reads
+   muted. Weight and ink are countable state marks — never extra
+   chrome.
+3. **ONE RED INK, STRICTLY THREE JOBS.** Red marks the RECORD, the
+   LINK/selection, and the LIVE pulse — and nothing else. The
+   scoreboard let furniture borrow it (home's window whisper, the
+   404); THE INTERVAL revokes both loans: furniture is ink or
+   muted, never red. A screen with no record, no link state, and no
+   live state carries ZERO hue.
+4. **THE AIR IS THE LEADER.** The repeating composition is a ruled
+   row: name left, figure right-aligned mono, one shared baseline,
+   air between. The dotted leader run is DELETED — it carried no
+   information (aria-hidden already), it cost a text node per row,
+   and it was the incumbent's signature rather than its answer. One
+   line = one entry = one fact.
+5. **THE ONE-FIELD LAW (unchanged).** The logger arms ONE value at
+   a time; one shared stepper pair steps the armed field by its own
+   step; tapping a field arms it, tapping again opens the keyboard.
+   The armed mark is the 2px ink rule PLUS the demotion of the
+   unarmed field (400 muted against 700 ink). LOG commits both
+   values; the most common log is still one thumb, one tap.
+6. **THE STILL SYSTEM + THE RE-WEIGHT.** No proprietary content
+   motion. The only motions: the shell curtain, the press dip, the
+   sheet slide. The counter exchange (clock ↔ expression) is a
+   REPAINT at LOG and at settle — the two moments the question
+   changes — never an animation, and the logger is tappable at
+   frame 1, forever, in both states.
+
+## 3. The type law
+
+### 3.1 Faces (carried on argument — two OFL variable files, one job each)
+
+| Face | File | Axes | Jobs |
+|---|---|---|---|
+| **Space Grotesk** | `space-grotesk-var.woff2` (22 KB) | wght 300–700 | THE STATEMENT, subheads, row names, content, verb labels |
+| **Martian Mono** | `martian-mono-var.woff2` (37 KB) | wght 100–800, wdth | EVERY figure at every scale; furniture caps |
+| System sans | — | — | long reading text only (instructions, notes) |
+
+Two faces, 59 KB, tabular figures by construction — the scoreboard's
+face law survives on its own argument (one file, one family, one
+job each; no width tricks, no condensed second family).
+
+### 3.2 THE RAMP — four sizes, rank-assigned (arithmetic unchanged, roles re-derived)
+
+| Token | Face | Size/LH | Weight | Tracking | Job |
+|---|---|---|---|---|---|
+| `mobileCounter` | Martian | 72/78 | 700 | −1.5 | THE LIVE FIGURE — armed expression (work) · rest clock (rest) · streak · count · tonnage |
+| `mobileTitleCondensed` (+`Hero`/`Display`) | Space Grotesk | 36/42 | 700 | −0.5 | THE STATEMENT (one per screen, sentence case); demoted figures while the clock owns the counter |
+| `mobileTitle` | Space Grotesk | 18/24 | 600 | 0 | the second voice, row names |
+| `mobileEyebrow` | Martian | 12/18 | 500 | +0.8 | printed furniture (CAPS ≤3 words), whisper figures |
+
+The arithmetic (asserted at gate time, not hoped):
+
+- **Every size divides 72**: {72, 36, 18, 12} = 72 × {1, ½, ¼, ⅙} —
+  the harmonic ramp carries over; no ad-hoc size exists anywhere,
+  including call sites (verify-design scans source for `fontSize:`
+  literals outside the ramp — the incumbent's 13px grid character
+  was exactly this drift class).
+- **LH = size + 6, everywhere** (18, 24, 42, 78).
+- **Second voice ≥1.4× quieter than the statement**: 36/18 = **2.0**.
+- **Tracking is authored per rank and exact**: counter −1.5,
+  statement −0.5, row 0, furniture +0.8 (mono caps), body 0.
+- **≤3 distinct text sizes per screen** (+ the counter where pillar
+  1 assigns one), counted in DOM.
+
+### 3.3 Tabular by construction
+
+Every figure sets in the mono face — tabular for free, no reflow
+when `9→10`, `99→100`. The three figure tokens (`mobileCounter`,
+`mobileFigure`, `mobileLedger`) are asserted mono at gate time.
+Platform-sans figures are banned except inside long reading text.
+
+## 4. The color law (carried — the matrix recomputes identical)
+
+### 4.1 The two rooms
+
+| Slot | Light (THE PRINTED CARD) | Dark (THE UNLIT BOARD) |
+|---|---|---|
+| ground | `#F4F2EE` | `#161412` |
+| groundDeep | `#EAE7E1` | `#100F0D` |
+| card (= ground + rule) | `#F4F2EE` | `#161412` |
+| cardAlt (sheets, inputs) | `#ECE9E4` | `#1E1B18` |
+| text (ink/chalk) | `#1B1916` | `#EDEAE4` |
+| textSecondary | `#4C4841` | `#C6C1B8` |
+| textMuted | `#6B665D` | `#978F85` |
+| textTertiary (decor only) | `#9B958A` | `#6E675E` |
+| red (fill / text / on-fill) | `#BE2B20` / `#A8241B` / `#F9F1EC` | `#FF6B5E` / `#FF8577` / `#1A0E0C` |
+| verb fill / label | `#1B1916` / `#F4F2EE` | `#EDEAE4` / `#161412` |
+
+Both palettes stay WARM-neutral — every pair below passes on
+computation, and warmth remains the material signature the owner
+drifted toward. The wire (`colors.focus.*`, mode-independent
+interrupt register for the chit and the curtain) keeps its
+near-black plate.
+
+### 4.2 The zone ramp (`colors.*.meter`)
+
+Unchanged — the zone ramp is DATA ENCODING (the gym's geography),
+not identity: barbell oxide / dumbbell brass / cable blue / machine
+green / bodyweight violet / steel. All pass ≥3:1 graphical on both
+grounds. It colors the library's zone lines and the swap bench's
+ranks only.
+
+### 4.3 The computed contrast matrix (recomputed from `theme.ts` hexes at gate + probe time)
+
+**Light — text on surfaces (AA ≥4.5):**
+
+| Token | ground `#F4F2EE` | cardAlt `#ECE9E4` |
+|---|---|---|
+| ink `#1B1916` | 15.69 | 14.49 |
+| secondary `#4C4841` | 8.13 | 7.51 |
+| muted `#6B665D` | 5.10 | 4.71 |
+| redText `#A8241B` | 6.40 | 5.91 |
+
+onRed `#F9F1EC` on red fill `#BE2B20`: **5.29** ✓ · verb label on
+ink verb: **15.69** ✓ · status as text on ground: 5.79 / 5.51 /
+5.85 / 5.27 ✓ · zones as graphical (≥3:1): 5.88 / 4.43 / 5.89 /
+5.73 / 5.97 / 3.35 ✓
+
+**Dark — text on surfaces:**
+
+| Token | ground `#161412` | cardAlt `#1E1B18` |
+|---|---|---|
+| chalk `#EDEAE4` | 15.30 | 14.28 |
+| secondary `#C6C1B8` | 10.26 | 9.57 |
+| muted `#978F85` | 5.76 | 5.37 |
+| redText `#FF8577` | 7.76 | 7.24 |
+
+onRed on red fill: **6.76** ✓ · verb label on chalk verb: **15.30**
+✓ · status on ground: 8.72 / 9.66 / 7.05 / 7.88 ✓ · zones
+graphical: 5.32 / 9.46 / 6.83 / 7.41 / 6.91 / 8.09 ✓
+
+The demotion colors are IN the matrix: a demoted figure (muted,
+400) still clears 4.5:1 as content — demotion is hierarchy, never
+illegibility.
+
+### 4.4 The unit law (unchanged)
+
+`users.weight_unit` is a DISPLAY preference: storage stays kg,
+conversion at read via `utils/weight.ts`, steppers step 2.5 kg /
+5 lb, the Floor's armed values live in display units and cross into
+kg at `addSetToDraft`. Numerals never convert behind the figure.
+
+### 4.5 Red's three appearances (tightened)
+
+(1) The RECORD mark — PR figures, the streak number, the record
+week's figure, the bests' figures; (2) links and selection; (3) the
+LIVE pulse — the rest clock while it runs, the LIVE ticker, today
+in the grid. The armed expression is ink (red is not an edit
+state); the verb is ink; furniture is ink or muted. The incumbent's
+two furniture-red borrowings (home's window whisper, the 404) die
+here.
+
+## 5. The material law — surface, shapes, spacing
+
+- **Shapes: radius 0 everywhere** (the square cut carries over). No
+  pills, no machined corners — a corner radius is spent decoration.
+- **Elevation: none.** Zero shadows; the logger docks under the
+  screen's one 2px rule; portals keep the sheet's dim scrim.
+- **Spacing scale:** {4, 8, 12, 16, 24, 32, 48}. Gutter 20. Block
+  gap 32 between major sections. Statement halo: 24 clear below.
+- **The ruled row** (the register line, re-composed): name left,
+  right-aligned mono figure, one shared baseline, air between. The
+  leader dots are deleted. Rows rule themselves with hairlines only
+  where the budget allows; a list's own air is the default.
+- **Element budgets (probe-enforced):** ≤1 statement, ≤3 text sizes
+  (+ the counter where assigned), ≤3 text inks, ≤3 hairlines + one
+  2px rule, interactives ≤9 per screen (Floor ≤12; a repeated-row
+  affordance — ledger removes, board rows — counts once per family,
+  not once per row).
+
+## 6. Motion — THE STILL SYSTEM + the re-weight
+
+| Id | Name | What | Trigger | Law |
+|---|---|---|---|---|
+| S1 | THE CURTAIN | the shell's ink route curtain | navigation | shell machinery, unchanged; reduced-motion → instant |
+| S2 | THE PRESS | opacity dips to 0.6 on touch | press | instant in/out; no scale, no color shift |
+| S3 | THE SHEET | portal sheets slide | open/close | transform only; reduced-motion → fade/instant |
+| — | **THE RE-WEIGHT** | the counter rank exchanges clock ↔ expression | LOG · settle | a REPAINT, not a motion: no transform, no animation, no transition; both states fully tappable at frame 1 |
+
+That is the whole table. Content never animates: values swap,
+ledgers prepend, the clock and rest tick by repaint, and the
+re-weight is the same law spent at the two moments the question
+changes. Probe: no content node's `transform` differs from `none`
+across a log, a settle, and a clock tick; no `Animation` import
+outside curtain/sheet machinery.
+
+## 7. The rest instrument (behavior kept, rank corrected)
+
+Hypertrophy lives on rest intervals. The behavior is pinned: starts
+at LOG, default 90 s (persisted, the Settings row), ±15 steppers,
+tap to dismiss, auto-settle at 0, per-exercise memory (a ±15 tune
+becomes that station's default), settle haptic. THE INTERVAL
+corrects only its RANK:
+
+- **While rest runs:** the clock reads `1:30` at THE COUNTER (72,
+  red — the live pulse), the ±15 steppers flanking it, the figure
+  itself the dismiss target. The armed expression demotes to the
+  statement rank (36, muted — both fields; the armed field keeps
+  its 2px rule, so the steppers' target is never in doubt). LOG SET
+  stays full-width ink: logging early is always one tap.
+- **At settle:** the haptic fires, NEXT brightens, the expression
+  re-weights to the counter (72, ink, armed 700 / unarmed 400
+  muted), and the rest collapses to the quiet row (`REST 0:00`
+  muted, tap to clear).
+- Nothing joins the schema; the readout never moves — it re-weights.
+
+## 8. The per-screen map
+
+Vocabulary carried over (function names, not taste): the **Floor**
+= the live session; the **Desk** = reference pages; the **ticker**
+= the Desk's live-session strip. Routes are the contract — every
+screen keeps its route, data flow, and test surface; only the
+presentation rebuilds.
+
+### `/` home — THE CONCIERGE
+Question: "what am I walking into today?" Focal: the day's TITLE
+(statement, sentence case) under the window whisper (AM/PM, printed
+caps, MUTED — furniture never red). Second: THE DAY REGISTER — the
+day's plan as ruled rows (name left, prefill weight figure right),
+wearing the screen's 2px rule. Quiet: the START verb (ink, 56),
+three jump rows (Program / Library / Progress — the streak figure
+lives on Progress), recent sessions as mono lines. Session live:
+the ticker pins under the folio (mode-following, behavior
+unchanged).
+
+### `/split-selection` — THE SELECTOR
+Question: "which edition?" Focal: the picked day's title restating
+with every pick. Second: the seven-day rail (printed day numerals;
+the pick inverts to the ink plate — inversion is selection) and the
+AM/PM two-way switch (same inversion). Quiet: the archetype
+segmented control, the plan preview as ruled rows, GO (ink verb).
+490px: GO reachable at SE.
+
+### `/workout-detail` (none) — THE FLOOR (the flagship)
+Question mid-set: the CURRENT one — the load or the clock (§7).
+Top→bottom: chromeless header (‹ minimize · MAP · elapsed mono
+clock · FINISH) → **THE SESSION BOARD** (hairline + rows ONLY — the
+title-row toggle is deleted, MAP is the board's one toggle; every
+station a ruled row, the done-count figure right-aligned; the
+current row is the only bold-ink row; rows with no sets yet carry
+no figure) → THE STATION (name statement, TARGET whisper, the count
+figure, SWAP/REMOVE furniture) → THE LEDGER (done sets as ruled
+rows: ordinal left, `62.5 × 8` right, remove per row) →
+NEXT-STATION whisper → docked **THE LOGGER** (pillars 5 + 7): the
+live figure at 72 — the armed expression in work, the rest clock in
+rest — one shared stepper pair beneath, LOG SET (ink verb 56, full
+width). Carry-forward prefill, last-tags prefill, swap bench,
+add-from-library, notes + FINISH sheet — all function unchanged.
+
+### `/workout-detail?id=` — THE RECEIPT
+Question: "what was that?" Focal: tonnage as THE LIVE FIGURE'S Desk
+case — mono 72 in ink (a receipt is settled fact, not record — no
+red), unit riding at the whisper scale. Second: the fact whisper
+(date · D# · window · counts) as one mono line. Quiet:
+per-exercise ledgers as ruled rows + tags whisper, the note, delete
+(two-step, alert tone).
+
+### `/program` — THE TIMETABLE
+Question: "what's the program?" Focal: day 1's title (statement;
+later chapters subheads, era names as whispers). Chapters
+air-separated; slots as ruled rows (name left, Rx figure right); a
+standing substitution reads in red Rx (the live edit). Plan-time
+SWAP rides the bench.
+
+### `/exercise-database` — THE DIRECTORY
+Question: "find a lift." Focal: the search field (statement scale,
+one hairline beneath — the page's spent rule). Second: ZONE LINES —
+sticky zone heads in zone-hued furniture caps. Quiet:
+recently-logged first when unfiltered; rows as ruled rows (name ·
+last figure); muscle filter chips square-cut; the adder one tap
+open during a live session.
+
+### `/exercise-detail?slug=` — THE SPEC SHEET
+Question: "what is this lift?" Focal: the NAME (statement). Second:
+the number to beat — LAST top set as the ruled row (weight × reps
+figures + its date) under its whisper. Quiet: the trajectory's
+trend line leading, instructions as one reading block (18), the
+muscle measure as two text lines, equipment whisper, ADD TO SESSION
+(ink verb) when a draft is live.
+
+### `/progression` — THE RECORDS
+Question: "how strong, how consistent?" Focal: the streak NUMBER —
+mono 72 in red (the record mark IS the live figure here). Second:
+THE BESTS — the five best lifts as ruled rows (`62.5 × 8` in
+redText figures with its date). Quiet: totals as one mono line; the
+PR timeline as ruled rows; the analytics link.
+
+### `/analytics` — THE LEDGER
+Question: "how regular?" Focal: the count (mono 72 — "sessions ·
+last N days" beneath). Second: THE REGISTER GRID — day cells as
+mono 12 characters (on-ramp this time): the day's set count (blank
+= no session), today in red, rest days `·`; seven columns, tabular
+by construction. Quiet: weekly sessions as ruled rows (record
+week's figure in red), THE BALANCE line (the most-neglected group —
+one row, restored to the page), the range pick (segmented).
+
+### `/settings` — THE PANEL
+Question: "how is it set?" Focal: the current theme word restating
+with each pick (statement). Quiet: theme segmented (ink-invert),
+the rest-interval row (mono figures, ±15), rest-day marks, weight
+unit, install/version rows, the promotion audit line, SIGN OUT (the
+one verb; the destructive tail keeps its scroll-as-protection).
+Dev showcase link stays.
+
+### `/login` `/register` `/forgot-password` — THE GATE
+Question: the action sentence. Focal: "Sign in." / "Create
+account." / "Reset." (statement). Plain field on the ground, form
+open on it, links in red, verb ink-filled. Same folio masthead as
+home.
+
+### `+not-found` — THE DEAD END
+Focal: "404" as the live figure's last case — mono 72 in INK (the
+incumbent's red 404 broke the red law; a dead end is neither record
+nor live). One line of copy, one way back.
+
+### THE MUSIC SURFACE — REMOVED (2027-01, the owner's call; unchanged)
+
+## 9. What this thesis keeps, kills, or reworks
+
+**Kept on its own argument:** the armed-set store model; stack-from-
+home + the ticker; one-statement-per-screen + the budget method;
+caps-furniture / sentence-case content; the ink dialect; the
+harmonic ramp {12,18,36,72} with LH+6; the two faces; the warm
+grounds + the full computed matrix; the square cut; zero shadows;
+the still system; one-tap pre-armed logging with carry-forward; the
+rest countdown BEHAVIOR; the zone ramp; the wire; the 490px law,
+the 44px floor, the desktop column.
+
+**Killed:** the leader dots (texture without information); the
+Floor board's title-row toggle (two toggles for one action — MAP is
+the toggle); the MAP chip's ▲/▼ glyphs (the word + label carry it);
+the home whisper's red and the 404's red (furniture never red); the
+13px grid character (a ramp violation — the grid re-ranks to 12);
+the receipt's 36px tonnage (under-ranked — promoted to the
+counter).
+
+**Reworked:** the logger (ONE static expression → a two-state live
+figure: clock at the counter while rest runs, expression at settle,
+the demotion ladder between); the armed mark (a 2px rule alone →
+rule + weight/ink demotion of the unarmed field — three countable
+signals); the register line (name · dots · figure → name · air ·
+figure); the Floor board (title row + rows → hairline + rows); the
+rest readout (a quiet row → the counter while running); analytics'
+balance line (computed → rendered); the receipt head (36 → 72).
+
+## 10. The measurement spec — assertions are my eyes
+
+1. **Contrast:** the §4.3 matrix recomputed from `theme.ts` hexes at
+   gate time (`scripts/verify-design.ts`) and probe time; any pair
+   below its bar fails.
+2. **The ramp + the call-site law:** every `typography` token's
+   size ∈ {12, 18, 36, 72} and divides 72; LH = size + 6; NO
+   `fontSize:` literal outside the ramp anywhere in `app/` or
+   `components/` (gate-scanned); tracking per rank exact (counter
+   −1.5, statement −0.5, row 0, furniture +0.8); the three figure
+   tokens assert the mono face; statement/second = 2.0.
+3. **Computed-style probes** (WebKit, per screen, both modes):
+   face/size/weight/tracking/color of every named token's key
+   nodes — statements Space Grotesk 36/700/−0.5, live figures
+   Martian 72/700/−1.5, furniture CAPS 12/+0.8 mono, figures mono
+   tabular; `document.fonts.check` proves the faces landed.
+4. **THE TWO-STATE PROBE (the flagship):** after LOG, the rest
+   readout node's computed fontSize = 72 and its color = redText;
+   the expression's figures demote (36, muted); the steppers still
+   step; LOG still commits. At settle, the expression re-weights to
+   72/700/ink and the readout mutes. Across both exchanges no
+   content node's `transform` differs from `none`.
+5. **THE ARMED LADDER:** exactly one `armed-field-mark`; the armed
+   figure's computed weight 700 / full ink; the unarmed 400 /
+   muted — in both logger states.
+6. **Geometry:** every interactive box ≥44px; the primary verb
+   fully visible at 390×667 AND 390×844 (rest state included on
+   the Floor); desktop 1280×800 — nothing straddles the centered
+   420px column; statement halo ≥24; register figures right-align
+   within 1px of the column's figure edge.
+7. **The still law:** across a stepper change, a log, a settle, and
+   a clock tick, no content node's computed `transform` differs
+   from `none`; no `Animation` import outside curtain/sheet
+   machinery.
+8. **The one-field law + the count law + the rest instrument**
+   (carried probes, unchanged bars).
+9. **Budgets:** per-route caps (§5) counted in DOM — sizes, inks,
+   hairlines, interactives.
+10. **Red discipline:** with no record, no link state, and no live
+    state on screen, zero pixels of red (cluster probe) — home's
+    head and the 404 now pass it; the verb never red.
+
+## 0. Not design territory (restated)
+
+The data spine (six tables, immutable history, computed-at-read,
+tags-not-columns, the program in TS, kg storage), the route
+contract, the auth guard, PWA plumbing (the mirror trio), the
+accessibility floor, the 13 audits, the 490px law, and the shell
+sync (arqavellum keeps its own values; structure ports both ways —
+any kit fix lands in the shell domain-neutrally in the same
+window).
