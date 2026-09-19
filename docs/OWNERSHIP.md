@@ -6,14 +6,14 @@
 
 | Claim type | Canonical owner | Notes |
 |---|---|---|
-| Repo operating context (invariants, pre-commit checks, consumer guide, doc maintenance contract) | `CLAUDE.md` | Auto-loads in Claude Code sessions at the arqavellum root. The "How to consume" section is the load-bearing consumer guide. |
+| Repo operating context (invariants, pre-commit checks, consumer guide, doc maintenance contract) | `CLAUDE.md` | Auto-loads in Claude Code sessions at the armandotfit root. The "How to consume" section is the load-bearing consumer guide. |
 | Architecture constitution (47 patterns, S/C/D/SE/T/R codes) | `ARCHITECTURE.md` | Every architectural decision is grounded here. This file is the cheatsheet; `scripts/audit-*.ts` are canonical for enforcement. |
-| Project orientation (what arqavellum is, quickstart) | `README.md` | Navigation surface — points at canonical content, doesn't redefine it. |
+| Project orientation (what armandotfit is, quickstart) | `README.md` | Navigation surface — points at canonical content, doesn't redefine it. |
 | Claim-type → owner-doc map (this meta-layer) | this file (`docs/OWNERSHIP.md`) | — |
 | MobilePremium design system (four pillars, primitive inventory, atmosphere palettes, 490px test, gating policy) | `docs/architecture/mobile-premium-design-system.md` | The visual source of truth is `app/dev/premium.tsx`; the doc is the written reference. |
-| The active design thesis (THE QUIET PAGE: reduction — the content is the statement, air is the structure, one verb, countable budgets) | `docs/architecture/quiet-page-thesis.md` | Supersedes `broadsheet-thesis.md`, `count-thesis.md`, `signal-thesis.md`, `logbook-thesis.md` (all retired, kept as records). |
+| The active design thesis (THE GAUGE: the gym's instrument panel — pin rails, rolling counters, flip tiles, the rest instrument, one signal hue) | `docs/architecture/gauge-thesis.md` | Supersedes `board-thesis.md`, `quiet-page-thesis.md`, `signal-thesis.md` (all retired, kept as records). |
 | PWA installability (manifest, SW, runtime injection, icons) | `docs/architecture/pwa-installability.md` | The runtime injection block in `app/_layout.tsx` is load-bearing — keep it in sync with the doc. |
-| Logging data model (five-table schema) | `supabase/migrations/20261001000000_greenslate_rebuild.sql` | The migration file is the schema of record. |
+| Logging data model (five logging tables + music_picks) | `supabase/migrations/20261001000000_greenslate_rebuild.sql` | The migration file is the schema of record. |
 | Exercise identity + logging governance (identity test, tags, promotion rule) | `docs/architecture/exercise-logging-governance.md` | Source of truth for the identity-vs-realization boundary and when tags earn structure. CLAUDE.md invariants #4–#8 cross-link. |
 | The AM/PM program (slots, Rx, suggested tags) | `shared/exercises/splits.ts` | The program is TypeScript data, never a doc or a table. |
 | Theme tokens (canonical hex values) | `constants/theme.ts` | Source of truth. Docs that mention a color link here; they don't restate the hex. |

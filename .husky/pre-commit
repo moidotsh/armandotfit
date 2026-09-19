@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────
-# armandotfit local quality gate. 12 structural audits + tsc + structural eslint.
+# armandotfit local quality gate. 13 structural audits + tsc + structural eslint.
 # Fast checks only — test suite is deferred to CI. Runs in a few seconds.
 # ─────────────────────────────────────────────────────────────────────
 
@@ -119,6 +119,16 @@ bun run scripts/audit-mobile-content-width.ts || {
   echo "" >&2
   echo "  ERROR: Portal content-width violations found. See above." >&2
   echo "  (skip with --no-verify if you genuinely need to.)" >&2
+  echo "" >&2
+  exit 1
+}
+
+# Shim sync audit (shim-sync/redirect/dead-shim): hard fail.
+echo "→ Running shim sync audit…" >&2
+bun run scripts/audit-shim-sync.ts || {
+  echo "" >&2
+  echo "  ERROR: Shim sync violations found. See above." >&2
+  echo "  (regenerate with: bun run scripts/sync-barrel-shims.ts)" >&2
   echo "" >&2
   exit 1
 }

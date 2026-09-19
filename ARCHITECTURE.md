@@ -164,8 +164,8 @@
 - **Audit:** `audit-pattern-compliance.ts` blocks both alternative lockfiles.
 
 ### S20. Pre-commit Hooks (13 audits)
-- **Rule:** `.husky/pre-commit` runs `bun run lint:structure && bunx tsc --noEmit`. The 13 audits (see CLAUDE.md → Pre-commit checks) are the load-bearing enforcement layer.
-- **Audit codes vs pattern codes:** the 12 audits include SB1 and SB2 — structural audits for the mobile content-width column that follow the SB naming precedent (audit codes and constitution pattern codes are separate namespaces; SB1 already established this).
+- **Rule:** `.husky/pre-commit` runs the 13 structural audits in CLAUDE.md's pre-commit order + structural ESLint + `tsc --noEmit` — the same set as `bun run lint:structure && bunx tsc --noEmit`, enumerated inline so a failing audit names itself.
+- **Audit codes vs pattern codes:** the 13 audits include SB1 and SB2 — structural audits for the mobile content-width column that follow the SB naming precedent (audit codes and constitution pattern codes are separate namespaces; SB1 already established this).
 - **Escape hatches:** `// <check>-exempt` for one-off suppressions with justification; `git commit --no-verify` for genuine emergencies only.
 
 ---
@@ -344,10 +344,10 @@ Arqavellum ships with deliberate gaps that consumers fill. The shell doesn't shi
 
 The shell DOES ship:
 - All cross-cutting utilities (`utils/*`)
-- The light theme + tokens (`constants/theme.ts`)
+- Both palettes + tokens (`constants/theme.ts` — light default, dark opt-in per S7)
 - The MobilePremium kit (`components/MobilePremium/*`)
 - The premium motion primitives (`components/premium/shared/*`)
 - The auth flow (`app/login.tsx`, `app/register.tsx`, `app/forgot-password.tsx`)
 - The settings screen (`app/settings.tsx`)
 - The design-system showcase (`app/dev/premium.tsx`)
-- The 12-audit pre-commit gate (`scripts/audit-*.ts` + `.husky/pre-commit`)
+- The 13-audit pre-commit gate (`scripts/audit-*.ts` + `.husky/pre-commit`)

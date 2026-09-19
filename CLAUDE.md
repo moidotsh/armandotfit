@@ -90,6 +90,7 @@ Direct-copy consumer of the public starter (sibling at `../arqavellum`, `github.
 | PWA plumbing change | `docs/architecture/pwa-installability.md`; keep `index.html`, the injector, and the runtime block in sync. | Always. |
 | Schema migration | Migration file header (multi-line why). The greenslate file is the whole schema — edit it only with owner sign-off (invariant 4). | Always. |
 | Exercise identity/tag vocabulary change | `docs/architecture/exercise-logging-governance.md` (identity test + promotion rule live there). | Always. |
+| New route, feature, env var, or schema file | `README.md` (the routes table, quickstart, domain map — it drifts silently otherwise). | Always. |
 
 ### Rules
 
