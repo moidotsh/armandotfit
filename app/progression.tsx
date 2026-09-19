@@ -87,7 +87,11 @@ export default function ProgressionScreen() {
           </View>
 
           {/* THE BESTS — five best lifts as register lines: name ·
-              leader · `weight × reps`, the record figures in red. */}
+              leader · `weight × reps` in ink. RED IS RATIONED (the
+              sight amendment): this list is a register of five equal
+              facts — red at every row stopped marking and started
+              wallpapering; the screen's record mark is the streak
+              above. */}
           {pbs.length > 0 ? (
             <View style={styles.block}>
               <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
@@ -103,7 +107,6 @@ export default function ProgressionScreen() {
                       key={pb.exerciseName}
                       label={pb.exerciseName}
                       figure={`${pb.bestWeight} × ${pb.bestReps}`}
-                      figureTone="record"
                       onPress={slug ? () => navigateToExerciseDetail(slug) : undefined}
                       accessibilityLabel={`${pb.exerciseName} — best ${pb.bestWeight} ${weightUnitLabel(unit)} for ${pb.bestReps}`}
                       testID={`gauge-wall-row-${pb.exerciseName}`}
@@ -117,7 +120,8 @@ export default function ProgressionScreen() {
         </>
       )}
       {/* THE PR TIMELINE — when the records fell, latest first, as
-          ruled rows: date left · air · the record figure right. */}
+          ruled rows: date left · air · the figure right, ink (the
+          rationed red stays on the streak). */}
       {prTimeline.length > 0 ? (
         <View style={styles.block}>
           <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
@@ -129,7 +133,6 @@ export default function ProgressionScreen() {
                 key={`${pr.at}-${pr.exerciseName}-${i}`}
                 label={`${new Date(pr.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${pr.exerciseName}`}
                 figure={`${formatWeight(pr.weight, unit)} × ${pr.reps}`}
-                figureTone="record"
                 accessibilityLabel={`${new Date(pr.at).toLocaleDateString()}: ${pr.exerciseName} new best, ${formatWeight(pr.weight, unit)} ${weightUnitLabel(unit)} for ${pr.reps}`}
                 testID={`pr-timeline-line-${i}`}
               />
