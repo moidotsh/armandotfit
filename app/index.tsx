@@ -45,7 +45,7 @@ import {
   SYSTEM_EXERCISES,
   SYSTEM_EXERCISES_BY_SLUG,
 } from '../shared/exercises';
-import { useSplitPreferenceStore, useWorkoutStore } from '../stores';
+import { useSplitPreferenceStore, useWorkoutStore, useDeloadStore } from '../stores';
 import { useDashboardSummary, useRecentSessionDetails, useTopSetsByName, useWeightUnit } from '../hooks';
 import { toDisplayWeight, roundDisplayWeight } from '../utils';
 
@@ -62,6 +62,16 @@ export default function HomeScreen() {
 
   const streak = summaryQuery.data?.streak;
   const recent = recentQuery.data ?? [];
+  const deload = useDeloadStore((s) => s.active);
+  // THE SUGGESTION'S REASON — how long since the last session (the
+  // suggestion itself is unchanged; it now says its why). A long gap
+  // earns one honest line: open lighter.
+  const daysSinceLast = useMemo(() => {
+    if (recent.length === 0) return null;
+    const last = new Date(recent[0].startedAt).getTime();
+    return Math.max(0, Math.floor((Date.now() - last) / 86_400_000));
+  }, [recent]);
+  const longGap = daysSinceLast != null && daysSinceLast >= 10;
   // THE FUNNEL ENTRY: day suggestion sticks to today's logged day (AM
   // then PM share it), the window follows the clock, the split is the
   // remembered program.
@@ -139,9 +149,16 @@ export default function HomeScreen() {
       <BoardHead
         statement={dayTitle}
         statementTestID="home-day-title"
-        whisper={`${suggestedWindow === 'am' ? 'MORNING' : 'EVENING'} · DAY ${suggestedDay}`}
+        whisper={`${suggestedWindow === 'am' ? 'MORNING' : 'EVENING'} · DAY ${suggestedDay}${daysSinceLast != null && daysSinceLast > 0 ? ` · ${daysSinceLast}D BACK` : ''}${deload ? ' · DELOAD' : ''}`}
         whisperTone="record"
       />
+
+      {/* The long-gap honesty line — computed at read, one whisper. */}
+      {longGap ? (
+        <Text style={[styles.gapNote, { color: colors.textMuted }]} testID="home-gap-note">
+          {`${daysSinceLast} days since the last session — open lighter.`}
+        </Text>
+      ) : null}
 
       {/* THE DAY REGISTER — the day's plan as register lines wearing
           the screen's one 2px rule: name · leader · the prefill
@@ -258,6 +275,10 @@ const styles = StyleSheet.create({
   // Top-level blocks carry the air law.
   block: {
     ...SCOREBOARD.block,
+  },
+  gapNote: {
+    ...theme.typography.mobileLedger,
+    marginTop: 10,
   },
   // THE DAY REGISTER — the day's lines wearing the screen's one 2px
   // rule (the printed heading rule). No panel: ground + rule + lines.

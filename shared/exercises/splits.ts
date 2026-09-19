@@ -277,3 +277,34 @@ export function getDayTitle(split: 'oneADay' | 'twoADay', day: number): string {
   }
   return TWO_A_DAY_SPLITS.find((d) => d.day === day)?.title ?? '';
 }
+
+// ── PROGRAM ERAS ─────────────────────────────────────────────────────
+// The program is TypeScript (invariant 8) — editing it redefines what
+// a day means. An ERA is a dated label for each program revision: UI
+// display context ONLY (sessions carry no version column; the schema
+// is untouched). Bump this list whenever the split changes materially
+// — receipts and facts then name the era a session ran under, and
+// "what did November look like" answers from dates alone.
+
+export interface ProgramEra {
+  /** ISO date (inclusive) this program revision took effect. */
+  from: string;
+  /** Short furniture label (CAPS, ≤4 chars). */
+  label: string;
+}
+
+export const PROGRAM_ERAS: readonly ProgramEra[] = [
+  { from: '2026-10-01', label: 'V1' },
+];
+
+/** The era a given ISO date ran under (the latest era.from ≤ date). */
+export function eraFor(isoDate: string): string {
+  let label = '';
+  for (const era of PROGRAM_ERAS) {
+    if (era.from <= isoDate) label = era.label;
+  }
+  return label;
+}
+
+/** The current program era's label. */
+export const CURRENT_ERA: string = PROGRAM_ERAS[PROGRAM_ERAS.length - 1].label;

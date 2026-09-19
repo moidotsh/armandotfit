@@ -25,6 +25,7 @@ import {
   type SessionWindow,
 } from '../shared/exercises';
 import { SCOREBOARD, ROW_GAP, theme, PAGE_GUTTER } from '../constants';
+import { CURRENT_ERA } from '../shared/exercises';
 import type { PreferredSplit } from '../shared/types';
 
 function rxLabel(sets: [number, number], reps: [number, number]): string {
@@ -107,7 +108,7 @@ export default function ProgramScreen() {
             {di === 0 ? (
               <>
                 <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
-                  {`THE ROTATION · ${days.length} DAYS`}
+                  {`THE ROTATION · ${days.length} DAYS · ${CURRENT_ERA}`}
                 </Text>
                 <Text style={[styles.dayTitleLead, { color: colors.text }]} numberOfLines={1}>
                   {day.title}

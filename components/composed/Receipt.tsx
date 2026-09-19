@@ -26,6 +26,7 @@ import { useWorkoutDetail, useDeleteSession, useWeightUnit } from '../../hooks';
 import { safeGoBack } from '../../navigation';
 import { sumVolume } from '../../services';
 import { SCOREBOARD, PAGE_GUTTER, theme } from '../../constants';
+import { eraFor } from '../../shared/exercises';
 import {
   toDisplayWeight,
   roundDisplayWeight,
@@ -102,7 +103,7 @@ export function Receipt({ id }: ReceiptProps) {
                 weekday: 'short',
                 month: 'short',
                 day: 'numeric',
-              })} · ${session.splitDay != null ? `D${session.splitDay}` : 'ad-hoc'}${windowLabel ? ` · ${windowLabel}` : ''} · ${session.exercises.length} lifts · ${totalSets} sets`}
+              })} · ${eraFor(new Date(session.startedAt).toISOString().slice(0, 10))} · ${session.splitDay != null ? `D${session.splitDay}` : 'ad-hoc'}${windowLabel ? ` · ${windowLabel}` : ''} · ${session.exercises.length} lifts · ${totalSets} sets`}
             </Text>
           </View>
 

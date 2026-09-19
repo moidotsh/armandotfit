@@ -20,7 +20,7 @@ import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile, usePwaPrompt } from '../hooks';
 import { DAY_OF_WEEK_LABELS, BLOCK_GAP, SCOREBOARD, theme } from '../constants';
 import { useToast } from '../context';
-import { useRestStore } from '../stores';
+import { useRestStore, useDeloadStore } from '../stores';
 import { logger } from '../utils/logger';
 import type { WeightUnit } from '../shared/types';
 
@@ -36,6 +36,11 @@ export default function SettingsScreen() {
   const { session, signOut } = useAuth();
   const { preference, setPreference, colors } = useAppTheme();
   const { showToast } = useToast();
+  // THE DELOAD WEEK — a persisted UI flag: while on, the Floor's
+  // TARGET rests at the Rx low end and the earned-load suggestion is
+  // off (the program itself never changes).
+  const deload = useDeloadStore((s) => s.active);
+  const setDeload = useDeloadStore((s) => s.setActive);
   const pwaPrompt = usePwaPrompt();
   // The showcase route only exists where dev surfaces do — linking it
   // from a production build would land on the stubbed blank route.
@@ -177,6 +182,45 @@ export default function SettingsScreen() {
           >
             <Text style={[styles.restStepGlyph, { color: colors.text }]}>+</Text>
           </Pressable>
+        </View>
+      </View>
+
+      {/* THE DELOAD WEEK — one honest toggle; inversion is
+          selection (the same pick vocabulary as everything). */}
+      <View style={styles.block}>
+        <View style={styles.unitRow}>
+          <Text style={[styles.unitInlineLabel, { color: colors.textMuted }]}>
+            DELOAD WEEK
+          </Text>
+          {([false, true] as const).map((v) => {
+            const isActive = deload === v;
+            return (
+              <Pressable
+                key={String(v)}
+                onPress={() => setDeload(v)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isActive }}
+                accessibilityLabel={`Deload week ${v ? 'on' : 'off'}`}
+                style={({ pressed }) => [
+                  styles.unitTile,
+                  {
+                    backgroundColor: isActive ? colors.text : colors.glass.inputBackground,
+                  },
+                  pressed ? { opacity: 0.6 } : null,
+                ]}
+                testID={`deload-tile-${v ? 'on' : 'off'}`}
+              >
+                <Text
+                  style={[
+                    styles.unitTileLabel,
+                    { color: isActive ? colors.background : colors.text },
+                  ]}
+                >
+                  {v ? 'ON' : 'OFF'}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
 
