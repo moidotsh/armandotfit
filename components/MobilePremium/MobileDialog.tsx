@@ -32,7 +32,7 @@
 import React, { useEffect } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { isWeb } from '../../utils';
-import { FadeIn } from '../premium/shared';
+import { FadeIn, useDialogFocus } from '../premium/shared';
 import { MOBILE_DIALOG_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
 import { MobileSurface } from './MobileSurface';
@@ -120,6 +120,7 @@ export function MobileDialog({
 
   // Normalize the two API shapes.
   const resolvedOpen = open ?? visible ?? false;
+  const cardRef = useDialogFocus(resolvedOpen);
   const handleClose = () => {
     if (onOpenChange) onOpenChange(false);
     else onClose?.();
@@ -174,40 +175,51 @@ export function MobileDialog({
             card itself are captured by the card (no close). */}
         <View pointerEvents="box-none" style={styles.cardLayer}>
           <FadeIn duration={300} y={12} style={styles.cardWrapper}>
-            <MobileSurface accentColor={accent} padding={0}>
-              {headerTitle ? (
-                <MobileHeader
-                  title={headerTitle}
-                  accentColor={accent}
-                  onDismiss={showCloseButton ? handleClose : undefined}
-                  hideAccentDot
-                />
-              ) : null}
-              <View style={styles.body}>{children}</View>
-              {hasFooter ? (
-                <View style={styles.footer}>
-                  {resolvedOnPrimary ? (
-                    <MobilePrimaryButton
-                      onPress={resolvedOnPrimary}
-                      loading={primaryLoading}
-                      disabled={primaryDisabled}
-                      accentColor={destructive ? colors.status.error : accent}
-                    >
-                      {resolvedPrimaryLabel ?? 'OK'}
-                    </MobilePrimaryButton>
-                  ) : null}
-                  {shouldShowSecondary ? (
-                    <MobilePrimaryButton
-                      variant="secondary"
-                      onPress={onSecondary ?? handleClose}
-                      accentColor={accent}
-                    >
-                      {secondaryLabel}
-                    </MobilePrimaryButton>
-                  ) : null}
-                </View>
-              ) : null}
-            </MobileSurface>
+            {/* The dialog-semantics carrier: role + programmatic focus
+                land on a real View (screen readers follow focus into
+                the card when it opens). */}
+            <View
+              ref={cardRef as unknown as React.Ref<React.ComponentRef<typeof View>>}
+              role="dialog"
+              aria-modal
+              tabIndex={isWeb ? -1 : undefined}
+              style={styles.dialogSemantics}
+            >
+              <MobileSurface accentColor={accent} padding={0}>
+                {headerTitle ? (
+                  <MobileHeader
+                    title={headerTitle}
+                    accentColor={accent}
+                    onDismiss={showCloseButton ? handleClose : undefined}
+                    hideAccentDot
+                  />
+                ) : null}
+                <View style={styles.body}>{children}</View>
+                {hasFooter ? (
+                  <View style={styles.footer}>
+                    {resolvedOnPrimary ? (
+                      <MobilePrimaryButton
+                        onPress={resolvedOnPrimary}
+                        loading={primaryLoading}
+                        disabled={primaryDisabled}
+                        accentColor={destructive ? colors.status.error : accent}
+                      >
+                        {resolvedPrimaryLabel ?? 'OK'}
+                      </MobilePrimaryButton>
+                    ) : null}
+                    {shouldShowSecondary ? (
+                      <MobilePrimaryButton
+                        variant="secondary"
+                        onPress={onSecondary ?? handleClose}
+                        accentColor={accent}
+                      >
+                        {secondaryLabel}
+                      </MobilePrimaryButton>
+                    ) : null}
+                  </View>
+                ) : null}
+              </MobileSurface>
+            </View>
           </FadeIn>
         </View>
       </View>
@@ -247,6 +259,9 @@ const styles = StyleSheet.create({
   // 10% gutter read as drift rather than breathing room.
   cardWrapper: {
     ...MOBILE_DIALOG_WIDTH_STYLE,
+  },
+  dialogSemantics: {
+    width: '100%',
   },
   body: {
     padding: 20,

@@ -26,3 +26,4 @@ export type { AtmosphereSurface, AtmospherePalette } from './atmospherePalettes'
 
 export { useCompressFade } from './useCompressFade';
 export type { UseCompressFadeResult } from './useCompressFade';
+export { useDialogFocus } from './useDialogFocus';

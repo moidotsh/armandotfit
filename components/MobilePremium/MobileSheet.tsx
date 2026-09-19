@@ -29,6 +29,7 @@ import { X } from '@tamagui/lucide-icons-2';
 import { isWeb } from '../../utils';
 import { MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
+import { useDialogFocus } from '../premium/shared';
 
 export interface MobileSheetProps {
   /** Whether the sheet is visible. */
@@ -88,6 +89,7 @@ export function MobileSheet({
   const { colors } = useAppTheme();
   const accent = accentColor ?? colors.brand;
   const resolvedShowClose = showCloseButton ?? !!title;
+  const panelRef = useDialogFocus(!!open);
 
   const handleClose = () => onOpenChange?.(false);
 
@@ -128,7 +130,11 @@ export function MobileSheet({
           accessibilityLabel={closeOnBackdropTap ? 'Close sheet' : undefined}
         />
         <Pressable
+          ref={panelRef as unknown as React.Ref<React.ComponentRef<typeof Pressable>>}
           onPress={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal
+          tabIndex={isWeb ? -1 : undefined}
           style={[
             styles.sheet,
             isBottom ? styles.sheetBottom : styles.sheetTop,

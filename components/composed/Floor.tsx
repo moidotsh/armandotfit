@@ -94,6 +94,23 @@ export function Floor() {
   // THE REST INSTRUMENT — recovery counts after every log (thesis
   // §7); the readout rides the logger's rest line + the pinned strip.
   const restClock = useRestClock();
+
+  // THE ANNOUNCEMENT LINE — the polite live region: screen readers
+  // hear the log and the rest instrument's state changes (start,
+  // settle) without a toast mid-set and without announcing every
+  // countdown tick.
+  const [announcement, setAnnouncement] = useState<string | null>(null);
+  const restPrevRef = useRef({ active: false, settled: false });
+  useEffect(() => {
+    const prev = restPrevRef.current;
+    if (restClock.active && !prev.active) {
+      setAnnouncement(`Rest ${restClock.readout}`);
+    } else if (restClock.settled && !prev.settled) {
+      setAnnouncement('Rest complete');
+    }
+    restPrevRef.current = { active: restClock.active, settled: restClock.settled };
+  }, [restClock.active, restClock.settled, restClock.readout]);
+
   const restLine: RestLine | null = restClock.active
     ? {
         readout: restClock.readout,
@@ -300,6 +317,13 @@ export function Floor() {
     }));
     // THE REST INSTRUMENT starts with the log (thesis §7).
     restClock.startRest();
+    // The screen reader's record of the log (the live region below —
+    // no toast mid-set, no visual change). The log announcement
+    // carries the rest start: restPrevRef is pre-advanced so the
+    // transition effect below doesn't overwrite this message with a
+    // bare 'Rest …' in the same render.
+    restPrevRef.current = { active: true, settled: false };
+    setAnnouncement(`Set logged — ${armed.weight ?? 0} ${unit} × ${armed.reps} · rest started`);
   };
 
   const handleSave = () => {
@@ -355,6 +379,15 @@ export function Floor() {
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
       edges={['top', 'bottom']}
     >
+      {/* The announcement line — visually quiet (1×1, transparent),
+          politely live for screen readers. */}
+      <Text
+        accessibilityLiveRegion="polite"
+        style={styles.announceLine}
+        testID="floor-announcement"
+      >
+        {announcement ?? ''}
+      </Text>
       {/* The Floor rides the mobile column like every Desk screen —
           the concrete bleeds full-viewport, the content does not. */}
       <View style={[styles.stageColumn, MOBILE_CONTENT_WIDTH_STYLE]}>
@@ -828,6 +861,12 @@ export function Floor() {
 }
 
 const styles = StyleSheet.create({
+  announceLine: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    opacity: 0,
+  },
   stageColumn: {
     flex: 1,
   },
