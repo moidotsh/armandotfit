@@ -1,24 +1,27 @@
 // components/composed/TheLogger.tsx
 //
 // THE LOGGER — the Floor's docked instrument and the app's fastest
-// surface (docs/architecture/board-thesis.md §7, the flagship). The
+// surface (docs/architecture/gauge-thesis.md §8, the flagship). The
 // armed set rides pre-armed at carry-forward weight and reads as the
-// gym's own figures: the WEIGHT DRAWS as a plate stack (you see two
-// reds and a green — you do not read "100"), the REPS speak as Spline
-// digits at counter scale, and the exact weight digit rides under the
-// stack for the audit glance. The most common log in existence (same
-// weight, same reps as the last set) costs ONE THUMB, ONE TAP on LOG
-// SET. Corrections are ± steppers (44px) under each side; tapping a
-// figure opens a numeric keyboard for large jumps.
+// gym's own instruments: the WEIGHT lives on THE PIN RAIL (a printed
+// scale with the steel pin at the load — you aim the pin the way you
+// aim a stack pin), the WEIGHT and REPS speak as ROLLING COUNTERS
+// (odometer digits that roll when the user changes them), and the
+// exact digits ride beside their rails for the audit glance. The most
+// common log in existence (same weight, same reps as the last set)
+// costs ONE THUMB, ONE TAP on LOG SET. Corrections are ± steppers
+// (44px) under each counter; tapping a counter opens a numeric
+// keyboard for large jumps. After every log, THE REST LINE counts
+// recovery (thesis §7) — steppers ±15s, tap the readout to dismiss.
 //
-// The board is flat everywhere EXCEPT here: the logger carries the
+// The room is flat everywhere EXCEPT here: the logger carries the
 // system's one shadow (mobilePremium.instrumentShadow) — the app's
-// single physical object, sitting ON the board. It never scrolls
+// single physical object, sitting ON the concrete. It never scrolls
 // away and is tappable at frame 1.
 //
-// M2 — THE SLIDE: a stepper change re-mounts the stack through a
-// 90ms fade+slide (keyed on the slab count) — post-interactive,
-// never gating the LOG tap. Inputs parse to number|null (empty
+// F2 — THE ROLL: stepper changes roll the changed digit columns
+// (140ms, post-interactive, never gating the LOG tap). F3 — THE PIN
+// DROP rides inside the rail. Inputs parse to number|null (empty
 // string → null — Number('') is 0, which would false-positive as
 // "0 kg").
 
@@ -31,10 +34,19 @@ import {
   View,
 } from 'react-native';
 import { useAppTheme } from '../../context';
-import { theme, decomposeLoad } from '../../constants';
-import { FadeIn } from '../premium/shared';
+import { theme, railMaxFor } from '../../constants';
 import { parseNumber } from './parseNumber';
-import { PlateStack } from './PlateStack';
+import { PinRail } from './PinRail';
+import { RollingCounter } from './RollingCounter';
+import { formatLoad } from './PinRail';
+
+/** The rest instrument's read-side shape (Floor owns the clock). */
+export interface RestLine {
+  readout: string;
+  settled: boolean;
+  onAdjust: (deltaSec: number) => void;
+  onDismiss: () => void;
+}
 
 export interface TheLoggerProps {
   /** The next set's ordinal (logged sets + 1) — display only. */
@@ -43,6 +55,11 @@ export interface TheLoggerProps {
   reps: number | null;
   /** Programmed rep-range hint ("8–10") — display only. */
   repsHint?: string | null;
+  /** The rail's ceiling — defaults to railMaxFor(weight). Pass the
+   * day's max so the pin reads against the whole session's scale. */
+  railMax?: number;
+  /** THE REST LINE — present while a rest runs or has settled. */
+  rest?: RestLine | null;
   onLog: () => void;
   onChangeWeight: (weight: number | null) => void;
   onChangeReps: (reps: number | null) => void;
@@ -84,7 +101,8 @@ function StepButton({
   );
 }
 
-/** The weight side: the drawn stack, the audit digit, the steppers. */
+/** The weight side: the rolling counter + steppers (the rail spans
+ * both sides from the caller — one scale for the whole instrument). */
 function WeightSide({
   weight,
   step,
@@ -108,10 +126,8 @@ function WeightSide({
     onChange(next <= 0 ? null : next);
   };
 
-  const digit = weight == null ? '—' : String(weight);
-
   return (
-    <View style={styles.weightSide}>
+    <View style={styles.counterSide}>
       {editing ? (
         <TextInput
           value={draftText}
@@ -139,17 +155,10 @@ function WeightSide({
           }}
           accessibilityRole="button"
           accessibilityLabel={`Edit weight, currently ${weight == null ? 'not set' : `${weight} kilograms`}`}
-          style={styles.stackTap}
+          style={styles.counterTap}
           testID={`${testID}-tap`}
         >
-          {/* M2 — the slide: keyed on the slab count so a stepper
-              change re-mounts the stack with a 90ms settle. */}
-          <FadeIn key={decomposeLoad(weight ?? 0).length} duration={90} y={6}>
-            <PlateStack kg={weight} scale="counter" testID={`${testID}-stack`} />
-          </FadeIn>
-          <Text style={[styles.weightDigit, { color: colors.textMuted }]}>
-            {digit}
-          </Text>
+          <RollingCounter value={weight == null ? '—' : formatLoad(weight)} testID={`${testID}-roll`} />
         </Pressable>
       )}
       <View style={styles.stepperRow}>
@@ -171,7 +180,7 @@ function WeightSide({
   );
 }
 
-/** The reps side: the Spline digits at counter scale + steppers. */
+/** The reps side: the rolling counter + steppers. */
 function RepsSide({
   reps,
   step,
@@ -196,7 +205,7 @@ function RepsSide({
   };
 
   return (
-    <View style={styles.repsSide}>
+    <View style={styles.counterSide}>
       {editing ? (
         <TextInput
           value={draftText}
@@ -224,12 +233,10 @@ function RepsSide({
           }}
           accessibilityRole="button"
           accessibilityLabel={`Edit reps, currently ${reps == null ? 'not set' : reps}`}
-          style={styles.repsTap}
+          style={styles.counterTap}
           testID={`${testID}-tap`}
         >
-          <Text style={[styles.repsDigits, { color: colors.text }]} selectable>
-            {reps == null ? '—' : String(reps)}
-          </Text>
+          <RollingCounter value={reps == null ? '—' : String(reps)} testID={`${testID}-roll`} />
         </Pressable>
       )}
       <View style={styles.stepperRow}>
@@ -256,6 +263,8 @@ export function TheLogger({
   weight,
   reps,
   repsHint = null,
+  railMax,
+  rest = null,
   onLog,
   onChangeWeight,
   onChangeReps,
@@ -269,7 +278,7 @@ export function TheLogger({
     <View
       testID={testID}
       style={[
-        styles.board,
+        styles.plate,
         {
           backgroundColor: colors.card,
           borderTopColor: colors.mobilePremium.hairlineBorder,
@@ -278,20 +287,61 @@ export function TheLogger({
       ]}
       accessibilityLabel={`Logger, set ${setNumber}: ${weight ?? 'no weight'} kilograms by ${reps ?? 'no reps'} reps`}
     >
-      {/* The kicker — the set ordinal carries the record orange (the
-          next position is the Floor's one orange mark beside the
-          verb's pulse). */}
+      {/* THE REST LINE — recovery counts after every log (thesis §7).
+          Running: the readout pulses signal (the live pulse); settled:
+          muted until the next log. ±15 steppers; tap the readout to
+          dismiss. */}
+      {rest ? (
+        <View style={styles.restRow} testID={`${tid}-rest`}>
+          <Pressable
+            onPress={rest.onDismiss}
+            accessibilityRole="button"
+            accessibilityLabel={`Rest ${rest.readout}${rest.settled ? ', finished' : ' running'} — tap to clear`}
+            style={({ pressed }) => [styles.restReadoutTap, pressed ? { opacity: 0.6 } : null]}
+            testID={`${tid}-rest-readout`}
+          >
+            <Text style={[styles.restWord, { color: colors.textMuted }]}>REST</Text>
+            <Text
+              style={[
+                styles.restFigure,
+                { color: rest.settled ? colors.textMuted : colors.brandText },
+              ]}
+            >
+              {rest.readout}
+            </Text>
+          </Pressable>
+          <View style={styles.restSteppers}>
+            <StepButton
+              dir={-1}
+              label="Decrease rest by 15 seconds"
+              onPress={() => rest.onAdjust(-15)}
+              testID={`${tid}-rest-dec`}
+            />
+            <StepButton
+              dir={1}
+              label="Increase rest by 15 seconds"
+              onPress={() => rest.onAdjust(15)}
+              testID={`${tid}-rest-inc`}
+            />
+          </View>
+        </View>
+      ) : null}
+
+      {/* The kicker — the set ordinal + the target, printed caps. */}
       <Text style={[styles.kicker, { color: colors.textMuted }]}>
-        SET{' '}
-        <Text style={{ color: colors.brandText }}>
-          {String(setNumber).padStart(2, '0')}
-        </Text>
-        {repsHint ? ` · TGT ${repsHint}` : ''}
+        {`SET ${String(setNumber).padStart(2, '0')}${repsHint ? ` · TGT ${repsHint}` : ''}`}
       </Text>
 
-      {/* THE INSTRUMENT — the drawn stack meets the reps digits at
-          the ×. */}
+      {/* THE INSTRUMENT — the pin rail spans the row; the rolling
+          counters meet at the ×, each side's steppers beneath its
+          figure. */}
       <View style={styles.callRow}>
+        <PinRail
+          kg={weight}
+          scale="counter"
+          railMax={railMax ?? railMaxFor(weight)}
+          testID={`${tid}-rail`}
+        />
         <WeightSide
           weight={weight}
           step={2.5}
@@ -327,59 +377,69 @@ export function TheLogger({
 }
 
 const styles = StyleSheet.create({
-  board: {
+  plate: {
     borderTopWidth: 1,
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 12,
   },
+  restRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+    marginTop: 2,
+  },
+  restReadoutTap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 44,
+  },
+  restWord: {
+    ...theme.typography.mobileEyebrow,
+  },
+  restFigure: {
+    ...theme.typography.mobileFigure,
+    fontSize: 21,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+  },
+  restSteppers: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   kicker: {
     ...theme.typography.mobileEyebrow,
     textAlign: 'center',
     minHeight: 20,
+    marginTop: 2,
   },
-  // THE INSTRUMENT reads as one line: the stack and the digits meet
-  // at the ×, each side's steppers beneath its figure.
+  // THE INSTRUMENT reads as one line: the rail at the left (one scale
+  // for the whole instrument), the counters meeting at the ×, each
+  // side's steppers beneath its figure.
   callRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'center',
-    gap: 16,
+    gap: 14,
     marginTop: 4,
   },
-  weightSide: {
+  counterSide: {
     alignItems: 'center',
-    flex: 1,
   },
-  repsSide: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  stackTap: {
+  counterTap: {
     minHeight: 60,
-    minWidth: 96,
+    minWidth: 72,
     alignItems: 'center',
     justifyContent: 'center',
     paddingBottom: 4,
-  },
-  weightDigit: {
-    ...theme.typography.mobileFigure,
-    marginTop: 4,
   },
   weightInput: {
     ...theme.typography.mobileCounter,
     minWidth: 96,
     minHeight: 60,
     textAlign: 'center',
-  },
-  repsTap: {
-    minHeight: 60,
-    minWidth: 72,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  repsDigits: {
-    ...theme.typography.mobileCounter,
   },
   repsInput: {
     ...theme.typography.mobileCounter,

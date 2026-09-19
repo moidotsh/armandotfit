@@ -1,13 +1,15 @@
 // components/composed/Floor.tsx
 //
 // THE FLOOR — the live session, the flagship (docs/architecture/
-// board-thesis.md §7). ONE scrollable document: the session map sits
-// ABOVE the station (pull up to read the whole day — native scroll,
-// zero JS), the station follows (name statement, TARGET whisper,
-// SWAP / REMOVE furniture), THE TALLY crosses sets off like a
-// whiteboard, the ledger audits in drawn stacks, and THE LOGGER —
-// the app's one physical object, carrying the system's one shadow —
-// docks below it all.
+// gauge-thesis.md §8). ONE scrollable document: the session board
+// sits ABOVE the station (pull up to read the whole day — native
+// scroll, zero JS), the station follows (name statement, TARGET
+// whisper, SWAP / REMOVE furniture), the set pips count the ask off,
+// the ledger audits in row-scale pin rails, and THE LOGGER — the
+// app's one physical object, carrying the system's one shadow —
+// docks below it all with the REST LINE counting recovery after
+// every log. THE PINNED STRIP (F4) crossfades in under scroll
+// carrying the station + pips + rest — the live instrument bar.
 //
 // Self-sufficient: reads the workout store directly (no prop drilling
 // of store actions) and composes useFloorSession for the draft
@@ -22,9 +24,12 @@ import {
   StyleSheet,
   Text,
   View,
+  type NativeSyntheticEvent,
+  type NativeScrollEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from '@tamagui/lucide-icons-2';
+import { Animated } from 'react-native';
 import {
   MobilePrimaryButton,
   MobileInput,
@@ -37,7 +42,7 @@ import {
   replaceWithHome,
   safeGoBack,
 } from '../../navigation';
-import { useLogWorkout, useFloorSession, type TopSetFact } from '../../hooks';
+import { useLogWorkout, useFloorSession, useRestClock, type TopSetFact } from '../../hooks';
 import { useWorkoutStore } from '../../stores';
 import { getDayTitle, TAG_VOCABULARY_SEED } from '../../shared/exercises';
 import { formatVolume } from '../../services';
@@ -45,11 +50,13 @@ import {
   theme,
   MOBILE_CONTENT_WIDTH_STYLE,
   BLOCK_GAP,
-  BOARD,
-  PAGE_GUTTER,
+  GAUGE,
+  railMaxFor,
 } from '../../constants';
-import { TheLogger } from './TheLogger';
-import { TallyGates } from './TallyGates';
+import { useCompressFade } from '../premium/shared';
+import { TheLogger, type RestLine } from './TheLogger';
+import { SetPips } from './SetPips';
+import { FlipTile } from './FlipTile';
 import { StageSetRow } from './StageSetRow';
 import { TagChips } from './TagChips';
 import { InkRail, SwapGlyph } from './InkRail';
@@ -75,6 +82,18 @@ export function Floor() {
     elapsed,
     topSets: armedPrefill,
   } = useFloorSession();
+
+  // THE REST INSTRUMENT — recovery counts after every log (thesis
+  // §7); the readout rides the logger's rest line + the pinned strip.
+  const restClock = useRestClock();
+  const restLine: RestLine | null = restClock.active
+    ? {
+        readout: restClock.readout,
+        settled: restClock.settled,
+        onAdjust: restClock.adjustRest,
+        onDismiss: restClock.dismissRest,
+      }
+    : null;
 
   // Store actions — read directly, not drilled.
   const setSaving = useWorkoutStore((s) => s.setSaving);
@@ -129,9 +148,9 @@ export function Floor() {
     }
   }, [logMutation.isError, logMutation.error, setSessionError]);
 
-  // THE MAP — one document, the map above the station. The scroller
-  // opens AT the station (scrolled past the map); the MAP chip and
-  // the map's rows are the two ways to move.
+  // THE BOARD — one document, the board above the station. The
+  // scroller opens AT the station (scrolled past the board); the MAP
+  // chip and the board's rows are the two ways to move.
   const scrollRef = useRef<ScrollView>(null);
   const mapHeightRef = useRef(0);
   const userScrolledRef = useRef(false);
@@ -139,7 +158,7 @@ export function Floor() {
   const [scrollerH, setScrollerH] = useState(0);
   useEffect(() => {
     if (mapHeight <= 0) return;
-    // Re-jump on every growth: the map first lays out before slot
+    // Re-jump on every growth: the board first lays out before slot
     // hydration fills its rows (and again when the self-hosted faces
     // settle), so the opening position follows the FINAL height. A
     // user who scrolled meanwhile owns the position.
@@ -153,14 +172,25 @@ export function Floor() {
     return () => clearTimeout(t);
   }, [mapHeight]);
 
+  // F4 — THE PINNED STRIP: the live instrument bar (station + pips +
+  // rest) crossfades in under scroll as the station head leaves.
+  const { compress, handleScroll: fadeScroll, static: fadeStatic } =
+    useCompressFade(true);
+  const handleScroll = React.useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      fadeScroll(event);
+    },
+    [fadeScroll],
+  );
+
   const exercises = draft?.exercises ?? [];
   const index = Math.min(stationIndex, Math.max(0, exercises.length - 1));
   const exercise = exercises[index] ?? null;
   const pickerExercise = draft?.exercises.find((e) => e.localId === pickerFor) ?? null;
 
   // The program's own ask for this station: the SET count and the LOW
-  // end of the rep range ("4×8-10" -> 4 sets, 8 reps) — the tally
-  // draws the ask; the default arms to its low end.
+  // end of the rep range ("4×8-10" -> 4 sets, 8 reps) — the pips
+  // draw the ask; the default arms to its low end.
   const targetRx = exercise?.targetRx ?? null;
   const targetSets = useMemo(() => {
     const head = targetRx?.split('×')[0]?.trim();
@@ -174,11 +204,31 @@ export function Floor() {
     return Number.isFinite(low) && low > 0 ? low : null;
   }, [targetRx]);
 
+  // THE DAY'S RAIL — one ceiling for every pin on the Floor (the
+  // logger's instrument rail, the ledger rows). The ceiling is
+  // auto-ranging and STICKY: it grows to cover the heaviest load the
+  // day has seen or armed (rounded up to the next 25) and never
+  // shrinks mid-session — the pin never parks past the top, and the
+  // scale never re-zeros under a reading (the auto-range law, thesis
+  // §4.3).
+  const [dayRailMax, setDayRailMax] = useState(0);
+  useEffect(() => {
+    let m = 0;
+    for (const ex of exercises) {
+      for (const s of ex.sets) m = Math.max(m, s.weight ?? 0);
+      const pre = armedPrefill.get(ex.exerciseName.toLowerCase());
+      if (pre) m = Math.max(m, pre.weight);
+    }
+    for (const a of Object.values(armedByExercise)) m = Math.max(m, a.weight ?? 0);
+    const next = railMaxFor(m);
+    setDayRailMax((prev) => (next > prev ? next : prev));
+  }, [exercises, armedPrefill, armedByExercise]);
+
   // The armed set for the current station: whatever the user has set,
   // else carry-forward from this exercise's last logged set, else the
   // previous session's TOP set for this exercise name, else fresh
   // ground — reps default to the target range's low end (the
-  // program's ask), weight stays a blank sleeve until the bar loads.
+  // program's ask), weight stays an empty rail until the bar loads.
   const armed: Armed = useMemo(() => {
     const explicit = armedByExercise[exercise?.localId ?? ''];
     if (explicit) return explicit;
@@ -216,6 +266,8 @@ export function Floor() {
       ...prev,
       [exercise.localId]: { weight: armed.weight ?? 0, reps: armed.reps },
     }));
+    // THE REST INSTRUMENT starts with the log (thesis §7).
+    restClock.startRest();
   };
 
   const handleSave = () => {
@@ -236,13 +288,23 @@ export function Floor() {
 
   const dayTitle = draft ? getDayTitle(draft.splitType, draft.day) : null;
 
-  // The tally's ask: the program's set count when present, extended
-  // as extra sets land; a free draw when the station has no Rx.
-  const tallyTotal = targetSets > 0
+  // The pips' ask: the program's set count when present, extended as
+  // extra sets land; a free draw when the station has no Rx.
+  const pipsTotal = targetSets > 0
     ? Math.max(targetSets, exercise ? exercise.sets.length + 1 : 1)
     : exercise
       ? Math.max(exercise.sets.length + 1, 1)
       : 1;
+
+  // The board row's status word (THE FLIP TILE's vocabulary): NOW for
+  // the current station, NEXT for the one following, DONE·n wherever
+  // sets landed. Rows with nothing to say carry no tile.
+  const statusFor = (i: number, sets: number): { word: string; tone: 'ink' | 'quiet' } | null => {
+    if (i === index) return { word: 'NOW', tone: 'ink' };
+    if (i === index + 1 && sets === 0) return { word: 'NEXT', tone: 'quiet' };
+    if (sets > 0) return { word: `DONE·${sets}`, tone: 'quiet' };
+    return null;
+  };
 
   return (
     <SafeAreaView
@@ -250,9 +312,9 @@ export function Floor() {
       edges={['top', 'bottom']}
     >
       {/* The Floor rides the mobile column like every Desk screen —
-          the page field bleeds full-viewport, the content does not. */}
+          the concrete bleeds full-viewport, the content does not. */}
       <View style={[styles.stageColumn, MOBILE_CONTENT_WIDTH_STYLE]}>
-        {/* Floor header — minimize, the map, the clock, finish. One
+        {/* Floor header — minimize, the board, the clock, finish. One
             number running, three words to move by. */}
         <View style={styles.stageHeader} testID="stage-header">
           <Pressable
@@ -267,7 +329,7 @@ export function Floor() {
           <Pressable
             onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
             accessibilityRole="button"
-            accessibilityLabel="Show session map"
+            accessibilityLabel="Show session board"
             style={({ pressed }) => [styles.iconButton, pressed ? { opacity: 0.6 } : null]}
             testID="stage-map"
           >
@@ -297,7 +359,48 @@ export function Floor() {
           </Pressable>
         </View>
 
-        {/* THE FLOOR — one document: the map above, the station
+        {/* F4 — THE PINNED STRIP. The live instrument bar: the station
+            + its pips + the rest readout. Crossfades in under scroll
+            as the station head leaves (transform/opacity only);
+            static under reduced motion. */}
+        <View
+          pointerEvents="none"
+          style={[styles.pinnedStrip, { borderBottomColor: colors.border }]}
+          testID="floor-pinned-strip"
+        >
+          <Animated.View
+            style={[
+              styles.pinnedRow,
+              fadeStatic ? null : { opacity: compress },
+            ]}
+          >
+            <Text style={[styles.pinnedName, { color: colors.text }]} numberOfLines={1}>
+              {exercise ? exercise.exerciseName : dayTitle ?? 'Session'}
+            </Text>
+            {exercise ? (
+              <SetPips
+                done={exercise.sets.length}
+                total={pipsTotal}
+                live
+                scale="row"
+                testID="pinned-pips"
+              />
+            ) : null}
+            {restClock.active ? (
+              <Text
+                style={[
+                  styles.pinnedRest,
+                  { color: restClock.settled ? colors.textMuted : colors.brandText },
+                ]}
+                testID="pinned-rest"
+              >
+                {restClock.readout}
+              </Text>
+            ) : null}
+          </Animated.View>
+        </View>
+
+        {/* THE FLOOR — one document: the board above, the station
             below, the logger docked out of the scroller. */}
         <ScrollView
           ref={scrollRef}
@@ -308,14 +411,22 @@ export function Floor() {
           onScrollBeginDrag={() => {
             userScrolledRef.current = true;
           }}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
           onLayout={(e) => setScrollerH(Math.floor(e.nativeEvent.layout.height))}
           testID="floor-scroll"
         >
-          {/* THE SESSION MAP — the whole day at a glance, framed by
-              the 2px rule pair (THE BOARD block). Pull up (or tap
-              MAP) to read it; every row is a jump. */}
+          {/* THE SESSION BOARD — the whole day at a glance, one enamel
+              panel. Pull up (or tap MAP) to read it; every row is a
+              jump; statuses flip as the day progresses. */}
           <View
-            style={[styles.mapBlock, { borderColor: colors.text }]}
+            style={[
+              styles.boardPanel,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.cardBorder,
+              },
+            ]}
             onLayout={(e) => {
               const h = Math.ceil(e.nativeEvent.layout.height);
               mapHeightRef.current = h;
@@ -323,12 +434,13 @@ export function Floor() {
             }}
             testID="floor-map"
           >
-            <Text style={[styles.mapTitle, { color: colors.textMuted }]}>
+            <Text style={[styles.boardTitle, { color: colors.textMuted }]}>
               {`${dayTitle ? `${dayTitle} · ` : ''}${exercises.length} STATIONS`}
             </Text>
             {exercises.map((ex, i) => {
               const isCurrent = i === index;
               const done = ex.sets.length;
+              const status = statusFor(i, done);
               return (
                 <Pressable
                   key={ex.localId}
@@ -339,30 +451,34 @@ export function Floor() {
                   accessibilityRole="button"
                   accessibilityLabel={`Station ${i + 1}, ${ex.exerciseName}, ${done} sets logged. Go to station`}
                   style={({ pressed }) => [
-                    styles.mapRow,
+                    styles.boardRow,
                     pressed ? { opacity: 0.6 } : null,
                   ]}
                   testID={`floor-map-row-${i}`}
                 >
+                  {status ? (
+                    <FlipTile
+                      word={status.word}
+                      tone={status.tone}
+                      testID={`floor-map-status-${i}`}
+                    />
+                  ) : (
+                    <View style={styles.boardTileSpacer} />
+                  )}
                   <Text
                     style={[
-                      styles.mapIndex,
-                      { color: isCurrent ? colors.brandText : colors.textMuted },
+                      styles.boardName,
+                      { color: isCurrent ? colors.text : colors.textSecondary },
                     ]}
-                  >
-                    {String(i + 1).padStart(2, '0')}
-                  </Text>
-                  <Text
-                    style={[styles.mapName, { color: isCurrent ? colors.text : colors.textSecondary }]}
                     numberOfLines={1}
                   >
                     {ex.exerciseName}
                   </Text>
-                  <TallyGates
+                  <SetPips
                     done={done}
                     total={Math.max(done, 1)}
                     scale="row"
-                    testID={`floor-map-tally-${i}`}
+                    testID={`floor-map-pips-${i}`}
                   />
                 </Pressable>
               );
@@ -370,7 +486,7 @@ export function Floor() {
           </View>
 
           {/* THE STATION — its wrapper floors at the scroller's height
-              so the map can ALWAYS clear above the fold, even before
+              so the board can ALWAYS clear above the fold, even before
               the ledger grows. */}
           <View style={{ minHeight: scrollerH }}>
           {exercise ? (
@@ -409,12 +525,12 @@ export function Floor() {
                 </View>
               </View>
 
-              {/* THE TALLY — sets crossed off the board; the live
-                  gate breathes record-orange. */}
-              <View style={styles.tallyRow} testID="stage-tally">
-                <TallyGates
+              {/* THE SET PIPS — the ask counted off in groups of five;
+                  the live pip breathes signal. */}
+              <View style={styles.pipsRow} testID="stage-tally">
+                <SetPips
                   done={exercise.sets.length}
-                  total={tallyTotal}
+                  total={pipsTotal}
                   live
                   scale="counter"
                   testID="stage-tally-gates"
@@ -451,7 +567,8 @@ export function Floor() {
                 />
               ) : null}
 
-              {/* THE LEDGER — every row a logged set, drawn. */}
+              {/* THE LEDGER — every row a logged set, drawn as pin
+                  rails on the day's one scale. */}
               {exercise.sets.length > 0 ? (
                 <View style={styles.ledger}>
                   {exercise.sets.map((s) => (
@@ -460,6 +577,7 @@ export function Floor() {
                       position={s.position}
                       weight={s.weight ?? 0}
                       reps={s.reps ?? 0}
+                      railMax={dayRailMax || undefined}
                       onRemove={() => removeSetFromDraft(exercise.localId, s.localId)}
                       testID={`stage-set-row-${s.position}`}
                     />
@@ -517,13 +635,16 @@ export function Floor() {
         </ScrollView>
 
         {/* THE LOGGER — docked, never scrolls away, the app's one
-          physical object. The armed set + the one verb. */}
+          physical object. The pin rail + rolling counters + the rest
+          line + the one verb. */}
         {exercise ? (
           <TheLogger
             setNumber={exercise.sets.length + 1}
             weight={armed.weight}
             reps={armed.reps}
             repsHint={repsHint}
+            railMax={dayRailMax || undefined}
+            rest={restLine}
             onLog={handleLog}
             onChangeWeight={(weight) => setArmed({ ...armed, weight })}
             onChangeReps={(reps) => setArmed({ ...armed, reps })}
@@ -631,7 +752,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // The clock — the Floor's only running figure in the chrome.
+  // The clock — the Floor's only running figure in the chrome. It
+  // NEVER animates (time-driven figures render static — thesis §6).
   stageClock: {
     ...theme.typography.mobileFigure,
     fontWeight: '700',
@@ -652,35 +774,58 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 4,
   },
-  stationScroll: { flex: 1 },
-  stationContent: {
-    paddingHorizontal: PAGE_GUTTER,
-    paddingTop: 8,
-    paddingBottom: 24,
+  // F4 — THE PINNED STRIP: fixed 40px; its content fades in as the
+  // station head leaves (never a layout change; the bar is always in
+  // the tree so the pin never jumps).
+  pinnedStrip: {
+    height: 40,
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    paddingHorizontal: 20,
   },
-  // THE SESSION MAP — the board block: framed by the 2px rule pair.
-  mapBlock: {
-    borderTopWidth: 2,
-    borderBottomWidth: 2,
-    paddingVertical: 10,
-    gap: 2,
-  },
-  mapTitle: {
-    ...theme.typography.mobileEyebrow,
-    marginBottom: 6,
-  },
-  mapRow: {
+  pinnedRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  pinnedName: {
+    ...theme.typography.mobileItemTitle,
+    flex: 1,
+  },
+  pinnedRest: {
+    ...theme.typography.mobileFigure,
+    fontVariant: ['tabular-nums'],
+  },
+  stationScroll: { flex: 1 },
+  stationContent: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 24,
+  },
+  // THE SESSION BOARD — one enamel panel (hairline edge, machined
+  // corner): the day at a glance.
+  boardPanel: {
+    borderWidth: 1,
+    borderRadius: theme.shapes.surface,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    gap: 2,
+  },
+  boardTitle: {
+    ...theme.typography.mobileEyebrow,
+    marginBottom: 6,
+  },
+  boardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     minHeight: 44,
   },
-  mapIndex: {
-    ...theme.typography.mobileLedger,
-    minWidth: 20,
+  boardTileSpacer: {
+    width: 8,
   },
-  mapName: {
-    ...BOARD.row,
+  boardName: {
+    ...GAUGE.row,
     fontWeight: '600',
     flex: 1,
   },
@@ -690,7 +835,7 @@ const styles = StyleSheet.create({
     marginTop: BLOCK_GAP,
   },
   stationName: {
-    ...BOARD.statement,
+    ...GAUGE.statement,
   },
   stationMeta: {
     flexDirection: 'row',
@@ -710,7 +855,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 8,
   },
-  tallyRow: {
+  pipsRow: {
     minHeight: 32,
     justifyContent: 'center',
   },
