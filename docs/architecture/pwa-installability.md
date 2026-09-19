@@ -286,3 +286,12 @@ The fastest verification path post-deploy:
   deploy-safety rules — hashed assets cache-first, navigations
   network-first — and must NOT reintroduce a blanket
   `respondWith(fetch())` passthrough (it defeats WebKit's HTTP cache).
+
+## Font precaching (2027-01)
+
+`public/sw.js` precaches the two self-hosted faces at install
+(`PRECACHE_URLS`, cache v2) — the first visit after install renders
+statements and figures in their fonts even on a dead network.
+Stale-while-revalidate (`/fonts/`, `/icons/`) keeps them fresh after
+that. Add a URL to `PRECACHE_URLS` only when missing it would flash a
+fallback where the design speaks.

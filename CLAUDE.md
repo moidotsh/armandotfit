@@ -34,7 +34,7 @@ Load-bearing rules that aren't obvious from the code:
 
 ## Pre-commit checks (read before committing)
 
-Armandotfit has 13 structural audits + `tsc --noEmit` + structural ESLint on every `git commit` via `.husky/pre-commit`. Run them on the working tree **before** staging:
+Armandotfit has 13 structural audits + `verify-design` (the design-law verifier: ramp arithmetic, the square cut, the wire, and the full WCAG matrix from `theme.ts` hexes — chained into `lint:structure`) + `tsc --noEmit` + structural ESLint on every `git commit` via `.husky/pre-commit`. Run them on the working tree **before** staging:
 
     cd armandotfit && bun run lint:structure && bunx tsc --noEmit
 
@@ -63,6 +63,8 @@ Armandotfit has 13 structural audits + `tsc --noEmit` + structural ESLint on eve
 
 Structural ESLint adds `[S6]` (`{expr && <Component/>}` render leak) and `[S8]` (raw `fetch()`).
 
+**`bun run check:shell-drift`** (manual, not gating): consumer kit files are never byte-identical to the shell — drift is governed by the committed baseline `scripts/shell-drift-baseline.json`. Accidental drift fails the check; `--rebaseline` is a deliberate act committed alongside the change it blesses.
+
 ### The five that bite most often
 
 1. **S5 barrels** — same-folder imports go relative; cross-folder go through the barrel. `bun run scripts/audit-barrels.ts --fix` auto-rewrites.
@@ -83,7 +85,7 @@ Direct-copy consumer of the public starter (sibling at `../arqavellum`, `github.
 |---|---|---|
 | New pattern (S/C/D/SE/T/R code) | `ARCHITECTURE.md` + new `scripts/audit-*.ts` + this file's table. | Always. |
 | New `scripts/audit-*.ts` | This file's 13-audit grid, in run order. | Always. |
-| Visual token change | `constants/theme.ts` (canonical) + `docs/architecture/mobile-premium-design-system.md` if kit-level. | Always. |
+| Visual token change | `constants/theme.ts` (canonical) + `docs/architecture/mobile-premium-design-system.md` if kit-level; `scripts/verify-design.ts` enforces the law at gate time. | Always. |
 | New MobilePremium primitive | Design-system doc inventory + the showcase (synced with the kit). | Always. |
 | New hook / utility | Folder barrel (+ showcase demo if visible output). | Always. |
 | New route / push-replace helper | `NavigationHelper.tsx` (enum + hierarchy + curtain-wrapped helper) + `routeMetadata.ts` title. | Always. |
