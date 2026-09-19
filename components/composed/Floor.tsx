@@ -162,21 +162,31 @@ export function Floor() {
   const scrollRef = useRef<ScrollView>(null);
   const mapHeightRef = useRef(0);
   const userScrolledRef = useRef(false);
+  // The opening phase ends for good after the hydration settle (or
+  // the first MAP press / drag): the auto-jump must NEVER re-fire on
+  // a later board-height change — a collapse would otherwise snap
+  // the view back down to the station and fight the toggle.
+  const openingSettledRef = useRef(false);
   const [mapHeight, setMapHeight] = useState(0);
   const [scrollerH, setScrollerH] = useState(0);
   useEffect(() => {
-    if (mapHeight <= 0) return;
-    // Re-jump on every growth: the board first lays out before slot
-    // hydration fills its rows (and again when the self-hosted faces
-    // settle), so the opening position follows the FINAL height. A
-    // user who scrolled meanwhile owns the position.
+    if (mapHeight <= 0 || openingSettledRef.current) return;
+    // Re-jump on every growth DURING THE OPENING: the board first
+    // lays out before slot hydration fills its rows (and again when
+    // the self-hosted faces settle), so the opening position follows
+    // the FINAL height. A user who scrolled meanwhile owns the
+    // position. After the settle timer completes once, the jump is
+    // retired permanently.
     const jump = () => {
       if (!userScrolledRef.current) {
         scrollRef.current?.scrollTo({ y: mapHeightRef.current, animated: false });
       }
     };
     jump();
-    const t = setTimeout(jump, 650);
+    const t = setTimeout(() => {
+      jump();
+      openingSettledRef.current = true;
+    }, 650);
     return () => clearTimeout(t);
   }, [mapHeight]);
 
@@ -348,9 +358,12 @@ export function Floor() {
           </Pressable>
           {/* THE MAP CHIP — the board's one toggle: folded or scrolled
               away, it reveals the board (expand + scroll to top); board
-              showing at the top, it folds the board away. */}
+              showing at the top, it folds the board away. Touching MAP
+              ends the opening phase — the auto-jump never fights the
+              toggle. */}
           <Pressable
             onPress={() => {
+              openingSettledRef.current = true;
               if (mapCollapsed || !atTop) {
                 setMapCollapsed(false);
                 scrollRef.current?.scrollTo({ y: 0, animated: true });
@@ -472,7 +485,10 @@ export function Floor() {
                 at a glance, or folded to one line when the station
                 owns the screen. */}
             <Pressable
-              onPress={() => setMapCollapsed((c) => !c)}
+              onPress={() => {
+                openingSettledRef.current = true;
+                setMapCollapsed((c) => !c);
+              }}
               accessibilityRole="button"
               accessibilityLabel={
                 mapCollapsed
@@ -497,6 +513,8 @@ export function Floor() {
                 <Pressable
                   key={ex.localId}
                   onPress={() => {
+                    openingSettledRef.current = true;
+                    userScrolledRef.current = true;
                     setStationIndex(i);
                     scrollRef.current?.scrollTo({ y: mapHeightRef.current, animated: true });
                   }}
