@@ -1,13 +1,14 @@
 // app/split-selection.tsx
-// The FUNNEL — set the edition (docs/architecture/board-thesis.md
-// §7): "Which edition?" Three picks in order and GO — the page's one
-// verb. The PICKED day's title is the statement (restating with every
-// pick); one fact line carries the targets and counts outside the
-// halo. The seven-day measure is the second voice: weekday caps + the
+// THE SELECTOR (docs/architecture/scoreboard-thesis.md §8): "Which
+// edition?" Three picks in order and GO — the page's one verb. The
+// PICKED day's title is the statement (restating with every pick);
+// one fact line carries the targets and counts outside the halo. The
+// seven-day measure is the second voice: weekday caps + the
 // day-of-split figure in Martian, the picked tile INVERTING to the ink
 // plate — inversion is selection; borders do not survive glare. The
-// plan previews as THE BOARD rows: name + Rx + the plate stack at the
-// prefill weight.
+// plan previews as REGISTER LINES: name · leader · the prefill
+// weight (the same composition as home's day register — one
+// language).
 //   1. Workout day — a rolling 7-day measure. Each non-rest day
 //      carries its day-of-split (1..4), derived from the user's last
 //      logged session via getNextSplitDay. Rest days render muted but
@@ -28,10 +29,11 @@ import {
   MobileActionFooter,
   SegmentedControl,
 } from '../components/MobilePremium';
-import { BoardShell, BoardHead, PinRail } from '../components/composed';
+import { BoardShell, BoardHead, RegisterLine } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, replaceWithWorkoutDetail, safeGoBack } from '../navigation';
-import { useProfile, useRecentWorkouts, useTopSetsByName } from '../hooks';
+import { useProfile, useRecentWorkouts, useTopSetsByName, useWeightUnit } from '../hooks';
+import { toDisplayWeight, roundDisplayWeight } from '../utils';
 import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots } from '../services';
 import {
@@ -41,10 +43,9 @@ import {
   suggestNextSplitDay,
   MIN_SPLIT_DAY,
   MAX_SPLIT_DAY,
-  GAUGE,
+  SCOREBOARD,
   theme,
   PAGE_GUTTER,
-  railMaxFor,
   type SessionMode,
   type UpcomingWorkoutSlot,
 } from '../constants';
@@ -73,6 +74,7 @@ export default function SplitSelectionScreen() {
   const profileQuery = useProfile();
   const recentQuery = useRecentWorkouts(1);
   const topSets = useTopSetsByName();
+  const unit = useWeightUnit();
 
   const restDays = profileQuery.data?.restDays ?? [];
 
@@ -128,17 +130,16 @@ export default function SplitSelectionScreen() {
 
   // Preview the day's slots with standing substitutions applied.
   const previewSlots = resolveSlots(split, draftDay, session, programOverrides);
-  // The preview's rail prefills + the day's one ceiling (the skyline
-  // reads against a single scale — the same law as home's day panel).
+  // The preview register's figures — the shared top-set derivation in
+  // display units (the same rule that arms the Floor); a bodyweight
+  // lift carries no figure.
   const previewPrefills = previewSlots.map((slot) => {
     const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
     const name = entry?.name ?? slot.exercise;
-    return topSets.map.get(name.toLowerCase())?.weight ?? null;
+    const kg = topSets.map.get(name.toLowerCase())?.weight ?? null;
+    if (kg == null || kg <= 0) return null;
+    return String(roundDisplayWeight(toDisplayWeight(kg, unit)));
   });
-  const previewRailMax = useMemo(
-    () => railMaxFor(Math.max(0, ...previewPrefills.map((w) => w ?? 0))),
-    [previewPrefills],
-  );
   // The day's targets — the distinct primary muscle groups across the
   // preview slots, in slot order (metadata as structure, computed at
   // read from the catalog).
@@ -257,8 +258,10 @@ export default function SplitSelectionScreen() {
         </Text>
       </View>
 
-      {/* THE PLAN — the preview panel: name + Rx + the prefill rail,
-          every rail against the day's one ceiling. */}
+      {/* THE PLAN — the preview as register lines under a hairline:
+          name · leader · the prefill weight. The same composition as
+          home's day register: one language, stated twice where the
+          pick needs its feedback. */}
       <View style={styles.block}>
         {previewSlots.length === 0 ? (
           <Text style={[styles.emptyText, { color: colors.textMuted }]}>
@@ -266,35 +269,18 @@ export default function SplitSelectionScreen() {
             from the library.
           </Text>
         ) : (
-          <View
-            style={[styles.previewPanel, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-            testID="funnel-preview-panel"
-          >
+          <View style={[styles.previewRegister, { borderTopColor: colors.border }]} testID="funnel-preview-panel">
             {previewSlots.map((slot, i) => {
               const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
               const name = entry?.name ?? slot.exercise;
-              const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
-              const rx = `${sets}×${slot.reps[0]}–${slot.reps[1]}`;
               return (
-                <View
+                <RegisterLine
                   key={slot.exercise + i}
-                  style={styles.slotRow}
-                >
-                  <View style={styles.slotNameHold}>
-                    <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
-                      {name}
-                    </Text>
-                    <Text style={[styles.slotRx, { color: colors.textMuted }]}>
-                      {rx}
-                    </Text>
-                  </View>
-                  <PinRail
-                    kg={previewPrefills[i]}
-                    scale="whisper"
-                    railMax={previewRailMax}
-                    testID={`funnel-rail-${i}`}
-                  />
-                </View>
+                  label={name}
+                  figure={previewPrefills[i]}
+                  testID={`funnel-row-${i}`}
+                  figureTestID={`funnel-figure-${i}`}
+                />
               );
             })}
           </View>
@@ -327,13 +313,14 @@ export default function SplitSelectionScreen() {
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 40 },
   block: {
-    ...GAUGE.block,
+    ...SCOREBOARD.block,
   },
-  previewPanel: {
-    borderWidth: 1,
-    borderRadius: theme.shapes.surface,
-    paddingVertical: 4,
-    paddingHorizontal: 12,
+  // The preview register — hairline-ruled (quieter than home's 2px:
+  // here the tile measure is the second voice, the preview is the
+  // third).
+  previewRegister: {
+    borderTopWidth: 1,
+    paddingTop: 4,
   },
   dayRow: {
     flexDirection: 'row',
@@ -362,17 +349,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: 4 },
-  slotRow: {
-    minHeight: 44,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  slotNameHold: {
-    flex: 1,
-  },
-  slotName: { ...GAUGE.row },
-  slotRx: {
-    ...theme.typography.mobileLedger,
-  },
 });
