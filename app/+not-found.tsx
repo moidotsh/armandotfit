@@ -14,7 +14,7 @@ import { MobilePrimaryButton } from '../components/MobilePremium';
 import { useAppTheme } from '../context';
 import { replaceWithHome } from '../navigation';
 import { markNotFoundActive, markNotFoundInactive } from '../components/primitives/AuthGuard';
-import { GAUGE, theme } from '../constants';
+import { SCOREBOARD, theme } from '../constants';
 
 // The honest dead end renders for EVERY visitor — a mistyped URL shows
 // this page, never a login wall. The mount effect exempts the screen
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   statement: {
-    ...GAUGE.statement,
+    ...SCOREBOARD.statement,
   },
   copy: {
     ...theme.typography.mobileItemTitle,

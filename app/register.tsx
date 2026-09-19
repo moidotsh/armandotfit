@@ -23,7 +23,7 @@ import { ChevronLeft } from '@tamagui/lucide-icons-2';
 import { useAuth, useAppTheme } from '../context';
 import { replaceWithLogin, safeGoBack } from '../navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SCREEN_BODY_STYLE, GAUGE, theme } from '../constants';
+import { SCREEN_BODY_STYLE, SCOREBOARD, theme } from '../constants';
 
 export default function RegisterScreen() {
   const { signUp } = useAuth();
@@ -93,7 +93,7 @@ export default function RegisterScreen() {
               style={styles.helpLinkBox}
             >
               <Text style={[styles.helpLink, { color: colors.textMuted }]}>
-                Already confirmed? <Text style={styles.helpLinkUnderline}>Sign in</Text>
+                Already confirmed? <Text style={[styles.helpLinkUnderline, { color: colors.brandText }]}>Sign in</Text>
               </Text>
             </Pressable>
           </View>
@@ -185,10 +185,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   block: {
-    ...GAUGE.block,
+    ...SCOREBOARD.block,
   },
   statement: {
-    ...GAUGE.statement,
+    ...SCOREBOARD.statement,
   },
   helpLinkBox: {
     minHeight: 44,

@@ -3,10 +3,11 @@
 // On success, the central AuthGuard in app/_layout.tsx routes to
 // home — no per-screen redirect effect needed.
 //
-// THE BOARD PAGE's auth: the action sentence IS the statement ("Sign
-// in."), the brand rides a folio line (same masthead as home), the
-// form sits open on the field (no panel), links are underlined ink,
-// and the verb is the page's one red. No nameplate rule.
+// THE GATE (scoreboard-thesis §8): the action sentence IS the
+// statement ("Sign in."), the brand rides a folio line (same masthead
+// as home), the form sits open on the ground (no panel), links are
+// RED INK (red's second job), and the verb is the page's heaviest
+// ink. No nameplate rule.
 
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -25,7 +26,7 @@ import { navigateToRegister, navigateToForgotPassword } from '../navigation';
 import {
   MOBILE_CONTENT_WIDTH_STYLE,
   SCREEN_BODY_STYLE,
-  GAUGE,
+  SCOREBOARD,
   theme,
 } from '../constants';
 
@@ -93,7 +94,7 @@ export default function LoginScreen() {
             accessibilityLabel="Forgot password"
             style={styles.linkBox}
           >
-            <Text style={[styles.link, { color: colors.text }]}>
+            <Text style={[styles.link, { color: colors.brandText }]}>
               Forgot password?
             </Text>
           </Pressable>
@@ -143,11 +144,8 @@ const styles = StyleSheet.create({
     height: 44,
   },
   wordmark: {
-    fontFamily: theme.fonts.display,
-    fontSize: 15,
-    fontWeight: '700',
-    lineHeight: 20,
-    letterSpacing: 0.8,
+    ...theme.typography.mobileEyebrow,
+    letterSpacing: 1.6,
   },
   body: {
     ...SCREEN_BODY_STYLE,
@@ -155,10 +153,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   block: {
-    ...GAUGE.block,
+    ...SCOREBOARD.block,
   },
   statement: {
-    ...GAUGE.statement,
+    ...SCOREBOARD.statement,
   },
   linkBox: {
     minHeight: 44,
