@@ -10,6 +10,7 @@
 // Sets with null reps or weight are dropped at save time.
 
 import React, { useState } from 'react';
+import { parseNumber } from './parseNumber';
 import { Pressable, StyleSheet, Text, TextInput, View, type TextStyle } from 'react-native';
 import { useAppTheme } from '../../context';
 import { theme } from '../../constants';
@@ -23,13 +24,6 @@ export interface EditableSetRowProps {
   onChangeWeight: (weight: number | null) => void;
   onChangeReps: (reps: number | null) => void;
   onRemove: () => void;
-}
-
-function parseNumber(text: string): number | null {
-  const trimmed = text.trim();
-  if (trimmed === '') return null;
-  const n = Number(trimmed);
-  return Number.isFinite(n) ? n : null;
 }
 
 // Control rhythm (the kit-chrome precedent): mono figures at 17/600 so

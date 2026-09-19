@@ -33,6 +33,7 @@ import {
 import { useAppTheme } from '../../context';
 import { theme, decomposeLoad } from '../../constants';
 import { FadeIn } from '../premium/shared';
+import { parseNumber } from './parseNumber';
 import { PlateStack } from './PlateStack';
 
 export interface TheLoggerProps {
@@ -46,13 +47,6 @@ export interface TheLoggerProps {
   onChangeWeight: (weight: number | null) => void;
   onChangeReps: (reps: number | null) => void;
   testID?: string;
-}
-
-function parseNumber(text: string): number | null {
-  const trimmed = text.trim();
-  if (trimmed === '') return null;
-  const n = Number(trimmed);
-  return Number.isFinite(n) ? n : null;
 }
 
 /** One stepper button — 44×44 measured. */

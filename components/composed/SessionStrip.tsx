@@ -16,6 +16,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
+import { useNowTick } from '../../hooks';
 import { useWorkoutStore } from '../../stores';
 import { replaceWithWorkoutDetail } from '../../navigation';
 import { theme } from '../../constants';
@@ -27,13 +28,9 @@ export function SessionStrip() {
   const reduced = useReducedMotion();
   const startedAt = useWorkoutStore((s) => s.sessionStartedAt);
   const draft = useWorkoutStore((s) => s.draft);
-  const [now, setNow] = useState(() => Date.now());
-
-  // The living count ticks once per second — paired clear (R4a).
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
+  // The living count ticks once per second (useNowTick owns the
+  // paired interval).
+  const now = useNowTick();
 
   // The living pulse: the LIVE dot breathes in record-orange (one of
   // the brand hue's three appearances). Reduced motion holds full

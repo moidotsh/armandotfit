@@ -69,6 +69,7 @@ import {
   useLogWorkout,
   useDeleteSession,
   useLastUsedTags,
+  useNowTick,
   useTopSetsByName,
   type TopSetFact,
 } from '../hooks';
@@ -167,13 +168,9 @@ export default function WorkoutDetailScreen() {
     }
   }, [draft, hydrateFromSplit, programOverrides]);
 
-  // Live session stats: elapsed, filled sets, tonnage. One interval,
-  // paired cleanup (R4a).
-  const [nowTick, setNowTick] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNowTick(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
+  // Live session stats: elapsed, filled sets, tonnage (useNowTick
+  // owns the paired interval).
+  const nowTick = useNowTick();
   const sessionSets = draft
     ? draft.exercises.reduce((n, e) => n + e.sets.length, 0)
     : 0;

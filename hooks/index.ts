@@ -14,6 +14,7 @@ export type { UseAndroidChromeBlurFixReturn } from './useAndroidChromeBlurFix';
 export { useMounted } from './useMounted';
 export { usePrevious } from './usePrevious';
 export { usePwaPrompt } from './usePwaPrompt';
+export { useNowTick } from './useNowTick';
 export type { UsePwaPromptResult, PwaPlatform } from './usePwaPrompt';
 export { useAnimatedCounter } from './useAnimatedCounter';
 export {
