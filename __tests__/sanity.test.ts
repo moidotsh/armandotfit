@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { theme } from '../constants';
 
+// THE SCOREBOARD theme law (docs/architecture/scoreboard-thesis.md).
+// Assertions rewritten for the eighth upending: THE HARMONIC RAMP
+// {12, 18, 36, 72} (every size divides the counter, LH = size + 6),
+// RED INK as the brand slot, the ink verb, the mode-independent wire.
+
 describe('theme', () => {
   it('exports both light and dark palettes', () => {
     expect(theme.colors.light).toBeDefined();
@@ -13,16 +18,16 @@ describe('theme', () => {
     expect(lightKeys).toEqual(darkKeys);
   });
 
-  it('uses the armandotfit signal orange + the ink verb in light mode', () => {
-    // THE GAUGE palette (docs/architecture/gauge-thesis.md §4) —
-    // brand is THE SIGNAL (safety orange; marks records, links, the
-    // live pulse; 4.98:1 with its on-fill text), brandText is the AA
-    // small-text companion, and THE VERB IS INK: buttonBackground is
-    // the panel's text color with the ground as its label (17.8:1).
-    expect(theme.colors.light.brand).toBe('#C23A00');
-    expect(theme.colors.light.brandText).toBe('#9C3100');
+  it('uses the scoreboard red ink + the ink verb in light mode', () => {
+    // THE SCOREBOARD palette (docs/architecture/scoreboard-thesis.md
+    // §4) — brand is RED INK (marks records, links, the live pulse;
+    // 5.29:1 with its on-fill text), brandText is the AA small-text
+    // companion, and THE VERB IS INK: buttonBackground is the
+    // ground's text color with the ground as its label (15.7:1).
+    expect(theme.colors.light.brand).toBe('#BE2B20');
+    expect(theme.colors.light.brandText).toBe('#A8241B');
     expect(theme.colors.light.buttonBackground).toBe(theme.colors.light.text);
-    expect(theme.colors.light.textOnBrand).toBe('#FCFDFB');
+    expect(theme.colors.light.textOnBrand).toBe('#F4F2EE');
   });
 
   it('ships the mode-independent wire in both palettes', () => {
@@ -44,27 +49,59 @@ describe('theme', () => {
     expect(theme.colors.light.meter.step3).toBe('#2559B7');
   });
 
-  it('exports typography tokens', () => {
-    // THE GAUGE ramp (docs/architecture/gauge-thesis.md §3.2): six
-    // sizes — 56 (the armed figures) · 36 (the statement) · 21 (the
-    // subhead) · 17 (the row) · 15 (reading + row figures) · 11 (the
-    // whisper). Statements in Instrument Cond (the width axis pinned
-    // at 75%), every working figure in Martian Mono (tabular by
-    // construction), reading in the platform sans.
-    expect(theme.typography.mobileTitle.fontSize).toBe(21);
+  it('runs the square cut — every shape radius is 0', () => {
+    for (const r of Object.values(theme.shapes)) {
+      expect(r).toBe(0);
+    }
+  });
+
+  it('retires the instrument lift — no shadow in the kit tokens', () => {
+    expect(theme.colors.light.mobilePremium.instrumentShadow).toBe('none');
+    expect(theme.colors.dark.mobilePremium.instrumentShadow).toBe('none');
+  });
+
+  it('exports typography tokens on THE HARMONIC RAMP', () => {
+    // THE SCOREBOARD ramp (docs/architecture/
+    // scoreboard-thesis.md §3.2): FOUR sizes — 72 (the armed
+    // expression, the streak) · 36 (the statement) · 18 (the second
+    // voice, rows, body) · 12 (furniture caps, whisper figures).
+    // Every size divides the counter; every lineHeight = size + 6;
+    // statements in Space Grotesk (no condensed second family), every
+    // working figure in Martian Mono (tabular by construction),
+    // reading in the platform sans.
+    expect(theme.typography.mobileTitle.fontSize).toBe(18);
     expect(theme.typography.mobileTitle.fontFamily).toBe(theme.fonts.display);
     expect(theme.typography.mobileDisplay.fontSize).toBe(36);
-    expect(theme.typography.mobileDisplay.fontFamily).toBe(theme.fonts.displayCondensed);
+    expect(theme.typography.mobileDisplay.fontFamily).toBe(theme.fonts.display);
+    // No condensed second family: the slot resolves to the display face.
+    expect(theme.fonts.displayCondensed).toBe(theme.fonts.display);
     // The hero rank is retired — no size of its own, just the statement.
     expect(theme.typography.mobileHero.fontSize).toBe(36);
     expect(theme.typography.mobileAction.fontWeight).toBe('700');
-    expect(theme.typography.mobileCounter.fontSize).toBe(56);
+    expect(theme.typography.mobileCounter.fontSize).toBe(72);
     expect(theme.typography.mobileCounter.fontFamily).toBe(theme.fonts.mono);
     expect(theme.typography.mobileCounter.fontVariant).toEqual(['tabular-nums']);
-    expect(theme.typography.mobileFigure.fontSize).toBe(15);
+    expect(theme.typography.mobileFigure.fontSize).toBe(18);
     expect(theme.typography.mobileFigure.fontVariant).toEqual(['tabular-nums']);
     expect(theme.typography.mobileFigure.fontFamily).toBe(theme.fonts.mono);
     expect(theme.typography.mobileLedger.fontSize).toBe(12);
     expect(theme.typography.mobileLedger.fontVariant).toEqual(['tabular-nums']);
+  });
+
+  it('holds the harmonic-ramp arithmetic on every token', () => {
+    // The ramp law as a system invariant: every named style's size is
+    // one of {12, 18, 36, 72} (each an exact divisor of the counter)
+    // and every lineHeight = size + 6.
+    for (const [name, token] of Object.entries(theme.typography)) {
+      expect([12, 18, 36, 72]).toContain(token.fontSize);
+      expect(72 % token.fontSize).toBe(0);
+      expect(token.lineHeight).toBe(token.fontSize + 6);
+      expect(name).toBeTruthy();
+    }
+    // The second voice is 2.0x quieter than the statement (≥1.4 law).
+    expect(
+      theme.typography.mobileTitleCondensed.fontSize /
+        theme.typography.mobileTitle.fontSize,
+    ).toBeGreaterThanOrEqual(1.4);
   });
 });

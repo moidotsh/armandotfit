@@ -66,21 +66,31 @@ export { APP_LAYOUT } from './layout';
 export type { NavDrawerBrandPersistence, NavDrawerAnchor } from './layout';
 
 
-// THE GAUGE's meter step type — the zone ramp's keys (structure is
-// the shell's; values live in theme.colors.*.meter).
-export type { MeterStep } from './gauge';
-
-// THE GAUGE (docs/architecture/gauge-thesis.md) — the seventh
-// upending's presentation law: the air rhythm (the names carry over
-// unchanged — the air law is taste-independent), the GAUGE style
-// carriers, THE PIN RAIL geometry, THE SET PIPS, the mechanical
-// motion durations, and the rest instrument's constants.
+// THE SCOREBOARD (docs/architecture/scoreboard-thesis.md) — the
+// eighth upending's presentation law: the air rhythm (the names
+// carry over unchanged — the air law is taste-independent), the
+// SCOREBOARD style carriers, the register line's leader, and the
+// rest instrument's constants.
 export {
-  GAUGE,
+  SCOREBOARD,
   PAGE_GUTTER,
   BLOCK_GAP,
   ROW_GAP,
   HALO,
+  LEADER_CHAR,
+  REST_DEFAULT_SEC,
+  REST_STEP_SEC,
+} from './scoreboard';
+
+// The meter ramp's step keys — the zone ramp's keys (structure is
+// the shell's; values live in theme.colors.*.meter).
+export type { MeterStep } from './scoreboard';
+
+// THE GAUGE's retired machinery (docs/architecture/gauge-thesis.md)
+// — the pin-rail/pip/flip/roll geometry. Exported ONLY while
+// gauge-era screens still import it; dies with their rebuilds.
+export {
+  GAUGE,
   RAIL_SCALE,
   railMaxFor,
   pinRatio,
@@ -88,8 +98,6 @@ export {
   FLIP_DURATION_MS,
   ROLL_DURATION_MS,
   PIN_DROP_DURATION_MS,
-  REST_DEFAULT_SEC,
-  REST_STEP_SEC,
 } from './gauge';
 export type { RailScale, PipScale } from './gauge';
 

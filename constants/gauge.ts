@@ -1,28 +1,21 @@
 // constants/gauge.ts
 //
-// THE GAUGE's presentation law (docs/architecture/gauge-thesis.md):
-// the air rhythm, the statement/whisper style carriers, and THE PIN
-// RAIL + THE SET PIPS — the arithmetic that turns a load in
-// kilograms into a printed scale with a pin, and a set count into
-// pip groups. Colors live in theme.colors.*; this file owns the
-// geometry.
+// RETIRED PRESENTATION LAW — THE GAUGE (docs/architecture/
+// gauge-thesis.md), superseded by constants/scoreboard.ts (THE
+// SCOREBOARD). This file survives ONLY while gauge-era screens still
+// import the pin-rail/pip/flip/roll machinery; every import dies with
+// the screen rebuilds, and then this file is deleted. The air
+// constants and the rest instrument now live in scoreboard.ts.
 
 import type { TextStyle } from 'react-native';
 import { theme } from './theme';
+import { PAGE_GUTTER, BLOCK_GAP, ROW_GAP, HALO } from './scoreboard';
 
-// ── The air law ─────────────────────────────────────────────────────────
-// The 20px gutter (350px column at 390), the 32px block rhythm, the
-// 24px statement halo, the 8px row gap.
-export const PAGE_GUTTER = 20;
-export const BLOCK_GAP = 32;
-export const ROW_GAP = 8;
-export const HALO = 24;
+// ── The air law (re-exported from scoreboard.ts for gauge-era
+// callers) ──────────────────────────────────────────────────────────
+export { PAGE_GUTTER, BLOCK_GAP, ROW_GAP, HALO };
 
-// The style carriers every screen spreads — one statement per screen
-// (36 Instrument Cond, sentence case, the content itself — never a
-// page nameplate), the fact whisper beneath it, and the block
-// rhythm's baseline. `blockFirst` leads the page (no gap above the
-// first word); `statement` carries the halo below.
+// The style carriers every gauge-era screen spreads.
 export const GAUGE = {
   statement: {
     ...theme.typography.mobileTitleCondensed,
@@ -51,16 +44,6 @@ export const GAUGE = {
   } as TextStyle,
 } as const;
 
-/** The meter ramp's step keys — the categorical ramp in
- * theme.colors.*.meter (the zone ramp here; the structure is the
- * shell's, the values are the consumer's). */
-export type MeterStep =
-  | 'step1'
-  | 'step2'
-  | 'step3'
-  | 'step4'
-  | 'step5'
-  | 'step6';
 
 // ── THE PIN RAIL ────────────────────────────────────────────────────────
 // The load figure (thesis §4.3): a vertical tick column with the
@@ -117,8 +100,6 @@ export const FLIP_DURATION_MS = 110;
 export const ROLL_DURATION_MS = 140;
 export const PIN_DROP_DURATION_MS = 120;
 
-// ── THE REST INSTRUMENT ─────────────────────────────────────────────────
-// The rest countdown's constants (thesis §7): default 90 s, steppers
-// ±15 s. Session UI-state only — nothing joins the data spine.
-export const REST_DEFAULT_SEC = 90;
-export const REST_STEP_SEC = 15;
+// ── THE REST INSTRUMENT (moved to scoreboard.ts; re-exported for
+// gauge-era callers) ─────────────────────────────────────────────────
+export { REST_DEFAULT_SEC, REST_STEP_SEC } from './scoreboard';

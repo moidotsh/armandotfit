@@ -23,15 +23,15 @@
       Expo Web's static export strips every tag below from <head>
       except <link rel="icon"> when generating dist/index.html. The
       three places are a deliberate mirror set — keep them in sync in
-      the same change. The theme-color values are armandotfit's GAUGE
-      palette (the concrete's edge tone on every width — the chrome never
+      the same change. The theme-color values are armandotfit's SCOREBOARD
+      palette (the card's edge tone on every width — the chrome never
       shouts); update this file, the injector's extraction, and
       app/_layout.tsx together so the deployed HTML and the runtime
       injection agree.
       Full design + debugging checklist: docs/architecture/pwa-installability.md.
     -->
-    <meta name="theme-color" content="#E1E4E0" media="(min-width: 701px)" />
-    <meta name="theme-color" content="#E1E4E0" media="(max-width: 700px)" />
+    <meta name="theme-color" content="#EAE7E1" media="(min-width: 701px)" />
+    <meta name="theme-color" content="#EAE7E1" media="(max-width: 700px)" />
 
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icons/192.png" />
@@ -44,37 +44,28 @@
     <title>armandotfit</title>
 
     <!--
-      THE GAUGE faces — self-hosted, OFL (docs/architecture/
-      gauge-thesis.md §3.1). Instrument Sans (one variable file,
-      wght 400–700 + wdth 75–100) speaks the instrument's words;
-      'Instrument Cond' is the SAME file declared a second time with
-      font-stretch pinned at 75% — one download, two families, the
-      STATEMENT position. Martian Mono (one variable file, wght
-      100–800 + wdth 75–112.5) keeps EVERY figure; mono is tabular
-      by construction and reads like a machine readout. Mirror trio
-      discipline: this id'd style block, the runtime restore in
-      app/_layout.tsx, and the injector carry them together — plus
-      the preload lines so the first statement and the first figure
-      render in their faces, not fallbacks.
+      THE SCOREBOARD faces — self-hosted, OFL (docs/architecture/
+      scoreboard-thesis.md §3.1). Space Grotesk (one variable file,
+      wght 300–700) speaks the scoreboard's words — the statement,
+      subheads, row names, verb labels. Martian Mono (one variable
+      file, wght 100–800) keeps EVERY figure at every scale; mono is
+      tabular by construction and reads like a machine readout. No
+      condensed second family, no width tricks — one file, one
+      family, one job each. Mirror trio discipline: this id'd style
+      block, the runtime restore in app/_layout.tsx, and the
+      injector carry them together — plus the preload lines so the
+      first statement and the first figure render in their faces,
+      not fallbacks.
     -->
-    <link rel="preload" href="/fonts/instrument-sans-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/space-grotesk-var.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/martian-mono-var.woff2" as="font" type="font/woff2" crossorigin />
     <style id="arq-font-faces">
       @font-face {
-        font-family: 'Instrument Sans';
+        font-family: 'Space Grotesk';
         font-style: normal;
-        font-weight: 400 700;
-        font-stretch: 75% 100%;
+        font-weight: 300 700;
         font-display: swap;
-        src: url('/fonts/instrument-sans-var.woff2') format('woff2');
-      }
-      @font-face {
-        font-family: 'Instrument Cond';
-        font-style: normal;
-        font-weight: 400 700;
-        font-stretch: 75%;
-        font-display: swap;
-        src: url('/fonts/instrument-sans-var.woff2') format('woff2');
+        src: url('/fonts/space-grotesk-var.woff2') format('woff2');
       }
       @font-face {
         font-family: 'Martian Mono';
@@ -87,10 +78,10 @@
     </style>
 
     <!--
-      THE GAUGE boot plate — the pre-JS cover. armandotfit's design
-      language opens as the instrument room: the concrete's edge tone
-      (#E1E4E0) with the name stamped in ink Instrument caps and a
-      2px signal rule beneath it — not a white flash, not a colored
+      THE SCOREBOARD boot plate — the pre-JS cover. armandotfit's
+      design language opens as the printed card: the card's edge tone
+      (#EAE7E1) with the name stamped in ink Space Grotesk caps and a
+      2px red-ink rule beneath it — not a white flash, not a colored
       plate. The root layout lifts it via markBootReady() →
       html[data-boot-ready] as soon as React mounts (see
       utils/routeTransition.ts); reduced-motion users keep it as a
@@ -99,7 +90,7 @@
     -->
     <style id="ink-boot-plate">
       html:not([data-boot-ready]) body {
-        background: #e1e4e0;
+        background: #eae7e1;
       }
       html:not([data-boot-ready]) #root::before {
         content: 'ARMANDOTFIT';
@@ -108,9 +99,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #e1e4e0;
-        color: #12161a;
-        font-family: 'Instrument Sans', -apple-system, sans-serif;
+        background: #eae7e1;
+        color: #1b1916;
+        font-family: 'Space Grotesk', -apple-system, sans-serif;
         font-size: 24px;
         font-weight: 700;
         letter-spacing: 0.14em;
@@ -125,7 +116,7 @@
         width: 84px;
         height: 2px;
         margin-left: -42px;
-        background: #c23a00;
+        background: #be2b20;
         z-index: 9999;
       }
       html[data-boot-ready] #root::before,
@@ -148,7 +139,7 @@
         height: 100%;
         margin: 0;
         padding: 0;
-        background: #e1e4e0;
+        background: #eae7e1;
       }
       #root {
         display: flex;

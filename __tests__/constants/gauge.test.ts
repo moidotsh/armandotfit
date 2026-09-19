@@ -50,9 +50,13 @@ describe('the air law carries over (taste-independent)', () => {
   });
 
   it('spreads the statement from the shell token', () => {
+    // Presentation expectation rewritten for THE SCOREBOARD (the
+    // eighth upending): the carriers ride the harmonic ramp — the
+    // statement is the display face itself (no condensed second
+    // family) at 36, rows at 18.
     expect(GAUGE.statement.fontSize).toBe(36);
-    expect(GAUGE.statement.fontFamily).toBe('Instrument Cond');
-    expect(GAUGE.row.fontSize).toBe(17);
+    expect(GAUGE.statement.fontFamily).toBe('Space Grotesk');
+    expect(GAUGE.row.fontSize).toBe(18);
   });
 });
 

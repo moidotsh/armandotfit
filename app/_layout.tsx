@@ -123,17 +123,16 @@ function RootShell() {
       ].join(''),
     );
 
-    // THE GAUGE faces — runtime restore of index.html's id'd
+    // THE SCOREBOARD faces — runtime restore of index.html's id'd
     // @font-face block (static export strips <head> styles; the
     // build-time injector covers exported routes, this covers dev and
-    // anything the strip still misses). 'Instrument Cond' is the same
-    // variable file with font-stretch pinned at 75% — one download,
-    // two families (the width-axis trick; see gauge-thesis §3.1).
-    // Mirror trio: index.html, scripts/inject-critical-web.ts, this
-    // block.
+    // anything the strip still misses). Space Grotesk (words) +
+    // Martian Mono (every figure); no condensed second family — see
+    // scoreboard-thesis §3.1. Mirror trio: index.html,
+    // scripts/inject-critical-web.ts, this block.
     const ensureFontLinks = () => {
       const fontFiles = [
-        '/fonts/instrument-sans-var.woff2',
+        '/fonts/space-grotesk-var.woff2',
         '/fonts/martian-mono-var.woff2',
       ];
       for (const href of fontFiles) {
@@ -151,8 +150,7 @@ function RootShell() {
     ensureStyle(
       'arq-font-faces',
       [
-        "@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400 700;font-stretch:75% 100%;font-display:swap;src:url('/fonts/instrument-sans-var.woff2') format('woff2')}",
-        "@font-face{font-family:'Instrument Cond';font-style:normal;font-weight:400 700;font-stretch:75%;font-display:swap;src:url('/fonts/instrument-sans-var.woff2') format('woff2')}",
+        "@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:300 700;font-display:swap;src:url('/fonts/space-grotesk-var.woff2') format('woff2')}",
         "@font-face{font-family:'Martian Mono';font-style:normal;font-weight:100 800;font-stretch:75% 112.5%;font-display:swap;src:url('/fonts/martian-mono-var.woff2') format('woff2')}",
       ].join(''),
     );

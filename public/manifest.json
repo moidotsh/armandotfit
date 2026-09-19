@@ -1,14 +1,14 @@
 {
   "name": "Armandotfit",
   "short_name": "Armandotfit",
-  "description": "Armandotfit — workout tracking PWA",
+  "description": "Armandotfit \u2014 workout tracking PWA",
   "lang": "en",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F2EEE5",
-  "theme_color": "#C24100",
+  "background_color": "#F4F2EE",
+  "theme_color": "#EAE7E1",
   "icons": [
     {
       "src": "/icons/192.png",
