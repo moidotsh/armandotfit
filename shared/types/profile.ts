@@ -10,12 +10,18 @@ import type { ID } from './api';
  */
 export type PreferredSplit = 'oneADay' | 'twoADay';
 
-/** User row. restDays drives the rest-day deactivation in the picker. */
+/** The weight DISPLAY unit (users.weight_unit). Storage stays kg. */
+export type WeightUnit = 'kg' | 'lb';
+
+/** User row. restDays drives the rest-day deactivation in the picker;
+ * weightUnit drives the display conversion (kg storage throughout). */
 export interface Profile {
   id: ID;
   displayName: string;
   /** JS getDay integers (Sun=0..Sat=6) marked as rest. */
   restDays: number[];
+  /** Display-only preference — every stored weight is kg. */
+  weightUnit: WeightUnit;
   createdAt: string;
 }
 
@@ -23,4 +29,5 @@ export interface Profile {
 export interface ProfileUpdateDTO {
   displayName?: string;
   restDays?: number[];
+  weightUnit?: WeightUnit;
 }

@@ -22,6 +22,7 @@ import { DAY_OF_WEEK_LABELS, BLOCK_GAP, GAUGE, theme } from '../constants';
 import { useToast } from '../context';
 import { useRestStore } from '../stores';
 import { logger } from '../utils/logger';
+import type { WeightUnit } from '../shared/types';
 
 const PREFERENCE_LABELS: Record<ColorSchemePreference, string> = {
   light: 'Enamel',
@@ -65,6 +66,10 @@ export default function SettingsScreen() {
 
   const restDayIds = restDays.map(String);
 
+  // THE WEIGHT UNIT — the display conversion preference (kg storage
+  // throughout; utils/weight.ts owns the arithmetic).
+  const weightUnit = profileQuery.data?.weightUnit ?? 'kg';
+
   // THE REST INSTRUMENT's remembered default (gauge-thesis §7): the
   // interval a fresh rest starts with. ±15s steppers, mono readout —
   // the panel row that tunes the Floor's clock.
@@ -90,43 +95,40 @@ export default function SettingsScreen() {
         </Text>
       </View>
 
-      {/* The theme trio — ink-invert selection, no panel, no rules. */}
+      {/* The theme measure — three tiles, inversion is selection
+          (the same pick vocabulary as the funnel's day rail). */}
       <View style={styles.block}>
-        {PREFERENCE_ORDER.map((pref) => {
-          const isActive = preference === pref;
-          return (
-            <Pressable
-              key={pref}
-              onPress={() => setPreference(pref)}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: isActive }}
-              style={({ pressed }) => [
-                styles.preferenceRow,
-                pressed ? { opacity: 0.6 } : null,
-              ]}
-            >
-              <Text style={[styles.preferenceLabel, { color: colors.text }]}>
-                {PREFERENCE_LABELS[pref]}
-              </Text>
-              <View
-                style={[
-                  styles.preferenceRadio,
+        <View style={styles.unitRow}>
+          {PREFERENCE_ORDER.map((pref) => {
+            const isActive = preference === pref;
+            return (
+              <Pressable
+                key={pref}
+                onPress={() => setPreference(pref)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isActive }}
+                accessibilityLabel={`Theme ${PREFERENCE_LABELS[pref]}`}
+                style={({ pressed }) => [
+                  styles.unitTile,
                   {
-                    // Selection = inversion (ink fill, page-colored
-                    // check), matching the funnel's picked tile —
-                    // not a brand disc.
-                    borderColor: isActive ? colors.text : colors.border,
-                    backgroundColor: isActive ? colors.text : 'transparent',
+                    backgroundColor: isActive ? colors.text : colors.glass.inputBackground,
                   },
+                  pressed ? { opacity: 0.6 } : null,
                 ]}
+                testID={`theme-tile-${pref}`}
               >
-                {isActive ? (
-                  <Check size={12} color={colors.background} strokeWidth={3} />
-                ) : null}
-              </View>
-            </Pressable>
-          );
-        })}
+                <Text
+                  style={[
+                    styles.unitTileLabel,
+                    { color: isActive ? colors.background : colors.text },
+                  ]}
+                >
+                  {pref === 'light' ? 'ENAMEL' : pref === 'dark' ? 'NIGHT' : 'SYSTEM'}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
       {/* THE REST INSTRUMENT's default — the interval the Floor's
@@ -175,6 +177,52 @@ export default function SettingsScreen() {
           >
             <Text style={[styles.restStepGlyph, { color: colors.text }]}>+</Text>
           </Pressable>
+        </View>
+      </View>
+
+      {/* THE WEIGHT UNIT — the display conversion (storage stays
+          kilograms; every read converts). Inversion is selection. */}
+      <View style={styles.block}>
+        <View style={styles.unitRow}>
+          <Text style={[styles.unitInlineLabel, { color: colors.textMuted }]}>
+            WEIGHT UNIT
+          </Text>
+          {(['kg', 'lb'] as WeightUnit[]).map((u) => {
+            const isActive = weightUnit === u;
+            return (
+              <Pressable
+                key={u}
+                onPress={() => {
+                  if (isActive) return;
+                  updateProfile.mutate({ weightUnit: u }, {
+                    onError: (err) => {
+                      logger.warn('mutations', 'weight-unit update failed:', err.message);
+                    },
+                  });
+                }}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isActive }}
+                accessibilityLabel={`Weights in ${u === 'kg' ? 'kilograms' : 'pounds'}`}
+                style={({ pressed }) => [
+                  styles.unitTile,
+                  {
+                    backgroundColor: isActive ? colors.text : colors.glass.inputBackground,
+                  },
+                  pressed ? { opacity: 0.6 } : null,
+                ]}
+                testID={`unit-tile-${u}`}
+              >
+                <Text
+                  style={[
+                    styles.unitTileLabel,
+                    { color: isActive ? colors.background : colors.text },
+                  ]}
+                >
+                  {u.toUpperCase()}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
 
@@ -305,25 +353,11 @@ const styles = StyleSheet.create({
   statement: {
     ...GAUGE.statement,
   },
-  preferenceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 44,
-    gap: 12,
-  },
-  preferenceLabel: {
-    flex: 1,
-    // Row titles read in the platform sans (body voice) — the display
-    // face is for statements, not settings labels.
-    ...theme.typography.mobileItemTitle,
-  },
-  preferenceRadio: {
-    width: 22,
-    height: 22,
-    borderRadius: theme.shapes.tile,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
+  // The unit measure's inline label — the printed word beside its
+  // tiles, on one line.
+  unitInlineLabel: {
+    ...GAUGE.whisper,
+    marginRight: 8,
   },
   whisper: {
     ...GAUGE.whisper,
@@ -361,6 +395,22 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
     minWidth: 64,
     textAlign: 'center',
+  },
+  // The tile MEASURE (theme, weight unit) — inversion is selection.
+  unitRow: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  unitTile: {
+    flex: 1,
+    height: 44,
+    borderRadius: theme.shapes.tile,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  unitTileLabel: {
+    ...theme.typography.mobileTag,
+    letterSpacing: 0.8,
   },
   // The rest-day MEASURE — seven marks; a rest day is a struck mark
   // (selection is ink inversion, never brand). Square-cut, agate

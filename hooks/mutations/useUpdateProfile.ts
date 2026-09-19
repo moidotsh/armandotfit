@@ -45,6 +45,7 @@ export function useUpdateProfile() {
           ...previousProfile,
           ...(dto.displayName !== undefined ? { displayName: dto.displayName } : null),
           ...(dto.restDays !== undefined ? { restDays: dto.restDays } : null),
+          ...(dto.weightUnit !== undefined ? { weightUnit: dto.weightUnit } : null),
         };
         queryClient.setQueryData<Profile | null>(profileKey, optimistic);
       }

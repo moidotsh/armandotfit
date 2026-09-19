@@ -14,7 +14,8 @@ import {
   RepositoryErrorCode,
   ok,
 } from './types';
-import type { Profile, ProfileUpdateDTO } from '../../../shared/types';
+import type { Profile, ProfileUpdateDTO, WeightUnit } from '../../../shared/types';
+import { isWeightUnit } from '../../../utils/weight';
 
 interface UserRow {
   id: string;
@@ -67,6 +68,7 @@ export class UserProfileRepository
       const snake: Record<string, unknown> = {};
       if (dto.displayName !== undefined) snake.display_name = dto.displayName;
       if (dto.restDays !== undefined) snake.rest_days = dto.restDays;
+      if (dto.weightUnit !== undefined) snake.weight_unit = dto.weightUnit;
       if (Object.keys(snake).length === 0) {
         const existing = await this.findByUserId(id);
         if (!existing.success) return existing;
@@ -126,11 +128,18 @@ function errNotFound(): RepositoryResult<Profile> {
   return { success: false, error };
 }
 
+/** The stored weight_unit string → the typed unit ('kg' when absent
+ * or unrecognized — the storage default). */
+function toWeightUnit(v: string | null | undefined): WeightUnit {
+  return isWeightUnit(v) ? v : 'kg';
+}
+
 function toProfile(row: UserRow): Profile {
   return {
     id: row.id,
     displayName: row.display_name,
     restDays: row.rest_days ?? [],
+    weightUnit: toWeightUnit(row.weight_unit),
     createdAt: row.created_at,
   };
 }

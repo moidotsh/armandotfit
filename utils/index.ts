@@ -5,6 +5,18 @@
 
 export * from './platform';
 export * from './logger';
+export {
+  KG_PER_LB,
+  isWeightUnit,
+  toDisplayWeight,
+  fromDisplayWeight,
+  roundDisplayWeight,
+  weightStep,
+  weightUnitLabel,
+  formatWeight,
+  formatVolumeWeight,
+} from './weight';
+export type { WeightUnit } from './weight';
 export * from './errors';
 export * from './api-client';
 export * from './validation';
