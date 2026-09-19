@@ -1,4 +1,11 @@
-# THE GAUGE — the gym's instrument panel
+# THE GAUGE — the gym's instrument panel (RETIRED)
+
+> **RETIRED (2027-01).** Superseded by `scoreboard-thesis.md` (THE
+> SCOREBOARD — the eighth upending). This file survives as history:
+> whatever of it survives in the product survived on its own argument
+> there, not on this document's authority. The succession: logbook →
+> signal → count → broadsheet → quiet page → board → gauge →
+> scoreboard.
 
 > The seventh upending (2027-01). This document is the compass: the
 > point of view, the pillars, the printed-figure language, the type
