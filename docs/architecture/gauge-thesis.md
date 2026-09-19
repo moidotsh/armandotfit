@@ -211,6 +211,16 @@ vs steel 4.85 where edges need carrying. Dark: all ≥5.05. Wire: text
 5.22 / warning 5.62 / error 6.41 / info 5.78; dark 8.28 / 9.17 /
 6.69 / 7.49.
 
+### 4.4b The unit law
+
+`users.weight_unit` (`'kg' | 'lb'`) is a DISPLAY preference and
+nothing more: storage stays kilograms, every digit-bearing surface
+converts at read (`utils/weight.ts` — the avoirdupois factor, one
+display decimal), steppers step 2.5 kg / 5 lb, and the Floor's armed
+values live in display units crossing into kg at the log boundary.
+The rails never convert — they encode ratios, and conversion is a
+shared factor.
+
 ### 4.5 Signal's three appearances
 
 The signal hue appears exactly as: (1) the RECORD mark — PR rows, the
