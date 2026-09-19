@@ -38,7 +38,7 @@ import { AuthProvider, ToastProvider, ThemeProvider, useAppTheme } from '../cont
 import { AuthGuard, ToastContainer, AppErrorBoundary } from '../components/primitives';
 import { QueryProvider } from '../lib/react-query';
 import { RouteCurtain, OfflineBanner } from '../components/MobilePremium';
-import { MusicSheet, SessionSyncWatcher } from '../components/composed';
+import { SessionSyncWatcher } from '../components/composed';
 import { Z_INDEX } from '../constants';
 import { useIsOnline, useWorkoutStore } from '../stores';
 import { usePendingSessionSaves } from '../hooks';
@@ -195,9 +195,6 @@ function RootShell() {
                 {/* The offline queue's flush half — reconnect/boot sync
                     of queued session saves, with cache invalidation. */}
                 <SessionSyncWatcher />
-                {/* THE MUSIC SURFACE — the hidden player + sheet mount
-                    once at the root: audio persists across routes. */}
-                <MusicSheet />
                 {!isOnline ? (
                   <OfflineBanner
                     variant="offline"

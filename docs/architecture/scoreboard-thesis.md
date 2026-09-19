@@ -372,12 +372,12 @@ home.
 Focal: "404" as the figure-statement. One line of copy, one way
 back.
 
-### THE MUSIC SURFACE — THE PLAYER (sheet + mini player)
-The owner's own reduction is the law: one input that takes anything
-(search or URL), a minimal player. The sheet reads as register lines
-(title · duration figure), the picks list as a recency register, the
-mini player keeps the thumbnail-as-disc (content, not chrome) with
-Media Session controls unchanged. Red marks the playing row (live).
+### THE MUSIC SURFACE — REMOVED (2027-01, the owner's call)
+The hidden player, the sheet, the picks list, and their store/
+service/utils are deleted; the `music_picks` table remains in the
+schema untouched. The register treatment sketched below never shipped
+— kept as the record of the decision: one input taking anything, a
+minimal player, register lines, the playing row in red.
 
 ## 9. What this thesis keeps, kills, or reworks
 

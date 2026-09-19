@@ -23,4 +23,3 @@ export { useProfile } from './useProfile';
 export { useLastUsedTags } from './useLastUsedTags';
 export { useTopSetsByName, type TopSetFact } from './useTopSets';
 
-export { useMusicPicks } from './useMusicPicks';

@@ -5,4 +5,3 @@
 export { useLogWorkout } from './useLogWorkout';
 export { useUpdateSession, useDeleteSession } from './useUpdateSession';
 export { useUpdateProfile } from './useUpdateProfile';
-export { useSaveMusicPick } from './useSaveMusicPick';

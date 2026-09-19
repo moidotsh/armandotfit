@@ -1,17 +1,16 @@
 # armandotfit
 
-> A personal fitness PWA — the AM/PM hypertrophy program, six-table workout logging with tag-based setup context, computed-at-read progression, and the music surface. Built on [arqavellum](../arqavellum) (public starter shell). Theme: **THE GAUGE — the gym's instrument panel** (`docs/architecture/gauge-thesis.md`).
+> A personal fitness PWA — the AM/PM hypertrophy program, six-table workout logging with tag-based setup context, computed-at-read progression. Built on [arqavellum](../arqavellum) (public starter shell). Theme: **THE SCOREBOARD — numerals you read across the room** (`docs/architecture/scoreboard-thesis.md`).
 
 ## What armandotfit is
 
 A gym logbook for one to a few serious lifters. You train a fixed 4-day AM/PM full-body hypertrophy split; the app suggests the day's sessions, you log sets in seconds, and progression/streaks/analytics are computed from raw history — never precomputed or stored.
 
-- **Six tables, raw facts only** — `users`, `exercises` (coarse identities), `sessions`, `logged_exercises` (with free-form `tags`), `logged_sets` (a logged row is a done set), plus `music_picks` (the owner-sanctioned sixth table — the music surface's persisted recents).
+- **Six tables, raw facts only** — `users`, `exercises` (coarse identities), `sessions`, `logged_exercises` (with free-form `tags`), `logged_sets` (a logged row is a done set), plus `music_picks` (the sixth table remains in the schema; its surface was removed 2027-01 — the owner plays music elsewhere).
 - **Coarse identity + tags.** "Lat Pulldown" is one exercise; underhand grip, rope attachment, which machine — those are tags, filterable at read time. Suggested tags ride the program slots.
 - **The program is TypeScript** (`shared/exercises/splits.ts`) — 4 days × AM/PM × 4 slots with programmed sets/reps ranges, plus a one-a-day compression. Never modeled in the database.
 - **THE GAUGE theme** — loads render as pin rails (a printed tick scale with the pin at the working weight), set counts as pip groups, digits on rolling counters, statuses on flip tiles; the rest countdown is a first-class instrument after every logged set. One signal hue; the verb is the heaviest ink. Light (ENAMEL) default, dark (NIGHT GYM) opt-in.
 - **Offline-resilient** — the live session draft persists locally (a reload or OS kill mid-gym loses nothing) and FINISH while offline queues the save, syncing on reconnect.
-- **Music surface** — a hidden YouTube player with search-when-keyed, recent picks persisted to `music_picks`, link paste (song or playlist), lock-screen controls (Media Session), and volume. Optional: needs `EXPO_PUBLIC_YOUTUBE_API_KEY` for search; keyless mode still plays pasted links.
 - **PWA-first** — installable from the browser (per-route injected manifest/fonts), native export is a consumer extension.
 - **Email/password auth**, guard on — history is per-user.
 
@@ -19,7 +18,7 @@ A gym logbook for one to a few serious lifters. You train a fixed 4-day AM/PM fu
 
 ```bash
 bun install
-cp .env.local.example .env.local   # Supabase URL + anon key (+ optional YouTube key)
+cp .env.local.example .env.local   # Supabase URL + anon key
 bunx supabase db push              # applies the migration pairs (greenslate + music_picks)
 bun run web                        # → localhost:8081
 ```
@@ -52,8 +51,7 @@ The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 13-audit pre-co
 | Logging write/read paths | `WorkoutRepository` + `workoutService` + `hooks/mutations/useLogWorkout.ts` |
 | Progression / streaks / analytics / charts (computed at read) | `services/{progressionService,analyticsService,chartData}.ts` |
 | Day-of-split + rest-day picker logic | `constants/workoutSplits.ts` |
-| Schema (five logging tables + seed; music_picks) | `supabase/migrations/` (greenslate pair + music pair) |
-| Music playback (hidden YouTube player) | `utils/youtube/{playerHost,mediaSession}.ts` + `components/composed/MusicSheet.tsx` |
+| Schema (five logging tables + seed; music_picks kept, unused) | `supabase/migrations/` (greenslate pair + music pair) |
 
 ## Routes
 
