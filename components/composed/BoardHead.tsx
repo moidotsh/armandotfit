@@ -18,7 +18,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
-import { BOARD, theme } from '../../constants';
+import { GAUGE, theme } from '../../constants';
 
 export interface BoardHeadProps {
   /** THE STATEMENT — the screen's one loud thing (sentence case). */
@@ -84,13 +84,13 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   statement: {
-    ...BOARD.statement,
+    ...GAUGE.statement,
   },
   figureStatement: {
     ...theme.typography.mobileCounter,
   },
   fact: {
-    ...BOARD.fact,
+    ...GAUGE.fact,
   },
 });
 

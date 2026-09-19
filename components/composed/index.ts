@@ -17,9 +17,6 @@ export { SearchStatement, type SearchStatementProps } from './SearchStatement';
 export { NextStation, type NextStationProps } from './NextStation';
 export { TrainingConsistencyGrid, type TrainingConsistencyGridProps } from './TrainingConsistencyGrid';
 export { WorkoutListSkeleton } from './WorkoutListSkeleton';
-export { PlateStack, type PlateStackProps } from './PlateStack';
-export { TallyGates, type TallyGatesProps } from './TallyGates';
-
 // THE GAUGE figures (docs/architecture/gauge-thesis.md) — the pin
 // rail (load), the set pips, the flip tile, the rolling counter.
 export { PinRail, formatLoad, type PinRailProps } from './PinRail';

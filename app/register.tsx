@@ -23,7 +23,7 @@ import { ChevronLeft } from '@tamagui/lucide-icons-2';
 import { useAuth, useAppTheme } from '../context';
 import { replaceWithLogin, safeGoBack } from '../navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SCREEN_BODY_STYLE, BOARD, theme } from '../constants';
+import { SCREEN_BODY_STYLE, GAUGE, theme } from '../constants';
 
 export default function RegisterScreen() {
   const { signUp } = useAuth();
@@ -185,10 +185,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   block: {
-    ...BOARD.block,
+    ...GAUGE.block,
   },
   statement: {
-    ...BOARD.statement,
+    ...GAUGE.statement,
   },
   helpLinkBox: {
     minHeight: 44,

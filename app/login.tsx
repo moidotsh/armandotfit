@@ -25,7 +25,7 @@ import { navigateToRegister, navigateToForgotPassword } from '../navigation';
 import {
   MOBILE_CONTENT_WIDTH_STYLE,
   SCREEN_BODY_STYLE,
-  BOARD,
+  GAUGE,
   theme,
 } from '../constants';
 
@@ -155,10 +155,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   block: {
-    ...BOARD.block,
+    ...GAUGE.block,
   },
   statement: {
-    ...BOARD.statement,
+    ...GAUGE.statement,
   },
   linkBox: {
     minHeight: 44,

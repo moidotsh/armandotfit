@@ -65,20 +65,9 @@ export { APP_LAYOUT } from './layout';
 export type { NavDrawerBrandPersistence, NavDrawerAnchor } from './layout';
 
 
-// THE BOARD (docs/architecture/board-thesis.md) — THE PLATE CODE
-// (denominations, per-scale slab geometry, greedy decomposition,
-// tally geometry). Colors live in theme.colors.*.meter; this is the
-// arithmetic. The air law names moved to gauge.ts (same values) —
-// retired with the last BOARD screen.
-export {
-  BOARD,
-  PLATE_DENOMINATIONS,
-  PLATE_SCALE,
-  PLATE_QUANTUM,
-  decomposeLoad,
-  TALLY_SCALE,
-} from './board';
-export type { PlateSegment, PlateScale, MeterStep, TallyScale } from './board';
+// THE GAUGE's meter step type — the zone ramp's keys (structure is
+// the shell's; values live in theme.colors.*.meter).
+export type { MeterStep } from './gauge';
 
 // THE GAUGE (docs/architecture/gauge-thesis.md) — the seventh
 // upending's presentation law: the air rhythm (the names carry over

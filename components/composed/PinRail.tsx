@@ -106,7 +106,12 @@ export function PinRail({
           top, zero at the bottom, and THE PIN'S LABEL riding the pin. */}
       {counter ? (
         <View style={[StyleSheet.absoluteFill, { left: 0, width: labelCol }]}>
-          <Text style={[styles.scaleWord, { color: colors.textMuted }]}>{String(max)}</Text>
+          <Text
+            style={[styles.scaleWord, { color: colors.textMuted }]}
+            testID={testID ? `${testID}-max` : undefined}
+          >
+            {String(max)}
+          </Text>
           <Animated.Text
             style={[
               styles.pinWord,

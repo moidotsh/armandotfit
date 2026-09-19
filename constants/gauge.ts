@@ -51,6 +51,17 @@ export const GAUGE = {
   } as TextStyle,
 } as const;
 
+/** The meter ramp's step keys — the categorical ramp in
+ * theme.colors.*.meter (the zone ramp here; the structure is the
+ * shell's, the values are the consumer's). */
+export type MeterStep =
+  | 'step1'
+  | 'step2'
+  | 'step3'
+  | 'step4'
+  | 'step5'
+  | 'step6';
+
 // ── THE PIN RAIL ────────────────────────────────────────────────────────
 // The load figure (thesis §4.3): a vertical tick column with the
 // engaged range 0→load filled and THE PIN — a steel bar crossing the
