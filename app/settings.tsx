@@ -341,19 +341,14 @@ export default function SettingsScreen() {
         </View>
       ) : null}
 
+      {/* The promotion audit — one information line (the rule's
+          numeric half, computed at read; the chit was decoration). */}
       <View style={styles.block}>
-        <ColophonRow
-          label="Tag promotions"
-          value={earnedTags.length > 0 ? earnedTags.join(' · ') : 'none earned yet'}
-          onPress={() =>
-            showToast(
-              'info',
-              earnedTags.length > 0
-                ? `${earnedTags.join(', ')} — 10+ uses each. Promote a tag when the same filter has been needed twice.`
-                : 'Tags earn promotion after 10 consistent uses and a twice-attempted filter.',
-            )
-          }
-        />
+        <Text style={[styles.promotionLine, { color: colors.textMuted }]} numberOfLines={1}>
+          {earnedTags.length > 0
+            ? `tag promotions earned: ${earnedTags.join(' · ')}`
+            : 'tag promotions: none earned yet (10+ uses each)'}
+        </Text>
       </View>
 
       <View style={styles.block}>
@@ -508,6 +503,10 @@ const styles = StyleSheet.create({
   },
   signedInAs: {
     ...theme.typography.mobileLedger,
+  },
+  promotionLine: {
+    ...theme.typography.mobileLedger,
+    minHeight: 20,
   },
   colophonRow: {
     minHeight: 48,
