@@ -2,9 +2,11 @@
 // Password reset request. Supabase sends a reset link; nothing else
 // happens on-device until the user clicks it from their inbox.
 //
-// THE BOARD PAGE's auth: the action sentence IS the statement
+// THE GATE's reset page: the action sentence IS the statement
 // ("Reset."), the form sits open on the field, links are underlined
-// ink, the verb is the one red.
+// ink, the verb is ink-filled — and the verb IS the sentence
+// (touch amendment: SEND RESET LINK already says what a helper
+// sentence would repeat).
 
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -72,10 +74,6 @@ export default function ForgotPasswordScreen() {
             />
           ) : (
             <>
-              <Text style={[styles.help, { color: colors.textMuted }]}>
-                Enter your email and we&rsquo;ll send a link to reset your password.
-              </Text>
-              <View style={{ height: 16 }} />
               <MobileInput
                 label="Email"
                 value={email}
@@ -146,9 +144,6 @@ const styles = StyleSheet.create({
   },
   statement: {
     ...INTERVAL.statement,
-  },
-  help: {
-    ...theme.typography.mobileBody,
   },
   helpLinkBox: {
     minHeight: 44,

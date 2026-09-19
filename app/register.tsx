@@ -4,10 +4,11 @@
 // session exists. The AuthProvider fires `session === null` and the
 // user stays on this screen with a "check your inbox" notice.
 //
-// THE BOARD PAGE's auth: the action sentence IS the statement
+// THE GATE's register page: the action sentence IS the statement
 // ("Create account."), the brand dies (the back chevron leads), the
 // form sits open on the field, links are underlined ink, the verb is
-// the one red.
+// ink-filled (touch amendment: one fact, one place — the password
+// rule rides the placeholder alone; the verb never wore red).
 
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -117,7 +118,6 @@ export default function RegisterScreen() {
                 placeholder="At least 8 characters"
                 secureTextEntry
                 autoComplete="new-password"
-                helperText="Use at least 8 characters."
               />
               <View style={{ height: 12 }} />
               <MobileInput
