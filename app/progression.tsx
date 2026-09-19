@@ -58,14 +58,6 @@ export default function ProgressionScreen() {
       surface="goal"
       onBack={safeGoBack}
       testID="record-scroll"
-      compact={{
-        title: 'The record book',
-        figure: (
-          <Text style={[styles.compactFigure, { color: colors.brandText }]}>
-            {`${summary?.streak.current ?? 0}D`}
-          </Text>
-        ),
-      }}
       contentContainerStyle={styles.bodyContent}
     >
       {summaryQuery.isLoading ? (
@@ -188,9 +180,6 @@ export default function ProgressionScreen() {
 
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 80 },
-  compactFigure: {
-    ...theme.typography.mobileEyebrow,
-  },
   block: {
     ...GAUGE.block,
   },

@@ -93,14 +93,6 @@ export default function ProgramScreen() {
       surface="analytics"
       onBack={safeGoBack}
       testID="program-scroll"
-      compact={{
-        title: 'The rotation',
-        figure: (
-          <Text style={[styles.compactFigure, { color: colors.textMuted }]}>
-            {`${days.length} DAYS`}
-          </Text>
-        ),
-      }}
       contentContainerStyle={styles.bodyContent}
     >
       {days.map((day, di) => {
@@ -209,9 +201,6 @@ export default function ProgramScreen() {
 
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 80 },
-  compactFigure: {
-    ...theme.typography.mobileEyebrow,
-  },
   dayFirst: {
     ...GAUGE.blockFirst,
   },

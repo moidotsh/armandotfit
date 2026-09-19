@@ -1,24 +1,23 @@
 // components/composed/BoardHead.tsx
 //
-// The page head (docs/architecture/gauge-thesis.md §3, §5):
+// The page head (docs/architecture/scoreboard-thesis.md §3, §5):
 // the one statement per screen (+ optional furniture whisper above,
 // + optional fact line waiting outside the halo). One component so
 // the hierarchy law is structural, not disciplined — a screen can't
 // hand-roll a second statement or a mis-scaled fact line if it
 // composes this instead.
 //
-//   variant 'words'  (default) — the statement in Instrument Cond 36/700
+//   variant 'words'  (default) — the statement in Space Grotesk 36/700
 //   variant 'figure' — a FIGURE-statement in Martian at counter scale
 //                      (the receipt's tonnage, the streak, the count)
 //
-// The whisper carries the signal read when it announces the
-// living position (the window, the record); it stays quiet ink
-// otherwise.
+// The whisper carries the red-ink read when it announces the living
+// position (the window, the record); it stays quiet ink otherwise.
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
-import { GAUGE, theme } from '../../constants';
+import { SCOREBOARD, theme } from '../../constants';
 
 export interface BoardHeadProps {
   /** THE STATEMENT — the screen's one loud thing (sentence case). */
@@ -29,11 +28,11 @@ export interface BoardHeadProps {
   fact?: string | null;
   /** Furniture caps above the statement (≤3 words). */
   whisper?: string | null;
-  /** The whisper's read — record-orange for the living position. */
+  /** The whisper's read — red ink for the living position. */
   whisperTone?: 'record' | 'quiet';
-  /** Statement face: words (Instrument Cond) or figure (Martian counter). */
+  /** Statement face: words (Space Grotesk) or figure (Martian counter). */
   variant?: 'words' | 'figure';
-  /** Statement ink — the record-orange read for record figures. */
+  /** Statement ink — the red-ink read for record figures. */
   tone?: 'ink' | 'record';
 }
 
@@ -84,13 +83,13 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   statement: {
-    ...GAUGE.statement,
+    ...SCOREBOARD.statement,
   },
   figureStatement: {
     ...theme.typography.mobileCounter,
   },
   fact: {
-    ...GAUGE.fact,
+    ...SCOREBOARD.fact,
   },
 });
 
