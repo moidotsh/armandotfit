@@ -32,6 +32,9 @@ const MODALITY_DISTANCE: Record<string, Record<string, number>> = {
  * Rank substitution alternatives for an exercise. Composite score:
  *   +5  same movement family (same pattern, different equipment)
  *   +3  per shared primary muscle
+ *   +2  per shared equipment, up to +4 — THE BOARD's zone law: the
+ *       gym is geography, and an alternative you can walk to in five
+ *       seconds beats a marginally better match across the room
  *   +1  per shared secondary↔any muscle
  *   −2  × modality distance (floor options rank low from gym equipment)
  *
@@ -56,6 +59,15 @@ export function rankAlternatives(
         current.primaryMuscles.includes(m),
       ).length;
       score += primOverlap * 3;
+
+      // Equipment-zone overlap: the gym is geography — an alternative
+      // at the same station (shared equipment) is the one you can walk
+      // to without leaving the aisle.
+      const zoneOverlap = e.equipment.filter((eq) => {
+        const slug = typeof eq === 'string' ? eq : eq.slug;
+        return current.equipment.some((ce) => (typeof ce === 'string' ? ce : ce.slug) === slug);
+      }).length;
+      score += Math.min(zoneOverlap, 2) * 2;
 
       // Secondary overlap: supporting cast matters less.
       const secOverlap = e.secondaryMuscles.filter((m) =>

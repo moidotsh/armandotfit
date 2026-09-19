@@ -64,9 +64,6 @@ export { DESKTOP_LAYOUT_MODE } from './styles';
 export { APP_LAYOUT } from './layout';
 export type { NavDrawerBrandPersistence, NavDrawerAnchor } from './layout';
 
-// THE QUIET PAGE air law — now a compat shim aliasing THE BOARD's
-// carriers (see board.ts); screens migrate to BOARD as they rebuild.
-export { PAGE_GUTTER, BLOCK_GAP, ROW_GAP, HALO, FACT_GAP, QUIET } from './quiet';
 
 // THE BOARD (docs/architecture/board-thesis.md) — the air law's live
 // declaration point + THE PLATE CODE (denominations, per-scale slab
@@ -74,6 +71,10 @@ export { PAGE_GUTTER, BLOCK_GAP, ROW_GAP, HALO, FACT_GAP, QUIET } from './quiet'
 // theme.colors.*.meter; this is the arithmetic.
 export {
   BOARD,
+  PAGE_GUTTER,
+  BLOCK_GAP,
+  ROW_GAP,
+  HALO,
   PLATE_DENOMINATIONS,
   PLATE_SCALE,
   PLATE_QUANTUM,

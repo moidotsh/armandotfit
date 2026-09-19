@@ -318,10 +318,11 @@ draft is live.
 
 ### `/progression` — THE RECORD BOOK
 Question: "how strong, how consistent?" Focal: the streak NUMBER in
-record-orange (a figure as the statement — Spline 36). Second: the
-five best lifts as **the trophy wall**: name + best set drawn as plate
-stacks (row scale), ranked — the wall is literally the biggest iron
-you've loaded; PRs tick the record mark. Quiet: totals as one mono
+record-orange (a figure-statement — Spline at counter scale, the same
+law as the receipt's tonnage). Second: the five best lifts as
+**the trophy wall**: name + best set drawn as plate stacks (row
+scale) + the reps figure in the record-mark read — the wall is
+literally the biggest iron you've loaded. Quiet: totals as one mono
 line; the consistency grid links to analytics.
 
 ### `/analytics` — THE FORM TABLE

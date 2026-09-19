@@ -1,19 +1,22 @@
 // app/progression.tsx
-// THE QUIET PAGE's record book (docs/architecture/
-// quiet-page-thesis.md §6): "The streak is 12." No nameplate, no
-// "COMPUTED AT READ" shout — the streak NUMBER is the statement, in
-// the record red, alone in its halo; one fact line carries "day
-// streak · best"; the totals collapse to one figure line; the ledger
-// curates to five best lifts (name + best set in the record-mark
-// read; the e1RM column dies — it never answered a question the
-// owner asked). All computed at read from raw sessions; nothing
+// THE BOARD's record book (docs/architecture/board-thesis.md §7):
+// "The streak is 12." No nameplate, no "COMPUTED AT READ" shout —
+// the streak NUMBER is the figure-statement (Spline at counter
+// scale, in record-orange — one of the brand hue's three
+// appearances), alone in its halo; one fact line carries "day
+// streak · best"; the totals collapse to one figure line; the
+// TROPHY WALL curates to five best lifts — name + the best set
+// DRAWN as a row-scale plate stack + the reps figure in the
+// record-mark read — the wall is literally the biggest iron you've
+// loaded. The e1RM column stays dead (it never answered a question
+// the owner asked). All computed at read from raw sessions; nothing
 // stored.
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { DeskShell, QueryErrorNote } from '../components/composed';
+import { BoardShell, QueryErrorNote, PlateStack } from '../components/composed';
 import { useAppTheme } from '../context';
 import {
   navigateToExerciseDetail,
@@ -23,7 +26,7 @@ import {
 } from '../navigation';
 import { useDashboardSummary, usePersonalBests } from '../hooks';
 import { SYSTEM_EXERCISES } from '../shared/exercises';
-import { BLOCK_GAP, QUIET, theme } from '../constants';
+import { BOARD, theme, PAGE_GUTTER } from '../constants';
 
 const PB_COUNT = 5;
 
@@ -36,7 +39,20 @@ export default function ProgressionScreen() {
   const pbs = (pbQuery.data ?? []).slice(0, PB_COUNT);
 
   return (
-    <DeskShell surface="goal" onBack={safeGoBack} testID="record-scroll">
+    <BoardShell
+      surface="goal"
+      onBack={safeGoBack}
+      testID="record-scroll"
+      compact={{
+        title: 'The record book',
+        figure: (
+          <Text style={[styles.compactFigure, { color: colors.brandText }]}>
+            {`${summary?.streak.current ?? 0}D`}
+          </Text>
+        ),
+      }}
+      contentContainerStyle={styles.bodyContent}
+    >
       {summaryQuery.isLoading ? (
         <LoadingSpinner />
       ) : summaryQuery.isError ? (
@@ -50,8 +66,8 @@ export default function ProgressionScreen() {
         />
       ) : (
         <>
-          {/* THE STATEMENT — the streak itself, in the record red,
-              alone in its halo. The unit rides the fact line. */}
+          {/* THE FIGURE-STATEMENT — the streak itself, in record
+              orange at counter scale, alone in its halo. */}
           <View>
             <Text style={[styles.streak, { color: colors.brand }]}>
               {summary?.streak.current ?? 0}
@@ -68,11 +84,11 @@ export default function ProgressionScreen() {
             </Text>
           </View>
 
-          {/* The ledger — five best lifts, one line each. */}
+          {/* THE TROPHY WALL — five best lifts, the iron drawn. */}
           {pbs.length > 0 ? (
             <View style={styles.block}>
               <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
-                BEST LIFTS
+                THE TROPHY WALL
               </Text>
               <View>
                 {pbs.map((pb) => {
@@ -90,8 +106,9 @@ export default function ProgressionScreen() {
                       <Text style={[styles.pbName, { color: colors.text }]} numberOfLines={1}>
                         {pb.exerciseName}
                       </Text>
-                      <Text style={[styles.pbValue, { color: colors.brandText }]}>
-                        {`${pb.bestWeight}×${pb.bestReps}`}
+                      <PlateStack kg={pb.bestWeight} scale="row" />
+                      <Text style={[styles.pbReps, { color: colors.brandText }]}>
+                        {String(pb.bestReps)}
                       </Text>
                     </Pressable>
                   );
@@ -109,26 +126,30 @@ export default function ProgressionScreen() {
       >
         <Text style={[styles.analyticsLinkText, { color: colors.text }]}>Analytics</Text>
       </Pressable>
-    </DeskShell>
+    </BoardShell>
   );
 }
 
 const styles = StyleSheet.create({
+  bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 80 },
+  compactFigure: {
+    ...theme.typography.mobileEyebrow,
+  },
   block: {
-    ...QUIET.block,
+    ...BOARD.block,
   },
   streak: {
-    ...QUIET.statement,
+    ...theme.typography.mobileCounter,
   },
   // The fact line waits outside the statement's halo.
   streakFact: {
-    ...QUIET.fact,
+    ...BOARD.fact,
   },
   totals: {
-    ...QUIET.figure,
+    ...BOARD.figure,
   },
   sectionWhisper: {
-    ...QUIET.whisper,
+    ...BOARD.whisper,
     marginBottom: 4,
   },
   pbRow: {
@@ -138,13 +159,15 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   pbName: {
-    ...QUIET.row,
+    ...BOARD.row,
     flex: 1,
   },
-  pbValue: {
-    ...QUIET.figure,
+  pbReps: {
+    ...BOARD.figure,
+    minWidth: 24,
+    textAlign: 'right',
   },
-  analyticsLink: { marginTop: BLOCK_GAP, minHeight: 48, justifyContent: 'center' },
+  analyticsLink: { marginTop: BOARD.block.marginTop, minHeight: 48, justifyContent: 'center' },
   analyticsLinkText: {
     ...theme.typography.mobileItemTitle,
   },

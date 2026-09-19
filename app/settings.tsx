@@ -1,5 +1,5 @@
 // app/settings.tsx
-// THE QUIET PAGE's colophon (docs/architecture/
+// THE BOARD PAGE's colophon (docs/architecture/
 // quiet-page-thesis.md §6): "This is how it's set." No nameplate, no
 // email kicker, no info panel, no section chrome — the current theme
 // IS the statement (restating with every pick); the preference rows
@@ -14,11 +14,11 @@ import {
   MobileActionFooter,
   MobilePrimaryButton,
 } from '../components/MobilePremium';
-import { DeskShell } from '../components/composed';
+import { BoardShell } from '../components/composed';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile, usePwaPrompt } from '../hooks';
-import { DAY_OF_WEEK_LABELS, BLOCK_GAP, QUIET, theme } from '../constants';
+import { DAY_OF_WEEK_LABELS, BLOCK_GAP, BOARD, theme } from '../constants';
 import { useToast } from '../context';
 import { logger } from '../utils/logger';
 
@@ -65,7 +65,7 @@ export default function SettingsScreen() {
   const restDayIds = restDays.map(String);
 
   return (
-    <DeskShell
+    <BoardShell
       surface="analytics"
       onBack={safeGoBack}
       testID="colophon-scroll"
@@ -195,7 +195,7 @@ export default function SettingsScreen() {
           <MobilePrimaryButton onPress={() => void signOut()}>Sign Out</MobilePrimaryButton>
         </MobileActionFooter>
       </View>
-    </DeskShell>
+    </BoardShell>
   );
 }
 
@@ -242,10 +242,10 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
   },
   block: {
-    ...QUIET.block,
+    ...BOARD.block,
   },
   statement: {
-    ...QUIET.statement,
+    ...BOARD.statement,
   },
   preferenceRow: {
     flexDirection: 'row',
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   whisper: {
-    ...QUIET.whisper,
+    ...BOARD.whisper,
     marginBottom: 8,
   },
   // The rest-day MEASURE — seven marks; a rest day is a struck mark

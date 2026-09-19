@@ -2,12 +2,9 @@
 // Barrel for composed components (domain-specific rows/cards composed
 // from MobilePremium primitives).
 
-export { DeskShell, type DeskShellProps } from './DeskShell';
 export { BoardShell, type BoardShellProps } from './BoardShell';
 export { SessionStrip } from './SessionStrip';
-export { CallBoard, type CallBoardProps } from './CallBoard';
 export { TheLogger, type TheLoggerProps } from './TheLogger';
-export { StationStrip, type StationStripProps, type StationDatum } from './StationStrip';
 export { StageSetRow, type StageSetRowProps } from './StageSetRow';
 export { SetRow, type SetRowProps } from './SetRow';
 export { EditableSetRow, type EditableSetRowProps } from './EditableSetRow';

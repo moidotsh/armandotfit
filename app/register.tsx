@@ -4,7 +4,7 @@
 // session exists. The AuthProvider fires `session === null` and the
 // user stays on this screen with a "check your inbox" notice.
 //
-// THE QUIET PAGE's auth: the action sentence IS the statement
+// THE BOARD PAGE's auth: the action sentence IS the statement
 // ("Create account."), the brand dies (the back chevron leads), the
 // form sits open on the field, links are underlined ink, the verb is
 // the one red.
@@ -23,7 +23,7 @@ import { ChevronLeft } from '@tamagui/lucide-icons-2';
 import { useAuth, useAppTheme } from '../context';
 import { replaceWithLogin, safeGoBack } from '../navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SCREEN_BODY_STYLE, QUIET, theme } from '../constants';
+import { SCREEN_BODY_STYLE, BOARD, theme } from '../constants';
 
 export default function RegisterScreen() {
   const { signUp } = useAuth();
@@ -185,10 +185,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   block: {
-    ...QUIET.block,
+    ...BOARD.block,
   },
   statement: {
-    ...QUIET.statement,
+    ...BOARD.statement,
   },
   helpLinkBox: {
     minHeight: 44,

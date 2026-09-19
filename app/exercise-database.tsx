@@ -1,15 +1,16 @@
 // app/exercise-database.tsx
-// The Library — THE QUIET PAGE's index (docs/architecture/
-// quiet-page-thesis.md §6): "Find a lift." The search field IS the
-// statement (display scale, one hairline beneath — the page's spent
-// rule); the modality chips ride under it as the instrument's second
-// row; the catalog scans beneath in air-separated rows grouped by
-// whisper-caps section heads. The nameplate, the catalog-count
+// The Library — THE BOARD's index (docs/architecture/board-thesis.md
+// §7): "Find a lift." The search field IS the statement (display
+// scale, one hairline beneath — the page's spent rule); the ZONE
+// chips ride under it as the instrument's second row; the catalog
+// scans beneath in air-separated rows grouped by EQUIPMENT ZONE —
+// the gym's geography: browsing the list walks the floor, free
+// weights first, the mats last. The nameplate, the catalog-count
 // shout, and the result-count whisper are gone — the results answer
-// the query by existing. Unfiltered browse leads with a
-// "Recently logged" section (distinct names, recency order).
-// During a live session the custom adder sits one tap open
-// (progressive disclosure).
+// the query by existing. Unfiltered browse leads with a "Recently
+// logged" section (distinct names, recency order). During a live
+// session the custom adder sits one tap open (progressive
+// disclosure).
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { SectionList, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -20,29 +21,31 @@ import {
   FilterChip,
   FilterChipGroup,
 } from '../components/MobilePremium';
-import { DeskShell, ExerciseListItem, SearchStatement } from '../components/composed';
+import { BoardShell, ExerciseListItem, SearchStatement } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises, useRecentSessionDetails } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import { SYSTEM_EXERCISES, type SystemExerciseData } from '../shared/exercises';
-import { QUIET, BLOCK_GAP, ROW_GAP } from '../constants';
+import { BOARD, BLOCK_GAP, ROW_GAP, PAGE_GUTTER } from '../constants';
 
-/** Group the catalog by display category, in display order. */
-const CATEGORY_ORDER = ['Chest', 'Back', 'Shoulders', 'Arms', 'Upper Leg', 'Lower Leg', 'Abs'];
-function groupedByCategory(entries: SystemExerciseData[]) {
-  const groups = new Map<string, SystemExerciseData[]>();
-  for (const e of entries) {
-    const list = groups.get(e.category) ?? [];
-    list.push(e);
-    groups.set(e.category, list);
-  }
-  return [...groups.entries()]
-    .sort(
-      (a, b) =>
-        CATEGORY_ORDER.indexOf(a[0]) - CATEGORY_ORDER.indexOf(b[0]),
-    )
-    .map(([category, entries]) => ({ category, data: entries, key: category }));
+/** The zones in walk order — the gym's geography, free weights first,
+ * the mats last (the same world the substitution ranking walks). */
+const ZONE_ORDER: Array<{ modality: string; zone: string }> = [
+  { modality: 'barbell', zone: 'BARBELL' },
+  { modality: 'dumbbell', zone: 'DUMBBELL' },
+  { modality: 'cable', zone: 'CABLE COLUMN' },
+  { modality: 'machine', zone: 'MACHINES' },
+  { modality: 'floor', zone: 'THE FLOOR' },
+];
+
+/** Group the catalog by equipment zone (modality), in walk order. */
+function groupedByZone(entries: SystemExerciseData[]) {
+  return ZONE_ORDER.map(({ modality, zone }) => ({
+    key: zone,
+    category: zone,
+    data: entries.filter((e) => (e.modality ?? 'machine') === modality),
+  })).filter((s) => s.data.length > 0);
 }
 
 const RECENT_SECTION_KEY = '__recent';
@@ -92,7 +95,7 @@ export default function ExerciseDatabaseScreen() {
       recent.length > 0
         ? [{ category: 'Recently logged', data: recent, key: RECENT_SECTION_KEY }]
         : [];
-    return [...recentSection, ...groupedByCategory(query.data ?? [])];
+    return [...recentSection, ...groupedByZone(query.data ?? [])];
   }, [isUnfiltered, recentQuery.data, query.data]);
 
   useEffect(() => {
@@ -104,9 +107,9 @@ export default function ExerciseDatabaseScreen() {
   const resultCount = query.data?.length ?? 0;
 
   return (
-    <DeskShell surface="training" onBack={safeGoBack} noScroll testID="library-body">
+    <BoardShell surface="training" onBack={safeGoBack} noScroll testID="library-body">
       <View style={styles.body}>
-        {/* The instrument: the search statement + the modality chips. */}
+        {/* The instrument: the search statement + the zone chips. */}
         <View>
           <SearchStatement
             value={filter.search ?? ''}
@@ -117,15 +120,25 @@ export default function ExerciseDatabaseScreen() {
           />
           <View style={styles.chips}>
             <FilterChipGroup>
-              {['floor', 'dumbbell', 'barbell', 'machine', 'cable'].map((m) => (
+              {ZONE_ORDER.map((z) => (
                 <FilterChip
-                  key={m}
-                  label={m === 'floor' ? 'BW' : m === 'dumbbell' ? 'DB' : m === 'barbell' ? 'BB' : m[0].toUpperCase() + m.slice(1)}
-                  selected={filter.modality === m}
-                  onPress={() =>
-                    setFilter({ modality: filter.modality === m ? undefined : m })
+                  key={z.modality}
+                  label={
+                    z.modality === 'floor'
+                      ? 'BW'
+                      : z.modality === 'dumbbell'
+                        ? 'DB'
+                        : z.modality === 'barbell'
+                          ? 'BB'
+                          : z.modality === 'cable'
+                            ? 'CB'
+                            : 'M'
                   }
-                  accessibilityLabel={`Filter by ${m}`}
+                  selected={filter.modality === z.modality}
+                  onPress={() =>
+                    setFilter({ modality: filter.modality === z.modality ? undefined : z.modality })
+                  }
+                  accessibilityLabel={`Filter by ${z.zone}`}
                 />
               ))}
             </FilterChipGroup>
@@ -171,14 +184,14 @@ export default function ExerciseDatabaseScreen() {
                 style={styles.adderToggle}
               >
                 <Text style={[styles.adderToggleText, { color: colors.textMuted }]}>
-                  + Add a custom lift
+                  + ADD A CUSTOM LIFT
                 </Text>
               </Pressable>
             )
           ) : null}
         </View>
 
-        {/* The catalog. */}
+        {/* The catalog — the gym's floor plan. */}
         {resultCount === 0 ? (
           <EmptyState
             compact
@@ -216,14 +229,14 @@ export default function ExerciseDatabaseScreen() {
           />
         )}
       </View>
-    </DeskShell>
+    </BoardShell>
   );
 }
 
 const styles = StyleSheet.create({
   body: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: PAGE_GUTTER,
     paddingTop: 4,
   },
   chips: {
@@ -251,14 +264,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   adderToggleText: {
-    ...QUIET.whisperLine,
+    ...BOARD.whisper,
   },
   adderVerb: {
     minHeight: 44,
     justifyContent: 'center',
   },
   adderVerbText: {
-    ...QUIET.whisperLine,
+    ...BOARD.whisperLine,
     fontWeight: '600',
   },
 });

@@ -1,18 +1,18 @@
 // app/program.tsx
-// My Program — THE QUIET PAGE's rotation (docs/architecture/
-// quiet-page-thesis.md §6): "The rotation, day by day." No nameplate,
-// no sticky chapter chrome, no per-day sets figure — the FIRST day's
+// My Program — THE BOARD's rotation (docs/architecture/
+// board-thesis.md §7): "The rotation, day by day." The FIRST day's
 // title is the statement (later chapters at subhead scale), each day
-// is one air-separated block, and slots are quiet rows: name + Rx
-// whisper, no hairlines, no index numerals. A standing substitution
-// marks by the record-mark read (the Rx turns record-text); the
-// authored program in splits.ts is never edited. Plan-time Swap rides
-// the same InkRail bench as the Floor.
+// is one air-separated block, and slots are board rows: name + Rx
+// whisper. A standing substitution marks in the record-mark read (the
+// name and Rx turn record-text); the authored program in splits.ts is
+// never edited. Plan-time Swap rides the same InkRail bench as the
+// Floor. M3 THE COMPRESS: once day one scrolls away, the pinned bar
+// restates the page with its live figure (the day count).
 
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { MobilePrimaryButton } from '../components/MobilePremium';
-import { DeskShell, InkRail, SwapGlyph } from '../components/composed';
+import { BoardShell, InkRail, SwapGlyph } from '../components/composed';
 import { safeGoBack } from '../navigation';
 import { useAppTheme, useToast } from '../context';
 import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
@@ -24,7 +24,7 @@ import {
   getSlotsForDay,
   type SessionWindow,
 } from '../shared/exercises';
-import { QUIET, ROW_GAP, theme } from '../constants';
+import { BOARD, ROW_GAP, theme, PAGE_GUTTER } from '../constants';
 import type { PreferredSplit } from '../shared/types';
 
 function rxLabel(sets: [number, number], reps: [number, number]): string {
@@ -89,7 +89,20 @@ export default function ProgramScreen() {
   };
 
   return (
-    <DeskShell surface="analytics" onBack={safeGoBack} testID="program-scroll">
+    <BoardShell
+      surface="analytics"
+      onBack={safeGoBack}
+      testID="program-scroll"
+      compact={{
+        title: 'The rotation',
+        figure: (
+          <Text style={[styles.compactFigure, { color: colors.textMuted }]}>
+            {`${days.length} DAYS`}
+          </Text>
+        ),
+      }}
+      contentContainerStyle={styles.bodyContent}
+    >
       {days.map((day, di) => {
         const windows: SessionWindow[] = isTwoADay ? ['am', 'pm'] : ['single'];
         return (
@@ -172,26 +185,30 @@ export default function ProgramScreen() {
         />
       ) : null;
     })() : null}
-    </DeskShell>
+    </BoardShell>
   );
 }
 
 const styles = StyleSheet.create({
+  bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 80 },
+  compactFigure: {
+    ...theme.typography.mobileEyebrow,
+  },
   dayFirst: {
-    ...QUIET.blockFirst,
+    ...BOARD.blockFirst,
   },
   day: {
-    ...QUIET.block,
+    ...BOARD.block,
   },
   dayTitleLead: {
-    ...QUIET.statement,
+    ...BOARD.statement,
   },
   dayTitle: {
     ...theme.typography.mobileTitle,
   },
   // The statement's halo: the fact line waits outside the moat.
   dayFact: {
-    ...QUIET.fact,
+    ...BOARD.fact,
     marginBottom: 8,
   },
   windowBlock: {

@@ -1,6 +1,6 @@
 // app/analytics.tsx
-// THE QUIET PAGE's form table (docs/architecture/
-// quiet-page-thesis.md §6): "You trained 24 of 30." The nameplate,
+// THE BOARD's form table (docs/architecture/board-thesis.md
+// §7): "You trained 24 of 30." The nameplate,
 // the MobileSurface panel, the section eyebrows, and the MobileHeader
 // chrome die — the COUNT is the statement (the page's one sentence,
 // restating with the range pick), the grid sits open on the field
@@ -16,13 +16,13 @@ import {
   SegmentedControl,
 } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { DeskShell, QueryErrorNote, TrainingConsistencyGrid } from '../components/composed';
+import { BoardShell, QueryErrorNote, TrainingConsistencyGrid } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory } from '../hooks';
 import { AnalyticsService } from '../services';
 import { addDays } from '../utils';
-import { BLOCK_GAP, QUIET, theme } from '../constants';
+import { BLOCK_GAP, BOARD, theme, PAGE_GUTTER } from '../constants';
 
 type Range = 7 | 30 | 90;
 
@@ -56,7 +56,7 @@ export default function AnalyticsScreen() {
   }, [range]);
 
   return (
-    <DeskShell
+    <BoardShell
       surface="analytics"
       onBack={safeGoBack}
       testID="form-scroll"
@@ -151,25 +151,25 @@ export default function AnalyticsScreen() {
           )}
         </>
       )}
-    </DeskShell>
+    </BoardShell>
   );
 }
 
 const styles = StyleSheet.create({
   bodyContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: PAGE_GUTTER,
     paddingTop: 4,
     paddingBottom: 80,
   },
   block: {
-    ...QUIET.block,
+    ...BOARD.block,
   },
   count: {
-    ...QUIET.statement,
+    ...theme.typography.mobileCounter,
   },
   // The fact line waits outside the statement's halo.
   countFact: {
-    ...QUIET.fact,
+    ...BOARD.fact,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: BLOCK_GAP },
   // The grid breathes narrower than the column — the field is the

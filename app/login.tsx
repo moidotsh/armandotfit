@@ -3,7 +3,7 @@
 // On success, the central AuthGuard in app/_layout.tsx routes to
 // home — no per-screen redirect effect needed.
 //
-// THE QUIET PAGE's auth: the action sentence IS the statement ("Sign
+// THE BOARD PAGE's auth: the action sentence IS the statement ("Sign
 // in."), the brand rides a folio line (same masthead as home), the
 // form sits open on the field (no panel), links are underlined ink,
 // and the verb is the page's one red. No nameplate rule.
@@ -25,7 +25,7 @@ import { navigateToRegister, navigateToForgotPassword } from '../navigation';
 import {
   MOBILE_CONTENT_WIDTH_STYLE,
   SCREEN_BODY_STYLE,
-  QUIET,
+  BOARD,
   theme,
 } from '../constants';
 
@@ -155,10 +155,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   block: {
-    ...QUIET.block,
+    ...BOARD.block,
   },
   statement: {
-    ...QUIET.statement,
+    ...BOARD.statement,
   },
   linkBox: {
     minHeight: 44,

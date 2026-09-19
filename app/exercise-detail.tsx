@@ -1,13 +1,13 @@
 // app/exercise-detail.tsx
-// THE QUIET PAGE's entry (docs/architecture/quiet-page-thesis.md §6):
-// "What this lift is." The NAME is the statement; one fact whisper
-// beneath carries the number to beat (LAST — weight × reps · sets ·
-// date) or the type when history is empty. Instructions read as one
-// body block; the muscle measure draws as bare ink lines (a prime
-// mover fills, an assistant fills 40% — the measure carries the
-// hierarchy, no labels); equipment whispers once as a line. No
-// section chrome. When a draft session is active, ADD TO SESSION is
-// the page's one verb.
+// THE BOARD's entry (docs/architecture/board-thesis.md §7): "What
+// this lift is." The NAME is the statement; the number to beat
+// renders AS A PLATE STACK — LAST in furniture caps, the row-scale
+// stack of your most recent top load, the figure line (weight ×
+// reps · sets · date) in Spline — you see the iron you're walking in
+// to beat, not just read it. Instructions read as one body block;
+// the muscle measure draws as bare INK lines (color is load's —
+// muscles never borrow the ramp); equipment whispers once. When a
+// draft session is active, ADD TO SESSION is the page's one verb.
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -16,7 +16,7 @@ import {
   MobilePrimaryButton,
   MobileActionFooter,
 } from '../components/MobilePremium';
-import { DeskShell } from '../components/composed';
+import { BoardShell, PlateStack } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
 import { useExerciseDetail, useRecentSessionDetails } from '../hooks';
@@ -28,7 +28,7 @@ import {
   type EquipmentSlug,
   type MuscleSlug,
 } from '../shared/exercises';
-import { BLOCK_GAP, QUIET, theme } from '../constants';
+import { BOARD, theme, PAGE_GUTTER } from '../constants';
 import type { ExerciseKey } from '../shared/exercises';
 
 function equipmentLabel(e: EquipmentSlug | { slug: EquipmentSlug }): string {
@@ -46,9 +46,10 @@ export default function ExerciseDetailScreen() {
 
   const exercise = query.data;
 
-  // LAST TIME — this exercise's most recent logged set, computed at
+  // LAST TIME — this exercise's most recent TOP set, computed at
   // read from history (identity joins by name). The number you're
-  // walking in to beat.
+  // walking in to beat, matched to what your best loaded (the same
+  // rule that arms the Floor).
   const lastTime = React.useMemo(() => {
     if (!exercise) return null;
     const key = exercise.name.toLowerCase();
@@ -57,10 +58,13 @@ export default function ExerciseDetailScreen() {
         (ex) => ex.exerciseName.toLowerCase() === key,
       );
       if (found && found.sets.length > 0) {
-        const last = found.sets[found.sets.length - 1];
+        let top = found.sets[0];
+        for (const s of found.sets) {
+          if ((s.weight ?? 0) >= (top.weight ?? 0)) top = s;
+        }
         return {
-          weight: last.weight,
-          reps: last.reps,
+          weight: top.weight,
+          reps: top.reps,
           sets: found.sets.length,
           when: new Date(session.startedAt).toLocaleDateString(undefined, {
             month: 'short',
@@ -77,7 +81,7 @@ export default function ExerciseDetailScreen() {
     : '';
 
   return (
-    <DeskShell
+    <BoardShell
       surface="instructions"
       onBack={safeGoBack}
       testID="entry-scroll"
@@ -89,17 +93,31 @@ export default function ExerciseDetailScreen() {
         </Text>
       ) : (
         <>
-          {/* THE STATEMENT — the name. One fact line beneath, outside
-              the halo: the number to beat, or the type. */}
+          {/* THE STATEMENT — the name. */}
           <View>
             <Text style={[styles.headline, { color: colors.text }]} numberOfLines={2}>
               {exercise.name}
             </Text>
-            <Text style={[styles.factLine, { color: colors.textMuted }]} numberOfLines={1}>
-              {lastTime
-                ? `LAST — ${lastTime.weight}×${lastTime.reps} · ${lastTime.sets} set${lastTime.sets === 1 ? '' : 's'} · ${lastTime.when}`
-                : typeLabel}
-            </Text>
+          </View>
+
+          {/* THE NUMBER TO BEAT — drawn. LAST in furniture caps, the
+              stack, then the figure line. */}
+          <View style={styles.lastBlock}>
+            {lastTime ? (
+              <>
+                <Text style={[styles.lastLabel, { color: colors.brandText }]}>
+                  THE NUMBER TO BEAT
+                </Text>
+                <PlateStack kg={lastTime.weight} scale="counter" testID="entry-last-stack" />
+                <Text style={[styles.lastLine, { color: colors.text }]} numberOfLines={1}>
+                  {`${lastTime.weight} × ${lastTime.reps} · ${lastTime.sets} set${lastTime.sets === 1 ? '' : 's'} · ${lastTime.when}`}
+                </Text>
+              </>
+            ) : (
+              <Text style={[styles.typeLine, { color: colors.textMuted }]} numberOfLines={1}>
+                {typeLabel}
+              </Text>
+            )}
           </View>
 
           {/* The reading block. */}
@@ -114,8 +132,9 @@ export default function ExerciseDetailScreen() {
             ) : null}
           </View>
 
-          {/* The measure — what the lift trains, as bare ink lines:
-              a prime mover fills, an assistant fills 40%. */}
+          {/* The measure — what the lift trains, as bare INK lines:
+              a prime mover fills, an assistant fills 40%. Muscles
+              never borrow the plate ramp — color is load's. */}
           {exercise.primaryMuscles.length + exercise.secondaryMuscles.length > 0 ? (
             <View style={styles.block}>
               <View>
@@ -186,21 +205,32 @@ export default function ExerciseDetailScreen() {
           </MobileActionFooter>
         </View>
       ) : null}
-    </DeskShell>
+    </BoardShell>
   );
 }
 
 const styles = StyleSheet.create({
-  bodyContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 40 },
+  bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 40 },
   block: {
-    ...QUIET.block,
+    ...BOARD.block,
   },
   headline: {
-    ...QUIET.statement,
+    ...BOARD.statement,
   },
-  // The fact line waits outside the statement's halo.
-  factLine: {
-    ...QUIET.fact,
+  // The number-to-beat block sits in the statement's halo.
+  lastBlock: {
+    marginTop: 20,
+    gap: 6,
+  },
+  lastLabel: {
+    ...theme.typography.mobileEyebrow,
+  },
+  lastLine: {
+    ...theme.typography.mobileFigure,
+    fontWeight: '700',
+  },
+  typeLine: {
+    ...BOARD.whisperLine,
   },
   bodyText: { ...theme.typography.mobileBody },
   tips: { ...theme.typography.mobileMeta, marginTop: 10 },
