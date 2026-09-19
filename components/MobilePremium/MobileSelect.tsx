@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   handleBar: {
     width: 40,
     height: 4,
-    borderRadius: 2,
+    borderRadius: 0,
     marginBottom: 12,
     alignSelf: 'center',
   },

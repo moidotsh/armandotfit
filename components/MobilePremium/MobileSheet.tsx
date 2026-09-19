@@ -209,16 +209,17 @@ const styles = StyleSheet.create({
     maxHeight: '85%',
   },
   sheetTop: {
+    // THE SCOREBOARD square cut — no corner breaks.
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     maxHeight: '85%',
   },
   handleBar: {
     width: 40,
     height: 4,
-    borderRadius: 2,
+    borderRadius: 0,
     marginBottom: 12,
     alignSelf: 'center',
   },
@@ -231,7 +232,7 @@ const styles = StyleSheet.create({
   headerAccent: {
     width: 3,
     height: 16,
-    borderRadius: 1.5,
+    borderRadius: 0,
   },
   headerTitle: {
     flex: 1,

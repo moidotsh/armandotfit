@@ -1,6 +1,7 @@
 // components/MobilePremium/MobileTabBar.tsx
 //
-// The Desk's bottom chrome (docs/architecture/signal-thesis.md §6): a
+// The Desk's bottom chrome (retired vocabulary — unwired under THE
+// SCOREBOARD, which runs stack-from-home navigation; kept shell-synced): a
 // flat steel bar with the app's primary verb raised at its center —
 // START before a session, RESUME (pulsing) during one. Four flanking
 // tabs + the center action = five destinations, all in the thumb arc.

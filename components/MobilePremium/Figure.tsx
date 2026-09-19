@@ -1,28 +1,32 @@
 // components/MobilePremium/Figure.tsx
 //
-// The figure language of THE COUNT: one labeled value, no chrome (see
-// docs/architecture/count-thesis.md §2.2). Where StatCard puts a
-// number in a card, Figure puts a number on the field — the
-// instrument read for stat strips, receipt headers, and hero figures.
-// Numbers are the app's architecture, so the figure scale outranks the
-// word scale at every step:
+// The figure language of THE SCOREBOARD: one labeled value, no
+// chrome (docs/architecture/scoreboard-thesis.md §2.1). Where
+// StatCard puts a number in a card, Figure puts a number on the
+// ground — the printed read for stat strips, receipt headers, and
+// hero figures. THE NUMERAL IS THE FIGURE: every value sets in the
+// mono face at its rank — a call site cannot forget it:
 //
-//   hero    76/800 display — the one hero statement per screen
-//   display 44/800 display — secondary statement (receipt tonnage)
-//   md      26/700 mono    — working figures (stat rows, strips)
-//   sm      14/500 mono    — in-row ledger facts
+//   hero    72/700 mono    — the one figure-statement per screen
+//                            (the streak; the logger's armed pair
+//                            composes its own counter line)
+//   display 36/700 mono    — secondary figure-statement (receipt
+//                            tonnage, the count)
+//   md      18/500 mono    — working figures (stat rows, strips)
+//   sm      12/500 mono    — in-row ledger facts
 //
-// The value rides the theme's figure tokens, so tabular figures and the
-// declared display/mono faces arrive by construction — a call site
-// cannot forget them. The optional `unit` renders small and mono after
-// the value (the unit whispers). The optional label rides the eyebrow
-// token in caps.
+// The value rides the theme's figure tokens where they exist and
+// composes the mono face onto the statement rank where the ramp's
+// word token would otherwise leak in — tabular by construction.
+// The optional `unit` renders small and mono after the value (the
+// unit whispers). The optional label rides the eyebrow token in
+// caps.
 //
 // Domain-neutral: the consumer supplies value + label and formats the
 // value. No trend computation, no data fetching, no domain semantics.
 
 import React from 'react';
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { theme } from '../../constants';
 import { useAppTheme } from '../../context';
 
@@ -40,9 +44,9 @@ export interface FigureProps {
   /** Figure scale. Default 'md'. */
   size?: FigureSize;
   /**
-   * 'ink' (default) reads text color; 'brand' the brand slot; 'plate' is
-   * paper-type for ink plates; 'focus' reads the focus register's text
-   * color (the Floor — the live-session stage).
+   * 'ink' (default) reads text color; 'brand' the brand slot (RED INK
+   * — records); 'plate' is paper-type for ink plates; 'focus' reads
+   * the focus register's text color (interrupt chrome).
    */
   tone?: FigureTone;
   /** Default 'left'. */
@@ -53,17 +57,24 @@ export interface FigureProps {
   style?: StyleProp<ViewStyle>;
 }
 
-function valueStyleFor(size: FigureSize) {
+function valueStyleFor(size: FigureSize): TextStyle {
   switch (size) {
     case 'hero':
-      return theme.typography.mobileHero;
+      return { ...theme.typography.mobileCounter };
     case 'display':
-      return theme.typography.mobileDisplay;
+      // The figure-statement: the statement rank's size/leading, the
+      // mono face + tabular figures swapped in (the ramp's word token
+      // must never carry a numeral).
+      return {
+        ...theme.typography.mobileTitleCondensed,
+        fontFamily: theme.fonts.mono,
+        fontVariant: ['tabular-nums'],
+      };
     case 'sm':
-      return theme.typography.mobileLedger;
+      return { ...theme.typography.mobileLedger };
     case 'md':
     default:
-      return theme.typography.mobileFigure;
+      return { ...theme.typography.mobileFigure };
   }
 }
 

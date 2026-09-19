@@ -1,13 +1,13 @@
 // components/MobilePremium/MobilePrimaryButton.tsx
 // Primary action button for the mobile premium kit.
 //
-// Same ~54px height as the original (preserves the 490px fit). The
-// SIGNAL system runs it FLAT (docs/architecture/signal-thesis.md §4):
-// a solid signal fill with an ink label — road-sign discipline, no
-// gradient, no glow. The premium is the color law + the label's face
-// (mobileAction rides the display face at 700) + consistent Respond
-// motion via usePressedStyle (scale 0.98 + 0.9 opacity; reduced motion
-// collapses to opacity-only).
+// Same ~54px height as the original (preserves the 490px fit). THE
+// SCOREBOARD runs the verb FLAT (docs/architecture/
+// scoreboard-thesis.md): the accent fill (the ink verb by default —
+// `buttonBackground`) with a ground label — no gradient, no glow,
+// square-cut. The premium is the color law + the label's face
+// (mobileAction rides the display face at 700) + THE STILL SYSTEM
+// press: opacity only, no scale (§6, S2).
 //
 // Variants:
 //   • 'primary' (default) — filled accent button, ink label.
@@ -22,7 +22,7 @@ import React, { useMemo } from 'react';
 // button's loading state is a single inline indicator that replaces the
 // icon slot — the standard primary-action pattern.
 import { ActivityIndicator, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { Pressable, usePressedStyle } from '../premium/shared';
+import { Pressable } from '../premium/shared';
 import { theme, MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
 import { useAppTheme } from '../../context';
 
@@ -88,7 +88,6 @@ export function MobilePrimaryButton({
   testID,
   style,
 }: MobilePrimaryButtonProps) {
-  const pressedStyle = usePressedStyle();
   const { colors } = useAppTheme();
   // The accent defaults to the `buttonBackground` token (the shell's
   // single verb-fill lever): consumers whose verbs carry the brand
@@ -150,7 +149,7 @@ export function MobilePrimaryButton({
         isSmall ? styles.buttonSm : styles.buttonMd,
         materialStyle,
         { opacity: disabled || loading ? 0.85 : 1 },
-        pressed && !disabled ? pressedStyle : null,
+        pressed && !disabled ? styles.pressed : null,
         style,
       ]}
     >
@@ -195,6 +194,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
+  },
+  // THE STILL SYSTEM press: opacity only — no scale, no color shift
+  // (scoreboard-thesis §6, S2).
+  pressed: {
+    opacity: 0.6,
   },
   // The md screen action caps to the content column (see the sizing
   // note above — MobileActionFooter is the canonical site).

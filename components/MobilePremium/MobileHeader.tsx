@@ -236,14 +236,14 @@ const styles = StyleSheet.create({
     // the DOM hit area; measured).
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
   accentDot: {
     width: 6,
     height: 6,
-    borderRadius: 3,
+    borderRadius: 0,
     marginLeft: 4,
   },
 

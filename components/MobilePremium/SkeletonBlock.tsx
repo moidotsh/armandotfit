@@ -1,33 +1,34 @@
 // components/MobilePremium/SkeletonBlock.tsx
 // The placeholder primitive for loading skeletons. Reads `colors.cardAlt`
-// (the documented "elevated surface" tone — reads as a placeholder, not
-// as content) and pulses opacity via useShimmer. Uses Animated.View (not
-// ActivityIndicator) so the C4 audit doesn't apply by construction.
+// (one step off the ground — reads as a placeholder, not as content).
+// THE SCOREBOARD override (docs/architecture/scoreboard-thesis.md §6,
+// THE STILL SYSTEM): the block is STATIC and square — no shimmer pulse,
+// no rounded corners. Loading is a state, not an animation; the shell's
+// shimmering variant stays in arqavellum (this copy diverges
+// deliberately, like theme values).
 //
 // Pair with consumer-composed skeletons (e.g. a `DashboardSkeleton` or
 // `ListSkeleton` composed primitive) for screen-level loading states.
-// The primitive stays domain-agnostic — every consumer gets the
-// same block + the same pulse, and composes per-screen shapes locally.
+// The primitive stays domain-agnostic — every consumer gets the same
+// block, and composes per-screen shapes locally.
 
 import React, { memo } from 'react';
 import {
-  Animated,
+  View,
   type DimensionValue,
   StyleSheet,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { theme } from '../../constants';
 import { useAppTheme } from '../../context';
-import { useShimmer } from '../../hooks';
 
 export interface SkeletonBlockProps {
   /** Width. Default '100%'. Pass a number for px or a string for '%'. */
   width?: DimensionValue;
   /** Height in px. Default 16. */
   height?: number;
-  /** Corner radius. Default theme.borderRadius.small (8). Pass height/2
-   *  for circular shapes, or theme.borderRadius.pill for full pills. */
+  /** Corner radius. Default 0 (the square cut); kept as a prop for
+   *  consumer-composed circular shapes (avatar discs). */
   borderRadius?: number;
   /** Optional top margin — convenience for stacked layouts. */
   marginTop?: number;
@@ -38,15 +39,14 @@ export interface SkeletonBlockProps {
 function SkeletonBlockInner({
   width = '100%',
   height = 16,
-  borderRadius = theme.borderRadius.small,
+  borderRadius = 0,
   marginTop,
   style,
   testID,
 }: SkeletonBlockProps) {
   const { colors } = useAppTheme();
-  const opacity = useShimmer();
   return (
-    <Animated.View
+    <View
       testID={testID}
       style={[
         styles.block,
@@ -55,7 +55,6 @@ function SkeletonBlockInner({
           height,
           borderRadius,
           backgroundColor: colors.cardAlt,
-          opacity,
           marginTop,
         },
         style,
@@ -71,6 +70,9 @@ const styles = StyleSheet.create({
   },
 });
 
+/**
+ * Loading skeleton block — static, square, one step off the ground.
+ */
 export const SkeletonBlock = memo(SkeletonBlockInner);
 
 export default SkeletonBlock;
