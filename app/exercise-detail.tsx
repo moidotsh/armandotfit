@@ -19,7 +19,7 @@ import {
 import { BoardShell, PlateStack } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
-import { useExerciseDetail, useRecentSessionDetails } from '../hooks';
+import { useExerciseDetail, useTopSetsByName } from '../hooks';
 import { useWorkoutStore } from '../stores';
 import {
   EQUIPMENT_DISPLAY_NAMES,
@@ -40,41 +40,29 @@ export default function ExerciseDetailScreen() {
   const { colors } = useAppTheme();
   const { showToast } = useToast();
   const query = useExerciseDetail(slug ?? null);
-  const recentQuery = useRecentSessionDetails(10);
+  const topSets = useTopSetsByName();
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
   const addExerciseToDraft = useWorkoutStore((s) => s.addExerciseToDraft);
 
   const exercise = query.data;
 
-  // LAST TIME — this exercise's most recent TOP set, computed at
-  // read from history (identity joins by name). The number you're
-  // walking in to beat, matched to what your best loaded (the same
-  // rule that arms the Floor).
+  // LAST TIME — this exercise's most recent TOP set, from the shared
+  // derivation (the same rule that arms the Floor and draws the board
+  // rows). The number you're walking in to beat.
   const lastTime = React.useMemo(() => {
     if (!exercise) return null;
-    const key = exercise.name.toLowerCase();
-    for (const session of recentQuery.data ?? []) {
-      const found = session.exercises.find(
-        (ex) => ex.exerciseName.toLowerCase() === key,
-      );
-      if (found && found.sets.length > 0) {
-        let top = found.sets[0];
-        for (const s of found.sets) {
-          if ((s.weight ?? 0) >= (top.weight ?? 0)) top = s;
-        }
-        return {
-          weight: top.weight,
-          reps: top.reps,
-          sets: found.sets.length,
-          when: new Date(session.startedAt).toLocaleDateString(undefined, {
-            month: 'short',
-            day: 'numeric',
-          }),
-        };
-      }
-    }
-    return null;
-  }, [exercise, recentQuery.data]);
+    const fact = topSets.map.get(exercise.name.toLowerCase());
+    if (!fact) return null;
+    return {
+      weight: fact.weight,
+      reps: fact.reps,
+      sets: fact.sets,
+      when: new Date(fact.startedAt).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+      }),
+    };
+  }, [exercise, topSets.map]);
 
   const typeLabel = exercise
     ? (EXERCISE_TYPE_DISPLAY[exercise.exerciseType] ?? '')

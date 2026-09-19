@@ -31,7 +31,7 @@ import {
 import { BoardShell, PlateStack } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, replaceWithWorkoutDetail, safeGoBack } from '../navigation';
-import { useProfile, useRecentWorkouts, useRecentSessionDetails } from '../hooks';
+import { useProfile, useRecentWorkouts, useTopSetsByName } from '../hooks';
 import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots } from '../services';
 import {
@@ -71,7 +71,7 @@ export default function SplitSelectionScreen() {
   // picker renders immediately on mount.
   const profileQuery = useProfile();
   const recentQuery = useRecentWorkouts(1);
-  const prefillQuery = useRecentSessionDetails(5);
+  const topSets = useTopSetsByName();
 
   const restDays = profileQuery.data?.restDays ?? [];
 
@@ -106,20 +106,7 @@ export default function SplitSelectionScreen() {
     [restDays, walkStartDay],
   );
 
-  // The board rows' prefills — the last TOP set per exercise name.
-  const prefillByname = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const sess of prefillQuery.data ?? []) {
-      for (const ex of sess.exercises) {
-        const key = ex.exerciseName.toLowerCase();
-        if (map.has(key)) continue;
-        let top = 0;
-        for (const set of ex.sets) top = Math.max(top, set.weight ?? 0);
-        if (top > 0) map.set(key, top);
-      }
-    }
-    return map;
-  }, [prefillQuery.data]);
+  // The board rows' prefills — the shared top-set derivation.
 
   // Selected slot = explicit pick if valid, else first non-rest day in
   // the window. Falls back to slots[0] when every upcoming day is a
@@ -279,7 +266,7 @@ export default function SplitSelectionScreen() {
               const name = entry?.name ?? slot.exercise;
               const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
               const rx = `${sets}×${slot.reps[0]}–${slot.reps[1]}`;
-              const prefill = prefillByname.get(name.toLowerCase()) ?? null;
+              const prefill = topSets.map.get(name.toLowerCase())?.weight ?? null;
               return (
                 <View
                   key={slot.exercise + i}

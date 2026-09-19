@@ -69,7 +69,8 @@ import {
   useLogWorkout,
   useDeleteSession,
   useLastUsedTags,
-  useRecentSessionDetails,
+  useTopSetsByName,
+  type TopSetFact,
 } from '../hooks';
 import { useWorkoutStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots } from '../services';
@@ -203,29 +204,11 @@ export default function WorkoutDetailScreen() {
     }
   }, [draft, lastTagsQuery.data, setDraftExerciseTags]);
 
-  // Last performance (computed at read from recent sessions): per
-  // exercise NAME, the TOP set of the most recent session that has
-  // it — the highest weight loaded (ties resolve to the later set),
-  // with the reps done at that weight. The first-set prefill for the
-  // logger: you walk in matched to what your best loaded last time,
-  // not to whatever the session happened to end on.
-  const recentForPrefill = useRecentSessionDetails(10);
-  const lastPerformance = useMemo(() => {
-    const map = new Map<string, { weight: number; reps: number }>();
-    for (const session of recentForPrefill.data ?? []) {
-      for (const ex of session.exercises) {
-        const key = ex.exerciseName.toLowerCase();
-        if (map.has(key)) continue;
-        let top: { weight: number; reps: number } | null = null;
-        for (const set of ex.sets) {
-          const w = set.weight ?? 0;
-          if (!top || w >= top.weight) top = { weight: w, reps: set.reps ?? 0 };
-        }
-        if (top) map.set(key, top);
-      }
-    }
-    return map;
-  }, [recentForPrefill.data]);
+  // Last performance: the shared top-set derivation (per name, the
+  // TOP set of the most recent session that has it). The first-set
+  // prefill for the logger: you walk in matched to what your best
+  // loaded last time, not to whatever the session happened to end on.
+  const lastPerformance = useTopSetsByName().map;
 
   // If no id and no active draft, redirect to split-selection once.
   useEffect(() => {
@@ -425,7 +408,7 @@ interface FloorProps {
   sessionKg: number;
   isSaving: boolean;
   sessionError: string | null;
-  armedPrefill: Map<string, { weight: number; reps: number }>;
+  armedPrefill: Map<string, TopSetFact>;
   pickerExercise: { localId: string; exerciseName: string; exerciseSlug: string | '' } | null;
   pickerFor: string | null;
   setPickerFor: (localId: string | null) => void;

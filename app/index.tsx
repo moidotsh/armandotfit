@@ -44,7 +44,7 @@ import {
   SYSTEM_EXERCISES_BY_SLUG,
 } from '../shared/exercises';
 import { useSplitPreferenceStore, useWorkoutStore } from '../stores';
-import { useDashboardSummary, useRecentSessionDetails } from '../hooks';
+import { useDashboardSummary, useRecentSessionDetails, useTopSetsByName } from '../hooks';
 
 const RECENT_COUNT = 3;
 
@@ -52,6 +52,7 @@ export default function HomeScreen() {
   const { colors } = useAppTheme();
   const summaryQuery = useDashboardSummary();
   const recentQuery = useRecentSessionDetails(5);
+  const topSets = useTopSetsByName();
   const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
 
@@ -69,20 +70,7 @@ export default function HomeScreen() {
   const dayTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;
 
   // The board rows' prefills — the last TOP set per exercise name
-  // (computed at read; the same rule that arms the Floor).
-  const prefillByname = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const session of recent) {
-      for (const ex of session.exercises) {
-        const key = ex.exerciseName.toLowerCase();
-        if (map.has(key)) continue;
-        let top = 0;
-        for (const set of ex.sets) top = Math.max(top, set.weight ?? 0);
-        if (top > 0) map.set(key, top);
-      }
-    }
-    return map;
-  }, [recent]);
+  // (the shared derivation; the same rule that arms the Floor).
 
   const header = (
     <View style={styles.headerRow}>
@@ -158,7 +146,7 @@ export default function HomeScreen() {
             suggestedSlots.map((slot, i) => {
               const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
               const name = entry?.name ?? slot.exercise;
-              const prefill = prefillByname.get(name.toLowerCase()) ?? null;
+              const prefill = topSets.map.get(name.toLowerCase())?.weight ?? null;
               const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
               return (
                 <View key={slot.exercise + i} style={styles.boardRow}>
