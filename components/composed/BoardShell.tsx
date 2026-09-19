@@ -1,13 +1,14 @@
 // components/composed/BoardShell.tsx
 //
-// THE BOARD's screen scaffold (docs/architecture/board-thesis.md
-// §5–7): the flat board (atmosphere) + a header slot + THE TICKER
+// The screen scaffold (docs/architecture/gauge-thesis.md §5–8; the
+// BoardShell name is taught to audit-screen-body.ts — SB1): the flat
+// ground (atmosphere) + a header slot + THE TICKER
 // (pinned under the header while a session runs — one tap returns to
 // the Floor) + the scrolling body. THE BOARD has no tab bar and no
 // drawer chrome: the Desk is a stack, home is its hub, and the
 // ticker keeps the live session one tap away on every page.
 //
-// M3 — THE COMPRESS: a pushed screen may declare a `compact` restatement
+// F4 — THE COMPRESS: a pushed screen may declare a `compact` restatement
 // (title + optional live figure). It rides a 48px sticky bar that is
 // EMPTY while the page's hero statement is on screen and CROSSFADES
 // IN (scroll-linked, transform/opacity only) as the statement scrolls

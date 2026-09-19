@@ -1,8 +1,8 @@
 // components/composed/SessionStrip.tsx
 //
-// THE TICKER (board-thesis §7): while a session runs, a slim plate
+// THE TICKER (gauge-thesis §8): while a session runs, a slim plate
 // pins under every Desk header — LIVE pulse (the living breath, in
-// record-orange) · the running elapsed figure in Spline · the current
+// signal) · the running elapsed figure in Martian · the current
 // station · RETURN →. One tap goes back to the Floor, from anywhere.
 // The session never hides and never falls out of the thumb arc; this
 // is what replaces the tab bar's center action when the bar itself

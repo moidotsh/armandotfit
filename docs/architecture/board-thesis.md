@@ -1,5 +1,11 @@
 # THE BOARD — the training whiteboard
 
+> **RETIRED (2027-01).** Superseded by `gauge-thesis.md` (THE GAUGE —
+> the seventh upending). This file survives as history: whatever of
+> it survives in the product survived on its own argument there, not
+> on this document's authority. The succession: signal → quiet page
+> → board → gauge.
+
 > The sixth upending (2026-12). This document is the compass: the point
 > of view, the pillars, the drawn-figure language, the type ramp, the
 > color law with its computed contrast matrix, the motion and

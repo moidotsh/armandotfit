@@ -1,17 +1,17 @@
 // components/composed/BoardHead.tsx
 //
-// THE BOARD's page head (docs/architecture/board-thesis.md §3.2, §5):
+// The page head (docs/architecture/gauge-thesis.md §3, §5):
 // the one statement per screen (+ optional furniture whisper above,
 // + optional fact line waiting outside the halo). One component so
 // the hierarchy law is structural, not disciplined — a screen can't
 // hand-roll a second statement or a mis-scaled fact line if it
 // composes this instead.
 //
-//   variant 'words'  (default) — the statement in Archivo Cond 36/800
-//   variant 'figure' — a FIGURE-statement in Spline at counter scale
+//   variant 'words'  (default) — the statement in Instrument Cond 36/700
+//   variant 'figure' — a FIGURE-statement in Martian at counter scale
 //                      (the receipt's tonnage, the streak, the count)
 //
-// The whisper carries the record-orange read when it announces the
+// The whisper carries the signal read when it announces the
 // living position (the window, the record); it stays quiet ink
 // otherwise.
 

@@ -22,7 +22,7 @@ import {
   type EquipmentSlug,
   type SystemExerciseData,
 } from '../../shared/exercises';
-import { theme } from '../../constants';
+import { theme, type MeterStep } from '../../constants';
 
 export interface InkRailProps {
   currentSlug: string;
@@ -71,7 +71,22 @@ interface BenchRow {
   isCurrent: boolean;
   isProgrammed: boolean;
   why: string | null;
+  /** The row's equipment zone — the tick's hue (the zone ramp). */
+  step: MeterStep;
 }
+
+/** Equipment modality → the meter ramp's step (the zone ramp). */
+const ZONE_STEP: Record<string, MeterStep> = {
+  barbell: 'step1',
+  dumbbell: 'step2',
+  cable: 'step3',
+  machine: 'step4',
+  bodyweight: 'step5',
+};
+const stepFor = (slug: string): MeterStep => {
+  const m = SYSTEM_EXERCISES_BY_SLUG[slug]?.modality ?? 'machine';
+  return ZONE_STEP[m] ?? 'step6';
+};
 
 export function InkRail({
   currentSlug,
@@ -91,7 +106,7 @@ export function InkRail({
     if (!current) return { rows: [], current: undefined };
 
     const rows: BenchRow[] = [
-      { slug: current.slug, name: current.name, isCurrent: true, isProgrammed: false, why: null },
+      { slug: current.slug, name: current.name, isCurrent: true, isProgrammed: false, why: null, step: stepFor(current.slug) },
     ];
     if (programmed && programmed.slug !== current.slug) {
       rows.push({
@@ -100,6 +115,7 @@ export function InkRail({
         isCurrent: false,
         isProgrammed: true,
         why: null,
+        step: stepFor(programmed.slug),
       });
     }
     for (const alt of rankAlternatives(current, 6)) {
@@ -110,6 +126,7 @@ export function InkRail({
         isCurrent: false,
         isProgrammed: false,
         why: whyLine(alt.exercise, current),
+        step: stepFor(alt.exercise.slug),
       });
     }
     return { rows, current };
@@ -157,6 +174,10 @@ export function InkRail({
                 pressed ? { opacity: 0.6 } : null,
               ]}
             >
+              <View
+                style={[styles.zoneTick, { backgroundColor: colors.meter[item.step] }]}
+                testID={testID ? `${testID}-tick-${item.slug}` : undefined}
+              />
               <View style={styles.rowMain}>
                 <Text
                   numberOfLines={1}
@@ -219,6 +240,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 12,
     borderBottomWidth: 1,
+  },
+  // The row's zone tick — walking distance reads in hue (the zone
+  // ramp), the same line the library's geography draws.
+  zoneTick: {
+    width: 3,
+    height: 26,
+    borderRadius: 1,
   },
   rowMain: {
     flex: 1,
