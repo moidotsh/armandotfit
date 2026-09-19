@@ -18,13 +18,14 @@ import { BoardShell } from '../components/composed';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile, usePwaPrompt } from '../hooks';
-import { DAY_OF_WEEK_LABELS, BLOCK_GAP, BOARD, theme } from '../constants';
+import { DAY_OF_WEEK_LABELS, BLOCK_GAP, GAUGE, theme } from '../constants';
 import { useToast } from '../context';
+import { useRestStore } from '../stores';
 import { logger } from '../utils/logger';
 
 const PREFERENCE_LABELS: Record<ColorSchemePreference, string> = {
-  light: 'Paper',
-  dark: 'Evening',
+  light: 'Enamel',
+  dark: 'Night gym',
   system: 'System',
 };
 
@@ -63,6 +64,17 @@ export default function SettingsScreen() {
   );
 
   const restDayIds = restDays.map(String);
+
+  // THE REST INSTRUMENT's remembered default (gauge-thesis §7): the
+  // interval a fresh rest starts with. ±15s steppers, mono readout —
+  // the panel row that tunes the Floor's clock.
+  const restDefaultSec = useRestStore((s) => s.defaultSec);
+  const setRestDefault = useCallback((next: number) => {
+    useRestStore.setState({
+      defaultSec: Math.max(30, Math.min(300, Math.round(next / 15) * 15)),
+    });
+  }, []);
+  const restReadout = `${Math.floor(restDefaultSec / 60)}:${String(restDefaultSec % 60).padStart(2, '0')}`;
 
   return (
     <BoardShell
@@ -115,6 +127,54 @@ export default function SettingsScreen() {
             </Pressable>
           );
         })}
+      </View>
+
+      {/* THE REST INSTRUMENT's default — the interval the Floor's
+          clock counts after every log. */}
+      <View style={styles.block}>
+        <Text style={[styles.whisper, { color: colors.textMuted }]}>
+          REST INTERVAL
+        </Text>
+        <View style={styles.restIntervalRow}>
+          <Pressable
+            onPress={() => setRestDefault(restDefaultSec - 15)}
+            accessibilityRole="button"
+            accessibilityLabel="Decrease rest interval by 15 seconds"
+            style={({ pressed }) => [
+              styles.restStep,
+              {
+                backgroundColor: colors.backgroundAlt,
+                borderColor: colors.mobilePremium.hairlineBorderStrong,
+              },
+              pressed ? { opacity: 0.6 } : null,
+            ]}
+            testID="rest-default-dec"
+          >
+            <Text style={[styles.restStepGlyph, { color: colors.text }]}>−</Text>
+          </Pressable>
+          <Text
+            style={[styles.restIntervalFigure, { color: colors.text }]}
+            testID="rest-default-readout"
+          >
+            {restReadout}
+          </Text>
+          <Pressable
+            onPress={() => setRestDefault(restDefaultSec + 15)}
+            accessibilityRole="button"
+            accessibilityLabel="Increase rest interval by 15 seconds"
+            style={({ pressed }) => [
+              styles.restStep,
+              {
+                backgroundColor: colors.backgroundAlt,
+                borderColor: colors.mobilePremium.hairlineBorderStrong,
+              },
+              pressed ? { opacity: 0.6 } : null,
+            ]}
+            testID="rest-default-inc"
+          >
+            <Text style={[styles.restStepGlyph, { color: colors.text }]}>+</Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* Rest days — the seven-mark measure; a rest day is struck. */}
@@ -242,10 +302,10 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
   },
   block: {
-    ...BOARD.block,
+    ...GAUGE.block,
   },
   statement: {
-    ...BOARD.statement,
+    ...GAUGE.statement,
   },
   preferenceRow: {
     flexDirection: 'row',
@@ -268,8 +328,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   whisper: {
-    ...BOARD.whisper,
+    ...GAUGE.whisper,
     marginBottom: 8,
+  },
+  // THE REST INSTRUMENT's panel row: steppers flanking the mono figure.
+  restIntervalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  restStep: {
+    width: 44,
+    height: 44,
+    borderRadius: theme.shapes.control,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  restStepGlyph: {
+    ...theme.typography.mobileFigure,
+    fontWeight: '600',
+    fontSize: 18,
+  },
+  restIntervalFigure: {
+    ...theme.typography.mobileFigure,
+    fontSize: 21,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+    flex: 1,
+    textAlign: 'center',
   },
   // The rest-day MEASURE — seven marks; a rest day is a struck mark
   // (selection is ink inversion, never brand). Square-cut, agate

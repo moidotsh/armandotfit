@@ -22,7 +22,7 @@ import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory } from '../hooks';
 import { AnalyticsService } from '../services';
 import { addDays } from '../utils';
-import { BLOCK_GAP, BOARD, theme, PAGE_GUTTER } from '../constants';
+import { BLOCK_GAP, GAUGE, theme, PAGE_GUTTER } from '../constants';
 
 type Range = 7 | 30 | 90;
 
@@ -116,7 +116,11 @@ export default function AnalyticsScreen() {
           ) : (
             <View style={styles.block}>
               <View style={styles.barList}>
-                {weekly.map((w) => (
+                {weekly.map((w) => {
+                  // The record week's bar carries the signal — the
+                  // record mark (one hue, one meaning).
+                  const isRecord = w.sessions === maxWorkouts && w.sessions > 0;
+                  return (
                   <View
                     key={w.weekStart}
                     style={styles.barRow}
@@ -136,13 +140,14 @@ export default function AnalyticsScreen() {
                           styles.barFill,
                           {
                             width: `${Math.max(w.sessions > 0 ? 6 : 0, (w.sessions / maxWorkouts) * 88)}%`,
-                            backgroundColor: colors.text,
+                            backgroundColor: isRecord ? colors.brand : colors.text,
                           },
                         ]}
                       />
                     </View>
                   </View>
-                ))}
+                  );
+                })}
               </View>
             </View>
           )}
@@ -159,7 +164,7 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   block: {
-    ...BOARD.block,
+    ...GAUGE.block,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: BLOCK_GAP },
   // The grid breathes narrower than the column — the field is the

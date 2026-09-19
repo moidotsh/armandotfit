@@ -16,7 +16,7 @@ import {
   MobilePrimaryButton,
   MobileActionFooter,
 } from '../components/MobilePremium';
-import { BoardShell, PlateStack } from '../components/composed';
+import { BoardShell, PinRail } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
 import { useExerciseDetail, useTopSetsByName } from '../hooks';
@@ -28,7 +28,7 @@ import {
   equipmentSlugs,
   type MuscleSlug,
 } from '../shared/exercises';
-import { BOARD, theme, PAGE_GUTTER } from '../constants';
+import { GAUGE, theme, PAGE_GUTTER } from '../constants';
 import type { ExerciseKey } from '../shared/exercises';
 
 export default function ExerciseDetailScreen() {
@@ -92,7 +92,7 @@ export default function ExerciseDetailScreen() {
                 <Text style={[styles.lastLabel, { color: colors.brandText }]}>
                   THE NUMBER TO BEAT
                 </Text>
-                <PlateStack kg={lastTime.weight} scale="counter" testID="entry-last-stack" />
+                <PinRail kg={lastTime.weight} scale="counter" testID="entry-last-rail" />
                 <Text style={[styles.lastLine, { color: colors.text }]} numberOfLines={1}>
                   {`${lastTime.weight} × ${lastTime.reps} · ${lastTime.sets} set${lastTime.sets === 1 ? '' : 's'} · ${lastTime.when}`}
                 </Text>
@@ -198,10 +198,10 @@ export default function ExerciseDetailScreen() {
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 40 },
   block: {
-    ...BOARD.block,
+    ...GAUGE.block,
   },
   headline: {
-    ...BOARD.statement,
+    ...GAUGE.statement,
   },
   // The number-to-beat block sits in the statement's halo.
   lastBlock: {
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   typeLine: {
-    ...BOARD.whisperLine,
+    ...GAUGE.whisperLine,
   },
   bodyText: { ...theme.typography.mobileBody },
   tips: { ...theme.typography.mobileMeta, marginTop: 10 },

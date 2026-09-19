@@ -16,7 +16,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { SectionList, Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   MobileInput,
-  MobileSectionEyebrow,
   EmptyState,
   FilterChip,
   FilterChipGroup,
@@ -27,7 +26,19 @@ import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises, useRecentSessionDetails } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import { SYSTEM_EXERCISES, ZONES, type SystemExerciseData } from '../shared/exercises';
-import { BOARD, BLOCK_GAP, ROW_GAP, PAGE_GUTTER } from '../constants';
+import { GAUGE, BLOCK_GAP, ROW_GAP, PAGE_GUTTER, theme } from '../constants';
+import type { MeterStep } from '../constants';
+
+/** The zone line map: equipment modality → the meter ramp's step (the
+ *  gym's geography colored on the zone ramp — gauge-thesis §4.2). */
+const ZONE_STEP: Record<string, MeterStep> = {
+  barbell: 'step1',
+  dumbbell: 'step2',
+  cable: 'step3',
+  machine: 'step4',
+  bodyweight: 'step5',
+};
+const STEEL: MeterStep = 'step6';
 
 /** Group the catalog by equipment zone, in walk order (shared ZONES). */
 function groupedByZone(entries: SystemExerciseData[]) {
@@ -194,15 +205,31 @@ export default function ExerciseDatabaseScreen() {
             renderItem={({ item }) => (
               <ExerciseListItem exercise={item} onPress={navigateToExerciseDetail} />
             )}
-            renderSectionHeader={({ section }) => (
-              <View
-                style={[styles.sectionHeader, { backgroundColor: colors.backgroundDeep }]}
-              >
-                <MobileSectionEyebrow flush={false}>
-                  {section.key === RECENT_SECTION_KEY ? 'Recently logged' : section.category}
-                </MobileSectionEyebrow>
-              </View>
-            )}
+            renderSectionHeader={({ section }) => {
+              // THE ZONE LINE — the head carries its zone's hue tick
+              // (the meter ramp); the word stays printed ink.
+              const modality = ZONES.find((z) => z.zone === section.key)?.modality;
+              const step: MeterStep =
+                section.key === RECENT_SECTION_KEY
+                  ? STEEL
+                  : ZONE_STEP[modality ?? 'machine'] ?? 'step6';
+              return (
+                <View
+                  style={[styles.sectionHeader, { backgroundColor: colors.backgroundDeep }]}
+                  testID={`library-zone-head-${section.key}`}
+                >
+                  <View style={styles.zoneLine}>
+                    <View
+                      style={[styles.zoneTick, { backgroundColor: colors.meter[step] }]}
+                      testID={`library-zone-tick-${section.key}`}
+                    />
+                    <Text style={[styles.zoneWord, { color: colors.text }]}>
+                      {section.key === RECENT_SECTION_KEY ? 'RECENTLY LOGGED' : section.category.toUpperCase()}
+                    </Text>
+                  </View>
+                </View>
+              );
+            }}
             stickySectionHeadersEnabled
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
@@ -235,6 +262,21 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     zIndex: 10,
   },
+  // THE ZONE LINE — the hue tick carries the zone; the word is
+  // printed ink (furniture shouts, color maps geography).
+  zoneLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  zoneTick: {
+    width: 3,
+    height: 14,
+    borderRadius: 1,
+  },
+  zoneWord: {
+    ...theme.typography.mobileEyebrow,
+  },
   adder: {
     marginTop: ROW_GAP,
     gap: 8,
@@ -244,14 +286,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   adderToggleText: {
-    ...BOARD.whisper,
+    ...GAUGE.whisper,
   },
   adderVerb: {
     minHeight: 44,
     justifyContent: 'center',
   },
   adderVerbText: {
-    ...BOARD.whisperLine,
+    ...GAUGE.whisperLine,
     fontWeight: '600',
   },
 });

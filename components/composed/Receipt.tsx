@@ -23,7 +23,7 @@ import { useToast, useAppTheme } from '../../context';
 import { useWorkoutDetail, useDeleteSession } from '../../hooks';
 import { safeGoBack } from '../../navigation';
 import { sumVolume, formatVolume } from '../../services';
-import { BOARD, PAGE_GUTTER, theme } from '../../constants';
+import { GAUGE, PAGE_GUTTER, railMaxFor, theme } from '../../constants';
 
 export interface ReceiptProps {
   /** The session id from the route (?id=). */
@@ -56,6 +56,16 @@ export function Receipt({ id }: ReceiptProps) {
   const totalKg = session
     ? session.exercises.reduce((n, e) => n + sumVolume(e.sets), 0)
     : 0;
+  // The session's rail ceiling — every receipt ledger reads against
+  // one scale (the audit's own instrument).
+  const sessionRailMax = session
+    ? railMaxFor(
+        session.exercises.reduce(
+          (m, e) => Math.max(m, ...e.sets.map((s) => s.weight ?? 0)),
+          0,
+        ),
+      )
+    : railMaxFor(null);
 
   return (
     <BoardShell
@@ -105,24 +115,32 @@ export function Receipt({ id }: ReceiptProps) {
           ) : null}
           {session.exercises.map((ex) => (
             <View key={ex.id} style={styles.receiptBlock}>
-              <View style={styles.receiptExHead}>
-                <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
-                  {ex.exerciseName || 'Exercise'}
-                </Text>
+              <View
+                style={[
+                  styles.ledgerPanel,
+                  { backgroundColor: colors.card, borderColor: colors.cardBorder },
+                ]}
+              >
+                <View style={styles.receiptExHead}>
+                  <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                    {ex.exerciseName || 'Exercise'}
+                  </Text>
+                </View>
+                {ex.tags.length > 0 ? (
+                  <Text style={[styles.tagsLine, { color: colors.textMuted }]}>
+                    {ex.tags.join(' · ')}
+                  </Text>
+                ) : null}
+                {ex.sets.map((s) => (
+                  <SetRow
+                    key={s.id}
+                    position={s.position}
+                    reps={s.reps}
+                    weight={s.weight}
+                    railMax={sessionRailMax}
+                  />
+                ))}
               </View>
-              {ex.tags.length > 0 ? (
-                <Text style={[styles.tagsLine, { color: colors.textMuted }]}>
-                  {ex.tags.join(' · ')}
-                </Text>
-              ) : null}
-              {ex.sets.map((s) => (
-                <SetRow
-                  key={s.id}
-                  position={s.position}
-                  reps={s.reps}
-                  weight={s.weight}
-                />
-              ))}
             </View>
           ))}
           <View style={styles.receiptBlock}>
@@ -154,7 +172,14 @@ const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 120 },
   bodyText: { ...theme.typography.mobileBody },
   receiptBlock: {
-    ...BOARD.block,
+    ...GAUGE.block,
+  },
+  // The exercise ledger panel — one enamel panel per exercise.
+  ledgerPanel: {
+    borderWidth: 1,
+    borderRadius: theme.shapes.surface,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
   },
   receiptExHead: {
     flexDirection: 'row',

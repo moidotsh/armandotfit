@@ -24,7 +24,7 @@ import {
   getSlotsForDay,
   type SessionWindow,
 } from '../shared/exercises';
-import { BOARD, ROW_GAP, theme, PAGE_GUTTER } from '../constants';
+import { GAUGE, ROW_GAP, theme, PAGE_GUTTER } from '../constants';
 import type { PreferredSplit } from '../shared/types';
 
 function rxLabel(sets: [number, number], reps: [number, number]): string {
@@ -128,9 +128,16 @@ export default function ProgramScreen() {
                     {window.toUpperCase()}
                   </Text>
                 ) : null}
-                {resolveSlots(split, day.day, window, overrides).map((_, i) =>
-                  renderSlot(day.day, window, i + 1),
-                )}
+                <View
+                  style={[
+                    styles.windowPanel,
+                    { backgroundColor: colors.card, borderColor: colors.cardBorder },
+                  ]}
+                >
+                  {resolveSlots(split, day.day, window, overrides).map((_, i) =>
+                    renderSlot(day.day, window, i + 1),
+                  )}
+                </View>
               </View>
             ))}
           </View>
@@ -195,24 +202,32 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileEyebrow,
   },
   dayFirst: {
-    ...BOARD.blockFirst,
+    ...GAUGE.blockFirst,
   },
   day: {
-    ...BOARD.block,
+    ...GAUGE.block,
   },
   dayTitleLead: {
-    ...BOARD.statement,
+    ...GAUGE.statement,
   },
   dayTitle: {
     ...theme.typography.mobileTitle,
   },
   // The statement's halo: the fact line waits outside the moat.
   dayFact: {
-    ...BOARD.fact,
+    ...GAUGE.fact,
     marginBottom: 8,
   },
   windowBlock: {
     marginTop: ROW_GAP / 2,
+  },
+  // The timetable's window panel — the day's slots on one enamel
+  // panel (the printed timetable row).
+  windowPanel: {
+    borderWidth: 1,
+    borderRadius: theme.shapes.surface,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
   },
   windowLabel: {
     ...theme.typography.mobileEyebrow,

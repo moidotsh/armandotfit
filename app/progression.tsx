@@ -16,7 +16,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { BoardShell, BoardHead, QueryErrorNote, PlateStack } from '../components/composed';
+import { BoardShell, BoardHead, QueryErrorNote, PinRail } from '../components/composed';
 import { useAppTheme } from '../context';
 import {
   navigateToExerciseDetail,
@@ -26,7 +26,7 @@ import {
 } from '../navigation';
 import { useDashboardSummary, usePersonalBests } from '../hooks';
 import { SYSTEM_EXERCISES } from '../shared/exercises';
-import { BOARD, theme, PAGE_GUTTER } from '../constants';
+import { GAUGE, theme, PAGE_GUTTER, railMaxFor } from '../constants';
 
 const PB_COUNT = 5;
 
@@ -37,6 +37,9 @@ export default function ProgressionScreen() {
   const summary = summaryQuery.data;
   const isEmpty = (summary?.totalSessions ?? 0) === 0;
   const pbs = (pbQuery.data ?? []).slice(0, PB_COUNT);
+  // The wall's one ceiling — the highest best-load, rounded up: every
+  // rail reads against the same scale, so the wall IS the ranking.
+  const wallRailMax = railMaxFor(Math.max(0, ...pbs.map((pb) => pb.bestWeight)));
 
   return (
     <BoardShell
@@ -82,11 +85,12 @@ export default function ProgressionScreen() {
             </Text>
           </View>
 
-          {/* THE TROPHY WALL — five best lifts, the iron drawn. */}
+          {/* THE GAUGE WALL — five best lifts, the highest you've
+              pinned, every rail against the wall's one ceiling. */}
           {pbs.length > 0 ? (
             <View style={styles.block}>
               <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
-                THE TROPHY WALL
+                THE GAUGE WALL
               </Text>
               <View>
                 {pbs.map((pb) => {
@@ -104,7 +108,7 @@ export default function ProgressionScreen() {
                       <Text style={[styles.pbName, { color: colors.text }]} numberOfLines={1}>
                         {pb.exerciseName}
                       </Text>
-                      <PlateStack kg={pb.bestWeight} scale="row" />
+                      <PinRail kg={pb.bestWeight} scale="counter" railMax={wallRailMax} testID={`gauge-wall-rail-${pb.exerciseName}`} />
                       <Text style={[styles.pbReps, { color: colors.brandText }]}>
                         {String(pb.bestReps)}
                       </Text>
@@ -134,31 +138,31 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileEyebrow,
   },
   block: {
-    ...BOARD.block,
+    ...GAUGE.block,
   },
   totals: {
-    ...BOARD.figure,
+    ...GAUGE.figure,
   },
   sectionWhisper: {
-    ...BOARD.whisper,
+    ...GAUGE.whisper,
     marginBottom: 4,
   },
   pbRow: {
-    minHeight: 48,
+    minHeight: 128,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
   pbName: {
-    ...BOARD.row,
+    ...GAUGE.row,
     flex: 1,
   },
   pbReps: {
-    ...BOARD.figure,
+    ...GAUGE.figure,
     minWidth: 24,
     textAlign: 'right',
   },
-  analyticsLink: { marginTop: BOARD.block.marginTop, minHeight: 48, justifyContent: 'center' },
+  analyticsLink: { marginTop: GAUGE.block.marginTop, minHeight: 48, justifyContent: 'center' },
   analyticsLinkText: {
     ...theme.typography.mobileItemTitle,
   },
