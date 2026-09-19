@@ -1,11 +1,13 @@
 // components/composed/Receipt.tsx
 //
-// THE RECEIPT — the read-only session view (board-thesis §7): "That
-// was N kg". Self-contained: owns its detail query and the delete
-// flow (two-step, toast + back on success). The tonnage is the
-// FIGURE-STATEMENT (Martian at counter scale — a figure IS the
-// statement here); one fact whisper carries date/window/counts;
-// exercises read as ledgers with drawn plate stacks per set.
+// THE RECEIPT — the read-only session view (scoreboard-thesis §8):
+// "That was N kg." Self-contained: owns its detail query and the
+// delete flow (two-step, toast + back on success). The tonnage is
+// the FIGURE-STATEMENT — Martian at the 36 statement rank (a figure
+// IS the statement here, unit riding beside it at the whisper
+// scale); one fact line carries date/window/counts; exercises read
+// as REGISTERS: name + tags whisper + one set line per logged set
+// (ordinal · leader · weight × reps in mono). No panels, no rails.
 
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -16,14 +18,14 @@ import {
 } from '../MobilePremium';
 import { LoadingSpinner } from '../primitives';
 import { BoardShell } from './BoardShell';
-import { BoardHead } from './BoardHead';
-import { SetRow } from './SetRow';
+import { Figure } from '../MobilePremium';
+import { RegisterLine } from './RegisterLine';
 import { QueryErrorNote } from './QueryErrorNote';
 import { useToast, useAppTheme } from '../../context';
 import { useWorkoutDetail, useDeleteSession, useWeightUnit } from '../../hooks';
 import { safeGoBack } from '../../navigation';
 import { sumVolume } from '../../services';
-import { GAUGE, PAGE_GUTTER, railMaxFor, theme } from '../../constants';
+import { SCOREBOARD, PAGE_GUTTER, theme } from '../../constants';
 import {
   toDisplayWeight,
   roundDisplayWeight,
@@ -63,20 +65,6 @@ export function Receipt({ id }: ReceiptProps) {
   const totalKg = session
     ? session.exercises.reduce((n, e) => n + sumVolume(e.sets), 0)
     : 0;
-  // The session's rail ceiling — every receipt ledger reads against
-  // one scale (the audit's own instrument).
-  const sessionRailMax = session
-    ? railMaxFor(
-        session.exercises.reduce(
-          (m, e) =>
-            Math.max(
-              m,
-              ...e.sets.map((s) => toDisplayWeight(s.weight ?? 0, unit)),
-            ),
-          0,
-        ),
-      )
-    : railMaxFor(null);
 
   return (
     <BoardShell
@@ -96,18 +84,27 @@ export function Receipt({ id }: ReceiptProps) {
         <LoadingSpinner />
       ) : (
         <>
-          {/* THE FIGURE-STATEMENT — tonnage. The receipt's one
-              sentence is "that was N kg"; the fact line carries
-              the rest. */}
-          <BoardHead
-            statement={`${formatVolumeWeight(totalKg, unit)} ${weightUnitLabel(unit)}`}
-            fact={`${new Date(session.startedAt).toLocaleDateString(undefined, {
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric',
-            })} · ${session.splitDay != null ? `D${session.splitDay}` : 'ad-hoc'}${windowLabel ? ` · ${windowLabel}` : ''} · ${session.exercises.length} lifts · ${totalSets} sets`}
-            variant="figure"
-          />
+          {/* THE FIGURE-STATEMENT — tonnage at the 36 mono statement
+              rank, the unit whispering beside it (Figure display).
+              The receipt's one sentence: "that was N kg". */}
+          <View>
+            <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
+              THE RECEIPT
+            </Text>
+            <Figure
+              value={formatVolumeWeight(totalKg, unit)}
+              unit={weightUnitLabel(unit)}
+              size="display"
+              testID="receipt-tonnage"
+            />
+            <Text style={[styles.factLine, { color: colors.textMuted }]} numberOfLines={1}>
+              {`${new Date(session.startedAt).toLocaleDateString(undefined, {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+              })} · ${session.splitDay != null ? `D${session.splitDay}` : 'ad-hoc'}${windowLabel ? ` · ${windowLabel}` : ''} · ${session.exercises.length} lifts · ${totalSets} sets`}
+            </Text>
+          </View>
 
           {session.note ? (
             <View style={styles.receiptBlock}>
@@ -126,33 +123,25 @@ export function Receipt({ id }: ReceiptProps) {
           ) : null}
           {session.exercises.map((ex) => (
             <View key={ex.id} style={styles.receiptBlock}>
-              <View
-                style={[
-                  styles.ledgerPanel,
-                  { backgroundColor: colors.card, borderColor: colors.cardBorder },
-                ]}
-              >
-                <View style={styles.receiptExHead}>
-                  <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
-                    {ex.exerciseName || 'Exercise'}
-                  </Text>
-                </View>
+              <View style={styles.receiptExHead}>
+                <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                  {ex.exerciseName || 'Exercise'}
+                </Text>
                 {ex.tags.length > 0 ? (
-                  <Text style={[styles.tagsLine, { color: colors.textMuted }]}>
+                  <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
                     {ex.tags.join(' · ')}
                   </Text>
                 ) : null}
-                {ex.sets.map((s) => (
-                  <SetRow
-                    key={s.id}
-                    position={s.position}
-                    reps={s.reps}
-                    weight={roundDisplayWeight(toDisplayWeight(s.weight, unit))}
-                    railMax={sessionRailMax}
-                    unit={unit}
-                  />
-                ))}
               </View>
+              {ex.sets.map((s) => (
+                <RegisterLine
+                  key={s.id}
+                  monoLabel
+                  label={String(s.position)}
+                  figure={`${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} × ${s.reps}`}
+                  testID={`receipt-set-${ex.id}-${s.position}`}
+                />
+              ))}
             </View>
           ))}
           <View style={styles.receiptBlock}>
@@ -184,26 +173,28 @@ const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 120 },
   bodyText: { ...theme.typography.mobileBody },
   receiptBlock: {
-    ...GAUGE.block,
+    ...SCOREBOARD.block,
   },
-  // The exercise ledger panel — one enamel panel per exercise.
-  ledgerPanel: {
-    borderWidth: 1,
-    borderRadius: theme.shapes.surface,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+  pageWhisper: {
+    ...SCOREBOARD.whisper,
+    marginBottom: 6,
   },
+  factLine: {
+    ...SCOREBOARD.fact,
+  },
+  // The exercise register's head: the name left, tags whisper right.
   receiptExHead: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',
     gap: 12,
+    marginBottom: 2,
   },
   exerciseName: {
     ...theme.typography.mobileItemTitle,
     flex: 1,
   },
-  tagsLine: { ...theme.typography.mobileLedger, marginTop: 2, marginBottom: 4 },
+  tagsLine: { ...theme.typography.mobileLedger },
 });
 
 export default Receipt;

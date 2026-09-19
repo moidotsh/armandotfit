@@ -24,6 +24,8 @@ const LEADER_RUN = LEADER_CHAR.repeat(96);
 export interface RegisterLineProps {
   /** The entry's name — content, sentence case (Space Grotesk 18). */
   label: string;
+  /** The label is itself a quantity (an ordinal, a date) — set mono. */
+  monoLabel?: boolean;
   /** The right-aligned mono figure (18). Null = no figure, no leader. */
   figure?: string | null;
   /** The figure's read: ink (default), muted, or record (RED INK). */
@@ -41,6 +43,7 @@ export interface RegisterLineProps {
 
 export function RegisterLine({
   label,
+  monoLabel = false,
   figure = null,
   figureTone = 'ink',
   bold = false,
@@ -64,7 +67,14 @@ export function RegisterLine({
 
   const body = (
     <View style={styles.row}>
-      <Text style={[styles.label, { color: labelColor }, bold ? styles.labelBold : null]} numberOfLines={1}>
+      <Text
+        style={[
+          monoLabel ? styles.labelMono : styles.label,
+          { color: labelColor },
+          bold ? styles.labelBold : null,
+        ]}
+        numberOfLines={1}
+      >
         {label}
       </Text>
       {figure != null ? (
@@ -120,6 +130,13 @@ const styles = StyleSheet.create({
   },
   label: {
     ...theme.typography.mobileItemTitle,
+    flexShrink: 1,
+  },
+  // A label that is itself a quantity (an ordinal, a date) rides the
+  // mono face — every quantity is mono (thesis §3.3).
+  labelMono: {
+    ...theme.typography.mobileFigure,
+    fontWeight: '500',
     flexShrink: 1,
   },
   labelBold: {

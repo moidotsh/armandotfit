@@ -7,7 +7,6 @@ export { SessionStrip } from './SessionStrip';
 export { RegisterLine, type RegisterLineProps } from './RegisterLine';
 export { TheLogger, type TheLoggerProps } from './TheLogger';
 export { StageSetRow, type StageSetRowProps } from './StageSetRow';
-export { SetRow, type SetRowProps } from './SetRow';
 export { TagChips, type TagChipsProps } from './TagChips';
 export { InkRail, SwapGlyph, type InkRailProps } from './InkRail';
 export { ExerciseListItem, type ExerciseListItemProps } from './ExerciseListItem';
