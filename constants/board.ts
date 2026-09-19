@@ -119,16 +119,6 @@ export function decomposeLoad(kg: number): PlateSegment[] {
   return out;
 }
 
-/** Total drawn width of a stack at a scale (slabs + gaps), for probes. */
-export function stackWidthFor(kg: number, scale: PlateScale): number {
-  const segments = decomposeLoad(kg);
-  if (segments.length === 0) return 0;
-  const gap = PLATE_SCALE[scale].gap;
-  return segments.reduce((w, s) => {
-    const d = PLATE_DENOMINATIONS.find((x) => x.kg === s.kg);
-    return w + (d ? d.thickness[scale] : 0);
-  }, 0) + gap * (segments.length - 1);
-}
 
 // ── The tally gates ─────────────────────────────────────────────────────
 // Sets render as tally marks: verticals, the fifth crossing the prior

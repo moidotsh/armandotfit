@@ -79,7 +79,6 @@ export {
   PLATE_SCALE,
   PLATE_QUANTUM,
   decomposeLoad,
-  stackWidthFor,
   TALLY_SCALE,
 } from './board';
 export type { PlateSegment, PlateScale, MeterStep, TallyScale } from './board';
