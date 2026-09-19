@@ -16,7 +16,7 @@
   "components/MobilePremium/InkPanel.tsx": "196eaffec34d263af8eb1b0ca02bfe68880d8aa71e64df38139047c3957f3bef",
   "components/MobilePremium/LangToggle.tsx": "ca968d4ccdcc45940a0ab6130cffdbcff4960094c10b5250e8b7aabecb89bb97",
   "components/MobilePremium/MobileAbsorbBar.tsx": "3b58fe256965854e4b934aeaecd9516e9cda38164b8ca82647adad6b236b8d3f",
-  "components/MobilePremium/MobileActionFooter.tsx": "7713261f98aeedb24a8d858ad8bc505313cda355ab5c28964e0fe0830e30cb0b",
+  "components/MobilePremium/MobileActionFooter.tsx": "f7b096b3287c31f24624a81d135d3a65baf8ad1db5ead26e79dfbd66d51144ec",
   "components/MobilePremium/MobileAlert.tsx": "e48c2f497175ad09af157ba6a1048bc8191ff1826fbb3028f44bb85cbfefc0a0",
   "components/MobilePremium/MobileAnnouncementBar.tsx": "8cc22aabd5a9206b04cea53d11c2fc555fb95f99179ea68916b68f60a43f7b70",
   "components/MobilePremium/MobileAtmosphere.tsx": "f4c9d720d26d232dd455501a696e1c797c99e3dd45a7b471ce1ee37040f99b69",
