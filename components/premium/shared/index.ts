@@ -23,3 +23,6 @@ export type {
 
 export { PALETTES } from './atmospherePalettes';
 export type { AtmosphereSurface, AtmospherePalette } from './atmospherePalettes';
+
+export { useCompressFade } from './useCompressFade';
+export type { UseCompressFadeResult } from './useCompressFade';

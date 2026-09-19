@@ -19,7 +19,7 @@
 // `BoardShell` is taught to audit-screen-body.ts as a body-policy
 // carrier (SB1).
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback } from 'react';
 import {
   Animated,
   Pressable,
@@ -40,8 +40,7 @@ import {
   PAGE_GUTTER,
   BLOCK_GAP,
 } from '../../constants';
-import { isWeb } from '../../utils/platform';
-import { useReducedMotion } from '../premium/shared';
+import { useCompressFade } from '../premium/shared';
 import { SessionStrip } from './SessionStrip';
 
 export interface BoardShellProps {
@@ -86,8 +85,6 @@ export interface BoardShellProps {
   testID?: string;
 }
 
-const COMPRESS_RUNWAY = 56;
-
 export function BoardShell({
   surface = 'training',
   header,
@@ -103,24 +100,17 @@ export function BoardShell({
 }: BoardShellProps) {
   const { colors } = useAppTheme();
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
-  const reduced = useReducedMotion();
 
-  // The compress fade — 0 while the hero is on screen, 1 once it has
-  // scrolled one runway past. DOM-safe: the Animated.Value exists
-  // everywhere, the event attaches only where scroll fires, and under
-  // reduced motion (or off-web) the bar renders its restatement
-  // statically at full opacity — the design is complete without it.
-  const compress = useRef(new Animated.Value(reduced || !isWeb ? 1 : 0)).current;
+  // M3 — the compress fade (the shared motion primitive): 0 while the
+  // hero is on screen, 1 once it has scrolled past. Static-eligible
+  // under reduced motion / off-web — the bar renders its restatement.
+  const { compress, handleScroll: fadeScroll, static: fadeStatic } = useCompressFade(!!compact);
   const handleScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       onScroll?.(event);
-      if (!compact || reduced || !isWeb) return;
-      const y = event.nativeEvent.contentOffset.y;
-      compress.setValue(
-        Math.max(0, Math.min(1, y / COMPRESS_RUNWAY)),
-      );
+      fadeScroll(event);
     },
-    [compact, reduced, compress, onScroll],
+    [onScroll, fadeScroll],
   );
 
   const compactBar = compact ? (
@@ -133,14 +123,14 @@ export function BoardShell({
         style={[
           styles.compactTitle,
           { color: colors.text },
-          reduced || !isWeb ? null : { opacity: compress },
+          fadeStatic ? null : { opacity: compress },
         ]}
         numberOfLines={1}
       >
         {compact.title}
       </Animated.Text>
       {compact.figure ? (
-        <Animated.View style={reduced || !isWeb ? null : { opacity: compress }}>
+        <Animated.View style={fadeStatic ? null : { opacity: compress }}>
           {compact.figure}
         </Animated.View>
       ) : null}
