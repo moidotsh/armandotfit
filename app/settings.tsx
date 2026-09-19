@@ -347,8 +347,11 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 140,
   },
+  // The colophon's rows are minor sections — they carry the 24 half-
+  // rhythm, not the 32 block gap, so the one verb stays reachable at
+  // SE (the 490px law).
   block: {
-    ...SCOREBOARD.block,
+    marginTop: 24,
   },
   statement: {
     ...SCOREBOARD.statement,

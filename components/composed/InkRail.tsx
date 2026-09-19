@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   glyph: {
-    fontSize: 15,
+    ...theme.typography.mobileFigure,
     fontWeight: '600',
   },
   plate: {
