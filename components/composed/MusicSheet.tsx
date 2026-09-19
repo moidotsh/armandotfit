@@ -12,7 +12,7 @@
 // closed.
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Play, Pause, SkipBack, SkipForward, Minus, Plus } from '@tamagui/lucide-icons-2';
 import { MobileSheet, MobileInput } from '../MobilePremium';
 import { useAppTheme, useToast } from '../../context';
@@ -77,8 +77,10 @@ export function MusicSheet() {
   const [results, setResults] = useState<MusicTrack[] | null>(null);
   const [searchFailed, setSearchFailed] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [pasteOpen, setPasteOpen] = useState(false);
-  const [pasteValue, setPasteValue] = useState('');
+  // After a pick the sheet collapses to the MINI PLAYER (art + meta +
+  // transport) — one search, one tap, then the music gets out of the
+  // way (the owner's call). The expander row reopens the library.
+  const [minimized, setMinimized] = useState(false);
 
   // R1: a search in flight when the sheet unmounts must not touch
   // state on the dead instance.
@@ -98,45 +100,46 @@ export function MusicSheet() {
     };
     playNow(queued, rest);
     savePick.mutate(queued);
+    setMinimized(true);
   };
 
-  const runSearch = async () => {
-    if (!YOUTUBE_SEARCH_ENABLED || query.trim().length < 2) return;
+  // THE INPUT takes anything: a pasted/typed YouTube link (video or
+  // playlist) plays immediately — no API needed; anything else is a
+  // search query (keyed only). One field, both paths.
+  const submitQuery = async () => {
+    const raw = query.trim();
+    if (raw.length === 0) return;
+    const ref = parseYouTubeRef(raw);
+    if (ref) {
+      if (ref.kind === 'playlist') {
+        playPlaylist(ref.playlistId);
+      } else {
+        const placeholder: QueuedTrack = {
+          videoId: ref.videoId,
+          title: 'Pasted track',
+          artist: null,
+        };
+        playNow(placeholder, []);
+        savePick.mutate(placeholder);
+        const real = await fetchVideoTitle(ref.videoId);
+        if (!aliveRef.current || real == null) {
+          // Still playing under the placeholder; nothing to do.
+        } else {
+          const parsed = parseVideoTitle(real);
+          updateCurrentMeta(ref.videoId, parsed.title, parsed.artist);
+        }
+      }
+      setQuery('');
+      setMinimized(true);
+      return;
+    }
+    if (!YOUTUBE_SEARCH_ENABLED || raw.length < 2) return;
     setSearching(true);
-    const found = await searchTracks(query);
+    const found = await searchTracks(raw);
     if (!aliveRef.current) return;
     setResults(found);
     setSearchFailed(found == null);
     setSearching(false);
-  };
-
-  // The paste path takes ANY YouTube link: a video (plays now, with
-  // the real title landing when the API answers) or a playlist
-  // (playlist mode). Search is the primary path; this is the escape
-  // hatch, so it sits behind its own button until wanted.
-  const playFromPaste = async () => {
-    const ref = parseYouTubeRef(pasteValue);
-    if (!ref) {
-      showToast('error', 'That is not a YouTube link.');
-      return;
-    }
-    if (ref.kind === 'playlist') {
-      playPlaylist(ref.playlistId);
-    } else {
-      const placeholder: QueuedTrack = {
-        videoId: ref.videoId,
-        title: 'Pasted track',
-        artist: null,
-      };
-      playNow(placeholder, []);
-      savePick.mutate(placeholder);
-      const real = await fetchVideoTitle(ref.videoId);
-      if (!aliveRef.current || real == null) return;
-      const parsed = parseVideoTitle(real);
-      updateCurrentMeta(ref.videoId, parsed.title, parsed.artist);
-    }
-    setPasteValue('');
-    setPasteOpen(false);
   };
 
   const recentsAsTracks: MusicTrack[] = useMemo(
@@ -159,24 +162,39 @@ export function MusicSheet() {
       title="MUSIC"
       testID="music-sheet"
     >
-      {/* THE SEARCH — type a song, artist, or genre. */}
-      {YOUTUBE_SEARCH_ENABLED ? (
-        <View style={styles.searchBlock}>
-          <MobileInput
-            label=""
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Song, artist, genre…"
-            onSubmitEditing={() => void runSearch()}
-            returnKeyType="search"
-            testID="music-search"
-          />
-        </View>
+      {minimized && nowTitle ? (
+        <MiniPlayer
+          current={current}
+          playing={playing}
+          onToggle={() => (playing ? setPlaying(false) : setPlaying(true))}
+          onPrev={prev}
+          onNext={next}
+          onExpand={() => setMinimized(false)}
+        />
       ) : (
-        <Text style={[styles.hint, { color: colors.textMuted }]}>
-          Use the link button below — or set EXPO_PUBLIC_YOUTUBE_API_KEY to enable song search.
-        </Text>
-      )}
+        <>
+      {/* THE INPUT — one field, both paths: a YouTube link (video or
+          playlist) plays immediately; anything else searches (keyed). */}
+      <View style={styles.searchBlock}>
+        <MobileInput
+          label=""
+          value={query}
+          onChangeText={setQuery}
+          placeholder={
+            YOUTUBE_SEARCH_ENABLED
+              ? 'Song, artist, or YouTube link…'
+              : 'Paste a YouTube link…'
+          }
+          onSubmitEditing={() => void submitQuery()}
+          returnKeyType="go"
+          testID="music-search"
+        />
+        {!YOUTUBE_SEARCH_ENABLED ? (
+          <Text style={[styles.hint, { color: colors.textMuted }]}>
+            Links play instantly. Set EXPO_PUBLIC_YOUTUBE_API_KEY to also search songs.
+          </Text>
+        ) : null}
+      </View>
 
       {/* RESULTS — the pick plays first; the rest continue. */}
       {searching ? (
@@ -225,57 +243,6 @@ export function MusicSheet() {
           </View>
         </View>
       ) : null}
-
-      {/* THE PASTE — any YouTube link (video or playlist), behind its
-          own button: search is the primary path, this is the escape
-          hatch (the owner's call — collapsed until wanted). */}
-      <View style={styles.block}>
-        {pasteOpen ? (
-          <View style={styles.pasteRow}>
-            <View style={styles.pasteInputHold}>
-              <MobileInput
-                label=""
-                value={pasteValue}
-                onChangeText={setPasteValue}
-                placeholder="YouTube link — song or playlist…"
-                onSubmitEditing={() => void playFromPaste()}
-                returnKeyType="go"
-                testID="music-paste"
-              />
-            </View>
-            <Pressable
-              onPress={() => void playFromPaste()}
-              accessibilityRole="button"
-              accessibilityLabel="Play pasted link"
-              style={({ pressed }) => [
-                styles.pasteVerb,
-                { borderColor: colors.mobilePremium.hairlineBorderStrong },
-                pressed ? { opacity: 0.6 } : null,
-              ]}
-              testID="music-paste-play"
-            >
-              <Text style={[styles.pasteVerbWord, { color: colors.text }]}>PLAY</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <Pressable
-            onPress={() => setPasteOpen(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Play from a YouTube link"
-            style={({ pressed }) => [
-              styles.stationButton,
-              { borderColor: colors.mobilePremium.hairlineBorderStrong },
-              pressed ? { opacity: 0.6 } : null,
-            ]}
-            testID="music-paste-open"
-          >
-            <Play size={16} color={colors.text} />
-            <Text style={[styles.stationWord, { color: colors.text }]}>
-              PLAY FROM A LINK
-            </Text>
-          </Pressable>
-        )}
-      </View>
 
       {/* THE TRANSPORT — now playing + prev/play/next. */}
       {nowTitle ? (
@@ -352,6 +319,8 @@ export function MusicSheet() {
           <Plus size={18} color={colors.text} />
         </Pressable>
       </View>
+        </>
+      )}
     </MobileSheet>
   );
 }
@@ -397,6 +366,124 @@ function ResultRow({
       </View>
       <Play size={16} color={active ? colors.brandText : colors.textMuted} />
     </Pressable>
+  );
+}
+
+
+/** THE MINI PLAYER — the sheet collapsed to its essentials: the
+ *  thumbnail as the disc (center hole, the live pip in signal while
+ *  playing), title/artist, transport. The expander row reopens the
+ *  library. Playlist mode (no current track) shows the panel face. */
+function MiniPlayer({
+  current,
+  playing,
+  onToggle,
+  onPrev,
+  onNext,
+  onExpand,
+}: {
+  current: QueuedTrack | null;
+  playing: boolean;
+  onToggle: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  onExpand: () => void;
+}) {
+  const { colors } = useAppTheme();
+  return (
+    <View testID="music-mini">
+      <View style={styles.miniRow}>
+        <View style={styles.discWrap}>
+          {current ? (
+            <Image
+              source={{ uri: `https://i.ytimg.com/vi/${current.videoId}/mqdefault.jpg` }}
+              style={styles.discArt}
+              accessibilityRole="image"
+              accessibilityLabel={current.title}
+            />
+          ) : (
+            <View
+              style={[
+                styles.discArt,
+                styles.discFallback,
+                { borderColor: colors.mobilePremium.hairlineBorderStrong },
+              ]}
+            >
+              <Play size={18} color={colors.textMuted} />
+            </View>
+          )}
+          {/* The center hole — the CD read. */}
+          <View
+            style={[styles.discHole, { backgroundColor: colors.card }]}
+            accessibilityElementsHidden
+          />
+        </View>
+        <View style={styles.nowHold}>
+          <Text style={[styles.nowTitle, { color: colors.text }]} numberOfLines={1}>
+            {current?.title ?? 'PLAYLIST'}
+          </Text>
+          {current?.artist ? (
+            <Text style={[styles.nowArtist, { color: colors.textMuted }]} numberOfLines={1}>
+              {current.artist}
+            </Text>
+          ) : null}
+          <View style={styles.miniPipRow}>
+            <View
+              style={[
+                styles.miniPip,
+                { backgroundColor: playing ? colors.brand : colors.textMuted },
+              ]}
+              accessibilityElementsHidden
+            />
+            <Text style={[styles.miniState, { color: colors.textMuted }]}>
+              {playing ? 'PLAYING' : 'PAUSED'}
+            </Text>
+          </View>
+        </View>
+        <Pressable
+          onPress={onPrev}
+          accessibilityRole="button"
+          accessibilityLabel="Previous track"
+          style={({ pressed }) => [styles.transportButton, pressed ? { opacity: 0.6 } : null]}
+          testID="music-prev"
+        >
+          <SkipBack size={18} color={colors.text} />
+        </Pressable>
+        <Pressable
+          onPress={onToggle}
+          accessibilityRole="button"
+          accessibilityLabel={playing ? 'Pause' : 'Play'}
+          style={({ pressed }) => [styles.transportButton, pressed ? { opacity: 0.6 } : null]}
+          testID="music-toggle"
+        >
+          {playing ? (
+            <Pause size={22} color={colors.text} />
+          ) : (
+            <Play size={22} color={colors.text} />
+          )}
+        </Pressable>
+        <Pressable
+          onPress={onNext}
+          accessibilityRole="button"
+          accessibilityLabel="Next track"
+          style={({ pressed }) => [styles.transportButton, pressed ? { opacity: 0.6 } : null]}
+          testID="music-next"
+        >
+          <SkipForward size={18} color={colors.text} />
+        </Pressable>
+      </View>
+      <Pressable
+        onPress={onExpand}
+        accessibilityRole="button"
+        accessibilityLabel="Open music library"
+        style={({ pressed }) => [styles.miniExpand, pressed ? { opacity: 0.6 } : null]}
+        testID="music-mini-expand"
+      >
+        <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+          SEARCH · RECENTS
+        </Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -492,6 +579,54 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  miniRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  discWrap: {
+    width: 64,
+    height: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // The disc: a square art panel at the CD's proportion, radius 2
+  // (the machined corner), hairline edge — the room stays flat.
+  discArt: {
+    width: 64,
+    height: 64,
+    borderRadius: theme.shapes.tile,
+  },
+  discFallback: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  discHole: {
+    position: 'absolute',
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+  },
+  miniPipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  miniPip: {
+    width: 6,
+    height: 6,
+    borderRadius: 1,
+  },
+  miniState: {
+    ...theme.typography.mobileEyebrow,
+  },
+  miniExpand: {
+    marginTop: 12,
+    alignItems: 'center',
+    paddingVertical: 6,
   },
   volumeRow: {
     marginTop: 12,
