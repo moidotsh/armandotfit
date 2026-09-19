@@ -4,6 +4,17 @@
 > `FULL_PASS_HANDOFF.md`. Every finding below carries the evidence
 > actually run to discover it. Ranked by felt-value ÷ risk. The code
 > is the deliverable; this file is the map.
+>
+> **OUTCOME (appended at close):** every finding executed except the
+> items marked DEFERRED in §5. 12 commits in this repo + 3 shell
+> ports in arqavellum, all pushed. Tests 680 → 707 (+4 schema-truth
+> goldens, +4 draft persistence, +5 save queue, +6 derivation
+> invariants, +3 music URL/volume/notice, −3 with the dead
+> AppShellHeader test). Final walks light + dark + SE green (the one
+> walk FAIL was the harness asserting the retired 48px compress-bar
+> law — updated to 4cc141bec's inline-row law). The owner's three
+> mid-pass asks (no station, entity-decoded titles, link-in-search +
+> mini player) shipped as first-class commits.
 
 ## 0. Baseline (verified this window)
 
@@ -272,3 +283,30 @@ table. No weakening of any gate.
    gym.
 3. YouTube Data API key remains referrer-restricted; verify the
    restriction covers the deployed origin after this pass deploys.
+
+## 5. Deferred (with reasons)
+
+- **Probe library as in-repo `scripts/probe-*` harness (F6):** the
+  `.shots/` WebKit harness stays scratch (the workspace CLAUDE.md
+  discipline); porting it in-repo would commit captures-adjacent
+  tooling. The load-bearing invariants instead landed as vitest
+  property tests; the probes that ran this pass are enumerated in the
+  commit messages.
+- **SE2 → audit #14 (localStorage scope):** SE2's gap remains
+  review-enforced; a false-positive-free audit needs a storage-key
+  allowlist design the owner should weigh in on.
+- **Bundle splitting:** single 2.0 MB entry JS measured; for a
+  single-user PWA behind a warm service worker, splitting is churn.
+  Revisit if cold-load measurably hurts.
+- **Kit design drift (flat verb button, ink curtain, tile shapes):**
+  deliberate GAUGE overrides of shell files — documented, not synced;
+  flattening the public shell's button is a shell design decision.
+
+## 6. Commit-scope slip (recorded)
+
+`965a23116` carries the docs-truth + pre-commit-hook changes under
+the verify-live-schema message — files staged by an earlier
+commit-blocked attempt rode the next successful commit. All content
+was gate-validated (13 audits + tsc + full suite over exactly those
+contents); only the message under-describes. Recorded here rather
+than rewriting pushed history.
