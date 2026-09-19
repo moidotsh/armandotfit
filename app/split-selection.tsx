@@ -169,11 +169,13 @@ export default function SplitSelectionScreen() {
   const statement = selectedSlot?.isRestDay
     ? 'Rest day'
     : getDayTitle(split, draftDay) || `Day ${draftDay}`;
-  // One fact line — what the edition trains, and the counts.
+  // One fact line — what the edition trains, and the counts. The
+  // AM/PM window is NOT in the line: the segmented control right
+  // below is the state display, and the repeated segment was what
+  // pushed the fact past one printed line (the sight amendment).
   const fact = [
     targets.length > 0 && !selectedSlot?.isRestDay ? targets.join(' · ') : null,
     `${previewSlots.length} lift${previewSlots.length === 1 ? '' : 's'}`,
-    isTwoADay ? session.toUpperCase() : null,
   ]
     .filter(Boolean)
     .join(' — ');
@@ -226,11 +228,14 @@ export default function SplitSelectionScreen() {
         </View>
       </View>
 
-      {/* Archetype + window — the instrument's second row. */}
+      {/* Archetype + window — the instrument's second row. Both
+          controls ride the standard segmented grammar (the chromeless
+          variant left the unselected options reading as bare labels,
+          not tappables — the sight amendment unifies the affordance
+          voice with settings' measures). */}
       <View style={styles.block}>
         <SegmentedControl<string>
           variant="selection"
-          chromeless
           segments={SPLIT_SEGMENTS}
           value={splitChoice}
           onChange={setSplitChoice}
@@ -241,7 +246,6 @@ export default function SplitSelectionScreen() {
           <View style={styles.sessionRow}>
             <SegmentedControl<string>
               variant="selection"
-              chromeless
               segments={[
                 { value: 'am', label: 'AM' },
                 { value: 'pm', label: 'PM' },
