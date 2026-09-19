@@ -241,7 +241,7 @@ via the path alias, or `../MobilePremium` relatively).
 | `Toast` (primitives) | The transient-message surface (`ToastContainer`, mounted by the shell). Two surface languages read `theme.toast.style` (§5.3): `'card'` — bordered card, colored icon, left stripe (the glass default); `'chit'` — the ink plate with paper type, one 7px status dot, receipt-mono message when `fonts.mono` is declared, flat air. Items carry `accessibilityLiveRegion="polite"`; the card radius reads `theme.shapes.control`. |
 | `EmptyState` | The canonical empty-state primitive. Domain-neutral: consumer supplies title, optional message, optional icon, and optional action. The action renders through `MobilePrimaryButton` so the tap target + variant language (primary/secondary/ghost) match the rest of the kit — pick the variant by context (primary when EmptyState is the screen's main content, secondary/ghost when nested). Compact mode trims the vertical rhythm for nested use. No preset copy, no icon library, no variant codes — those stay consumer-side. |
 | `OfflineBanner` | Pinned connectivity / sync banner. Three variants carry distinct semantics: `'offline'` (error red — device is offline; optional pending count), `'syncing'` (brand — online and flushing pending work), `'sync-failed'` (warning amber — a sync attempt failed; pair with `actionLabel="Retry"` + `onAction`). Purely presentational: the consumer owns network state, queue state, and mount/unmount. No store subscription, no polling, no auto-hide. Respects its parent's layout — does not pin itself to the screen. Uses `accessibilityLiveRegion="polite"` so screen readers announce state changes; the `status` role is omitted because RN's `AccessibilityRole` enum does not include it. |
-| `Figure` | The labeled number, no chrome — value + optional `unit` (small mono, whispering after the value) + optional uppercase label on the paper. The chrome-less sibling of `StatCard`: for stat strips, receipt headers, and the one hero figure per screen. `size` rides the figure tokens (`'hero'` → mobileHero, `'display'` → mobileDisplay, `'md'` (default) → mobileFigure, `'sm'` → mobileLedger), so tabular figures and declared faces arrive by construction; `tone: 'brand'` reads the value in the brand slot, `'plate'` is paper-type for ink plates; `align` composes receipt rows. Static View with `role="text"` and a composed `"<value> <unit> <label>"` a11y label. |
+| `Figure` | The labeled number, no chrome — value + optional `unit` (small mono, whispering after the value) + optional uppercase label. The chrome-less sibling of `StatCard`: for stat strips, receipt headers, and the one hero figure per screen. **A figure is ALWAYS mono** (the numeral law): `'hero'` rides the counter token, `'display'` composes the mono face + tabular figures onto the statement rank (a word token must never carry a numeral), `'md'` (default) → mobileFigure, `'sm'` → mobileLedger; `tone: 'brand'` reads the value in the brand slot, `'plate'` is paper-type for ink plates; `align` composes receipt rows. Static View with `role="text"` and a composed `"<value> <unit> <label>"` a11y label. |
 | `TallyStrip` | THE COUNT's signature glyph, retired from armandotfit's screens by THE BROADSHEET (the tally died with its thesis; sequences render as aligned agate) but kept shell-synced and demoed here. A sequence rendered as tally strokes — struck marks solid (done), the NEXT mark in the brand color (the one accent stroke — about to be struck), ghosts as 1px outlines in the decorative tertiary ink (slots ahead — seeable in both modes). A group of five renders FOUR verticals with the diagonal AS the fifth count, and only once the fifth is struck — a half-filled group shows bare verticals. `size: 'lg'` (7×44, a live count board) / `'sm'` (4×22, receipt groups + measures); `animateLastStrike` strikes the newest mark in (scaleY, 120ms — collapsed under reduced motion). Decoration by contract: `accessibilityElementsHidden`, no interaction — the ledger/counter beside it carries the same information as text. Synced to arqavellum (domain-neutral). |
 | `StatCard` | Small card showing one labeled metric — `label`, large `value`, optional `subtitle`, optional `icon`, optional `accentColor`. Three variants: `'plain'` (default card surface), `'accent'` (brand-tinted background), `'outline'` (hairline border). Three sizes: `'sm'`, `'md'`, `'lg'` (control padding + value font size). Optional `onPress` turns the card into a Pressable with `role="button"`; without `onPress` it is a non-interactive View with `role="text"`. Press feedback via `usePressedStyle` (scale + opacity; opacity-only under reduced motion). |
 | `SkeletonBlock` | Loading placeholder. Reads `colors.cardAlt` and pulses opacity via `useShimmer` (1.0 → 0.5 → 1.0, 1200ms; collapses to flat under `prefers-reduced-motion: reduce`). Uses `Animated.View`, not `ActivityIndicator`, so the C4 audit doesn't apply by construction. Consumer composes per-screen skeletons from this primitive. |
@@ -483,13 +483,18 @@ write ad-hoc `fontSize`/`fontWeight` values. The current slots:
 
 | Token | Shape | Reads as |
 |---|---|---|
-| `mobileHero` | 72/800, lh 76, ls −2.5, tabular, display face | The one hero figure per screen (day numbers, streaks, the 404) |
-| `mobileDisplay` | 44/800, lh 48, ls −1.5, tabular, display face | Secondary figures: totals, receipt tonnage |
-| `mobileFigure` | 28/700, lh 32, ls −0.5, tabular, display face | Stat-strip / receipt figures |
-| `mobileTitle` | 28/700, lh 32, ls −0.8, display face | Screen + day titles |
-| `mobileAction` | 16/600, ls +0.2 | Buttons, links, row labels |
-| `mobileItemTitle` | 18/700, lh 24, ls −0.3 | Row leads: exercise names, list titles |
-| `mobileSubtitle` | 15/400, lh 22 | Supporting line under a title |
+| `mobileCounter` | 72/700, lh 78, ls −1.5, mono, tabular | THE ARMED EXPRESSION, the streak (the counter rank) |
+| `mobileHero`/`mobileDisplay`/`mobileTitleCondensed` | 36/700, lh 42, ls −0.5, display face | THE STATEMENT — one per screen (figures at this rank compose the mono face via `Figure size="display"`) |
+| `mobileTitle`/`mobileSubtitle`/`mobileItemTitle` | 18/600, lh 24, display face | The second voice, row names (2.0× quieter than the statement) |
+| `mobileBody` | 18/400, lh 24, platform sans | Reading |
+| `mobileAction` | 18/700, ls +1.2, display face | Verb labels |
+| `mobileFigure` | 18/500, lh 24, mono, tabular | Row figures |
+| `mobileEyebrow` | 12/500, lh 18, ls +0.8, mono | Printed furniture (CAPS), whisper figures |
+| `mobileLedger`/`mobileTag` | 12/500, lh 18, mono | Ledger lines, tags |
+
+THE HARMONIC RAMP (this consumer's law, scoreboard-thesis §3.2): every
+size ∈ {12, 18, 36, 72} — each an exact divisor of the counter — and
+every lineHeight = size + 6.
 | `mobileBody` | 15/400, lh 22 | Prose |
 | `mobileFieldLabel` | 13/600, ls +0.2 | Input labels |
 | `mobileLedger` | 15/600, lh 20, tabular, mono face | In-row numeric facts (set rows, dates, Rx) |
