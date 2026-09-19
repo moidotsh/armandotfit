@@ -14,10 +14,19 @@ export { AnalyticsService } from './analyticsService';
 export {
   deriveTrajectory,
   deriveMuscleShare,
+  deriveExerciseVolumeByWeek,
+  derivePrTimeline,
+  deriveWeeklyGroupVolume,
+  estOneRm,
+  MUSCLE_GROUPS,
   type Trajectory,
   type TrajectoryPoint,
   type TrajectoryGroup,
   type MuscleShareRow,
+  type ExerciseWeekVolume,
+  type PrEvent,
+  type GroupWeekVolume,
+  type MuscleGroup,
 } from './chartData';
 export { slotKey, resolveSlots } from './programService';
 export {

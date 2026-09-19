@@ -20,7 +20,13 @@ import { BoardShell, BoardHead, QueryErrorNote, TrainingConsistencyGrid } from '
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory, useRecentSessionDetails, useWeightUnit } from '../hooks';
-import { AnalyticsService, deriveMuscleShare } from '../services';
+import { toDisplayWeight } from '../utils';
+import {
+  AnalyticsService,
+  deriveMuscleShare,
+  deriveWeeklyGroupVolume,
+  MUSCLE_GROUPS,
+} from '../services';
 import { addDays } from '../utils';
 import { BLOCK_GAP, GAUGE, theme, PAGE_GUTTER } from '../constants';
 
@@ -47,6 +53,14 @@ export default function AnalyticsScreen() {
     () => deriveMuscleShare(detailsQuery.data ?? [], range),
     [detailsQuery.data, range],
   );
+  // THE BALANCE — weekly credited volume split by muscle group
+  // (stacked ink, opacity steps; the record week carries nothing
+  // special here — this is a balance read, not a record read).
+  const groupWeeks = useMemo(
+    () => deriveWeeklyGroupVolume(detailsQuery.data ?? [], 10),
+    [detailsQuery.data],
+  );
+  const maxWeekTotal = Math.max(1, ...groupWeeks.map((w) => w.total));
 
   const weekly = useMemo(() => {
     if (!historyQuery.data) return [];
@@ -203,11 +217,62 @@ export default function AnalyticsScreen() {
               </View>
             </View>
           ) : null}
+          {/* THE BALANCE — weekly volume by muscle group, stacked. */}
+          {groupWeeks.length >= 2 ? (
+            <View style={styles.block}>
+              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+                {`THE BALANCE · WEEKLY VOLUME · ${unit}`}
+              </Text>
+              <View style={styles.groupChart} testID="analytics-balance">
+                {groupWeeks.map((w) => (
+                  <View
+                    key={w.weekStart}
+                    style={styles.groupCol}
+                    accessibilityLabel={`Week of ${w.weekStart}: ${Math.round(toDisplayWeight(w.total, unit))} ${unit} total`}
+                  >
+                    <View style={styles.groupStackHold}>
+                      <View style={[styles.groupStack, { height: `${Math.max((w.total / maxWeekTotal) * 100, 3)}%` }]}>
+                        {MUSCLE_GROUPS.map((g, gi) =>
+                          w.byGroup[g] > 0 ? (
+                            <View
+                              key={g}
+                              style={{
+                                flex: w.byGroup[g],
+                                backgroundColor: colors.text,
+                                opacity: GROUP_OPACITY[gi],
+                                marginTop: gi === 0 ? 0 : 1,
+                              }}
+                              testID={`group-seg-${w.weekStart}-${g}`}
+                            />
+                          ) : null,
+                        )}
+                      </View>
+                    </View>
+                    <Text style={[styles.groupWeekWord, { color: colors.textMuted }]} numberOfLines={1}>
+                      {w.weekStart.split('-')[2]}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              {/* The legend — mono words with opacity swatches. */}
+              <View style={styles.groupLegend}>
+                {MUSCLE_GROUPS.map((g, gi) => (
+                  <View key={g} style={styles.groupLegendItem}>
+                    <View style={[styles.groupSwatch, { backgroundColor: colors.text, opacity: GROUP_OPACITY[gi] }]} />
+                    <Text style={[styles.groupLegendWord, { color: colors.textMuted }]}>{g}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
         </>
       )}
     </BoardShell>
   );
 }
+
+/** The stack's ink steps — six groups, descending emphasis. */
+const GROUP_OPACITY = [1, 0.8, 0.62, 0.46, 0.32, 0.2];
 
 const styles = StyleSheet.create({
   bodyContent: {
@@ -277,5 +342,52 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileLedger,
     minWidth: 34,
     textAlign: 'right',
+  },
+  // THE BALANCE — one column per week, stacked by group.
+  groupChart: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 6,
+    height: 120,
+  },
+  groupCol: {
+    flex: 1,
+    height: '100%',
+    alignItems: 'center',
+  },
+  groupStackHold: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'flex-end',
+  },
+  groupStack: {
+    width: '100%',
+    borderRadius: 1,
+    overflow: 'hidden',
+  },
+  groupWeekWord: {
+    ...theme.typography.mobileLedger,
+    fontSize: 9,
+    marginTop: 4,
+  },
+  groupLegend: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 10,
+  },
+  groupLegendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  groupSwatch: {
+    width: 10,
+    height: 4,
+    borderRadius: 1,
+  },
+  groupLegendWord: {
+    ...theme.typography.mobileLedger,
+    fontSize: 10,
   },
 });

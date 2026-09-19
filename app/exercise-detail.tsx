@@ -21,7 +21,7 @@ import { FilterChip, FilterChipGroup } from '../components/MobilePremium';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
 import { useExerciseDetail, useTopSetsByName, useWeightUnit, useRecentSessionDetails } from '../hooks';
-import { deriveTrajectory } from '../services';
+import { deriveTrajectory, deriveExerciseVolumeByWeek } from '../services';
 import { useWorkoutStore } from '../stores';
 import {
   EQUIPMENT_DISPLAY_NAMES,
@@ -82,6 +82,14 @@ export default function ExerciseDetailScreen() {
     if (!trajectory) return [];
     return trajectory.points.filter((p) => !excluded.has(p.signature));
   }, [trajectory, excluded]);
+  // The work read: this lift's tonnage by week, same variant filter.
+  const weeklyVolume = useMemo(
+    () =>
+      exercise
+        ? deriveExerciseVolumeByWeek(historyQuery.data ?? [], exercise.name, excluded)
+        : [],
+    [historyQuery.data, exercise, excluded],
+  );
 
   return (
     <BoardShell
@@ -158,6 +166,48 @@ export default function ExerciseDetailScreen() {
                   Every variant is excluded — re-enable one to read the line.
                 </Text>
               )}
+            </View>
+          ) : null}
+
+          {/* THE WORK — this lift's tonnage by week (same variant
+              filter as the trajectory): the line reads strength, the
+              bars read work. */}
+          {weeklyVolume.length >= 2 ? (
+            <View style={styles.block}>
+              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+                {`THE WORK · WEEKLY · ${unit}`}
+              </Text>
+              <View style={styles.volumeList} testID="entry-volume">
+                {weeklyVolume.map((w) => {
+                  const maxV = Math.max(...weeklyVolume.map((x) => x.volume));
+                  const isRecord = w.volume === maxV && w.volume > 0;
+                  return (
+                    <View
+                      key={w.weekStart}
+                      style={styles.volumeRow}
+                      accessibilityLabel={`Week of ${w.weekStart}: ${Math.round(toDisplayWeight(w.volume, unit))} ${unit}`}
+                    >
+                      <Text style={[styles.volumeLabel, { color: colors.textMuted }]} numberOfLines={1}>
+                        {w.weekStart}
+                      </Text>
+                      <View style={styles.volumeTrack}>
+                        <View
+                          style={[
+                            styles.volumeBar,
+                            {
+                              width: `${Math.max((w.volume / maxV) * 92, 2)}%`,
+                              backgroundColor: isRecord ? colors.brand : colors.text,
+                            },
+                          ]}
+                        />
+                      </View>
+                      <Text style={[styles.volumeFigure, { color: colors.text }]}>
+                        {String(Math.round(toDisplayWeight(w.volume, unit)))}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
             </View>
           ) : null}
 
@@ -313,5 +363,34 @@ const styles = StyleSheet.create({
   trajectoryEmpty: {
     ...theme.typography.mobileMeta,
     paddingVertical: 12,
+  },
+  // THE WORK — weekly tonnage bars (record week carries the signal).
+  volumeList: {
+    gap: 8,
+  },
+  volumeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 20,
+  },
+  volumeLabel: {
+    ...theme.typography.mobileLedger,
+    fontSize: 10,
+    minWidth: 56,
+  },
+  volumeTrack: {
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  volumeBar: {
+    height: 8,
+    borderRadius: theme.shapes.tile,
+  },
+  volumeFigure: {
+    ...theme.typography.mobileLedger,
+    minWidth: 40,
+    textAlign: 'right',
+    fontVariant: ['tabular-nums'],
   },
 });

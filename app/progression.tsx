@@ -12,7 +12,7 @@
 // the owner asked). All computed at read from raw sessions; nothing
 // stored.
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
@@ -24,10 +24,11 @@ import {
   navigateToSplitSelection,
   safeGoBack,
 } from '../navigation';
-import { useDashboardSummary, usePersonalBests, useWeightUnit } from '../hooks';
+import { useDashboardSummary, usePersonalBests, useWeightUnit, useRecentSessionDetails } from '../hooks';
 import { SYSTEM_EXERCISES } from '../shared/exercises';
 import { GAUGE, theme, PAGE_GUTTER, railMaxFor } from '../constants';
-import { toDisplayWeight, roundDisplayWeight, weightUnitLabel } from '../utils';
+import { derivePrTimeline } from '../services';
+import { toDisplayWeight, roundDisplayWeight, weightUnitLabel, formatWeight } from '../utils';
 
 const PB_COUNT = 5;
 
@@ -36,6 +37,11 @@ export default function ProgressionScreen() {
   const summaryQuery = useDashboardSummary();
   const pbQuery = usePersonalBests();
   const unit = useWeightUnit();
+  const historyQuery = useRecentSessionDetails(60);
+  const prTimeline = useMemo(
+    () => derivePrTimeline(historyQuery.data ?? [], 8),
+    [historyQuery.data],
+  );
   const summary = summaryQuery.data;
   const isEmpty = (summary?.totalSessions ?? 0) === 0;
   const pbs = (pbQuery.data ?? []).slice(0, PB_COUNT)
@@ -140,6 +146,34 @@ export default function ProgressionScreen() {
           ) : null}
         </>
       )}
+      {/* THE PR TIMELINE — when the records fell, latest first. */}
+      {prTimeline.length > 0 ? (
+        <View style={styles.block}>
+          <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+            THE PR TIMELINE
+          </Text>
+          <View testID="pr-timeline">
+            {prTimeline.map((pr, i) => (
+              <View
+                key={`${pr.at}-${pr.exerciseName}-${i}`}
+                style={styles.prRow}
+                accessibilityLabel={`${new Date(pr.at).toLocaleDateString()}: ${pr.exerciseName} new best, ${formatWeight(pr.weight, unit)} ${weightUnitLabel(unit)} for ${pr.reps}`}
+              >
+                <Text style={[styles.prDate, { color: colors.textMuted }]}>
+                  {new Date(pr.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                </Text>
+                <Text style={[styles.prName, { color: colors.text }]} numberOfLines={1}>
+                  {pr.exerciseName}
+                </Text>
+                <Text style={[styles.prFigure, { color: colors.brandText }]}>
+                  {`${formatWeight(pr.weight, unit)} ${weightUnitLabel(unit)} × ${pr.reps}`}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : null}
+
       <Pressable
         onPress={navigateToAnalytics}
         accessibilityRole="button"
@@ -186,6 +220,27 @@ const styles = StyleSheet.create({
   pbReps: {
     ...GAUGE.whisperLine,
     letterSpacing: 0.6,
+  },
+  // THE PR TIMELINE — mono dates, ink names, record figures in the
+  // signal read (the record mark's own color).
+  prRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 10,
+    minHeight: 28,
+  },
+  prDate: {
+    ...theme.typography.mobileLedger,
+    minWidth: 44,
+  },
+  prName: {
+    ...theme.typography.mobileItemTitle,
+    fontSize: 15,
+    flex: 1,
+  },
+  prFigure: {
+    ...theme.typography.mobileFigure,
+    fontVariant: ['tabular-nums'],
   },
   analyticsLink: { marginTop: GAUGE.block.marginTop, minHeight: 48, justifyContent: 'center' },
   analyticsLinkText: {

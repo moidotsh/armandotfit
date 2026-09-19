@@ -157,3 +157,166 @@ export function deriveMuscleShare(
     .map(([muscle, volume]) => ({ muscle, volume, share: volume / total }))
     .sort((a, b) => b.volume - a.volume);
 }
+
+// ── The chart suite, round two ─────────────────────────────────────────
+// (the owner's approved asks: per-exercise volume, e1RM overlay, PR
+// timeline, weekly volume by muscle group — still all computed at read)
+
+/** Epley estimated 1RM from a set. */
+export function estOneRm(weight: number, reps: number): number {
+  if (weight <= 0 || reps <= 0) return 0;
+  return weight * (1 + reps / 30);
+}
+
+/** One week of an exercise's volume (kg, storage units). */
+export interface ExerciseWeekVolume {
+  /** Monday-start week key (YYYY-M-D). */
+  weekStart: string;
+  volume: number;
+}
+
+/**
+ * An exercise's tonnage bucketed by week, respecting the variant
+ * filter (excluded tag signatures drop their rows). Complements the
+ * trajectory: the line reads strength, the bars read work.
+ */
+export function deriveExerciseVolumeByWeek(
+  sessions: SessionWithDetails[],
+  exerciseName: string,
+  excluded?: ReadonlySet<string>,
+): ExerciseWeekVolume[] {
+  const target = exerciseName.toLowerCase();
+  const byWeek = new Map<string, number>();
+  for (const session of sessions) {
+    for (const ex of session.exercises) {
+      if (ex.exerciseName.toLowerCase() !== target) continue;
+      if (ex.sets.length === 0) continue;
+      const sig = signatureOf(ex.tags ?? []);
+      if (excluded?.has(sig)) continue;
+      const volume = ex.sets.reduce((n, s) => n + (s.weight ?? 0) * (s.reps ?? 0), 0);
+      const key = weekKey(session.startedAt);
+      byWeek.set(key, (byWeek.get(key) ?? 0) + volume);
+    }
+  }
+  return [...byWeek.entries()]
+    .map(([weekStart, volume]) => ({ weekStart, volume }))
+    .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+}
+
+function weekKey(iso: string): string {
+  const d = new Date(iso);
+  const day = (d.getDay() + 6) % 7; // Mon = 0
+  d.setDate(d.getDate() - day);
+  // Zero-padded so week keys sort chronologically as strings.
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** A fallen record: the session where an exercise's best first moved. */
+export interface PrEvent {
+  at: number;
+  exerciseName: string;
+  /** The new best top-set weight (kg, storage). */
+  weight: number;
+  reps: number;
+  tags: string[];
+}
+
+/**
+ * The PR timeline: walking history oldest→latest per exercise, every
+ * session that raised that exercise's best top-set weight is a record.
+ * Returns latest-first (a feed), capped.
+ */
+export function derivePrTimeline(
+  sessions: SessionWithDetails[],
+  cap = 8,
+): PrEvent[] {
+  const best = new Map<string, number>();
+  const events: PrEvent[] = [];
+  for (const session of [...sessions].reverse()) {
+    for (const ex of session.exercises) {
+      if (ex.sets.length === 0) continue;
+      let top = ex.sets[0];
+      for (const s of ex.sets) {
+        if ((s.weight ?? 0) > (top.weight ?? 0)) top = s;
+      }
+      const key = ex.exerciseName.toLowerCase();
+      const prev = best.get(key) ?? 0;
+      if ((top.weight ?? 0) > prev) {
+        best.set(key, top.weight ?? 0);
+        events.push({
+          at: new Date(session.startedAt).getTime(),
+          exerciseName: ex.exerciseName,
+          weight: top.weight ?? 0,
+          reps: top.reps ?? 0,
+          tags: ex.tags ?? [],
+        });
+      }
+    }
+  }
+  return events.reverse().slice(0, cap);
+}
+
+/** The muscle groups (chart-round-two vocabulary, derived from slugs). */
+export const MUSCLE_GROUPS = ['chest', 'back', 'shoulders', 'arms', 'legs', 'core'] as const;
+export type MuscleGroup = (typeof MUSCLE_GROUPS)[number];
+
+const GROUP_OF_MUSCLE: Record<string, MuscleGroup> = {
+  chest: 'chest', 'upper-chest': 'chest', 'lower-chest': 'chest',
+  'upper-back': 'back', lats: 'back', 'lower-back': 'back', traps: 'back', rhomboids: 'back',
+  'front-delts': 'shoulders', 'side-delts': 'shoulders', 'rear-delts': 'shoulders',
+  biceps: 'arms', triceps: 'arms', forearms: 'arms',
+  quads: 'legs', hamstrings: 'legs', glutes: 'legs', calves: 'legs', tibialis: 'legs',
+  abs: 'core', 'lower-abs': 'core', obliques: 'core',
+};
+
+/** One week's credited volume split by muscle group. */
+export interface GroupWeekVolume {
+  weekStart: string;
+  byGroup: Record<MuscleGroup, number>;
+  total: number;
+}
+
+/**
+ * Weekly volume by muscle group (primaries full, secondaries half),
+ * Monday-start weeks, oldest→latest, capped to `weeks` most recent.
+ */
+export function deriveWeeklyGroupVolume(
+  sessions: SessionWithDetails[],
+  weeks = 10,
+): GroupWeekVolume[] {
+  const byWeek = new Map<string, Record<MuscleGroup, number>>();
+  for (const session of sessions) {
+    let week: Record<MuscleGroup, number> | undefined;
+    for (const ex of session.exercises) {
+      const entry = CATALOG_BY_NAME.get(ex.exerciseName.toLowerCase());
+      if (!entry) continue;
+      const volume = ex.sets.reduce((n, s) => n + (s.weight ?? 0) * (s.reps ?? 0), 0);
+      if (volume <= 0) continue;
+      week ??= { chest: 0, back: 0, shoulders: 0, arms: 0, legs: 0, core: 0 };
+      for (const m of entry.primaryMuscles) {
+        const g = GROUP_OF_MUSCLE[m];
+        if (g) week[g] += volume;
+      }
+      for (const m of entry.secondaryMuscles) {
+        const g = GROUP_OF_MUSCLE[m];
+        if (g) week[g] += volume * 0.5;
+      }
+    }
+    if (!week) continue;
+    const key = weekKey(session.startedAt);
+    const existing = byWeek.get(key);
+    if (existing) {
+      for (const g of MUSCLE_GROUPS) existing[g] += week[g];
+    } else {
+      byWeek.set(key, week);
+    }
+  }
+  return [...byWeek.entries()]
+    .map(([weekStart, byGroup]) => ({
+      weekStart,
+      byGroup,
+      total: MUSCLE_GROUPS.reduce((n, g) => n + byGroup[g], 0),
+    }))
+    .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
+    .slice(-weeks);
+}

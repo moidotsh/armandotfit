@@ -15,9 +15,11 @@
 import React, { useMemo } from 'react';
 import { View } from 'react-native';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
+import { Text, StyleSheet } from 'react-native';
 import { useAppTheme } from '../../context';
+import { theme } from '../../constants';
 import { toDisplayWeight, roundDisplayWeight, type WeightUnit } from '../../utils';
-import type { TrajectoryPoint } from '../../services';
+import { estOneRm, type TrajectoryPoint } from '../../services';
 
 export interface TrajectoryChartProps {
   /** Chronological points (already filtered to the included variants). */
@@ -39,8 +41,9 @@ export function TrajectoryChart({ points, unit, testID }: TrajectoryChartProps) 
   const geom = useMemo(() => {
     if (points.length === 0) return null;
     const weights = points.map((p) => toDisplayWeight(p.weight, unit));
-    const rawMax = Math.max(...weights);
-    const rawMin = Math.min(...weights);
+    const estimates = points.map((p) => toDisplayWeight(estOneRm(p.weight, p.reps), unit));
+    const rawMax = Math.max(...weights, ...estimates);
+    const rawMin = Math.min(...weights, ...estimates);
     // Pad the scale so a flat line doesn't sit on an edge.
     const span = Math.max(rawMax - rawMin, rawMax * 0.08, 1);
     const min = rawMin - span * 0.15;
@@ -50,7 +53,8 @@ export function TrajectoryChart({ points, unit, testID }: TrajectoryChartProps) 
     const tSpan = Math.max(t1 - t0, 1);
     const x = (at: number) => PAD_L + ((at - t0) / tSpan) * (W - PAD_L - PAD_R);
     const y = (w: number) => PAD_T + (1 - (w - min) / (max - min)) * (H - PAD_T - PAD_B);
-    // A point is a RECORD when it equals the running max so far.
+    // A point is a RECORD when it equals the running max so far
+    // (judged on raw top-set weight, not the estimate).
     let runningMax = -Infinity;
     const coords = points.map((p) => {
       const w = toDisplayWeight(p.weight, unit);
@@ -62,7 +66,11 @@ export function TrajectoryChart({ points, unit, testID }: TrajectoryChartProps) 
         record,
       };
     });
-    return { coords, min, max };
+    const estCoords = points.map((p, i) => ({
+      x: points.length === 1 ? W / 2 : x(p.at),
+      y: y(estimates[i]),
+    }));
+    return { coords, estCoords, min, max };
   }, [points, unit]);
 
   if (!geom) return null;
@@ -107,6 +115,18 @@ export function TrajectoryChart({ points, unit, testID }: TrajectoryChartProps) 
         <SvgText x={W - PAD_R} y={H - 6} textAnchor="end" fill={colors.textMuted} fontSize={10} fontFamily="Martian Mono">
           {dateWord(points[points.length - 1].at)}
         </SvgText>
+        {/* The estimated 1RM — Epley, dashed and muted, beneath the
+            raw line: the projected ceiling under the actual work. */}
+        <Polyline
+          points={geom.estCoords.map((c) => `${c.x},${c.y}`).join(' ')}
+          fill="none"
+          stroke={colors.textMuted}
+          strokeWidth={1.25}
+          strokeDasharray="4 3"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          testID={testID ? `${testID}-est-line` : undefined}
+        />
         {/* The trajectory — one ink polyline. */}
         <Polyline
           points={geom.coords.map((c) => `${c.x},${c.y}`).join(' ')}
@@ -129,8 +149,22 @@ export function TrajectoryChart({ points, unit, testID }: TrajectoryChartProps) 
           />
         ))}
       </Svg>
+      {/* The legend — two mono words: what each line is. */}
+      <Text style={[styles.legend, { color: colors.textMuted }]}>
+        TOP SET <Text style={{ color: colors.text }}>——</Text>
+        {'   '}EST 1RM <Text style={{ color: colors.textMuted }}>– –</Text>
+      </Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  legend: {
+    ...theme.typography.mobileLedger,
+    fontSize: 10,
+    marginTop: 4,
+    textAlign: 'right',
+  },
+});
 
 export default TrajectoryChart;
