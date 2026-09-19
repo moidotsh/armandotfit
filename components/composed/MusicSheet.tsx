@@ -59,6 +59,7 @@ export function MusicSheet() {
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<MusicTrack[] | null>(null);
+  const [searchFailed, setSearchFailed] = useState(false);
   const [searching, setSearching] = useState(false);
   const [pasteValue, setPasteValue] = useState('');
 
@@ -88,6 +89,7 @@ export function MusicSheet() {
     const found = await searchTracks(query);
     if (!aliveRef.current) return;
     setResults(found);
+    setSearchFailed(found == null);
     setSearching(false);
   };
 
@@ -133,6 +135,11 @@ export function MusicSheet() {
       {/* RESULTS — the pick plays first; the rest continue. */}
       {searching ? (
         <Text style={[styles.hint, { color: colors.textMuted }]}>Searching…</Text>
+      ) : searchFailed ? (
+        <Text style={[styles.hint, { color: colors.textMuted }]}>
+          Search unavailable — the API key refused this origin. Allow this app's
+          domain in the key's website restrictions (Google Cloud Console).
+        </Text>
       ) : results != null ? (
         results.length === 0 ? (
           <Text style={[styles.hint, { color: colors.textMuted }]}>Nothing found.</Text>
