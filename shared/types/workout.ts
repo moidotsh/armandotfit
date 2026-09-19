@@ -21,7 +21,6 @@ export interface TrainingSession {
   note: string | null;
   /** Day-of-split (1..4) this session realized; null for ad-hoc sessions. */
   splitDay: number | null;
-  createdAt: string;
 }
 
 /**
@@ -37,7 +36,6 @@ export interface LoggedExercise {
   position: number; // 1-indexed
   tags: string[];
   note: string | null;
-  createdAt: string;
 }
 
 /** A completed set. Reps + weight + optional note; nothing else. */
@@ -48,7 +46,6 @@ export interface LoggedSet {
   reps: number;
   weight: number;
   note: string | null;
-  createdAt: string;
 }
 
 // ──────────────────────────────────────────────────────────────────────

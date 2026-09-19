@@ -39,7 +39,6 @@ interface SessionRow {
   started_at: string;
   note: string | null;
   split_day: number | null;
-  created_at: string;
 }
 
 interface LoggedExerciseRow {
@@ -49,7 +48,6 @@ interface LoggedExerciseRow {
   position: number;
   tags: string[] | null;
   note: string | null;
-  created_at: string;
   /** Embedded join from the nested select (exercises.name). */
   exercise?: { name: string } | null;
 }
@@ -61,7 +59,6 @@ interface LoggedSetRow {
   reps: number;
   weight: number | string;
   note: string | null;
-  created_at: string;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -348,7 +345,9 @@ export class WorkoutRepository
    * The user's most-recent tags per exercise NAME — the "what did I use
    * last time" prefill. Scans the caller's recent logged_exercises
    * (RLS-scoped through the session ownership chain) and keeps the
-   * newest row per name. Personal scale: one bounded round-trip.
+   * newest row per name. Recency is the PARENT session's started_at
+   * (logged_exercises carries no timestamp of its own — ordering by
+   * the embed keeps one bounded round-trip). Personal scale.
    */
   async findLastTagsByExerciseNames(
     names: string[],
@@ -358,8 +357,8 @@ export class WorkoutRepository
     try {
       const { data, error } = await supabase
         .from(WorkoutRepository.LOGGED_EXERCISES)
-        .select('tags, created_at, exercise:exercises(name)')
-        .order('created_at', { ascending: false })
+        .select('tags, exercise:exercises(name), sessions(started_at)')
+        .order('started_at', { referencedTable: 'sessions', ascending: false })
         .limit(300);
       if (error) throw error;
       const wanted = new Set(names.map((n) => n.toLowerCase()));
@@ -402,7 +401,6 @@ function toSession(row: SessionRow): TrainingSession {
     startedAt: row.started_at,
     note: row.note,
     splitDay: row.split_day,
-    createdAt: row.created_at,
   };
 }
 
@@ -414,7 +412,6 @@ function toLoggedExercise(row: LoggedExerciseRow): LoggedExercise {
     position: row.position,
     tags: row.tags ?? [],
     note: row.note,
-    createdAt: row.created_at,
   };
 }
 
@@ -426,7 +423,6 @@ function toSet(row: LoggedSetRow): LoggedSet {
     reps: row.reps,
     weight: Number(row.weight),
     note: row.note,
-    createdAt: row.created_at,
   };
 }
 

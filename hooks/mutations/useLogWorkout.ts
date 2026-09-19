@@ -47,7 +47,6 @@ export function useLogWorkout() {
           startedAt: dto.startedAt,
           note: dto.note ?? null,
           splitDay: dto.splitDay ?? null,
-          createdAt: new Date().toISOString(),
         };
         queryClient.setQueryData<TrainingSession[]>(recentKey, [
           optimistic,
