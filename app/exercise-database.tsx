@@ -1,6 +1,6 @@
 // app/exercise-database.tsx
-// The Library — THE BOARD's index (docs/architecture/board-thesis.md
-// §7): "Find a lift." The search field IS the statement (display
+// THE DIRECTORY (docs/architecture/scoreboard-thesis.md §8): "Find a
+// lift." The search field IS the statement (display
 // scale, one hairline beneath — the page's spent rule); the ZONE
 // chips ride under it as the instrument's second row; the catalog
 // scans beneath in air-separated rows grouped by EQUIPMENT ZONE —
@@ -26,11 +26,12 @@ import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises, useRecentSessionDetails } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import { SYSTEM_EXERCISES, ZONES, type SystemExerciseData } from '../shared/exercises';
-import { GAUGE, BLOCK_GAP, ROW_GAP, PAGE_GUTTER, theme } from '../constants';
+import { SCOREBOARD, BLOCK_GAP, ROW_GAP, PAGE_GUTTER, theme } from '../constants';
 import type { MeterStep } from '../constants';
 
 /** The zone line map: equipment modality → the meter ramp's step (the
- *  gym's geography colored on the zone ramp — gauge-thesis §4.2). */
+ *  gym's geography colored on the zone ramp — scoreboard-thesis §4.2;
+ *  the zone ramp is data encoding, not identity). */
 const ZONE_STEP: Record<string, MeterStep> = {
   barbell: 'step1',
   dumbbell: 'step2',
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
   zoneTick: {
     width: 3,
     height: 14,
-    borderRadius: 1,
+    borderRadius: 0,
   },
   zoneWord: {
     ...theme.typography.mobileEyebrow,
@@ -286,14 +287,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   adderToggleText: {
-    ...GAUGE.whisper,
+    ...SCOREBOARD.whisper,
   },
   adderVerb: {
     minHeight: 44,
     justifyContent: 'center',
   },
   adderVerbText: {
-    ...GAUGE.whisperLine,
+    ...SCOREBOARD.whisperLine,
     fontWeight: '600',
   },
 });
