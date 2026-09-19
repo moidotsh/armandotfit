@@ -38,9 +38,10 @@ import { AuthProvider, ToastProvider, ThemeProvider, useAppTheme } from '../cont
 import { AuthGuard, ToastContainer, AppErrorBoundary } from '../components/primitives';
 import { QueryProvider } from '../lib/react-query';
 import { RouteCurtain, OfflineBanner } from '../components/MobilePremium';
-import { MusicSheet } from '../components/composed';
+import { MusicSheet, SessionSyncWatcher } from '../components/composed';
 import { Z_INDEX } from '../constants';
-import { useIsOnline } from '../stores';
+import { useIsOnline, useWorkoutStore } from '../stores';
+import { usePendingSessionSaves } from '../hooks';
 
 // The curtain mounts only when the transition axis declares it — under
 // the starter's 'none' preset this is false and nothing mounts.
@@ -49,6 +50,8 @@ const CURTAIN_ON = curtainEnabled();
 function RootShell() {
   const { colorScheme, colors } = useAppTheme();
   const isOnline = useIsOnline();
+  const pendingSaves = usePendingSessionSaves();
+  const draftActive = useWorkoutStore((s) => s.isSessionActive);
 
   // Network listener — web online/offline events. The cleanup is paired
   // so audit R4b's listener-pairing rule holds.
@@ -191,14 +194,29 @@ function RootShell() {
                   }}
                 />
                 <ToastContainer />
+                {/* The offline queue's flush half — reconnect/boot sync
+                    of queued session saves, with cache invalidation. */}
+                <SessionSyncWatcher />
                 {/* THE MUSIC SURFACE — the hidden player + sheet mount
                     once at the root: audio persists across routes. */}
                 <MusicSheet />
                 {!isOnline ? (
                   <OfflineBanner
                     variant="offline"
-                    message="Offline — sets keep logging, save when back online"
-                    style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: Z_INDEX.toast - 1 }}
+                    message={
+                      pendingSaves > 0
+                        ? `Offline — ${pendingSaves} session${pendingSaves === 1 ? '' : 's'} queued, syncs when back online`
+                        : draftActive
+                          ? 'Offline — your session is saved on this device'
+                          : 'Offline — some actions wait for the network'
+                    }
+                    // Pointer-transparent: the overlay floats over each
+                    // screen's top chrome (the Floor's FINISH, the Desk
+                    // back chevrons) and must never eat their taps. The
+                    // banner is a translucent notice, not a surface —
+                    // no action button is passed, so nothing inside it
+                    // needs the pointer.
+                    style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: Z_INDEX.toast - 1, pointerEvents: 'none' }}
                     testID="offline-banner"
                   />
                 ) : null}

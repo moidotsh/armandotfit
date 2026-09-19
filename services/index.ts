@@ -38,3 +38,8 @@ export {
   formatElapsed,
 } from './sessionMath';
 export { rankAlternatives, type RankedAlternative } from './substitutionService';
+export {
+  sessionSaveQueue,
+  type PendingSessionSave,
+  type FlushResult,
+} from './sessionSaveQueue';

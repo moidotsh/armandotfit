@@ -44,7 +44,8 @@ import {
 } from '../../navigation';
 import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, type TopSetFact } from '../../hooks';
 import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight } from '../../utils';
-import { useWorkoutStore } from '../../stores';
+import { useWorkoutStore, useIsOnline } from '../../stores';
+import { sessionSaveQueue } from '../../services';
 import { getDayTitle, TAG_VOCABULARY_SEED } from '../../shared/exercises';
 import {
   theme,
@@ -130,6 +131,7 @@ export function Floor() {
 
   const logMutation = useLogWorkout();
   const isSaving = storeSaving || logMutation.isPending;
+  const isOnline = useIsOnline();
 
   // Reflect mutation state into the store so the UI shows saving state.
   useEffect(() => {
@@ -310,6 +312,18 @@ export function Floor() {
     if (!hasLoggedSets) {
       setFinishOpen(false);
       showToast('error', 'Log at least one set before saving.');
+      return;
+    }
+    // Dead zone at FINISH: the completed session queues locally and
+    // syncs on reconnect (D4). The draft resets here and only here —
+    // the queue and the mutation are the two save paths and they are
+    // mutually exclusive per session (the stable id dedups anyway).
+    if (!isOnline) {
+      sessionSaveQueue.enqueue(dto);
+      setFinishOpen(false);
+      showToast('success', 'Session saved — syncs when back online');
+      resetSession();
+      safeGoBack();
       return;
     }
     logMutation.mutate(dto);

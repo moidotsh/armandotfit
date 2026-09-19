@@ -15,6 +15,7 @@ export abstract class BaseQueueService<T extends { id: string }> {
   protected queue: T[] = [];
   protected isLoaded = false;
   protected listeners: Set<() => void> = new Set();
+  private loadPromise: Promise<void>;
 
   /** Storage key — must be unique per concrete service. */
   protected abstract storageKey: string;
@@ -23,7 +24,12 @@ export abstract class BaseQueueService<T extends { id: string }> {
   protected abstract logContext: LogContext;
 
   constructor() {
-    void this.loadQueue();
+    this.loadPromise = this.loadQueue();
+  }
+
+  /** Resolves once the initial storage load has settled (success or not). */
+  ready(): Promise<void> {
+    return this.loadPromise;
   }
 
   subscribe(listener: () => void): () => void {

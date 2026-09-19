@@ -89,3 +89,4 @@ export type { UseAiPayloadOptions } from './useAiPayload';
 // armandotfit domain queries + mutations
 export * from './queries';
 export * from './mutations';
+export { usePendingSessionSaves } from './useSessionSaveQueue';
