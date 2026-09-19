@@ -4,10 +4,11 @@
 // Preserves the 490px test fit by keeping the same input height. The
 // premium signal comes from:
 //
-//   • Considered label rhythm — uses typography.mobileFieldLabel (13/600),
+//   • Considered label rhythm — uses typography.mobileFieldLabel,
 //     with the label sitting tighter to the input (gap 6 vs 8 in legacy).
-//   • Animated focus ring — useFocusRing draws a 1.5px ring at -1px inset
-//     that fades in/out, plus a web-only box-shadow glow.
+//   • Focus is an ink moment — the ring rides the host's shape (the
+//     square cut), snaps (no fade), wears no halo, and reads INK —
+//     never the brand slot (interval-thesis, revision 2027-03).
 //   • Refined error state — the error text moves to a dedicated slot
 //     beneath the input (not in the helper-text slot), so the label row
 //     never reflows on error.
@@ -139,13 +140,23 @@ export function MobileInput({
 }: MobileInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const { colors } = useAppTheme();
-  const accent = accentColor ?? colors.brand;
+  // FOCUS IS AN INK MOMENT (interval-thesis, revision 2027-03): the
+  // field you are writing in is armed — it reads the mode's ink,
+  // never the brand slot (on any consumer whose brand is an alarm
+  // hue, brand focus reads as error). Pass accentColor to borrow the
+  // brand deliberately.
+  const accent = accentColor ?? colors.text;
   const resolvedError = error ?? errorText;
   const hasError = !!resolvedError;
 
-  const { ringStyle, glowStyle } = useFocusRing({
+  // The ring rides the host's shape (the square cut here) and snaps —
+  // the still system sanctions no fourth motion; the glow is retired
+  // (a halo is elevation by another name).
+  const { ringStyle } = useFocusRing({
     color: accent,
     focused: isFocused && !hasError,
+    duration: 0,
+    radius: theme.shapes.control,
   });
 
   // Border color shifts with focus / error.
@@ -184,7 +195,7 @@ export function MobileInput({
           </View>
         ) : null}
 
-        <View style={[styles.inputInner, glowStyle]}>
+        <View style={styles.inputInner}>
           <TextInput
             style={[
               styles.input,

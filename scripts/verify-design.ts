@@ -181,9 +181,18 @@ const CLEAN_KIT_FILES = [
   'components/MobilePremium/MobileSheet.tsx',
   'components/MobilePremium/SearchField.tsx',
   'components/MobilePremium/SegmentedControl.tsx',
+  // The focus-ring primitive — the ring rides the host's shape law
+  // (revision 2027-03: a magic 14 once rounded the square cut).
+  'components/premium/shared/Motion.tsx',
 ];
 const FONT_SIZE_RE = /fontSize:\s*(-?\d+(?:\.\d+)?)/g;
 const LETTER_SPACING_RE = /letterSpacing:\s*(-?\d+(?:\.\d+)?)/g;
+// THE SQUARE CUT AT THE SOURCE (revision 2027-03): theme.shapes is
+// gated to 0, but a literal radius could still draw a corner the law
+// never spent. Plates are square — any literal above mark-scale (a
+// status dot, a 4px progress track, a 3px hue tick stay marks) fails.
+const BORDER_RADIUS_RE = /borderRadius:\s*(-?\d+(?:\.\d+)?)/g;
+const MARK_SCALE_RADIUS = 4;
 let scanned = 0;
 for (const rel of [...SCAN_DIRS, ...CLEAN_KIT_FILES]) {
   const full = join(REPO_ROOT, rel);
@@ -204,6 +213,13 @@ for (const rel of [...SCAN_DIRS, ...CLEAN_KIT_FILES]) {
       check(
         [...TRACKING_SET].some((t) => Math.abs(t - ls) < 1e-9),
         `call-site: ${relName} letterSpacing ${ls} ∈ {−1.5, −0.5, 0, +0.8}`,
+      );
+    }
+    for (const m of src.matchAll(BORDER_RADIUS_RE)) {
+      const r = Number(m[1]);
+      check(
+        r <= MARK_SCALE_RADIUS,
+        `square cut: ${relName} borderRadius ${r} ≤ mark scale (${MARK_SCALE_RADIUS})`,
       );
     }
   }
