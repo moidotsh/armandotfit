@@ -1,6 +1,6 @@
 # armandotfit
 
-> A personal fitness PWA — the AM/PM hypertrophy program, six-table workout logging with tag-based setup context, computed-at-read progression. Built on [arqavellum](../arqavellum) (public starter shell). Theme: **THE SCOREBOARD — numerals you read across the room** (`docs/architecture/scoreboard-thesis.md`).
+> A personal fitness PWA — the AM/PM hypertrophy program, six-table workout logging with tag-based setup context, computed-at-read progression. Built on [arqavellum](../arqavellum) (public starter shell). Theme: **THE INTERVAL — the live figure owns the counter** (`docs/architecture/interval-thesis.md`).
 
 ## What armandotfit is
 
