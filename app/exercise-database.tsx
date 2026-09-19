@@ -192,8 +192,8 @@ export default function ExerciseDatabaseScreen() {
                   accessibilityLabel="Add custom exercise to session"
                   style={styles.adderVerb}
                 >
-                  <Text style={[styles.adderVerbText, { color: colors.brandText }]}>
-                    Add to session
+                  <Text style={[styles.adderVerbText, { color: colors.text }]}>
+                    ADD TO SESSION
                   </Text>
                 </Pressable>
               </View>
@@ -323,7 +323,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   adderVerbText: {
+    // THE VERB PRINTS CAPS, IN INK (revision 2027-03, delta 2) — the
+    // one voice, and never the brand slot.
     ...INTERVAL.whisperLine,
     fontWeight: '600',
+    letterSpacing: 0.8,
   },
 });
