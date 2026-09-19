@@ -1,6 +1,6 @@
 // components/composed/NextStation.tsx
 //
-// The way-forward row (Floor, scoreboard-thesis §8). "What's next"
+// The way-forward row (Floor, interval-thesis §8). "What's next"
 // is one of the three glance questions — and the ACTUAL path of the
 // session, so it carries its own hairline-ruled row: the NEXT
 // furniture word, the station's name in full ink, and a chevron

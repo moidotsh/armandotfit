@@ -1,6 +1,6 @@
 // components/composed/SessionStrip.tsx
 //
-// THE TICKER (scoreboard-thesis §8): while a session runs, a slim
+// THE TICKER (interval-thesis §8): while a session runs, a slim
 // line pins under every Desk header — LIVE in RED INK (the live
 // pulse reads as red, not as motion — THE STILL SYSTEM) · the
 // running elapsed figure in Martian · the current station ·

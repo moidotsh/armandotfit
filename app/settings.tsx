@@ -1,6 +1,6 @@
 // app/settings.tsx
-// THE PANEL — the scoreboard's colophon (docs/architecture/
-// scoreboard-thesis.md §8): "This is how it's set." No nameplate, no
+// THE PANEL — the interval's colophon (docs/architecture/
+// interval-thesis.md §8): "This is how it's set." No nameplate, no
 // email kicker, no info panel, no section chrome — the current theme
 // IS the statement (restating with every pick); the preference rows
 // keep their ink-invert selection; the rest-day measure keeps its
@@ -75,7 +75,7 @@ export default function SettingsScreen() {
   // throughout; utils/weight.ts owns the arithmetic).
   const weightUnit = profileQuery.data?.weightUnit ?? 'kg';
 
-  // THE REST INSTRUMENT's remembered default (scoreboard-thesis §7):
+  // THE REST INSTRUMENT's remembered default (interval-thesis §7):
   // the interval a fresh rest starts with. ±15s steppers, mono
   // readout — the panel row that tunes the Floor's clock.
   // THE PROMOTION AUDIT (invariant 7's numeric half, computed at

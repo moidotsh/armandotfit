@@ -184,7 +184,7 @@ export default function AnalyticsScreen() {
   );
 }
 
-/** THE REGISTER GRID — the calendar as type (scoreboard-thesis §8):
+/** THE REGISTER GRID — the calendar as type (interval-thesis §8):
  * one mono character per day — the session count (1, 2, 3…), '·'
  * for a day off — seven columns keyed to the range's first weekday.
  * Density is ink weight (2+ sessions bold); TODAY carries the red

@@ -618,8 +618,8 @@ export function Floor() {
                 />
               ) : null}
 
-              {/* THE LEDGER — every logged set a register line: ordinal
-                  · leader · weight × reps, remove riding the right
+              {/* THE LEDGER — every logged set a ruled row: ordinal
+                  left, `weight × reps` right, remove riding the far
                   edge. */}
               {exercise.sets.length > 0 ? (
                 <View style={styles.ledger}>

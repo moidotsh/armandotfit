@@ -1,11 +1,11 @@
 // app/progression.tsx
-// THE RECORDS (docs/architecture/scoreboard-thesis.md §8): "How
+// THE RECORDS (docs/architecture/interval-thesis.md §8): "How
 // strong, how consistent?" The streak NUMBER is the
 // figure-statement — Martian at counter scale (72), in RED INK (the
 // record mark IS the statement), alone in its halo; one fact line
 // carries "day streak · best"; the totals collapse to one figure
-// line; THE BESTS curates to five best lifts as register lines —
-// name · leader · `weight × reps` in red figures: the highest
+// line; THE BESTS curates to five best lifts as ruled rows —
+// name · air · `weight × reps` in red figures: the highest
 // numbers you've printed. The e1RM column stays dead (it never
 // answered a question the owner asked). All computed at read from
 // raw sessions; nothing stored.
@@ -117,7 +117,7 @@ export default function ProgressionScreen() {
         </>
       )}
       {/* THE PR TIMELINE — when the records fell, latest first, as
-          register lines: date · leader · the record figure in red. */}
+          ruled rows: date left · air · the record figure right. */}
       {prTimeline.length > 0 ? (
         <View style={styles.block}>
           <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>

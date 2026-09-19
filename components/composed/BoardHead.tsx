@@ -1,6 +1,6 @@
 // components/composed/BoardHead.tsx
 //
-// The page head (docs/architecture/scoreboard-thesis.md §3, §5):
+// The page head (docs/architecture/interval-thesis.md §3, §5):
 // the one statement per screen (+ optional furniture whisper above,
 // + optional fact line waiting outside the halo). One component so
 // the hierarchy law is structural, not disciplined — a screen can't

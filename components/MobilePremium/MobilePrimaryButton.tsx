@@ -2,8 +2,8 @@
 // Primary action button for the mobile premium kit.
 //
 // Same ~54px height as the original (preserves the 490px fit). THE
-// SCOREBOARD runs the verb FLAT (docs/architecture/
-// scoreboard-thesis.md): the accent fill (the ink verb by default —
+// INTERVAL runs the verb FLAT (docs/architecture/
+// interval-thesis.md): the accent fill (the ink verb by default —
 // `buttonBackground`) with a ground label — no gradient, no glow,
 // square-cut. The premium is the color law + the label's face
 // (mobileAction rides the display face at 700) + THE STILL SYSTEM
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   // THE STILL SYSTEM press: opacity only — no scale, no color shift
-  // (scoreboard-thesis §6, S2).
+  // (interval-thesis §6, S2).
   pressed: {
     opacity: 0.6,
   },

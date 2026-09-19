@@ -1,12 +1,12 @@
 // app/split-selection.tsx
-// THE SELECTOR (docs/architecture/scoreboard-thesis.md §8): "Which
+// THE SELECTOR (docs/architecture/interval-thesis.md §8): "Which
 // edition?" Three picks in order and GO — the page's one verb. The
 // PICKED day's title is the statement (restating with every pick);
 // one fact line carries the targets and counts outside the halo. The
 // seven-day measure is the second voice: weekday caps + the
 // day-of-split figure in Martian, the picked tile INVERTING to the ink
 // plate — inversion is selection; borders do not survive glare. The
-// plan previews as REGISTER LINES: name · leader · the prefill
+// plan previews as RULED ROWS: name · air · the prefill
 // weight (the same composition as home's day register — one
 // language).
 //   1. Workout day — a rolling 7-day measure. Each non-rest day
@@ -258,8 +258,8 @@ export default function SplitSelectionScreen() {
         </Text>
       </View>
 
-      {/* THE PLAN — the preview as register lines under a hairline:
-          name · leader · the prefill weight. The same composition as
+      {/* THE PLAN — the preview as ruled rows under a hairline:
+          name · air · the prefill weight. The same composition as
           home's day register: one language, stated twice where the
           pick needs its feedback. */}
       <View style={styles.block}>

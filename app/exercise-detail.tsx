@@ -1,5 +1,5 @@
 // app/exercise-detail.tsx
-// THE SPEC SHEET (docs/architecture/scoreboard-thesis.md §8): "What
+// THE SPEC SHEET (docs/architecture/interval-thesis.md §8): "What
 // this lift is?" The NAME is the statement; the number to beat
 // reads as a REGISTER LINE under a red-ink whisper (THE NUMBER TO
 // BEAT — your last top set for this lift, weight × reps in mono,

@@ -1,5 +1,5 @@
 // app/program.tsx
-// THE TIMETABLE (docs/architecture/scoreboard-thesis.md §8): "The
+// THE TIMETABLE (docs/architecture/interval-thesis.md §8): "The
 // rotation, day by day." The FIRST day's title is the statement
 // (later chapters at subhead scale), each day is one air-separated
 // block, and slots are LINES: name + the Rx as a right-aligned mono

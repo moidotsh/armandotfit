@@ -3,7 +3,7 @@
 // On success, the central AuthGuard in app/_layout.tsx routes to
 // home — no per-screen redirect effect needed.
 //
-// THE GATE (scoreboard-thesis §8): the action sentence IS the
+// THE GATE (interval-thesis §8): the action sentence IS the
 // statement ("Sign in."), the brand rides a folio line (same masthead
 // as home), the form sits open on the ground (no panel), links are
 // RED INK (red's second job), and the verb is the page's heaviest

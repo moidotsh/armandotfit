@@ -1,5 +1,5 @@
 // app/exercise-database.tsx
-// THE DIRECTORY (docs/architecture/scoreboard-thesis.md §8): "Find a
+// THE DIRECTORY (docs/architecture/interval-thesis.md §8): "Find a
 // lift." The search field IS the statement (display
 // scale, one hairline beneath — the page's spent rule); the ZONE
 // chips ride under it as the instrument's second row; the catalog
@@ -31,7 +31,7 @@ import { INTERVAL, BLOCK_GAP, ROW_GAP, PAGE_GUTTER, theme } from '../constants';
 import type { MeterStep } from '../constants';
 
 /** The zone line map: equipment modality → the meter ramp's step (the
- *  gym's geography colored on the zone ramp — scoreboard-thesis §4.2;
+ *  gym's geography colored on the zone ramp — interval-thesis §4.2;
  *  the zone ramp is data encoding, not identity). */
 const ZONE_STEP: Record<string, MeterStep> = {
   barbell: 'step1',

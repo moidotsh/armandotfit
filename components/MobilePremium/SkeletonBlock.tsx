@@ -1,8 +1,8 @@
 // components/MobilePremium/SkeletonBlock.tsx
 // The placeholder primitive for loading skeletons. Reads `colors.cardAlt`
 // (one step off the ground — reads as a placeholder, not as content).
-// THE SCOREBOARD override (docs/architecture/scoreboard-thesis.md §6,
-// THE STILL SYSTEM): the block is STATIC and square — no shimmer pulse,
+// THE STILL SYSTEM override (docs/architecture/interval-thesis.md §6):
+// the block is STATIC and square — no shimmer pulse,
 // no rounded corners. Loading is a state, not an animation; the shell's
 // shimmering variant stays in arqavellum (this copy diverges
 // deliberately, like theme values).

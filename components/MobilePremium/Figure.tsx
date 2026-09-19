@@ -1,7 +1,7 @@
 // components/MobilePremium/Figure.tsx
 //
-// The figure language of THE SCOREBOARD: one labeled value, no
-// chrome (docs/architecture/scoreboard-thesis.md §2.1). Where
+// The figure language of THE INTERVAL: one labeled value, no
+// chrome (docs/architecture/interval-thesis.md §2.1). Where
 // StatCard puts a number in a card, Figure puts a number on the
 // ground — the printed read for stat strips, receipt headers, and
 // hero figures. THE NUMERAL IS THE FIGURE: every value sets in the

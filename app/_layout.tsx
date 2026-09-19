@@ -123,12 +123,12 @@ function RootShell() {
       ].join(''),
     );
 
-    // THE SCOREBOARD faces — runtime restore of index.html's id'd
+    // THE INTERVAL faces — runtime restore of index.html's id'd
     // @font-face block (static export strips <head> styles; the
     // build-time injector covers exported routes, this covers dev and
     // anything the strip still misses). Space Grotesk (words) +
     // Martian Mono (every figure); no condensed second family — see
-    // scoreboard-thesis §3.1. Mirror trio: index.html,
+    // interval-thesis §3.1. Mirror trio: index.html,
     // scripts/inject-critical-web.ts, this block.
     const ensureFontLinks = () => {
       const fontFiles = [

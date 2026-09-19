@@ -1,10 +1,10 @@
 // components/composed/BoardShell.tsx
 //
-// The screen scaffold (docs/architecture/scoreboard-thesis.md §5, §8;
+// The screen scaffold (docs/architecture/interval-thesis.md §5, §8;
 // the BoardShell name is taught to audit-screen-body.ts — SB1): the
 // one ground (atmosphere) + a header slot + THE TICKER (pinned under
 // the header while a session runs — one tap returns to the Floor) +
-// the scrolling body. THE SCOREBOARD has no tab bar and no drawer
+// the scrolling body. THE INTERVAL has no tab bar and no drawer
 // chrome: the Desk is a stack, home is its hub, and the ticker keeps
 // the live session one tap away on every page.
 //
