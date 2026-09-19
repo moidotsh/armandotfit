@@ -68,10 +68,10 @@ export interface MobileHeaderProps {
 // THE COUNT: a pushed screen's nav title speaks the statement face —
 // the display position at nav scale, tracked like a marking.
 const NAV_TITLE_STYLE = {
-  fontSize: 18,
+  fontSize: theme.typography.mobileTitle.fontSize,
   fontWeight: '700',
-  lineHeight: 22,
-  letterSpacing: 0.2,
+  lineHeight: theme.typography.mobileTitle.lineHeight,
+  letterSpacing: theme.typography.mobileTitle.letterSpacing,
   fontFamily: theme.fonts.display,
 } as const;
 

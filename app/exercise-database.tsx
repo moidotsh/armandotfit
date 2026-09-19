@@ -27,7 +27,7 @@ import { useExercises, useRecentSessionDetails } from '../hooks';
 import { SYSTEM_EXERCISES as FULL_CATALOG } from '../shared/exercises';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import { SYSTEM_EXERCISES, ZONES, type SystemExerciseData } from '../shared/exercises';
-import { SCOREBOARD, BLOCK_GAP, ROW_GAP, PAGE_GUTTER, theme } from '../constants';
+import { INTERVAL, BLOCK_GAP, ROW_GAP, PAGE_GUTTER, theme } from '../constants';
 import type { MeterStep } from '../constants';
 
 /** The zone line map: equipment modality → the meter ramp's step (the
@@ -316,14 +316,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   adderToggleText: {
-    ...SCOREBOARD.whisper,
+    ...INTERVAL.whisper,
   },
   adderVerb: {
     minHeight: 44,
     justifyContent: 'center',
   },
   adderVerbText: {
-    ...SCOREBOARD.whisperLine,
+    ...INTERVAL.whisperLine,
     fontWeight: '600',
   },
 });

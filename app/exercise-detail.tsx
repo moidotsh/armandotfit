@@ -33,7 +33,7 @@ import {
   equipmentSlugs,
   type MuscleSlug,
 } from '../shared/exercises';
-import { SCOREBOARD, theme, PAGE_GUTTER } from '../constants';
+import { INTERVAL, theme, PAGE_GUTTER } from '../constants';
 import { toDisplayWeight, roundDisplayWeight } from '../utils';
 import type { ExerciseKey } from '../shared/exercises';
 
@@ -313,10 +313,10 @@ export default function ExerciseDetailScreen() {
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 40 },
   block: {
-    ...SCOREBOARD.block,
+    ...INTERVAL.block,
   },
   headline: {
-    ...SCOREBOARD.statement,
+    ...INTERVAL.statement,
   },
   // The number-to-beat block sits in the statement's halo.
   lastBlock: {
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   typeLine: {
-    ...SCOREBOARD.whisperLine,
+    ...INTERVAL.whisperLine,
     marginTop: 2,
   },
   bodyText: { ...theme.typography.mobileBody },
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileLedger,
   },
   sectionWhisper: {
-    ...SCOREBOARD.whisper,
+    ...INTERVAL.whisper,
     marginBottom: 8,
   },
   variantChips: {

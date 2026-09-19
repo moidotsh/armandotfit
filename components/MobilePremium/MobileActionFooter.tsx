@@ -164,9 +164,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   secondaryText: {
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: 0.1,
+    fontSize: theme.typography.mobileEyebrow.fontSize,
+    fontWeight: theme.typography.mobileEyebrow.fontWeight as any,
+    lineHeight: theme.typography.mobileEyebrow.lineHeight,
+    letterSpacing: theme.typography.mobileEyebrow.letterSpacing,
+    fontFamily: theme.typography.mobileEyebrow.fontFamily,
   },
 
   // ── Children mode (legacy) ───────────────────────────────────────────

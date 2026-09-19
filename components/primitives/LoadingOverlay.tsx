@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   subMessage: {
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'center',
     marginTop: 4,
   },

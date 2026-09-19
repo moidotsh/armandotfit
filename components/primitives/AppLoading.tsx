@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   message: {
-    fontSize: 14,
+    fontSize: 12,
     marginTop: 12,
     textAlign: 'center',
   },

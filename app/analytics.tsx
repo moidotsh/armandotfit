@@ -22,7 +22,7 @@ import { useAnalyticsHistory, useRecentSessionDetails } from '../hooks';
 import { deriveMuscleShare, MUSCLE_GROUPS } from '../services';
 import { AnalyticsService } from '../services';
 import { addDays } from '../utils';
-import { BLOCK_GAP, SCOREBOARD, theme, PAGE_GUTTER } from '../constants';
+import { BLOCK_GAP, INTERVAL, theme, PAGE_GUTTER } from '../constants';
 import type { DayActivity } from '../shared/types';
 
 type Range = 7 | 30 | 90;
@@ -252,11 +252,11 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   block: {
-    ...SCOREBOARD.block,
+    ...INTERVAL.block,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: BLOCK_GAP },
   sectionWhisper: {
-    ...SCOREBOARD.whisper,
+    ...INTERVAL.whisper,
     marginBottom: 8,
   },
   // THE REGISTER GRID — seven mono columns; density is ink weight.
@@ -276,7 +276,6 @@ const styles = StyleSheet.create({
   },
   gridChar: {
     ...theme.typography.mobileEyebrow,
-    fontSize: 13,
     letterSpacing: 0,
   },
   gridCharBold: {

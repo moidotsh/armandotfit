@@ -43,17 +43,18 @@ export interface MobileAlertProps {
 }
 
 const ALERT_TITLE_STYLE = {
-  fontSize: 14,
-  fontWeight: '600',
-  lineHeight: 18,
-  letterSpacing: 0,
+  fontSize: theme.typography.mobileSubtitle.fontSize,
+  fontWeight: theme.typography.mobileSubtitle.fontWeight as any,
+  lineHeight: theme.typography.mobileSubtitle.lineHeight,
+  letterSpacing: theme.typography.mobileSubtitle.letterSpacing,
+  fontFamily: theme.typography.mobileSubtitle.fontFamily,
 } as const;
 
 const ALERT_MESSAGE_STYLE = {
-  fontSize: 13,
-  fontWeight: '400',
-  lineHeight: 18,
-  letterSpacing: 0,
+  fontSize: theme.typography.mobileMeta.fontSize,
+  fontWeight: theme.typography.mobileMeta.fontWeight as any,
+  lineHeight: theme.typography.mobileMeta.lineHeight,
+  letterSpacing: theme.typography.mobileMeta.letterSpacing,
 } as const;
 
 /**

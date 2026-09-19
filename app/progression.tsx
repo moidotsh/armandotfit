@@ -24,7 +24,7 @@ import {
 } from '../navigation';
 import { useDashboardSummary, usePersonalBests, useWeightUnit, useRecentSessionDetails } from '../hooks';
 import { SYSTEM_EXERCISES } from '../shared/exercises';
-import { SCOREBOARD, theme, PAGE_GUTTER } from '../constants';
+import { INTERVAL, theme, PAGE_GUTTER } from '../constants';
 import { derivePrTimeline } from '../services';
 import { toDisplayWeight, roundDisplayWeight, weightUnitLabel, formatWeight } from '../utils';
 
@@ -153,16 +153,16 @@ export default function ProgressionScreen() {
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 80 },
   block: {
-    ...SCOREBOARD.block,
+    ...INTERVAL.block,
   },
   totals: {
-    ...SCOREBOARD.figure,
+    ...INTERVAL.figure,
   },
   sectionWhisper: {
-    ...SCOREBOARD.whisper,
+    ...INTERVAL.whisper,
     marginBottom: 4,
   },
-  analyticsLink: { marginTop: SCOREBOARD.block.marginTop, minHeight: 48, justifyContent: 'center' },
+  analyticsLink: { marginTop: INTERVAL.block.marginTop, minHeight: 48, justifyContent: 'center' },
   analyticsLinkText: {
     ...theme.typography.mobileItemTitle,
   },

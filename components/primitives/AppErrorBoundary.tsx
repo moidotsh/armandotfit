@@ -73,14 +73,14 @@ export class AppErrorBoundary extends Component<Props, State> {
       textAlign: 'center',
     };
     const titleStyle: React.CSSProperties = {
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: 600,
       marginBottom: 12,
     };
     const bodyStyle: React.CSSProperties = {
       // s7-exempt — theme-free fallback
       color: '#4b5563',
-      fontSize: 14,
+      fontSize: 12,
       marginBottom: 20,
     };
     const buttonStyle: React.CSSProperties = {
@@ -88,7 +88,7 @@ export class AppErrorBoundary extends Component<Props, State> {
       color: '#ffffff',
       backgroundColor: '#4f46e5',
       padding: '8px 16px',
-      fontSize: 14,
+      fontSize: 12,
       fontWeight: 500,
       border: 'none',
       borderRadius: 8,

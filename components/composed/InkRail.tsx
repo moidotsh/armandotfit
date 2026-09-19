@@ -224,7 +224,6 @@ const styles = StyleSheet.create({
   },
   plateEyebrow: {
     ...theme.typography.mobileEyebrow,
-    fontSize: 10,
     paddingHorizontal: 20,
     paddingTop: 18,
     paddingBottom: 6,
@@ -259,11 +258,9 @@ const styles = StyleSheet.create({
   },
   why: {
     ...theme.typography.mobileTag,
-    fontSize: 10,
   },
   meta: {
     ...theme.typography.mobileEyebrow,
-    fontSize: 9,
   },
 });
 

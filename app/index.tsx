@@ -27,7 +27,7 @@ import {
   theme,
   suggestNextSplitDay,
   suggestSessionWindow,
-  SCOREBOARD,
+  INTERVAL,
   ROW_GAP,
   PAGE_GUTTER,
 } from '../constants';
@@ -264,7 +264,6 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     ...theme.typography.mobileEyebrow,
-    letterSpacing: 1.6,
   },
   iconButton: {
     width: 44,
@@ -274,7 +273,7 @@ const styles = StyleSheet.create({
   },
   // Top-level blocks carry the air law.
   block: {
-    ...SCOREBOARD.block,
+    ...INTERVAL.block,
   },
   gapNote: {
     ...theme.typography.mobileLedger,
@@ -301,7 +300,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   jumpLabel: {
-    ...SCOREBOARD.row,
+    ...INTERVAL.row,
   },
   jumpCaption: {
     ...theme.typography.mobileLedger,

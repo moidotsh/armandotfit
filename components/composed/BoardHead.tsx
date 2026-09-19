@@ -17,7 +17,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
-import { SCOREBOARD, theme } from '../../constants';
+import { INTERVAL, theme } from '../../constants';
 
 export interface BoardHeadProps {
   /** THE STATEMENT — the screen's one loud thing (sentence case). */
@@ -83,13 +83,13 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   statement: {
-    ...SCOREBOARD.statement,
+    ...INTERVAL.statement,
   },
   figureStatement: {
     ...theme.typography.mobileCounter,
   },
   fact: {
-    ...SCOREBOARD.fact,
+    ...INTERVAL.fact,
   },
 });
 

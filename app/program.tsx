@@ -24,7 +24,7 @@ import {
   getSlotsForDay,
   type SessionWindow,
 } from '../shared/exercises';
-import { SCOREBOARD, ROW_GAP, theme, PAGE_GUTTER } from '../constants';
+import { INTERVAL, ROW_GAP, theme, PAGE_GUTTER } from '../constants';
 import { CURRENT_ERA } from '../shared/exercises';
 import type { PreferredSplit } from '../shared/types';
 
@@ -196,26 +196,26 @@ export default function ProgramScreen() {
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 80 },
   dayFirst: {
-    ...SCOREBOARD.blockFirst,
+    ...INTERVAL.blockFirst,
   },
   day: {
-    ...SCOREBOARD.block,
+    ...INTERVAL.block,
   },
   // The page-identity whisper, spoken at rest where the column holds
   // it.
   pageWhisper: {
-    ...SCOREBOARD.whisper,
+    ...INTERVAL.whisper,
     marginBottom: 6,
   },
   dayTitleLead: {
-    ...SCOREBOARD.statement,
+    ...INTERVAL.statement,
   },
   dayTitle: {
     ...theme.typography.mobileTitle,
   },
   // The statement's halo: the fact line waits outside the moat.
   dayFact: {
-    ...SCOREBOARD.fact,
+    ...INTERVAL.fact,
     marginBottom: 8,
   },
   windowBlock: {

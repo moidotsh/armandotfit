@@ -26,7 +26,7 @@ import { navigateToRegister, navigateToForgotPassword } from '../navigation';
 import {
   MOBILE_CONTENT_WIDTH_STYLE,
   SCREEN_BODY_STYLE,
-  SCOREBOARD,
+  INTERVAL,
   theme,
 } from '../constants';
 
@@ -145,7 +145,6 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     ...theme.typography.mobileEyebrow,
-    letterSpacing: 1.6,
   },
   body: {
     ...SCREEN_BODY_STYLE,
@@ -153,10 +152,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   block: {
-    ...SCOREBOARD.block,
+    ...INTERVAL.block,
   },
   statement: {
-    ...SCOREBOARD.statement,
+    ...INTERVAL.statement,
   },
   linkBox: {
     minHeight: 44,

@@ -27,7 +27,7 @@ import {
 } from 'react-native';
 import { X } from '@tamagui/lucide-icons-2';
 import { isWeb } from '../../utils';
-import { MOBILE_CONTENT_WIDTH_STYLE } from '../../constants';
+import { MOBILE_CONTENT_WIDTH_STYLE, theme } from '../../constants';
 import { useAppTheme } from '../../context';
 import { useDialogFocus } from '../premium/shared';
 
@@ -236,8 +236,11 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: theme.typography.mobileItemTitle.fontSize,
+    fontWeight: theme.typography.mobileItemTitle.fontWeight as any,
+    lineHeight: theme.typography.mobileItemTitle.lineHeight,
+    letterSpacing: theme.typography.mobileItemTitle.letterSpacing,
+    fontFamily: theme.typography.mobileItemTitle.fontFamily,
   },
   closeButton: {
     padding: 4,

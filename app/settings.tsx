@@ -18,7 +18,7 @@ import { BoardShell } from '../components/composed';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile, usePwaPrompt, useRecentSessionDetails } from '../hooks';
-import { DAY_OF_WEEK_LABELS, BLOCK_GAP, SCOREBOARD, theme } from '../constants';
+import { DAY_OF_WEEK_LABELS, BLOCK_GAP, INTERVAL, theme } from '../constants';
 import { useToast } from '../context';
 import { useRestStore, useDeloadStore } from '../stores';
 import { logger } from '../utils/logger';
@@ -423,16 +423,16 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   statement: {
-    ...SCOREBOARD.statement,
+    ...INTERVAL.statement,
   },
   // The unit measure's inline label — the printed word beside its
   // tiles, on one line.
   unitInlineLabel: {
-    ...SCOREBOARD.whisper,
+    ...INTERVAL.whisper,
     marginRight: 8,
   },
   whisper: {
-    ...SCOREBOARD.whisper,
+    ...INTERVAL.whisper,
     marginBottom: 8,
   },
   // THE REST INSTRUMENT's panel row: the printed label, the ±
@@ -499,7 +499,6 @@ const styles = StyleSheet.create({
   },
   restDayLabel: {
     ...theme.typography.mobileTag,
-    letterSpacing: 0.4,
   },
   signedInAs: {
     ...theme.typography.mobileLedger,

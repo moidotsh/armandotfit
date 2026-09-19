@@ -558,7 +558,6 @@ const styles = StyleSheet.create({
   },
   logLabel: {
     ...theme.typography.mobileAction,
-    letterSpacing: 1.2,
   },
 });
 

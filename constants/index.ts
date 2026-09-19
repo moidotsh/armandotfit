@@ -65,25 +65,25 @@ export { APP_LAYOUT } from './layout';
 export type { NavDrawerBrandPersistence, NavDrawerAnchor } from './layout';
 
 
-// THE SCOREBOARD (docs/architecture/scoreboard-thesis.md) — the
-// eighth upending's presentation law: the air rhythm (the names
-// carry over unchanged — the air law is taste-independent), the
-// SCOREBOARD style carriers, the register line's leader, and the
-// rest instrument's constants.
+// THE INTERVAL (docs/architecture/interval-thesis.md) — the tenth
+// upending's presentation law: the air rhythm (the names carry
+// over unchanged — the air law is taste-independent), the INTERVAL
+// rank carriers (incl. THE LIVE FIGURE and its demoted partner),
+// and the rest instrument's constants. The register line's leader
+// is deleted — the air is the leader.
 export {
-  SCOREBOARD,
+  INTERVAL,
   PAGE_GUTTER,
   BLOCK_GAP,
   ROW_GAP,
   HALO,
-  LEADER_CHAR,
   REST_DEFAULT_SEC,
   REST_STEP_SEC,
-} from './scoreboard';
+} from './interval';
 
 // The meter ramp's step keys — the zone ramp's keys (structure is
 // the shell's; values live in theme.colors.*.meter).
-export type { MeterStep } from './scoreboard';
+export type { MeterStep } from './interval';
 
 
 // Workout split metadata (decoupled from theme for SOC). The day→exercise

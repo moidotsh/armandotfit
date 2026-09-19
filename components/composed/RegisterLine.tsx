@@ -1,14 +1,11 @@
 // components/composed/RegisterLine.tsx
 //
 // THE REGISTER LINE — the app's one repeating composition (docs/
-// architecture/scoreboard-thesis.md §5): name left · leader dots ·
-// figure right-aligned in mono. It replaces the panel row, the
-// pin-rail row, and the pip row. One line = one entry = one fact.
-//
-// The leader is TYPE, not paint: a clipped run of mono middle dots
-// fills whatever width sits between the name and the figure — no
-// measurement, no drawing. A line without a figure carries no leader
-// (nothing to lead to); the right edge stays empty.
+// architecture/interval-thesis.md §2, §5): name left · air · figure
+// right-aligned in mono, one shared baseline. THE AIR IS THE
+// LEADER — the incumbent's dotted leader run carried no information
+// (it was aria-hidden from birth) and cost a text node per row; it
+// is deleted. One line = one entry = one fact.
 //
 // Hierarchy is ink and weight, never extra chrome: `bold` sets the
 // current row (the Floor's board), `figureTone: 'record'` sets a red
@@ -17,16 +14,14 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
-import { theme, LEADER_CHAR } from '../../constants';
-
-const LEADER_RUN = LEADER_CHAR.repeat(96);
+import { theme } from '../../constants';
 
 export interface RegisterLineProps {
   /** The entry's name — content, sentence case (Space Grotesk 18). */
   label: string;
   /** The label is itself a quantity (an ordinal, a date) — set mono. */
   monoLabel?: boolean;
-  /** The right-aligned mono figure (18). Null = no figure, no leader. */
+  /** The right-aligned mono figure (18). Null = no figure. */
   figure?: string | null;
   /** The figure's read: ink (default), muted, or record (RED INK). */
   figureTone?: 'ink' | 'muted' | 'record';
@@ -78,18 +73,13 @@ export function RegisterLine({
         {label}
       </Text>
       {figure != null ? (
-        <>
-          <Text aria-hidden style={[styles.leader, { color: colors.textMuted }]} numberOfLines={1} ellipsizeMode="clip">
-            {LEADER_RUN}
-          </Text>
-          <Text
-            testID={figureTestID}
-            style={[styles.figure, { color: figColor }, bold ? styles.labelBold : null]}
-            numberOfLines={1}
-          >
-            {figure}
-          </Text>
-        </>
+        <Text
+          testID={figureTestID}
+          style={[styles.figure, { color: figColor }, bold ? styles.labelBold : null]}
+          numberOfLines={1}
+        >
+          {figure}
+        </Text>
       ) : null}
     </View>
   );
@@ -123,10 +113,13 @@ const styles = StyleSheet.create({
     minHeight: 48,
     justifyContent: 'center',
   },
+  // THE AIR IS THE LEADER: name left, figure right, and the column's
+  // own air between them — no dots, no rules, no drawing.
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
+    gap: 16,
   },
   label: {
     ...theme.typography.mobileItemTitle,
@@ -141,14 +134,6 @@ const styles = StyleSheet.create({
   },
   labelBold: {
     fontWeight: '700',
-  },
-  // THE LEADER — a clipped run of mono middle dots: pure type, muted,
-  // whisper scale. It never carries information (aria-hidden).
-  leader: {
-    ...theme.typography.mobileLedger,
-    flex: 1,
-    letterSpacing: 2,
-    opacity: 0.55,
   },
   figure: {
     ...theme.typography.mobileFigure,

@@ -1,13 +1,17 @@
 // constants/theme.ts
-// armandotfit theme — "THE SCOREBOARD" (see
-// docs/architecture/scoreboard-thesis.md).
+// armandotfit theme — "THE INTERVAL" (see
+// docs/architecture/interval-thesis.md).
 //
-// Numerals you read across the room: every quantity a printed
-// tabular numeral, one ground per mode with rules and air for
-// structure (no panels, radius 0, zero shadows), one RED INK for
-// records/links/the live pulse, and THE STILL SYSTEM (content never
-// animates). On the shell's `ink` dialect (flat atmosphere, chit
-// toasts, curtain transitions — see DIALECT below).
+// The live figure owns the counter: the biggest mark on a screen is
+// the figure answering its current question (the rest clock while
+// rest runs, the armed expression otherwise), exchanged by REPAINT
+// at the two moments the question changes. Ink is state — armed and
+// live carry the full ink, settled and unarmed read muted; one
+// ground per mode with rules and air for structure (no panels,
+// radius 0, zero shadows); one RED INK for records/links/the live
+// pulse (furniture never wears it); and THE STILL SYSTEM (content
+// never animates). On the shell's `ink` dialect (flat atmosphere,
+// chit toasts, curtain transitions — see DIALECT below).
 //
 //   • COLOR HAS TWO JOBS — the `meter` ramp encodes the GYM'S
 //     GEOGRAPHY (the zone ramp: barbell oxide / dumbbell brass /
@@ -564,18 +568,21 @@ export const theme = {
   fonts: FONTS,
 
   // ── Named type styles ─────────────────────────────────────────────────
-  // THE HARMONIC RAMP (docs/architecture/scoreboard-thesis.md §3.2):
+  // THE HARMONIC RAMP (docs/architecture/interval-thesis.md §3.2):
   // FOUR sizes — {72, 36, 18, 12}, every size an exact divisor of the
   // counter (72 × {1, ½, ¼, ⅙}), every lineHeight = size + 6, at most
-  // three on any screen (the counter rides only where the screen's
-  // question is a quantity). One statement per screen at 36 (the
-  // content itself, sentence case — never a page nameplate), second
-  // voice ≥1.4× quieter (36/18 = 2.0 ✓). FURNITURE IS PRINTED CAPS
-  // (caps, Martian, tracked), CONTENT SPEAKS (sentence case, Space
-  // Grotesk). Retired ranks collapse onto the ramp rather than
-  // deleting keys (the token structure is the shell's). Consumers
-  // import the named style and spread it; they do NOT pick ad-hoc
-  // fontSize/fontWeight.
+  // three on any screen (+ THE LIVE FIGURE where the thesis assigns
+  // the counter — on the Floor it is state-dependent: the rest clock
+  // while rest runs, the armed expression otherwise). One statement
+  // per screen at 36 (the content itself, sentence case — never a
+  // page nameplate), second voice ≥1.4× quieter (36/18 = 2.0 ✓).
+  // FURNITURE IS PRINTED CAPS (caps, Martian, tracked), CONTENT
+  // SPEAKS (sentence case, Space Grotesk). TRACKING IS AUTHORED PER
+  // RANK AND EXACT: counter −1.5 · statement −0.5 · row 0 · caps
+  // furniture +0.8 · lowercase mono whispers 0. Retired ranks
+  // collapse onto the ramp rather than deleting keys (the token
+  // structure is the shell's). Consumers import the named style and
+  // spread it; they do NOT pick ad-hoc fontSize/fontWeight.
   typography: {
     mobileTitle: {
       fontSize: 18,
@@ -602,7 +609,7 @@ export const theme = {
       fontSize: 18,
       fontWeight: '700',
       lineHeight: 24,
-      letterSpacing: 1.2,
+      letterSpacing: 0.8,
       fontFamily: FONTS.display,
     } satisfies TypographyToken,
     mobileEyebrow: {
@@ -616,7 +623,7 @@ export const theme = {
       fontSize: 12,
       fontWeight: '600',
       lineHeight: 18,
-      letterSpacing: 0.1,
+      letterSpacing: 0,
       fontFamily: undefined,
     } satisfies TypographyToken,
     // ── Figure language ────────────────────────────────────────────────
@@ -664,7 +671,11 @@ export const theme = {
       fontFamily: FONTS.display,
     } satisfies TypographyToken,
     // THE ARMED EXPRESSION — the logger's `weight × reps` line and
-    // the streak: mono 72, the biggest mark in the system.
+    // the streak: mono 72, the biggest mark in the system. Under
+    // THE INTERVAL the counter rank is STATE-DEPENDENT on the Floor
+    // (interval-thesis §7): while rest runs the rest clock owns it
+    // and the armed expression demotes to the statement rank —
+    // values swap, nothing moves.
     mobileCounter: {
       fontSize: 72,
       fontWeight: '700',
@@ -693,7 +704,7 @@ export const theme = {
       fontSize: 12,
       fontWeight: '500',
       lineHeight: 18,
-      letterSpacing: 0.4,
+      letterSpacing: 0,
       fontFamily: FONTS.mono,
     } satisfies TypographyToken,
   },

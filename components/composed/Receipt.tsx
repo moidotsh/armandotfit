@@ -25,7 +25,7 @@ import { useToast, useAppTheme } from '../../context';
 import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags } from '../../hooks';
 import { safeGoBack } from '../../navigation';
 import { sumVolume } from '../../services';
-import { SCOREBOARD, PAGE_GUTTER, theme } from '../../constants';
+import { INTERVAL, PAGE_GUTTER, theme } from '../../constants';
 import { eraFor } from '../../shared/exercises';
 import {
   toDisplayWeight,
@@ -185,14 +185,14 @@ const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 120 },
   bodyText: { ...theme.typography.mobileBody },
   receiptBlock: {
-    ...SCOREBOARD.block,
+    ...INTERVAL.block,
   },
   pageWhisper: {
-    ...SCOREBOARD.whisper,
+    ...INTERVAL.whisper,
     marginBottom: 6,
   },
   factLine: {
-    ...SCOREBOARD.fact,
+    ...INTERVAL.fact,
   },
   // The exercise register's head: the name left, tags whisper right.
   receiptExHead: {

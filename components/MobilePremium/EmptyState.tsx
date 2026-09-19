@@ -58,9 +58,10 @@ const TITLE_STYLE = {
 } as const;
 
 const MESSAGE_STYLE = {
-  fontSize: 14,
-  fontWeight: '400',
-  lineHeight: 20,
+  fontSize: theme.typography.mobileMeta.fontSize,
+  fontWeight: theme.typography.mobileMeta.fontWeight as any,
+  lineHeight: theme.typography.mobileMeta.lineHeight,
+  letterSpacing: theme.typography.mobileMeta.letterSpacing,
 } as const;
 
 export function EmptyState({

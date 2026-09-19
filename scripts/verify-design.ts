@@ -1,14 +1,21 @@
 // scripts/verify-design.ts
-// THE DESIGN LAW AS A GATE — the scoreboard's token arithmetic and
-// contrast matrix, checked pure (no browser, no rendering): the ramp
-// (every size divides 72, LH = size + 6), the second-voice ratio, the
-// square cut, the retired lift, the wire's mode-independence, and
-// every text×surface pair in both modes against its WCAG bar. Chained
-// into `lint:structure` so a drifted token fails the commit like any
-// structural audit. The thesis (docs/architecture/
-// scoreboard-thesis.md §4.3, §3.2) is the spec; this is its
-// arithmetic.
+// THE DESIGN LAW AS A GATE — THE INTERVAL's token arithmetic, rank
+// grammar, and contrast matrix, checked pure (no browser, no
+// rendering): the ramp (every size divides 72, LH = size + 6), the
+// authored tracking per rank, the mono figure tokens, the
+// second-voice ratio, the square cut, the retired lift, the wire's
+// mode-independence, every text×surface pair in both modes against
+// its WCAG bar, AND the call-site law — no ad-hoc fontSize or
+// letterSpacing literal anywhere in the consumer-authored layer
+// (app/, components/composed/, components/primitives/), plus the
+// kit primitives this app renders (they read the consumer's tokens,
+// never literals). Chained into `lint:structure` so a drifted token
+// fails the commit like any structural audit. The thesis
+// (docs/architecture/interval-thesis.md §3, §4, §10) is the spec;
+// this is its arithmetic.
 
+import { readdirSync, readFileSync, statSync } from 'fs';
+import { join } from 'path';
 import { theme } from '../constants/theme';
 
 const failures: string[] = [];
@@ -37,7 +44,7 @@ function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-// ── THE HARMONIC RAMP ────────────────────────────────────────────────
+// ── THE HARMONIC RAMP (thesis §3.2) ───────────────────────────────────
 const RAMP = new Set([12, 18, 36, 72]);
 for (const [name, token] of Object.entries(theme.typography)) {
   check(RAMP.has(token.fontSize), `ramp: ${name} size ${token.fontSize} ∈ {12,18,36,72}`);
@@ -49,20 +56,63 @@ const ratio =
 check(ratio >= 1.4, `second voice ≥1.4× quieter (${ratio.toFixed(2)})`);
 check(theme.fonts.displayCondensed === theme.fonts.display, 'no condensed second family');
 
-// ── THE SQUARE CUT + the retired lift ────────────────────────────────
+// ── TRACKING IS AUTHORED PER RANK AND EXACT (thesis §3.2) ────────────
+// counter −1.5 · statement −0.5 · row/second-voice 0 · caps furniture
+// +0.8 · lowercase mono whispers/tags 0 · body 0. The set is closed:
+// no other tracking value may exist in a token or a call site.
+const TRACKING_SET = new Set([-1.5, -0.5, 0, 0.8]);
+check(
+  theme.typography.mobileCounter.letterSpacing === -1.5,
+  'tracking: counter −1.5',
+);
+check(
+  theme.typography.mobileTitleCondensed.letterSpacing === -0.5,
+  'tracking: statement −0.5',
+);
+check(theme.typography.mobileTitle.letterSpacing === 0, 'tracking: row 0');
+check(
+  theme.typography.mobileEyebrow.letterSpacing === 0.8,
+  'tracking: furniture caps +0.8',
+);
+check(theme.typography.mobileAction.letterSpacing === 0.8, 'tracking: verb caps +0.8');
+check(theme.typography.mobileTag.letterSpacing === 0, 'tracking: tags 0');
+for (const [name, token] of Object.entries(theme.typography)) {
+  if (token.letterSpacing === undefined) continue;
+  check(
+    TRACKING_SET.has(token.letterSpacing),
+    `tracking: ${name} letterSpacing ${token.letterSpacing} ∈ {−1.5, −0.5, 0, +0.8}`,
+  );
+}
+
+// ── THE FIGURE TOKENS ARE MONO (thesis §3.3) ──────────────────────────
+// Every figure rides the mono face — tabular by construction. The
+// three figure tokens assert it at gate time; long reading text
+// (mobileBody/mobileMeta/mobileFieldLabel) stays on the system sans.
+for (const name of ['mobileCounter', 'mobileFigure', 'mobileLedger']) {
+  check(
+    theme.typography[name as keyof typeof theme.typography].fontFamily === theme.fonts.mono,
+    `figures: ${name} rides the mono face`,
+  );
+}
+check(
+  theme.typography.mobileCounter.fontVariant?.includes('tabular-nums') === true,
+  'figures: the counter is tabular',
+);
+
+// ── THE SQUARE CUT + the retired lift (thesis §5) ─────────────────────
 for (const [name, r] of Object.entries(theme.shapes)) {
   check(r === 0, `square cut: shapes.${name} = 0`);
 }
 check(theme.colors.light.mobilePremium.instrumentShadow === 'none', 'light: instrumentShadow retired');
 check(theme.colors.dark.mobilePremium.instrumentShadow === 'none', 'dark: instrumentShadow retired');
 
-// ── THE WIRE is mode-independent ─────────────────────────────────────
+// ── THE WIRE is mode-independent (thesis §4.1) ────────────────────────
 check(
   JSON.stringify(theme.colors.light.focus) === JSON.stringify(theme.colors.dark.focus),
   'the wire is identical in both modes',
 );
 
-// ── THE CONTRAST MATRIX (both modes) ─────────────────────────────────
+// ── THE CONTRAST MATRIX (both modes, thesis §4.3) ─────────────────────
 for (const mode of ['light', 'dark'] as const) {
   const p = theme.colors[mode];
   const surfaces: Array<[string, string]> = [
@@ -85,6 +135,67 @@ for (const mode of ['light', 'dark'] as const) {
     check(contrast(v, p.background) >= 3, `${mode}: zone.${k}/ground ≥3:1 (${contrast(v, p.background).toFixed(2)})`);
   }
 }
+
+// ── THE CALL-SITE LAW (thesis §10.2) ──────────────────────────────────
+// No ad-hoc type in the consumer-authored layer: every numeric
+// fontSize ∈ {12,18,36,72} and every numeric letterSpacing ∈
+// {−1.5, −0.5, 0, +0.8}. The kit primitives THIS app renders are
+// held to the same law (they read the consumer's tokens); the
+// shell's unrendered primitives, the showcase (the shell's gallery),
+// and the wire machinery (RouteCurtain — the mode-independent
+// interrupt register) are the shell's own surfaces and stay exempt.
+const SCRIPT_DIR = new URL('.', import.meta.url).pathname;
+const REPO_ROOT = join(SCRIPT_DIR, '..');
+function* tsxFiles(dir: string): Generator<string> {
+  for (const entry of readdirSync(dir)) {
+    if (entry === 'node_modules' || entry.startsWith('.')) continue;
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) {
+      yield* tsxFiles(full);
+    } else if (/\.(tsx|ts)$/.test(entry)) {
+      yield full;
+    }
+  }
+}
+const SCAN_DIRS = ['app', 'components/composed', 'components/primitives'];
+const CLEAN_KIT_FILES = [
+  'components/MobilePremium/EmptyState.tsx',
+  'components/MobilePremium/FilterChip.tsx',
+  'components/MobilePremium/MobileActionFooter.tsx',
+  'components/MobilePremium/MobileAlert.tsx',
+  'components/MobilePremium/MobileHeader.tsx',
+  'components/MobilePremium/MobileInput.tsx',
+  'components/MobilePremium/MobilePrimaryButton.tsx',
+  'components/MobilePremium/MobileSheet.tsx',
+  'components/MobilePremium/SegmentedControl.tsx',
+];
+const FONT_SIZE_RE = /fontSize:\s*(-?\d+(?:\.\d+)?)/g;
+const LETTER_SPACING_RE = /letterSpacing:\s*(-?\d+(?:\.\d+)?)/g;
+let scanned = 0;
+for (const rel of [...SCAN_DIRS, ...CLEAN_KIT_FILES]) {
+  const full = join(REPO_ROOT, rel);
+  const files = statSync(full).isDirectory() ? [...tsxFiles(full)] : [full];
+  for (const file of files) {
+    scanned += 1;
+    const src = readFileSync(file, 'utf8');
+    const relName = file.slice(REPO_ROOT.length + 1);
+    for (const m of src.matchAll(FONT_SIZE_RE)) {
+      const size = Number(m[1]);
+      check(
+        RAMP.has(size),
+        `call-site: ${relName} fontSize ${size} ∈ {12,18,36,72}`,
+      );
+    }
+    for (const m of src.matchAll(LETTER_SPACING_RE)) {
+      const ls = Number(m[1]);
+      check(
+        [...TRACKING_SET].some((t) => Math.abs(t - ls) < 1e-9),
+        `call-site: ${relName} letterSpacing ${ls} ∈ {−1.5, −0.5, 0, +0.8}`,
+      );
+    }
+  }
+}
+check(scanned > 20, `call-site scan covered the authored layer (${scanned} files)`);
 
 if (failures.length > 0) {
   console.error(`\nverify-design: ${failures.length} FAILURES`);

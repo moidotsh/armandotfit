@@ -52,7 +52,7 @@ import {
   theme,
   MOBILE_CONTENT_WIDTH_STYLE,
   BLOCK_GAP,
-  SCOREBOARD,
+  INTERVAL,
 } from '../../constants';
 import { TheLogger, type RestLine } from './TheLogger';
 import { RegisterLine } from './RegisterLine';
@@ -911,7 +911,7 @@ const styles = StyleSheet.create({
     marginTop: BLOCK_GAP,
   },
   stationName: {
-    ...SCOREBOARD.statement,
+    ...INTERVAL.statement,
   },
   stationMeta: {
     flexDirection: 'row',

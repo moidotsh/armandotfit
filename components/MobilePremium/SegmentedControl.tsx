@@ -175,8 +175,10 @@ const styles = StyleSheet.create({
     ...MOBILE_CONTENT_WIDTH_STYLE,
   },
   label: {
-    fontSize: 13,
-    letterSpacing: 0,
+    fontSize: theme.typography.mobileTag.fontSize,
+    fontWeight: theme.typography.mobileTag.fontWeight as any,
+    lineHeight: theme.typography.mobileTag.lineHeight,
+    letterSpacing: theme.typography.mobileTag.letterSpacing,
     // Selection labels are markings — when the consumer declares a
     // mono face, segments speak it (agate discipline).
     fontFamily: theme.fonts.mono,

@@ -271,7 +271,8 @@ const styles = StyleSheet.create({
     borderRadius: theme.shapes.control,
     padding: 16,
     paddingRight: 50,
-    fontSize: 16,
+    fontSize: theme.typography.mobileTitle.fontSize,
+    lineHeight: theme.typography.mobileTitle.lineHeight,
     fontWeight: '500',
     height: 54,
     // WebKit's UA focus ring (`outline: auto`) ignores the kit ring and
@@ -296,14 +297,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   errorText: {
-    fontSize: 12,
+    fontSize: theme.typography.mobileMeta.fontSize,
     fontWeight: '500',
-    lineHeight: 16,
+    lineHeight: theme.typography.mobileMeta.lineHeight,
     marginTop: 2,
   },
   helperText: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: theme.typography.mobileMeta.fontSize,
+    lineHeight: theme.typography.mobileMeta.lineHeight,
     marginTop: 2,
   },
 });

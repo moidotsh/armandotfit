@@ -43,7 +43,7 @@ import {
   suggestNextSplitDay,
   MIN_SPLIT_DAY,
   MAX_SPLIT_DAY,
-  SCOREBOARD,
+  INTERVAL,
   theme,
   PAGE_GUTTER,
   type SessionMode,
@@ -313,7 +313,7 @@ export default function SplitSelectionScreen() {
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 40 },
   block: {
-    ...SCOREBOARD.block,
+    ...INTERVAL.block,
   },
   // The preview register — hairline-ruled (quieter than home's 2px:
   // here the tile measure is the second voice, the preview is the

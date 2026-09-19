@@ -94,7 +94,6 @@ const styles = StyleSheet.create({
   count: {
     ...theme.typography.mobileLedger,
     fontWeight: '700',
-    letterSpacing: 1,
   },
   station: {
     ...theme.typography.mobileLedger,

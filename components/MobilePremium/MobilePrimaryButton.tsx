@@ -172,8 +172,8 @@ export function MobilePrimaryButton({
 }
 
 const ACTION_LABEL_STYLE_SM = {
-  fontSize: 13,
-  lineHeight: 16,
+  fontSize: theme.typography.mobileEyebrow.fontSize,
+  lineHeight: theme.typography.mobileEyebrow.lineHeight,
 } as const;
 
 const styles = StyleSheet.create({
