@@ -65,16 +65,13 @@ export { APP_LAYOUT } from './layout';
 export type { NavDrawerBrandPersistence, NavDrawerAnchor } from './layout';
 
 
-// THE BOARD (docs/architecture/board-thesis.md) — the air law's live
-// declaration point + THE PLATE CODE (denominations, per-scale slab
-// geometry, greedy decomposition, tally geometry). Colors live in
-// theme.colors.*.meter; this is the arithmetic.
+// THE BOARD (docs/architecture/board-thesis.md) — THE PLATE CODE
+// (denominations, per-scale slab geometry, greedy decomposition,
+// tally geometry). Colors live in theme.colors.*.meter; this is the
+// arithmetic. The air law names moved to gauge.ts (same values) —
+// retired with the last BOARD screen.
 export {
   BOARD,
-  PAGE_GUTTER,
-  BLOCK_GAP,
-  ROW_GAP,
-  HALO,
   PLATE_DENOMINATIONS,
   PLATE_SCALE,
   PLATE_QUANTUM,
@@ -82,6 +79,29 @@ export {
   TALLY_SCALE,
 } from './board';
 export type { PlateSegment, PlateScale, MeterStep, TallyScale } from './board';
+
+// THE GAUGE (docs/architecture/gauge-thesis.md) — the seventh
+// upending's presentation law: the air rhythm (the names carry over
+// unchanged — the air law is taste-independent), the GAUGE style
+// carriers, THE PIN RAIL geometry, THE SET PIPS, the mechanical
+// motion durations, and the rest instrument's constants.
+export {
+  GAUGE,
+  PAGE_GUTTER,
+  BLOCK_GAP,
+  ROW_GAP,
+  HALO,
+  RAIL_SCALE,
+  railMaxFor,
+  pinRatio,
+  PIP_SCALE,
+  FLIP_DURATION_MS,
+  ROLL_DURATION_MS,
+  PIN_DROP_DURATION_MS,
+  REST_DEFAULT_SEC,
+  REST_STEP_SEC,
+} from './gauge';
+export type { RailScale, PipScale } from './gauge';
 
 // Workout split metadata (decoupled from theme for SOC). The day→exercise
 // assignments live in shared/exercises/splits.ts because they're typed

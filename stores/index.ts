@@ -29,3 +29,7 @@ export {
   useProgramOverrideStore,
   type ProgramOverride,
 } from './programOverrideStore';
+
+// THE REST INSTRUMENT (gauge-thesis §7) — the rest countdown's
+// ephemeral deadline + the persisted interval preference.
+export { useRestStore, REST_MAX_SEC } from './restStore';

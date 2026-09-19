@@ -16,6 +16,7 @@ export { usePrevious } from './usePrevious';
 export { usePwaPrompt } from './usePwaPrompt';
 export { useNowTick } from './useNowTick';
 export { useFloorSession } from './useFloorSession';
+export { useRestClock } from './useRestClock';
 export type { TopSetFact } from './queries';
 export type { UsePwaPromptResult, PwaPlatform } from './usePwaPrompt';
 export { useAnimatedCounter } from './useAnimatedCounter';
