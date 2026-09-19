@@ -34,8 +34,15 @@
 // gating rationale and the audit carve-outs (S8 + R4b) that this file
 // relies on.
 
-const CACHE_VERSION = 'arqavellum-v1';
+const CACHE_VERSION = 'arqavellum-v2';
 const CACHE = `arqavellum-${CACHE_VERSION}`;
+
+// Install-time precache — the self-hosted faces, so the FIRST visit
+// after install renders statements and figures in their fonts even
+// on a dead gym network (stale-while-revalidate keeps them fresh
+// after that). Add a URL here only when missing it would flash a
+// fallback where the design speaks.
+const PRECACHE_URLS = ['/fonts/space-grotesk-var.woff2', '/fonts/martian-mono-var.woff2'];
 
 // Cache-first categories. Hashed build output (/_expo/, /assets/) is
 // pure cache-first — the URL changes on every deploy, so a background
@@ -46,8 +53,14 @@ const CACHE = `arqavellum-${CACHE_VERSION}`;
 const HASHED_PREFIXES = ['/_expo/', '/assets/'];
 const SWR_PREFIXES = ['/fonts/', '/icons/'];
 
-self.addEventListener('install', () => {
-  self.skipWaiting();
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE);
+      await cache.addAll(PRECACHE_URLS);
+      await self.skipWaiting();
+    })(),
+  );
 });
 
 self.addEventListener('activate', (event) => {

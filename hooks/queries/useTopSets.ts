@@ -12,6 +12,7 @@
 
 import { useMemo } from 'react';
 import { useSessionHistory } from './useWorkouts';
+import { logger } from '../../utils/logger';
 
 export interface TopSetFact {
   /** Best loaded weight in that session (ties → the later set). */
@@ -67,8 +68,23 @@ export function deriveTopSets(
  * a lifetime max (that's `usePersonalBests`). Derives over the FULL
  * shared history: a lift last done 30 sessions ago still prefills.
  */
+/** The computed-at-read budget (ms) — derivation stays measured, not
+ * cached: a breach logs a warning and earns an indexing conversation,
+ * never a precomputed table (invariant 5). */
+const TOP_SETS_BUDGET_MS = 150;
+
 export function useTopSetsByName() {
   const historyQuery = useSessionHistory();
-  const map = useMemo(() => deriveTopSets(historyQuery.data ?? []), [historyQuery.data]);
+  const map = useMemo(() => {
+    const t0 = performance.now();
+    const derived = deriveTopSets(historyQuery.data ?? []);
+    const ms = performance.now() - t0;
+    if (ms > TOP_SETS_BUDGET_MS) {
+      logger.warn('queries', `deriveTopSets over budget: ${Math.round(ms)}ms > ${TOP_SETS_BUDGET_MS}ms (${historyQuery.data?.length ?? 0} sessions)`);
+    } else {
+      logger.debug('queries', `deriveTopSets ${Math.round(ms)}ms (${historyQuery.data?.length ?? 0} sessions)`);
+    }
+    return derived;
+  }, [historyQuery.data]);
   return { map, isLoading: historyQuery.isLoading };
 }
