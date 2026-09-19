@@ -1,34 +1,28 @@
 // app/analytics.tsx
-// THE BOARD's form table (docs/architecture/board-thesis.md
-// §7): "You trained 24 of 30." The nameplate,
-// the MobileSurface panel, the section eyebrows, and the MobileHeader
-// chrome die — the COUNT is the statement (the page's one sentence,
-// restating with the range pick), the grid sits open on the field
-// (ink density is the data-viz; today outlined in the record red),
-// and the weekly bars read as one quiet line each: date · count,
-// with real bar weight. Daily aggregates + weekly bucketing computed
-// at read.
+// THE LEDGER (docs/architecture/scoreboard-thesis.md §8): "How
+// regular?" The COUNT is the statement (the page's one sentence,
+// restating with the range pick). THE REGISTER GRID renders the
+// calendar as TYPE: one mono character per day — the session count
+// (1, 2, 3…), '·' for days off, TODAY in red — seven columns,
+// tabular by construction; density reads as ink weight. The weeks
+// read as register lines: date · leader · the session figure, the
+// record week red. The muscle-share bars and the stacked balance
+// chart are DELETED — they answered a different question ("where
+// did work land"), and that answer lives on each lift's spec sheet.
+// Daily aggregates + weekly bucketing computed at read.
 
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import {
-  MobileAtmosphere,
-  SegmentedControl,
-} from '../components/MobilePremium';
+import { SegmentedControl } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { BoardShell, BoardHead, QueryErrorNote, TrainingConsistencyGrid } from '../components/composed';
+import { BoardShell, BoardHead, QueryErrorNote, RegisterLine } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
-import { useAnalyticsHistory, useRecentSessionDetails, useWeightUnit } from '../hooks';
-import { toDisplayWeight } from '../utils';
-import {
-  AnalyticsService,
-  deriveMuscleShare,
-  deriveWeeklyGroupVolume,
-  MUSCLE_GROUPS,
-} from '../services';
+import { useAnalyticsHistory } from '../hooks';
+import { AnalyticsService } from '../services';
 import { addDays } from '../utils';
-import { BLOCK_GAP, GAUGE, theme, PAGE_GUTTER } from '../constants';
+import { BLOCK_GAP, SCOREBOARD, theme, PAGE_GUTTER } from '../constants';
+import type { DayActivity } from '../shared/types';
 
 type Range = 7 | 30 | 90;
 
@@ -43,24 +37,6 @@ export default function AnalyticsScreen() {
   const { colors } = useAppTheme();
   const [range, setRange] = useState<Range>(30);
   const historyQuery = useAnalyticsHistory(range);
-  const unit = useWeightUnit();
-
-  // THE MUSCLE SHARE — volume credited to the catalog's muscles over
-  // the picked range (primaries full, secondaries half), computed at
-  // read from raw history.
-  const detailsQuery = useRecentSessionDetails(60);
-  const muscleRows = useMemo(
-    () => deriveMuscleShare(detailsQuery.data ?? [], range),
-    [detailsQuery.data, range],
-  );
-  // THE BALANCE — weekly credited volume split by muscle group
-  // (stacked ink, opacity steps; the record week carries nothing
-  // special here — this is a balance read, not a record read).
-  const groupWeeks = useMemo(
-    () => deriveWeeklyGroupVolume(detailsQuery.data ?? [], 10),
-    [detailsQuery.data],
-  );
-  const maxWeekTotal = Math.max(1, ...groupWeeks.map((w) => w.total));
 
   const weekly = useMemo(() => {
     if (!historyQuery.data) return [];
@@ -116,163 +92,138 @@ export default function AnalyticsScreen() {
       ) : (
         <>
           <View style={styles.block}>
-            {/* THE CALENDAR — trained days fill in; today outlined in
-                signal; density is the day's session count. */}
+            {/* THE REGISTER GRID — the calendar as type: one mono
+                character per day (the session count, '·' for days
+                off, TODAY in red), seven columns, density as ink
+                weight. Tabular by construction. */}
             <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
               CALENDAR · TRAINED DAYS
             </Text>
             {historyQuery.isLoading ? (
               <LoadingSpinner />
             ) : (
-              <View style={styles.gridWrap}>
-                <TrainingConsistencyGrid
-                  data={historyQuery.data ?? []}
-                  startDate={gridRange.startDate}
-                  endDate={gridRange.endDate}
-                  testID="analytics-consistency-grid"
-                />
-              </View>
+              <RegisterGrid
+                data={historyQuery.data ?? []}
+                startDate={gridRange.startDate}
+                endDate={gridRange.endDate}
+                testID="analytics-consistency-grid"
+              />
             )}
           </View>
 
-          {/* Weekly bars — one quiet line each: date · count, real
-              bar weight in ink. */}
+          {/* The weeks — register lines: date · leader · the session
+              figure; the record week's figure in red. */}
           {historyQuery.isLoading ? null : weekly.length === 0 ? (
             <Text style={[styles.emptyText, { color: colors.textMuted }]}>
               No workouts in this range yet.
             </Text>
           ) : (
             <View style={styles.block}>
-              <View style={styles.barList}>
-                {weekly.map((w) => {
-                  // The record week's bar carries the signal — the
-                  // record mark (one hue, one meaning).
-                  const isRecord = w.sessions === maxWorkouts && w.sessions > 0;
-                  return (
-                  <View
+              {weekly.map((w) => {
+                const isRecord = w.sessions === maxWorkouts && w.sessions > 0;
+                return (
+                  <RegisterLine
                     key={w.weekStart}
-                    style={styles.barRow}
+                    label={new Date(w.weekStart).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                    figure={`${w.sessions}`}
+                    muted={!isRecord}
+                    figureTone={isRecord ? 'record' : 'ink'}
                     accessibilityLabel={`Week of ${new Date(w.weekStart).toLocaleDateString()}: ${w.sessions} sessions`}
-                  >
-                    <Text style={[styles.barLabel, { color: colors.textMuted }]} numberOfLines={1}>
-                      {`${new Date(w.weekStart).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                      })} · ${w.sessions}`}
-                    </Text>
-                    <View style={styles.barTrackWrap}>
-                      {/* No track — a week's bar is a line of ink on
-                          the field, its length the count. */}
-                      <View
-                        style={[
-                          styles.barFill,
-                          {
-                            width: `${Math.max(w.sessions > 0 ? 6 : 0, (w.sessions / maxWorkouts) * 88)}%`,
-                            backgroundColor: isRecord ? colors.brand : colors.text,
-                          },
-                        ]}
-                      />
-                    </View>
-                  </View>
-                  );
-                })}
-              </View>
+                    testID={`analytics-week-${w.weekStart}`}
+                  />
+                );
+              })}
             </View>
           )}
-
-          {/* THE MUSCLE SHARE — where the work landed. Ranked
-              proportional bars; a muscle's share of credited volume. */}
-          {muscleRows.length > 0 ? (
-            <View style={styles.block}>
-              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
-                {`MUSCLES · VOLUME SHARE · ${unit}`}
-              </Text>
-              <View style={styles.muscleList} testID="analytics-muscles">
-                {muscleRows.slice(0, 8).map((row) => (
-                  <View
-                    key={row.muscle}
-                    style={styles.muscleRow}
-                    accessibilityLabel={`${row.muscle}: ${Math.round(row.share * 100)} percent of volume`}
-                  >
-                    <Text style={[styles.muscleName, { color: colors.text }]} numberOfLines={1}>
-                      {row.muscle}
-                    </Text>
-                    <View style={styles.muscleTrack}>
-                      <View
-                        style={[
-                          styles.muscleBar,
-                          {
-                            width: `${Math.max(row.share * 100, 1.5)}%`,
-                            backgroundColor: colors.text,
-                          },
-                        ]}
-                        testID={`muscle-bar-${row.muscle}`}
-                      />
-                    </View>
-                    <Text style={[styles.musclePct, { color: colors.textMuted }]}>
-                      {`${Math.round(row.share * 100)}%`}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          ) : null}
-          {/* THE BALANCE — weekly volume by muscle group, stacked. */}
-          {groupWeeks.length >= 2 ? (
-            <View style={styles.block}>
-              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
-                {`THE BALANCE · WEEKLY VOLUME · ${unit}`}
-              </Text>
-              <View style={styles.groupChart} testID="analytics-balance">
-                {groupWeeks.map((w) => (
-                  <View
-                    key={w.weekStart}
-                    style={styles.groupCol}
-                    accessibilityLabel={`Week of ${w.weekStart}: ${Math.round(toDisplayWeight(w.total, unit))} ${unit} total`}
-                  >
-                    <View style={styles.groupStackHold}>
-                      <View style={[styles.groupStack, { height: `${Math.max((w.total / maxWeekTotal) * 100, 3)}%` }]}>
-                        {MUSCLE_GROUPS.map((g, gi) =>
-                          w.byGroup[g] > 0 ? (
-                            <View
-                              key={g}
-                              style={{
-                                flex: w.byGroup[g],
-                                backgroundColor: colors.text,
-                                opacity: GROUP_OPACITY[gi],
-                                marginTop: gi === 0 ? 0 : 1,
-                              }}
-                              testID={`group-seg-${w.weekStart}-${g}`}
-                            />
-                          ) : null,
-                        )}
-                      </View>
-                    </View>
-                    <Text style={[styles.groupWeekWord, { color: colors.textMuted }]} numberOfLines={1}>
-                      {w.weekStart.split('-')[2]}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-              {/* The legend — mono words with opacity swatches. */}
-              <View style={styles.groupLegend}>
-                {MUSCLE_GROUPS.map((g, gi) => (
-                  <View key={g} style={styles.groupLegendItem}>
-                    <View style={[styles.groupSwatch, { backgroundColor: colors.text, opacity: GROUP_OPACITY[gi] }]} />
-                    <Text style={[styles.groupLegendWord, { color: colors.textMuted }]}>{g}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          ) : null}
         </>
       )}
     </BoardShell>
   );
 }
 
-/** The stack's ink steps — six groups, descending emphasis. */
-const GROUP_OPACITY = [1, 0.8, 0.62, 0.46, 0.32, 0.2];
+/** THE REGISTER GRID — the calendar as type (scoreboard-thesis §8):
+ * one mono character per day — the session count (1, 2, 3…), '·'
+ * for a day off — seven columns keyed to the range's first weekday.
+ * Density is ink weight (2+ sessions bold); TODAY carries the red
+ * (the living position). Nothing is drawn; the grid is a table. */
+function RegisterGrid({
+  data,
+  startDate,
+  endDate,
+  testID,
+}: {
+  data: readonly DayActivity[];
+  startDate: string;
+  endDate: string;
+  testID?: string;
+}) {
+  const { colors } = useAppTheme();
+  const byDate = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const d of data) m.set(d.date, d.sessions);
+    return m;
+  }, [data]);
+  const todayISO = new Date().toISOString().slice(0, 10);
+
+  const rows = useMemo(() => {
+    const out: Array<Array<{ iso: string; char: string; n: number }>> = [[]];
+    const start = new Date(`${startDate}T00:00:00`);
+    const end = new Date(`${endDate}T00:00:00`);
+    // Pad the first row to the range's first weekday (Sun=0).
+    for (let i = 0; i < start.getDay(); i++) {
+      out[0].push({ iso: `pad-${i}`, char: ' ', n: -1 });
+    }
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const iso = toISODate(d);
+      const n = byDate.get(iso) ?? 0;
+      const char = n > 0 ? String(Math.min(n, 9)) : '·';
+      const row = out[out.length - 1];
+      row.push({ iso, char, n });
+      if (row.length === 7 && iso !== toISODate(end)) out.push([]);
+    }
+    return out;
+  }, [byDate, startDate, endDate]);
+
+  return (
+    <View style={styles.gridWrap} testID={testID} accessibilityLabel="Training consistency register">
+      {rows.map((row, ri) => (
+        <View key={ri} style={styles.gridRow}>
+          {row.map((cell) =>
+            cell.n === -1 ? (
+              <View key={cell.iso} style={styles.gridCell} />
+            ) : (
+              <Text
+                key={cell.iso}
+                style={[
+                  styles.gridCell,
+                  styles.gridChar,
+                  {
+                    color:
+                      cell.iso === todayISO
+                        ? colors.brandText
+                        : cell.n > 0
+                          ? colors.text
+                          : colors.textMuted,
+                  },
+                  cell.n >= 2 ? styles.gridCharBold : null,
+                ]}
+                accessibilityLabel={
+                  cell.n > 0 ? `${cell.iso}: ${cell.n} sessions` : `${cell.iso}: no session`
+                }
+                testID={`grid-cell-${cell.iso}`}
+              >
+                {cell.char}
+              </Text>
+            ),
+          )}
+        </View>
+      ))}
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   bodyContent: {
@@ -281,113 +232,34 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   block: {
-    ...GAUGE.block,
+    ...SCOREBOARD.block,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: BLOCK_GAP },
-  // The grid breathes narrower than the column — the field is the
-  // story, not the paint.
-  gridWrap: {
-    maxWidth: 240,
-  },
-  barList: {
-    gap: 14,
-  },
-  barRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    minHeight: 20,
-  },
-  barLabel: {
-    ...theme.typography.mobileLedger,
-    minWidth: 84,
-  },
-  barTrackWrap: {
-    flex: 1,
-    alignItems: 'flex-start',
-  },
-  barFill: {
-    height: 8,
-    borderRadius: theme.shapes.tile,
-  },
   sectionWhisper: {
-    ...GAUGE.whisper,
+    ...SCOREBOARD.whisper,
     marginBottom: 8,
   },
-  // THE MUSCLE SHARE — ranked proportional bars (the honest mobile
-  // pie: length reads, labels ride, nothing rotates).
-  muscleList: {
-    gap: 10,
+  // THE REGISTER GRID — seven mono columns; density is ink weight.
+  gridWrap: {
+    alignSelf: 'flex-start',
+    minWidth: 240,
   },
-  muscleRow: {
+  gridRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    minHeight: 20,
-  },
-  muscleName: {
-    ...theme.typography.mobileItemTitle,
-    fontSize: 15,
-    width: 108,
-  },
-  muscleTrack: {
-    flex: 1,
-    alignItems: 'flex-start',
-  },
-  muscleBar: {
-    height: 8,
-    borderRadius: theme.shapes.tile,
-  },
-  musclePct: {
-    ...theme.typography.mobileLedger,
-    minWidth: 34,
-    textAlign: 'right',
-  },
-  // THE BALANCE — one column per week, stacked by group.
-  groupChart: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
     gap: 6,
-    height: 120,
+    minHeight: 30,
   },
-  groupCol: {
-    flex: 1,
-    height: '100%',
+  gridCell: {
+    width: 28,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  groupStackHold: {
-    flex: 1,
-    width: '100%',
-    justifyContent: 'flex-end',
+  gridChar: {
+    ...theme.typography.mobileEyebrow,
+    fontSize: 13,
+    letterSpacing: 0,
   },
-  groupStack: {
-    width: '100%',
-    borderRadius: 1,
-    overflow: 'hidden',
-  },
-  groupWeekWord: {
-    ...theme.typography.mobileLedger,
-    fontSize: 9,
-    marginTop: 4,
-  },
-  groupLegend: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 10,
-  },
-  groupLegendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  groupSwatch: {
-    width: 10,
-    height: 4,
-    borderRadius: 1,
-  },
-  groupLegendWord: {
-    ...theme.typography.mobileLedger,
-    fontSize: 10,
+  gridCharBold: {
+    fontWeight: '700',
   },
 });
