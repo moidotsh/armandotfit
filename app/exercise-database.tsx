@@ -26,22 +26,12 @@ import { useAppTheme, useToast } from '../context';
 import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 import { useExercises, useRecentSessionDetails } from '../hooks';
 import { useExerciseStore, useWorkoutStore } from '../stores';
-import { SYSTEM_EXERCISES, type SystemExerciseData } from '../shared/exercises';
+import { SYSTEM_EXERCISES, ZONES, type SystemExerciseData } from '../shared/exercises';
 import { BOARD, BLOCK_GAP, ROW_GAP, PAGE_GUTTER } from '../constants';
 
-/** The zones in walk order — the gym's geography, free weights first,
- * the mats last (the same world the substitution ranking walks). */
-const ZONE_ORDER: Array<{ modality: string; zone: string }> = [
-  { modality: 'barbell', zone: 'BARBELL' },
-  { modality: 'dumbbell', zone: 'DUMBBELL' },
-  { modality: 'cable', zone: 'CABLE COLUMN' },
-  { modality: 'machine', zone: 'MACHINES' },
-  { modality: 'floor', zone: 'THE FLOOR' },
-];
-
-/** Group the catalog by equipment zone (modality), in walk order. */
+/** Group the catalog by equipment zone, in walk order (shared ZONES). */
 function groupedByZone(entries: SystemExerciseData[]) {
-  return ZONE_ORDER.map(({ modality, zone }) => ({
+  return ZONES.map(({ modality, zone }) => ({
     key: zone,
     category: zone,
     data: entries.filter((e) => (e.modality ?? 'machine') === modality),
@@ -120,20 +110,10 @@ export default function ExerciseDatabaseScreen() {
           />
           <View style={styles.chips}>
             <FilterChipGroup>
-              {ZONE_ORDER.map((z) => (
+              {ZONES.map((z) => (
                 <FilterChip
                   key={z.modality}
-                  label={
-                    z.modality === 'floor'
-                      ? 'BW'
-                      : z.modality === 'dumbbell'
-                        ? 'DB'
-                        : z.modality === 'barbell'
-                          ? 'BB'
-                          : z.modality === 'cable'
-                            ? 'CB'
-                            : 'M'
-                  }
+                  label={z.chip}
                   selected={filter.modality === z.modality}
                   onPress={() =>
                     setFilter({ modality: filter.modality === z.modality ? undefined : z.modality })

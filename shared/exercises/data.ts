@@ -223,6 +223,39 @@ export interface SystemExerciseData {
 // The 43 system exercises
 // ──────────────────────────────────────────────────────────────────────
 
+
+/**
+ * The equipment union unwrapped — slugs only. The catalog admits both
+ * bare slugs and `{slug, isRequired}` entries; consumers that just
+ * need "what equipment" (display lines, zone ranking, swap reasons)
+ * read this instead of re-deriving the unwrap at every call site.
+ */
+export function equipmentSlugs(
+  exercise: Pick<SystemExerciseData, 'equipment'>,
+): EquipmentSlug[] {
+  return exercise.equipment.map((e) => (typeof e === 'string' ? e : e.slug));
+}
+
+/**
+ * THE ZONES — the gym's geography, in walk order (free weights first,
+ * the mats last). One home for the knowledge the library browses by
+ * and the substitution ranking walks; the chips derive from it.
+ */
+export const ZONES: ReadonlyArray<{
+  /** The catalog's equipment modality. */
+  modality: NonNullable<SystemExerciseData['modality']>;
+  /** The zone band's furniture-caps label. */
+  zone: string;
+  /** The filter chip's short mark. */
+  chip: string;
+}> = [
+  { modality: 'barbell', zone: 'BARBELL', chip: 'BB' },
+  { modality: 'dumbbell', zone: 'DUMBBELL', chip: 'DB' },
+  { modality: 'cable', zone: 'CABLE COLUMN', chip: 'CB' },
+  { modality: 'machine', zone: 'MACHINES', chip: 'M' },
+  { modality: 'floor', zone: 'THE FLOOR', chip: 'BW' },
+];
+
 export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // ── Chest ──────────────────────────────────────────────────────────
   {

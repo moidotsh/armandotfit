@@ -25,15 +25,11 @@ import {
   EQUIPMENT_DISPLAY_NAMES,
   EXERCISE_TYPE_DISPLAY,
   MUSCLE_DISPLAY_NAMES,
-  type EquipmentSlug,
+  equipmentSlugs,
   type MuscleSlug,
 } from '../shared/exercises';
 import { BOARD, theme, PAGE_GUTTER } from '../constants';
 import type { ExerciseKey } from '../shared/exercises';
-
-function equipmentLabel(e: EquipmentSlug | { slug: EquipmentSlug }): string {
-  return EQUIPMENT_DISPLAY_NAMES[typeof e === 'string' ? e : e.slug];
-}
 
 export default function ExerciseDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -168,7 +164,9 @@ export default function ExerciseDetailScreen() {
           {exercise.equipment.length > 0 ? (
             <View style={styles.block}>
               <Text style={[styles.equipmentLine, { color: colors.textMuted }]} numberOfLines={1}>
-                {exercise.equipment.map(equipmentLabel).join(' · ')}
+                {equipmentSlugs(exercise)
+                  .map((slug) => EQUIPMENT_DISPLAY_NAMES[slug])
+                  .join(' · ')}
               </Text>
             </View>
           ) : null}

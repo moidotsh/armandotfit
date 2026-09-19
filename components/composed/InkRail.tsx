@@ -17,6 +17,7 @@ import {
   SYSTEM_EXERCISES_BY_SLUG,
   MUSCLE_DISPLAY_NAMES,
   EQUIPMENT_DISPLAY_NAMES,
+  equipmentSlugs,
   type MuscleSlug,
   type EquipmentSlug,
   type SystemExerciseData,
@@ -54,11 +55,9 @@ function whyLine(candidate: SystemExerciseData, current: SystemExerciseData): st
   const sharedMuscles = candidate.primaryMuscles
     .filter((m) => current.primaryMuscles.includes(m))
     .map((m) => MUSCLE_DISPLAY_NAMES[m as MuscleSlug]);
-  const sharedEquipment = candidate.equipment
-    .map((e) => (typeof e === 'string' ? e : e.slug))
-    .filter((e) =>
-      current.equipment.some((ce) => (typeof ce === 'string' ? ce : ce.slug) === e),
-    )
+  const currentEquipment = new Set(equipmentSlugs(current));
+  const sharedEquipment = equipmentSlugs(candidate)
+    .filter((e) => currentEquipment.has(e))
     .map((e) => EQUIPMENT_DISPLAY_NAMES[e as EquipmentSlug]);
   return [...sharedMuscles.slice(0, 2), ...sharedEquipment.slice(0, 1)]
     .filter(Boolean)

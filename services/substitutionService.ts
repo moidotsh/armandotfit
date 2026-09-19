@@ -6,7 +6,7 @@
 // ranks above glute bridge. Floor options aren't excluded — they rank
 // honestly low for gym-context substitutions.
 
-import { SYSTEM_EXERCISES, type SystemExerciseData } from '../shared/exercises';
+import { SYSTEM_EXERCISES, equipmentSlugs, type SystemExerciseData } from '../shared/exercises';
 
 export interface RankedAlternative {
   exercise: SystemExerciseData;
@@ -63,10 +63,8 @@ export function rankAlternatives(
       // Equipment-zone overlap: the gym is geography — an alternative
       // at the same station (shared equipment) is the one you can walk
       // to without leaving the aisle.
-      const zoneOverlap = e.equipment.filter((eq) => {
-        const slug = typeof eq === 'string' ? eq : eq.slug;
-        return current.equipment.some((ce) => (typeof ce === 'string' ? ce : ce.slug) === slug);
-      }).length;
+      const currentEquipment = new Set(equipmentSlugs(current));
+      const zoneOverlap = equipmentSlugs(e).filter((slug) => currentEquipment.has(slug)).length;
       score += Math.min(zoneOverlap, 2) * 2;
 
       // Secondary overlap: supporting cast matters less.
