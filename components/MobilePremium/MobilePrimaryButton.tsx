@@ -161,7 +161,7 @@ export function MobilePrimaryButton({
           <View style={styles.iconSlot}>{icon}</View>
         ) : null}
         <Text style={[ACTION_LABEL_STYLE, isSmall && ACTION_LABEL_STYLE_SM, { color: textColor }]}>
-          {loading ? 'Please wait\u2026' : children}
+          {loading ? 'PLEASE WAIT\u2026' : children}
         </Text>
         {!loading && showTrailingIcon ? (
           <View style={styles.iconSlot}>{icon}</View>

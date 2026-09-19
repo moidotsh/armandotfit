@@ -88,7 +88,10 @@ export function MobileActionFooter({
           styles.legacyContainer,
           {
             paddingBottom: !disableSafeArea ? Math.max(insets.bottom, 16) : 0,
-            backgroundColor: colors.backgroundDeep,
+            // THE FOOTER IS THE GROUND (the sight amendment): a panel
+            // tier the material law abolished — the hairline is the
+            // only edge; the verb sits on air.
+            backgroundColor: colors.background,
             borderTopColor: colors.mobilePremium.hairlineBorder,
           },
           style,
@@ -108,10 +111,10 @@ export function MobileActionFooter({
         {
           paddingBottom: safeBottom,
           borderTopColor: colors.mobilePremium.hairlineBorder,
-          // The footer is a plate on the field: page-toned and opaque,
-          // so scrolled content terminates at the hairline instead of
-          // visually colliding with the actions.
-          backgroundColor: colors.backgroundDeep,
+          // THE FOOTER IS THE GROUND (the sight amendment): page-toned
+          // was a panel tier the material law abolished — the hairline
+          // alone terminates scrolled content; the verb sits on air.
+          backgroundColor: colors.background,
         },
         style,
       ]}

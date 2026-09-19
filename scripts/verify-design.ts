@@ -88,7 +88,19 @@ for (const [name, token] of Object.entries(theme.typography)) {
 // Every figure rides the mono face — tabular by construction. The
 // three figure tokens assert it at gate time; long reading text
 // (mobileBody/mobileMeta/mobileFieldLabel) stays on the system sans.
-for (const name of ['mobileCounter', 'mobileFigure', 'mobileLedger']) {
+// The counter rides the mono face's CONDENSED cut (the sight
+// amendment, thesis §3.2: the regular cut at 72 truncated the armed
+// expression inside its own boxes); the working figure tokens keep
+// the regular cut.
+check(
+  theme.fonts.monoCondensed != null && theme.fonts.monoCondensed !== theme.fonts.mono,
+  'figures: the counter’s condensed cut is declared and distinct',
+);
+check(
+  theme.typography.mobileCounter.fontFamily === theme.fonts.monoCondensed,
+  'figures: the counter rides the condensed cut',
+);
+for (const name of ['mobileFigure', 'mobileLedger']) {
   check(
     theme.typography[name as keyof typeof theme.typography].fontFamily === theme.fonts.mono,
     `figures: ${name} rides the mono face`,
@@ -167,6 +179,7 @@ const CLEAN_KIT_FILES = [
   'components/MobilePremium/MobileInput.tsx',
   'components/MobilePremium/MobilePrimaryButton.tsx',
   'components/MobilePremium/MobileSheet.tsx',
+  'components/MobilePremium/SearchField.tsx',
   'components/MobilePremium/SegmentedControl.tsx',
 ];
 const FONT_SIZE_RE = /fontSize:\s*(-?\d+(?:\.\d+)?)/g;

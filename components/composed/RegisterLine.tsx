@@ -147,6 +147,11 @@ const styles = StyleSheet.create({
   figure: {
     ...theme.typography.mobileFigure,
     fontWeight: '600',
+    // THE FIGURE NEVER TRUNCATES (the sight amendment): a figure that
+    // reads `…` is a broken figure — the name (flexShrink 1) loses
+    // the tug-of-war; the figure claims its full intrinsic width.
+    flexGrow: 0,
+    flexShrink: 0,
   },
 });
 

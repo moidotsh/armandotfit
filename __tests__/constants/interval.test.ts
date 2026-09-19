@@ -33,7 +33,9 @@ describe('the air law carries over (taste-independent)', () => {
 describe('the rank carriers (interval-thesis §3.2)', () => {
   it('carries THE LIVE FIGURE at the counter rank', () => {
     expect(INTERVAL.liveFigure.fontSize).toBe(72);
-    expect(INTERVAL.liveFigure.fontFamily).toBe('Martian Mono');
+    // The counter's condensed cut of the mono face (the sight
+    // amendment) — the rank keeps its size, the face gives back width.
+    expect(INTERVAL.liveFigure.fontFamily).toBe('Martian Mono Condensed');
     expect(INTERVAL.liveFigure.fontWeight).toBe('700');
     expect(INTERVAL.liveFigure.letterSpacing).toBe(-1.5);
     expect(INTERVAL.liveFigure.fontVariant).toEqual(['tabular-nums']);
@@ -42,8 +44,10 @@ describe('the rank carriers (interval-thesis §3.2)', () => {
   it('carries the demoted figure at the statement rank, mono, tabular', () => {
     // The figure that yields the counter while the rest clock runs:
     // 36 mono — the armed expression demotes by REPAINT, never moves.
+    // Same family as the counter (the condensed cut), so the exchange
+    // stays a pure repaint — same glyphs, new rank.
     expect(INTERVAL.demotedFigure.fontSize).toBe(36);
-    expect(INTERVAL.demotedFigure.fontFamily).toBe('Martian Mono');
+    expect(INTERVAL.demotedFigure.fontFamily).toBe('Martian Mono Condensed');
     expect(INTERVAL.demotedFigure.fontVariant).toEqual(['tabular-nums']);
   });
 });

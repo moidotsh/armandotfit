@@ -77,6 +77,16 @@ export interface TypeFaces {
   displayCondensed?: string;
   /** Mono face — ledger figures: prices, stock, dates, metrics, eyebrows. */
   mono?: string;
+  /**
+   * Condensed cut of the SAME mono variable file — the counter rank's
+   * width instance (see `mono`): one download, two families, RN code
+   * never touches fontStretch. THE SIGHT AMENDMENT (interval-thesis
+   * §3.2, revision 2027-02): Martian's regular cut at 72 overruns the
+   * column and truncated the armed expression; the counter rank alone
+   * rides the condensed cut. Figures stay tabular — a monospace's
+   * advance is uniform at any width.
+   */
+  monoCondensed?: string;
 }
 
 const FONTS = {
@@ -92,6 +102,7 @@ const FONTS = {
   display: 'Space Grotesk',
   displayCondensed: 'Space Grotesk',
   mono: 'Martian Mono',
+  monoCondensed: 'Martian Mono Condensed',
 } as TypeFaces;
 
 // ── Design dialect ──────────────────────────────────────────────────────
@@ -675,14 +686,19 @@ export const theme = {
     // THE INTERVAL the counter rank is STATE-DEPENDENT on the Floor
     // (interval-thesis §7): while rest runs the rest clock owns it
     // and the armed expression demotes to the statement rank —
-    // values swap, nothing moves.
+    // values swap, nothing moves. THE SIGHT AMENDMENT (§3.2): the
+    // counter rides the mono face's CONDENSED cut — the regular cut
+    // at 72 truncated the expression inside its own boxes; the rank
+    // keeps its size, the face gives back its width. Demotions
+    // inherit the same family, so the re-weight stays a pure repaint
+    // (same glyphs, new rank).
     mobileCounter: {
       fontSize: 72,
       fontWeight: '700',
       lineHeight: 78,
       letterSpacing: -1.5,
       fontVariant: ['tabular-nums'],
-      fontFamily: FONTS.mono,
+      fontFamily: FONTS.monoCondensed,
     } satisfies TypographyToken,
     mobileLedger: {
       fontSize: 12,

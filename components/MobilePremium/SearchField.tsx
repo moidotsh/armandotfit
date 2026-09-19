@@ -123,15 +123,18 @@ const styles = StyleSheet.create({
     minHeight: 44,
     borderRadius: theme.shapes.tag,
   },
-  // FilterChip's geometry: 36 tall, marking-chip radius, 13px type.
+  // FilterChip's geometry family, the input type at the ramp's row
+  // rank (the incumbent's 13px literal was the drift class the gate
+  // bans — the sight amendment re-ranked it; inputs read 18 like
+  // every other field).
   input: {
     flex: 1,
     minHeight: 44,
     borderRadius: theme.shapes.tag,
     borderWidth: 1,
     paddingHorizontal: 34,
-    fontSize: 13,
-    lineHeight: 16,
+    fontSize: theme.typography.mobileTitle.fontSize,
+    lineHeight: theme.typography.mobileTitle.lineHeight,
     paddingBottom: 8,
     paddingTop: 8,
     // Suppress WebKit's UA focus ring — the kit's animated ring + the

@@ -79,7 +79,11 @@ describe('theme', () => {
     expect(theme.typography.mobileHero.fontSize).toBe(36);
     expect(theme.typography.mobileAction.fontWeight).toBe('700');
     expect(theme.typography.mobileCounter.fontSize).toBe(72);
-    expect(theme.typography.mobileCounter.fontFamily).toBe(theme.fonts.mono);
+    // The counter rides the mono face's CONDENSED cut (the sight
+    // amendment): the regular cut at 72 truncated the expression
+    // inside its own boxes.
+    expect(theme.typography.mobileCounter.fontFamily).toBe(theme.fonts.monoCondensed);
+    expect(theme.fonts.monoCondensed).not.toBe(theme.fonts.mono);
     expect(theme.typography.mobileCounter.fontVariant).toEqual(['tabular-nums']);
     expect(theme.typography.mobileFigure.fontSize).toBe(18);
     expect(theme.typography.mobileFigure.fontVariant).toEqual(['tabular-nums']);

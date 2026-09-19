@@ -202,8 +202,10 @@ const styles = StyleSheet.create({
     ...MOBILE_CONTENT_WIDTH_STYLE,
   },
   sheetBottom: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    // The sheet obeys the theme's shape law (radius 0 under the square
+    // cut) — no hardcoded corner breaks.
+    borderTopLeftRadius: theme.shapes.sheet,
+    borderTopRightRadius: theme.shapes.sheet,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     maxHeight: '85%',

@@ -119,7 +119,9 @@ function RootShell() {
       'global-focus-css',
       [
         "button:focus,[role='button']:focus,[role='link']:focus,a:focus,select:focus{outline-width:0;box-shadow:0 0 0 2px currentColor}",
-        'input:focus,textarea:focus{outline-width:0}',
+        // `outline: none`, not outline-width — WebKit's UA ring is
+        // outline-style: auto and ignores a width kill.
+        'input:focus,textarea:focus,select:focus{outline:none}',
       ].join(''),
     );
 
@@ -127,8 +129,9 @@ function RootShell() {
     // @font-face block (static export strips <head> styles; the
     // build-time injector covers exported routes, this covers dev and
     // anything the strip still misses). Space Grotesk (words) +
-    // Martian Mono (every figure); no condensed second family — see
-    // interval-thesis §3.1. Mirror trio: index.html,
+    // Martian Mono (every figure), plus the mono face's CONDENSED cut
+    // — the counter rank's width instance (interval-thesis §3.2, the
+    // sight amendment). Mirror trio: index.html,
     // scripts/inject-critical-web.ts, this block.
     const ensureFontLinks = () => {
       const fontFiles = [
@@ -152,6 +155,7 @@ function RootShell() {
       [
         "@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:300 700;font-display:swap;src:url('/fonts/space-grotesk-var.woff2') format('woff2')}",
         "@font-face{font-family:'Martian Mono';font-style:normal;font-weight:100 800;font-stretch:75% 112.5%;font-display:swap;src:url('/fonts/martian-mono-var.woff2') format('woff2')}",
+        "@font-face{font-family:'Martian Mono Condensed';font-style:normal;font-weight:100 800;font-stretch:75%;font-display:swap;src:url('/fonts/martian-mono-var.woff2') format('woff2')}",
       ].join(''),
     );
 
