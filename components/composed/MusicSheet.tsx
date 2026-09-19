@@ -60,6 +60,17 @@ export function MusicSheet() {
   const setVolume = useMusicStore((s) => s.setVolume);
   const playbackNotice = useMusicStore((s) => s.playbackNotice);
 
+  // While something plays, the MINI PLAYER is the sheet's resting
+  // state: opening the music sheet lands on it (one tap — SEARCH ·
+  // RECENTS — opens the library). Nothing playing opens the library.
+  const sheetOpenPrev = useRef(false);
+  useEffect(() => {
+    if (sheetOpen && !sheetOpenPrev.current && (current || playlistId)) {
+      setMinimized(true);
+    }
+    sheetOpenPrev.current = sheetOpen;
+  }, [sheetOpen, current, playlistId]);
+
   // Playback errors surface as chit toasts (the sheet may be closed —
   // the notice announces wherever the owner is).
   const noticedIdRef = useRef(0);
@@ -173,13 +184,42 @@ export function MusicSheet() {
         />
       ) : (
         <>
+      {/* NOW PLAYING — the way back to the mini player (the library is
+          one tap in; the player is one tap back). */}
+      {nowTitle ? (
+        <Pressable
+          onPress={() => setMinimized(true)}
+          accessibilityRole="button"
+          accessibilityLabel={`Back to player — ${nowTitle}`}
+          style={({ pressed }) => [styles.nowPlayingRow, pressed ? { opacity: 0.6 } : null]}
+          testID="music-to-mini"
+        >
+          <View
+            style={[
+              styles.miniPip,
+              { backgroundColor: playing ? colors.brand : colors.textMuted },
+            ]}
+            accessibilityElementsHidden
+          />
+          <Text style={[styles.nowPlayingWord, { color: colors.text }]} numberOfLines={1}>
+            NOW PLAYING · {nowTitle}
+          </Text>
+        </Pressable>
+      ) : null}
+
       {/* THE INPUT — one field, both paths: a YouTube link (video or
           playlist) plays immediately; anything else searches (keyed). */}
       <View style={styles.searchBlock}>
         <MobileInput
           label=""
           value={query}
-          onChangeText={setQuery}
+          onChangeText={(next: string) => {
+            setQuery(next);
+            if (next.trim().length === 0) {
+              setResults(null);
+              setSearchFailed(false);
+            }
+          }}
           placeholder={
             YOUTUBE_SEARCH_ENABLED
               ? 'Song, artist, or YouTube link…'
@@ -493,6 +533,17 @@ const styles = StyleSheet.create({
   },
   searchBlock: {
     marginTop: 4,
+  },
+  nowPlayingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+    marginBottom: 4,
+  },
+  nowPlayingWord: {
+    ...theme.typography.mobileEyebrow,
+    flexShrink: 1,
   },
   sectionWhisper: {
     ...GAUGE.whisper,
