@@ -315,7 +315,9 @@ export default function SettingsScreen() {
                     { color: isRest ? colors.background : colors.text },
                   ]}
                 >
-                  {d.label.slice(0, 2)}
+                  {/* Furniture prints caps — the same grammar as the
+                      picker's day rail (Su → SU). */}
+                  {d.label.slice(0, 2).toUpperCase()}
                 </Text>
               </Pressable>
             );
@@ -367,7 +369,7 @@ export default function SettingsScreen() {
           {`signed in as ${session?.email ?? '—'}`}
         </Text>
         <MobileActionFooter>
-          <MobilePrimaryButton onPress={() => void signOut()}>Sign Out</MobilePrimaryButton>
+          <MobilePrimaryButton onPress={() => void signOut()}>SIGN OUT</MobilePrimaryButton>
         </MobileActionFooter>
       </View>
     </BoardShell>
