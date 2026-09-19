@@ -510,6 +510,17 @@ this consumer's design thesis.
 Every figure token carries `fontVariant: ['tabular-nums']` by
 construction — a call site cannot forget it.
 
+**The counter's condensed cut (the sight amendment, 2027-02).**
+Martian Mono's regular cut at 72 is wider than the 350px mobile
+column — the counter rank's tokens (`mobileCounter` and its
+demotions through `Figure`/`StatCard`) ride `TypeFaces.monoCondensed`
+(`'Martian Mono Condensed'`): a SECOND `@font-face` over the SAME
+variable woff2 pinning `font-stretch: 75%` — one download, two cuts.
+Tabular figures hold (a monospace's advance stays uniform at any
+width); the harmonic ramp is untouched; the row/statement/ledger
+ranks stay on the regular cut (`fonts.mono`). Gated by
+`scripts/verify-design.ts`.
+
 Self-hosting recipe (web): font files in `public/fonts/` (woff2 first),
 the `@font-face` block in an id'd `<style>` in `index.html`, restored
 at runtime from `app/_layout.tsx` (static export strips `<head>`

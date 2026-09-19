@@ -82,6 +82,35 @@
 > buttons — kept; the 404's severity-without-red WORKS — kept; the
 > kit retune edges hold except the verb voice (delta 6); the boot
 > plate is confident at 18 — kept.
+>
+> **LANDING CORRECTIONS (the deltas re-seen on their own captures):**
+>
+> - **Delta 7 is withdrawn — the footer was already the ground.**
+>   Pixel-sampling the captures falsified the reading: page and
+>   footer sample identical under the atmosphere wash in both
+>   generations; the "slab" was the vignette. The token this pass
+>   briefly repainted is reverted (`backgroundDeep`, the shell's own
+>   ground); the hairline remains the footer's only edge. Lesson
+>   kept in the probe: the footer's ground assertion compares
+>   against the page scroller's painted ancestor, and the search
+>   probe asserts `outline-style`, not `outline-width` — WebKit's
+>   UA ring draws from `auto` at any width.
+> - **The fact line may wrap, never ellipsize** (extends delta 1 to
+>   the ledger rank): a fact that truncates lies about the day.
+>   BoardHead's fact carries two lines; truncation is banned.
+> - **The register IS the count** (delta 11 addition): the picker's
+>   fact drops its lift count — the plan register directly below is
+>   the count — which also returned GO above the SE fold (the 490px
+>   law paid by deletion, not by squeeze).
+> - **The delete verb joins the caps voice** (delta 6 completion):
+>   the receipt's DELETE SESSION / TAP AGAIN TO DELETE.
+>
+> All deltas landed and re-walked: light and dark, 16 optical probes
+> each (all green), SE height budget green. The amendment's
+> assertions run in `.shots/fit-walk.ts` — board ink, red ration,
+> figure truncation, sheet square cut, counter face + re-weight
+> (there and back), receipt fact line, footer ground, search focus
+> style.
 
 > The tenth upending (2027-02). The compass: the point of view, the
 > pillars, the type law with its rank arithmetic, the color law with
@@ -544,10 +573,13 @@ balance line (computed → rendered); the receipt head (36 → 72).
     counter tokens ride `fonts.monoCondensed` and its advance is
     measurably narrower than `fonts.mono` at 72; exactly one
     full-ink row on the session board; red text nodes ≤3 per screen;
-    action-footer background = the ground; sheet panel radii = 0;
-    search input `outline-width: 0` while focused; verb labels print
-    caps; the rest dock stacks ≤5 bands and the SE rest-state
-    height probe stays green.
+    action-footer background = the page scroller's painted ground;
+    sheet panel radii = 0; the focused search input's
+    `outline-style` is not `auto` (WebKit's UA ring ignores width
+    kills); verb labels print caps; the receipt's fact line joins no
+    empty segment; the re-weight runs BOTH directions (clock owns at
+    LOG, expression re-owns at settle); the SE height budget stays
+    green with the rest dock in its rest state.
 
 ## 0. Not design territory (restated)
 
