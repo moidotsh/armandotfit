@@ -1,5 +1,88 @@
 # THE INTERVAL — the live figure owns the counter
 
+> **REVISION 2027-02 — THE SIGHT AMENDMENT (the eleventh pass; an
+> amendment, not a succession).** The first pass written with eyes.
+> The verdict after looking at every screen in both modes and at SE:
+> the spine survives sight — the live figure owns the counter, ink
+> is state, one red ink, the leaderless ruled row, the harmonic
+> ramp, the square cut, the still system all re-derive correctly
+> from the three facts. What failed was narrower and fixable in
+> place, so this is an amendment with named deltas, each asserted:
+>
+> 1. **THE FIGURE NEVER TRUNCATES.** Seen: `97.5 × …` on the bests,
+>    `1…` inside the armed expression, `7 se…` on the receipt's fact
+>    line. A figure that reads `…` is a broken figure. Names
+>    truncate; figures never do. (RegisterLine's figure claims its
+>    width; the logger's fixed boxes re-fit to the counter's true
+>    advance; fact lines carry length discipline.) Probe: zero `…`
+>    inside any figure node, both modes, all walked screens.
+> 2. **THE COUNTER GETS ITS WIDTH BACK.** The truncation's root:
+>    Martian Mono's regular cut at 72 is wider than the 350px
+>    column — the rank is right, the face's width at that rank is
+>    wrong. One more @font-face over the SAME variable file pins the
+>    width axis at the condensed cut (`fonts.monoCondensed`); ONLY
+>    the counter-rank tokens ride it. The ramp is untouched; tabular
+>    holds (a monospace's advance stays uniform at any width); the
+>    "no condensed second family" law still refers to the display
+>    face and still holds — this is a width instance of the mono
+>    face, not a second family. Probe: the counter's face is
+>    `monoCondensed`; its advance measurably narrower; the full
+>    expression fits 390.
+> 3. **INK IS STATE ON THE BOARD.** Seen: the Floor's board rows all
+>    read full ink — the current row's 700-vs-600 whisper is
+>    invisible at arm's length. The thesis's own pillar, applied
+>    where it was skipped: non-current rows read muted; the current
+>    row is the only full-ink row. Probe: exactly one ink row.
+> 4. **THE REST DOCK LEANS OUT.** Seen: six stacked bands; two
+>    stepper pairs whose ownership blurs. The REST word dies (a
+>    whisper labeling the loudest red mark on the page is furniture
+>    explaining furniture); the kicker becomes the dock's constant
+>    folio ABOVE the exchanged figure in both states. 490px
+>    re-proven at SE, rest state included.
+> 5. **RED IS RATIONED — at most three red marks per screen.** Seen:
+>    progression wearing ten red marks; red stopped marking and
+>    started wallpapering. The bests and the PR timeline read ink
+>    (registers, not the record); red stays on the streak, the
+>    number-to-beat, the record week, today, and the live pulse.
+>    Probe: red text nodes ≤3 per screen.
+> 6. **THE VERB IS PRINTED, ONCE.** Seen: LOG SET / START / GO caps
+>    beside "Save session · 1 set" / "Sign Out" sentence case — the
+>    heaviest ink speaking two voices. Verbs are furniture with a
+>    function; every verb label prints caps.
+> 7. **THE SLAB DIES.** Seen: GO and Sign Out inside a cardAlt plate
+>    — a panel the material law abolished. The action footer reads
+>    the ground and keeps its hairline; the verb sits on air.
+> 8. **THE SQUARE CUT COMPLETES.** Seen: 20px top radii on bottom
+>    sheets — the app's one rounded corner, on portal machinery —
+>    and a drag handle for a drag that does not exist. Radii 0,
+>    handle retired at this app's call sites.
+> 9. **THE BLUE RING DIES.** Seen: the directory's search field
+>    growing WebKit's system focus ring — a color that exists
+>    nowhere in the vocabulary. `outline: 0` on the search input
+>    (the fix MobileInput already carries); the kit ring stays the
+>    cue.
+> 10. **THE FRONT SORTS ITS THREE VOICES.** Seen: plan rows, jump
+>     rows, and the recents' lead line all reading 18 ink — the
+>     answer and the navigation tie. Jump labels demote (400,
+>     secondary); the recents' lead line demotes to the whisper; the
+>     plan register keeps the ink under its 2px rule. Deleted: the
+>     Floor's empty-ledger helper sentence (the logger's own SET 01
+>     kicker already says it).
+> 11. **MENDS:** the receipt's fact line filters empty segments (the
+>     `· ·`); the swap bench's eyebrow fits three words; "+ add
+>     exercise" prints caps as furniture; settings' rest-day marks
+>     print caps to match the picker rail; the spec sheet's
+>     trajectory line never breaks mid-figure.
+>
+> Unconfirmed-list verdicts, now confirmed by sight: the rest clock
+> lands as an ANSWER (the jolt was the furniture — delta 4); the
+> armed ladder's idea reads but its demoted grey mass looked broken
+> until delta 2; the leaderless ruled rows HOLD (air is enough
+> leader); the flanking ±15 steppers are reachable and read as
+> buttons — kept; the 404's severity-without-red WORKS — kept; the
+> kit retune edges hold except the verb voice (delta 6); the boot
+> plate is confident at 18 — kept.
+
 > The tenth upending (2027-02). The compass: the point of view, the
 > pillars, the type law with its rank arithmetic, the color law with
 > its computed contrast matrix, the material law, the still-motion
@@ -455,6 +538,16 @@ balance line (computed → rendered); the receipt head (36 → 72).
 10. **Red discipline:** with no record, no link state, and no live
     state on screen, zero pixels of red (cluster probe) — home's
     head and the 404 now pass it; the verb never red.
+11. **THE SIGHT AMENDMENT's assertions (revision 2027-02):** no
+    figure node reads `…` (scrollWidth ≤ clientWidth on every
+    figure/figureTestID node, both modes, all walked screens); the
+    counter tokens ride `fonts.monoCondensed` and its advance is
+    measurably narrower than `fonts.mono` at 72; exactly one
+    full-ink row on the session board; red text nodes ≤3 per screen;
+    action-footer background = the ground; sheet panel radii = 0;
+    search input `outline-width: 0` while focused; verb labels print
+    caps; the rest dock stacks ≤5 bands and the SE rest-state
+    height probe stays green.
 
 ## 0. Not design territory (restated)
 
