@@ -1,13 +1,16 @@
 // app/exercise-detail.tsx
-// THE BOARD's entry (docs/architecture/board-thesis.md §7): "What
-// this lift is." The NAME is the statement; the number to beat
-// renders AS A PLATE STACK — LAST in furniture caps, the row-scale
-// stack of your most recent top load, the figure line (weight ×
-// reps · sets · date) in Martian — you see the iron you're walking in
-// to beat, not just read it. Instructions read as one body block;
-// the muscle measure draws as bare INK lines (color is load's —
-// muscles never borrow the ramp); equipment whispers once. When a
-// draft session is active, ADD TO SESSION is the page's one verb.
+// THE SPEC SHEET (docs/architecture/scoreboard-thesis.md §8): "What
+// this lift is?" The NAME is the statement; the number to beat
+// reads as a REGISTER LINE under a red-ink whisper (THE NUMBER TO
+// BEAT — your last top set for this lift, weight × reps in mono,
+// its date beside). The trajectory and the weekly work read as
+// register lines too — aligned tabular lines beat drawn charts for
+// exact lookup (the drawn line and the tonnage bars die with THE
+// GAUGE); the record week's figure carries the red. Instructions
+// read as one body block; the muscle measure reads as two text
+// lines (prime movers / assistants — names carry it, bars are
+// drawing); equipment whispers once. When a draft session is
+// active, ADD TO SESSION is the page's one verb.
 
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -16,7 +19,7 @@ import {
   MobilePrimaryButton,
   MobileActionFooter,
 } from '../components/MobilePremium';
-import { BoardShell, PinRail, TrajectoryChart } from '../components/composed';
+import { BoardShell, RegisterLine } from '../components/composed';
 import { FilterChip, FilterChipGroup } from '../components/MobilePremium';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
@@ -30,7 +33,7 @@ import {
   equipmentSlugs,
   type MuscleSlug,
 } from '../shared/exercises';
-import { GAUGE, theme, PAGE_GUTTER } from '../constants';
+import { SCOREBOARD, theme, PAGE_GUTTER } from '../constants';
 import { toDisplayWeight, roundDisplayWeight } from '../utils';
 import type { ExerciseKey } from '../shared/exercises';
 
@@ -111,17 +114,22 @@ export default function ExerciseDetailScreen() {
             </Text>
           </View>
 
-          {/* THE NUMBER TO BEAT — drawn. LAST in furniture caps, the
-              stack, then the figure line. */}
+          {/* THE NUMBER TO BEAT — the last top set as a register line
+              under the red whisper; the date rides the fact line. */}
           <View style={styles.lastBlock}>
             {lastTime ? (
               <>
                 <Text style={[styles.lastLabel, { color: colors.brandText }]}>
                   THE NUMBER TO BEAT
                 </Text>
-                <PinRail kg={lastTime.weight} scale="counter" unit={unit} testID="entry-last-rail" />
-                <Text style={[styles.lastLine, { color: colors.text }]} numberOfLines={1}>
-                  {`${lastTime.weight} × ${lastTime.reps} · ${lastTime.sets} set${lastTime.sets === 1 ? '' : 's'} · ${lastTime.when}`}
+                <RegisterLine
+                  label={`${lastTime.weight} × ${lastTime.reps}`}
+                  figure={lastTime.when}
+                  figureTone="muted"
+                  testID="entry-last-line"
+                />
+                <Text style={[styles.typeLine, { color: colors.textMuted }]} numberOfLines={1}>
+                  {`${lastTime.sets} set${lastTime.sets === 1 ? '' : 's'} last time · ${typeLabel}`}
                 </Text>
               </>
             ) : (
@@ -131,7 +139,9 @@ export default function ExerciseDetailScreen() {
             )}
           </View>
 
-          {/* THE TRAJECTORY — progress over time, split by variant. */}
+          {/* THE TRAJECTORY — the top set per session as register
+              lines (newest first); variants merge by default and the
+              owner excludes/re-includes at will. */}
           {trajectory && trajectory.points.length >= 2 ? (
             <View style={styles.block}>
               <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
@@ -160,51 +170,53 @@ export default function ExerciseDetailScreen() {
                 </View>
               ) : null}
               {visiblePoints.length >= 2 ? (
-                <TrajectoryChart points={visiblePoints} unit={unit} testID="entry-trajectory" />
+                <View testID="entry-trajectory">
+                  {[...visiblePoints].reverse().map((p) => {
+                    const d = new Date(p.at).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                    });
+                    const w = roundDisplayWeight(toDisplayWeight(p.weight, unit));
+                    return (
+                      <RegisterLine
+                        key={p.at}
+                        label={d}
+                        figure={`${w} × ${p.reps}`}
+                        testID={`entry-trajectory-line-${p.at}`}
+                      />
+                    );
+                  })}
+                </View>
               ) : (
                 <Text style={[styles.trajectoryEmpty, { color: colors.textMuted }]}>
-                  Every variant is excluded — re-enable one to read the line.
+                  Every variant is excluded — re-enable one to read the record.
                 </Text>
               )}
             </View>
           ) : null}
 
-          {/* THE WORK — this lift's tonnage by week (same variant
-              filter as the trajectory): the line reads strength, the
-              bars read work. */}
+          {/* THE WORK — this lift's tonnage by week as register lines
+              (same variant filter as the trajectory); the record
+              week's figure carries the red. */}
           {weeklyVolume.length >= 2 ? (
             <View style={styles.block}>
               <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
                 {`THE WORK · WEEKLY · ${unit}`}
               </Text>
-              <View style={styles.volumeList} testID="entry-volume">
+              <View testID="entry-volume">
                 {weeklyVolume.map((w) => {
                   const maxV = Math.max(...weeklyVolume.map((x) => x.volume));
                   const isRecord = w.volume === maxV && w.volume > 0;
                   return (
-                    <View
+                    <RegisterLine
                       key={w.weekStart}
-                      style={styles.volumeRow}
+                      label={w.weekStart}
+                      muted={!isRecord}
+                      figureTone={isRecord ? 'record' : 'ink'}
+                      figure={String(Math.round(toDisplayWeight(w.volume, unit)))}
                       accessibilityLabel={`Week of ${w.weekStart}: ${Math.round(toDisplayWeight(w.volume, unit))} ${unit}`}
-                    >
-                      <Text style={[styles.volumeLabel, { color: colors.textMuted }]} numberOfLines={1}>
-                        {w.weekStart}
-                      </Text>
-                      <View style={styles.volumeTrack}>
-                        <View
-                          style={[
-                            styles.volumeBar,
-                            {
-                              width: `${Math.max((w.volume / maxV) * 92, 2)}%`,
-                              backgroundColor: isRecord ? colors.brand : colors.text,
-                            },
-                          ]}
-                        />
-                      </View>
-                      <Text style={[styles.volumeFigure, { color: colors.text }]}>
-                        {String(Math.round(toDisplayWeight(w.volume, unit)))}
-                      </Text>
-                    </View>
+                      testID={`entry-volume-line-${w.weekStart}`}
+                    />
                   );
                 })}
               </View>
@@ -223,47 +235,29 @@ export default function ExerciseDetailScreen() {
             ) : null}
           </View>
 
-          {/* The measure — what the lift trains, as bare INK lines:
-              a prime mover fills, an assistant fills 40%. Muscles
-              never borrow the plate ramp — color is load's. */}
+          {/* The measure — what the lift trains, as two text lines:
+              the prime movers and the assistants. Names carry it; bars
+              are drawing (the ink bars die with THE GAUGE). */}
           {exercise.primaryMuscles.length + exercise.secondaryMuscles.length > 0 ? (
             <View style={styles.block}>
-              <View>
-                {exercise.primaryMuscles.map((m) => (
-                  <View
-                    key={m}
-                    style={styles.targetRow}
-                    accessibilityLabel={`Primary muscle ${MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}`}
-                  >
-                    <Text style={[styles.targetName, { color: colors.text }]}>
-                      {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
-                    </Text>
-                    <View style={styles.targetTrack}>
-                      <View style={[styles.targetBar, { backgroundColor: colors.text }]} />
-                    </View>
-                  </View>
-                ))}
-                {exercise.secondaryMuscles.map((m) => (
-                  <View
-                    key={m}
-                    style={styles.targetRow}
-                    accessibilityLabel={`Secondary muscle ${MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}`}
-                  >
-                    <Text style={[styles.targetName, { color: colors.textMuted }]}>
-                      {MUSCLE_DISPLAY_NAMES[m as MuscleSlug]}
-                    </Text>
-                    <View style={styles.targetTrack}>
-                      <View
-                        style={[
-                          styles.targetBar,
-                          styles.targetBarSecondary,
-                          { backgroundColor: colors.textMuted },
-                        ]}
-                      />
-                    </View>
-                  </View>
-                ))}
+              <View style={styles.measureRow}>
+                <Text style={[styles.measureRole, { color: colors.textMuted }]}>PRIME</Text>
+                <Text style={[styles.measureNames, { color: colors.text }]} numberOfLines={2}>
+                  {exercise.primaryMuscles
+                    .map((m) => MUSCLE_DISPLAY_NAMES[m as MuscleSlug])
+                    .join(', ')}
+                </Text>
               </View>
+              {exercise.secondaryMuscles.length > 0 ? (
+                <View style={styles.measureRow}>
+                  <Text style={[styles.measureRole, { color: colors.textMuted }]}>ASSIST</Text>
+                  <Text style={[styles.measureNames, { color: colors.textMuted }]} numberOfLines={2}>
+                    {exercise.secondaryMuscles
+                      .map((m) => MUSCLE_DISPLAY_NAMES[m as MuscleSlug])
+                      .join(', ')}
+                  </Text>
+                </View>
+              ) : null}
             </View>
           ) : null}
 
@@ -305,10 +299,10 @@ export default function ExerciseDetailScreen() {
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 40 },
   block: {
-    ...GAUGE.block,
+    ...SCOREBOARD.block,
   },
   headline: {
-    ...GAUGE.statement,
+    ...SCOREBOARD.statement,
   },
   // The number-to-beat block sits in the statement's halo.
   lastBlock: {
@@ -317,44 +311,35 @@ const styles = StyleSheet.create({
   },
   lastLabel: {
     ...theme.typography.mobileEyebrow,
-  },
-  lastLine: {
-    ...theme.typography.mobileFigure,
-    fontWeight: '700',
+    marginBottom: 2,
   },
   typeLine: {
-    ...GAUGE.whisperLine,
+    ...SCOREBOARD.whisperLine,
+    marginTop: 2,
   },
   bodyText: { ...theme.typography.mobileBody },
   tips: { ...theme.typography.mobileMeta, marginTop: 10 },
   missing: { ...theme.typography.mobileMeta },
-  targetRow: {
+  // The measure — role furniture + names, one line each.
+  measureRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    minHeight: 40,
+    alignItems: 'baseline',
+    gap: 10,
+    minHeight: 32,
   },
-  targetName: {
+  measureRole: {
+    ...theme.typography.mobileEyebrow,
+    width: 56,
+  },
+  measureNames: {
     ...theme.typography.mobileItemTitle,
-    width: 116,
-  },
-  targetTrack: {
     flex: 1,
-    alignItems: 'flex-start',
-  },
-  targetBar: {
-    width: '72%',
-    height: 6,
-    borderRadius: 2,
-  },
-  targetBarSecondary: {
-    width: '32%',
   },
   equipmentLine: {
     ...theme.typography.mobileLedger,
   },
   sectionWhisper: {
-    ...GAUGE.whisper,
+    ...SCOREBOARD.whisper,
     marginBottom: 8,
   },
   variantChips: {
@@ -363,34 +348,5 @@ const styles = StyleSheet.create({
   trajectoryEmpty: {
     ...theme.typography.mobileMeta,
     paddingVertical: 12,
-  },
-  // THE WORK — weekly tonnage bars (record week carries the signal).
-  volumeList: {
-    gap: 8,
-  },
-  volumeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    minHeight: 20,
-  },
-  volumeLabel: {
-    ...theme.typography.mobileLedger,
-    fontSize: 10,
-    minWidth: 56,
-  },
-  volumeTrack: {
-    flex: 1,
-    alignItems: 'flex-start',
-  },
-  volumeBar: {
-    height: 8,
-    borderRadius: theme.shapes.tile,
-  },
-  volumeFigure: {
-    ...theme.typography.mobileLedger,
-    minWidth: 40,
-    textAlign: 'right',
-    fontVariant: ['tabular-nums'],
   },
 });
