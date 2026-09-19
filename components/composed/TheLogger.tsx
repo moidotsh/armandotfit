@@ -42,19 +42,20 @@ import { PinRail } from './PinRail';
 import { RollingCounter } from './RollingCounter';
 
 /**
- * THE ODOMETER FORMAT — fixed wheels with leading zeros, the
- * mechanical counter's own convention: the weight always carries
- * three integer wheels + one decimal wheel ("062.5"), the reps two
- * ("08"). The column count NEVER changes, so a stepper tap that adds
- * a ".5" rolls the wheels instead of reflowing the instrument row.
+ * THE ODOMETER FORMAT — anchored at the DECIMAL, not the leading
+ * edge. The integer wheels render unpadded and right-aligned against
+ * a RESERVED decimal slot: whole numbers leave the slot blank (one
+ * mono space — a full wheel's width, nothing painted), a ".5" fills
+ * pre-reserved space to the right. No leading zeros, and when a
+ * decimal appears the digits you were reading DO NOT MOVE. Integer
+ * growth ("99"→"100") extends leftward into the fixed box, so the
+ * instrument row never reflows either.
  */
-function odometerWeight(value: number): string {
+function weightWheels(value: number): { int: string; dec: string | null } {
   const rounded = Math.round(Math.abs(value) * 10) / 10;
   const [int, dec] = rounded.toFixed(1).split('.');
-  return `${int.padStart(3, '0')}.${dec}`;
-}
-function odometerReps(value: number): string {
-  return String(Math.max(0, Math.round(value))).padStart(2, '0');
+  // A whole value carries no decimal paint — just the reserved slot.
+  return { int, dec: dec === '0' ? null : `.${dec}` };
 }
 
 /** The rest instrument's read-side shape (Floor owns the clock). */
@@ -179,10 +180,26 @@ function WeightSide({
           style={styles.counterTapWeight}
           testID={`${testID}-tap`}
         >
-          <RollingCounter
-            value={weight == null ? '···' : odometerWeight(weight)}
-            testID={`${testID}-roll`}
-          />
+          {/* The wheels, anchored at the decimal: unpadded integers
+              right-aligned against the reserved decimal slot — the
+              slot always spans the full two-glyph extent (".d");
+              whole numbers paint two non-breaking spaces there, so
+              the slot's width is constant and the integer wheels
+              never move when a decimal appears. */}
+          {weight != null ? (
+            <View style={styles.wheelsRow}>
+              <RollingCounter
+                value={weightWheels(weight).int}
+                testID={`${testID}-roll-int`}
+              />
+              <RollingCounter
+                value={weightWheels(weight).dec ?? '\u00A0\u00A0'}
+                testID={`${testID}-roll-dec`}
+              />
+            </View>
+          ) : (
+            <RollingCounter value="···" testID={`${testID}-roll`} />
+          )}
         </Pressable>
       )}
       <View style={styles.stepperRow}>
@@ -260,8 +277,10 @@ function RepsSide({
           style={styles.counterTapReps}
           testID={`${testID}-tap`}
         >
+          {/* Reps: unpadded, right-anchored in the fixed box — growth
+              extends leftward into reserved space. */}
           <RollingCounter
-            value={reps == null ? '··' : odometerReps(reps)}
+            value={reps == null ? '··' : String(Math.max(0, Math.round(reps)))}
             testID={`${testID}-roll`}
           />
         </Pressable>
@@ -458,36 +477,44 @@ const styles = StyleSheet.create({
   counterSide: {
     alignItems: 'center',
   },
-  // FIXED-WHEEL BOXES — 5 wheels for the weight, 2 for the reps.
-  // The widths never change, so the instrument row never reflows.
+  // FIXED-WHEEL BOXES — room for 5 wheels (weight incl. the decimal
+  // slot) and 2 (reps). The widths never change, so the instrument
+  // row never reflows; the wheels ANCHOR at the right edge (the
+  // decimal side), growing leftward into reserved space.
   counterTapWeight: {
     minHeight: 60,
-    width: 168,
+    width: 184,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     paddingBottom: 4,
   },
   counterTapReps: {
     minHeight: 60,
     width: 74,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     paddingBottom: 4,
+  },
+  wheelsRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
   // The edit-state inputs carry the SAME fixed geometry as the boxes
   // they replace — tapping a counter to type never moves anything (a
   // bare web input otherwise sizes to its intrinsic ~20ch width).
   weightInput: {
     ...theme.typography.mobileCounter,
-    width: 168,
+    width: 184,
     minHeight: 60,
-    textAlign: 'center',
+    textAlign: 'right',
+    paddingRight: 2,
   },
   repsInput: {
     ...theme.typography.mobileCounter,
     width: 74,
     minHeight: 60,
-    textAlign: 'center',
+    textAlign: 'right',
+    paddingRight: 2,
   },
   multiplier: {
     ...theme.typography.mobileFigure,
