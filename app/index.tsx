@@ -1,13 +1,15 @@
 // app/index.tsx
-// Home — THE BOARD's front (docs/architecture/board-thesis.md §7).
+// Home — THE GAUGE's front (docs/architecture/gauge-thesis.md §8).
 // Question: "what am I walking into today?" The day's title is the
-// statement (the page carries no name of its own); **THE BOARD** —
-// the day's plan framed by the 2px rule pair — shows each lift with
-// its plate stack at the prefill weight, so you SEE the session's
-// size before you start. START (or RESUME) is the one verb (ink).
-// Three jump rows keep their one fact each (the streak lives on the
-// Progress row); recent sessions close the page as Spline lines.
-// While a session runs, BoardShell pins the ticker under the folio.
+// statement (the page carries no name of its own); **THE DAY PANEL**
+// — the day's plan on one enamel panel wearing the screen's one 2px
+// instrument rule — shows each lift with its pin rail at the prefill
+// weight, so you SEE the session's load profile before you start
+// (every rail reads against the day's one ceiling — the skyline).
+// START (or RESUME) is the one verb (ink). Three jump rows keep
+// their one fact each (the streak lives on the Progress row);
+// recent sessions close the page as Martian lines. While a session
+// runs, BoardShell pins the ticker under the folio.
 
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -19,16 +21,17 @@ import {
   EditionLine,
   WorkoutListSkeleton,
   QueryErrorNote,
-  PlateStack,
+  PinRail,
 } from '../components/composed';
 import { useAppTheme } from '../context';
 import {
   theme,
   suggestNextSplitDay,
   suggestSessionWindow,
-  BOARD,
+  GAUGE,
   ROW_GAP,
   PAGE_GUTTER,
+  railMaxFor,
 } from '../constants';
 import {
   navigateToSettings,
@@ -70,12 +73,27 @@ export default function HomeScreen() {
   );
   const dayTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;
 
-  // The board rows' prefills — the last TOP set per exercise name
+  // The panel rows' prefills — the last TOP set per exercise name
   // (the shared derivation; the same rule that arms the Floor).
+  const prefillBySlot = useMemo(
+    () =>
+      suggestedSlots.map((slot) => {
+        const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
+        const name = entry?.name ?? slot.exercise;
+        return topSets.map.get(name.toLowerCase())?.weight ?? null;
+      }),
+    [suggestedSlots, topSets],
+  );
+  // THE DAY'S CEILING — every skyline rail reads against one scale:
+  // the heaviest prefill on the panel, rounded up to the next 25.
+  const dayRailMax = useMemo(
+    () => railMaxFor(Math.max(0, ...prefillBySlot.map((w) => w ?? 0))),
+    [prefillBySlot],
+  );
 
   const header = (
     <View style={styles.headerRow}>
-      {/* The folio — the brand mark at whisper scale. The board's
+      {/* The folio — the brand mark at whisper scale. The panel's
           content is the brand; the masthead stays a folio line. */}
       <View style={styles.brand}>
         <Dumbbell size={16} color={colors.text} />
@@ -120,7 +138,7 @@ export default function HomeScreen() {
   return (
     <BoardShell surface="training" header={header} testID="home-scroll">
       {/* THE STATEMENT — the day itself, with the window whisper in
-          record-orange furniture above it. */}
+          signal furniture above it. */}
       <BoardHead
         statement={dayTitle}
         statementTestID="home-day-title"
@@ -128,32 +146,48 @@ export default function HomeScreen() {
         whisperTone="record"
       />
 
-      {/* THE BOARD — the day's plan between the 2px rule pair: name +
-          Rx whisper + the plate stack at the prefill weight. You see
-          the session's size before you start it. */}
+      {/* THE DAY PANEL — the day's plan on one enamel panel wearing
+          the 2px instrument rule: name + Rx whisper + the pin rail at
+          the prefill weight. You see the session's load profile
+          before you start it. */}
       <View style={styles.block}>
-        <View style={[styles.boardBlock, { borderColor: colors.text }]} testID="home-board">
+        <View
+          style={[
+            styles.dayPanel,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.cardBorder,
+              borderTopColor: colors.text,
+            },
+          ]}
+          testID="home-board"
+        >
           {suggestedSlots.length === 0 ? (
-            <Text style={[styles.boardEmpty, { color: colors.textMuted }]}>
-              No lifts programmed — start anyway and draw your own.
+            <Text style={[styles.panelEmpty, { color: colors.textMuted }]}>
+              No lifts programmed — start anyway and set your own pins.
             </Text>
           ) : (
             suggestedSlots.map((slot, i) => {
               const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
               const name = entry?.name ?? slot.exercise;
-              const prefill = topSets.map.get(name.toLowerCase())?.weight ?? null;
+              const prefill = prefillBySlot[i];
               const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
               return (
-                <View key={slot.exercise + i} style={styles.boardRow}>
-                  <View style={styles.boardNameHold}>
-                    <Text style={[styles.boardName, { color: colors.text }]} numberOfLines={1}>
+                <View key={slot.exercise + i} style={styles.panelRow}>
+                  <View style={styles.panelNameHold}>
+                    <Text style={[styles.panelName, { color: colors.text }]} numberOfLines={1}>
                       {name}
                     </Text>
-                    <Text style={[styles.boardRx, { color: colors.textMuted }]}>
+                    <Text style={[styles.panelRx, { color: colors.textMuted }]}>
                       {`${sets}×${slot.reps[0]}–${slot.reps[1]}`}
                     </Text>
                   </View>
-                  <PlateStack kg={prefill} scale="whisper" testID={`home-board-stack-${i}`} />
+                  <PinRail
+                    kg={prefill}
+                    scale="whisper"
+                    railMax={dayRailMax}
+                    testID={`home-board-rail-${i}`}
+                  />
                 </View>
               );
             })
@@ -193,7 +227,7 @@ export default function HomeScreen() {
         )}
       </View>
 
-      {/* Recent sessions — one Spline line each; the latest leads. */}
+      {/* Recent sessions — one Martian line each; the latest leads. */}
       <View style={styles.block}>
         {recentQuery.isLoading ? (
           <WorkoutListSkeleton />
@@ -248,31 +282,34 @@ const styles = StyleSheet.create({
   },
   // Top-level blocks carry the air law.
   block: {
-    ...BOARD.block,
+    ...GAUGE.block,
   },
-  // THE BOARD — the framed plan block.
-  boardBlock: {
+  // THE DAY PANEL — the enamel panel wearing the screen's one 2px
+  // instrument rule (the printed face).
+  dayPanel: {
+    borderWidth: 1,
     borderTopWidth: 2,
-    borderBottomWidth: 2,
+    borderRadius: theme.shapes.surface,
     paddingVertical: 10,
+    paddingHorizontal: 12,
   },
-  boardEmpty: {
+  panelEmpty: {
     ...theme.typography.mobileMeta,
     paddingVertical: 8,
   },
-  boardRow: {
+  panelRow: {
     minHeight: 40,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  boardNameHold: {
+  panelNameHold: {
     flex: 1,
   },
-  boardName: {
-    ...BOARD.row,
+  panelName: {
+    ...GAUGE.row,
   },
-  boardRx: {
+  panelRx: {
     ...theme.typography.mobileLedger,
     marginTop: 0,
   },
@@ -287,7 +324,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   jumpLabel: {
-    ...BOARD.row,
+    ...GAUGE.row,
   },
   jumpCaption: {
     ...theme.typography.mobileLedger,

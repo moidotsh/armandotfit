@@ -28,7 +28,7 @@ import {
   MobileActionFooter,
   SegmentedControl,
 } from '../components/MobilePremium';
-import { BoardShell, BoardHead, PlateStack } from '../components/composed';
+import { BoardShell, BoardHead, PinRail } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, replaceWithWorkoutDetail, safeGoBack } from '../navigation';
 import { useProfile, useRecentWorkouts, useTopSetsByName } from '../hooks';
@@ -41,9 +41,10 @@ import {
   suggestNextSplitDay,
   MIN_SPLIT_DAY,
   MAX_SPLIT_DAY,
-  BOARD,
+  GAUGE,
   theme,
   PAGE_GUTTER,
+  railMaxFor,
   type SessionMode,
   type UpcomingWorkoutSlot,
 } from '../constants';
@@ -127,6 +128,17 @@ export default function SplitSelectionScreen() {
 
   // Preview the day's slots with standing substitutions applied.
   const previewSlots = resolveSlots(split, draftDay, session, programOverrides);
+  // The preview's rail prefills + the day's one ceiling (the skyline
+  // reads against a single scale — the same law as home's day panel).
+  const previewPrefills = previewSlots.map((slot) => {
+    const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
+    const name = entry?.name ?? slot.exercise;
+    return topSets.map.get(name.toLowerCase())?.weight ?? null;
+  });
+  const previewRailMax = useMemo(
+    () => railMaxFor(Math.max(0, ...previewPrefills.map((w) => w ?? 0))),
+    [previewPrefills],
+  );
   // The day's targets — the distinct primary muscle groups across the
   // preview slots, in slot order (metadata as structure, computed at
   // read from the catalog).
@@ -245,7 +257,8 @@ export default function SplitSelectionScreen() {
         </Text>
       </View>
 
-      {/* THE PLAN — the board rows: name + Rx + the prefill stack. */}
+      {/* THE PLAN — the preview panel: name + Rx + the prefill rail,
+          every rail against the day's one ceiling. */}
       <View style={styles.block}>
         {previewSlots.length === 0 ? (
           <Text style={[styles.emptyText, { color: colors.textMuted }]}>
@@ -253,13 +266,15 @@ export default function SplitSelectionScreen() {
             from the library.
           </Text>
         ) : (
-          <View>
+          <View
+            style={[styles.previewPanel, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+            testID="funnel-preview-panel"
+          >
             {previewSlots.map((slot, i) => {
               const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
               const name = entry?.name ?? slot.exercise;
               const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
               const rx = `${sets}×${slot.reps[0]}–${slot.reps[1]}`;
-              const prefill = topSets.map.get(name.toLowerCase())?.weight ?? null;
               return (
                 <View
                   key={slot.exercise + i}
@@ -273,7 +288,12 @@ export default function SplitSelectionScreen() {
                       {rx}
                     </Text>
                   </View>
-                  <PlateStack kg={prefill} scale="whisper" testID={`funnel-stack-${i}`} />
+                  <PinRail
+                    kg={previewPrefills[i]}
+                    scale="whisper"
+                    railMax={previewRailMax}
+                    testID={`funnel-rail-${i}`}
+                  />
                 </View>
               );
             })}
@@ -307,7 +327,13 @@ export default function SplitSelectionScreen() {
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 40 },
   block: {
-    ...BOARD.block,
+    ...GAUGE.block,
+  },
+  previewPanel: {
+    borderWidth: 1,
+    borderRadius: theme.shapes.surface,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
   },
   dayRow: {
     flexDirection: 'row',
@@ -345,7 +371,7 @@ const styles = StyleSheet.create({
   slotNameHold: {
     flex: 1,
   },
-  slotName: { ...BOARD.row },
+  slotName: { ...GAUGE.row },
   slotRx: {
     ...theme.typography.mobileLedger,
   },
