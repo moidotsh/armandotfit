@@ -1,15 +1,19 @@
 // utils/youtube/playerHost.ts
 //
-// The hidden YouTube player host (web only — the moidotsh MusicApp
-// pattern, adapted): one IFrame-API player, created off-tree in a
-// 1×1 fixed div, driven imperatively. The music store owns intent
-// (current track, playlist, transport); this module reacts and
-// reports state back (playing/title/ended). jsdom-safe: the API
-// script never loads there, every entry point no-ops.
+// The hidden YouTube player host (web only): one IFrame-API player,
+// created off-tree in a 1×1 fixed div, driven imperatively. The music
+// store owns intent (current track, playlist, transport, volume); this
+// module reacts and reports state back (playing/title/ended/ERROR —
+// an unavailable or embed-refused video reports a notice and advances
+// instead of dying silently with a stuck play icon). The Media
+// Session API rides along: lock-screen controls route through the
+// store, now-playing metadata pushes on every track change. jsdom-
+// safe: the API script never loads there, every entry point no-ops.
 
 import { isWeb, hasDocument } from '../platform';
 import { useMusicStore } from '../../stores';
 import { parseVideoTitle } from '../../services/musicService';
+import { bindMediaSession, updateMediaMetadata } from './mediaSession';
 
 interface YTPlayer {
   loadVideoById: (videoId: string) => void;
@@ -18,6 +22,7 @@ interface YTPlayer {
   nextVideo: () => void;
   previousVideo: () => void;
   loadPlaylist: (opts: { list: string; listType: string }) => void;
+  setVolume: (volume: number) => void;
   getVideoData: () => { title?: string };
 }
 
@@ -54,12 +59,20 @@ function ensureDiv(): HTMLElement {
   return el;
 }
 
+/** Player error codes → honest one-line messages (advance follows). */
+function playerErrorMessage(code: number): string {
+  if (code === 101 || code === 150) return "Track won't embed here — skipped";
+  if (code === 100) return 'Track unavailable — skipped';
+  return 'Playback problem — skipped';
+}
+
 /** Load the IFrame API once, then create the hidden player. Safe to
  *  call repeatedly (idempotent). */
 export function bootMusicPlayer(): void {
   if (!isWeb || !hasDocument() || player || booting) return;
   if (document.getElementById('youtube-iframe-api')) return;
   booting = true;
+  bindMediaSession();
 
   const create = () => {
     if (!window.YT?.Player) return;
@@ -76,13 +89,32 @@ export function bootMusicPlayer(): void {
       events: {
         onReady: () => {
           booting = false;
+          const { volume } = useMusicStore.getState();
+          lastVolume = volume;
+          player?.setVolume(volume);
           syncFromStore();
         },
         onStateChange: (e: { data: number }) => {
           const store = useMusicStore.getState();
-          if (e.data === 1) store.setPlaying(true);
-          else if (e.data === 2) store.setPlaying(false);
+          if (e.data === 1) {
+            store.setPlaying(true);
+            // Now-playing metadata: the queue knows the track; playlist
+            // mode asks the player (its title is the truth there).
+            updateMediaMetadata(
+              store.current
+                ? { title: store.current.title, artist: store.current.artist }
+                : currentTrackMeta(),
+            );
+          } else if (e.data === 2) store.setPlaying(false);
           else if (e.data === 0) store.handleEnded();
+        },
+        onError: (e: { data: number }) => {
+          const store = useMusicStore.getState();
+          store.reportPlaybackError(playerErrorMessage(e.data));
+          // Advance past the broken track: the queue walks; playlist
+          // mode forwards to the player's own next.
+          if (store.playlistId) player?.nextVideo();
+          else store.next();
         },
       },
     });
@@ -105,10 +137,17 @@ export function bootMusicPlayer(): void {
  *  change from the React host component). */
 export function syncFromStore(): void {
   if (!player) return;
-  const { current, playlistId, playing, skipSignal, prevSignal } =
+  const { current, playlistId, playing, skipSignal, prevSignal, volume } =
     useMusicStore.getState();
+  // Volume rides every sync (idempotent, never conflicts with the
+  // one-command diff chain below).
+  if (volume !== lastVolume) {
+    lastVolume = volume;
+    player.setVolume(volume);
+  }
   if (current?.videoId && current.videoId !== lastLoadedId) {
     lastLoadedId = current.videoId;
+    updateMediaMetadata({ title: current.title, artist: current.artist });
     player.loadVideoById(current.videoId);
     return;
   }
@@ -137,6 +176,7 @@ export function syncFromStore(): void {
 let lastLoadedId: string | null = null;
 let lastLoadedList: string | null = null;
 let lastPlaying: boolean | null = null;
+let lastVolume: number | null = null;
 let lastSkip = 0;
 let lastPrev = 0;
 

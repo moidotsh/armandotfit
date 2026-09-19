@@ -13,23 +13,20 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Play, Pause, SkipBack, SkipForward } from '@tamagui/lucide-icons-2';
+import { Play, Pause, SkipBack, SkipForward, Minus, Plus } from '@tamagui/lucide-icons-2';
 import { MobileSheet, MobileInput } from '../MobilePremium';
-import { useAppTheme } from '../../context';
+import { useAppTheme, useToast } from '../../context';
 import { useMusicStore, type QueuedTrack } from '../../stores';
 import { useMusicPicks } from '../../hooks/queries';
 import { useSaveMusicPick } from '../../hooks/mutations';
 import { searchTracks, parsePlaylistId, type MusicTrack } from '../../services/musicService';
-import { YOUTUBE_SEARCH_ENABLED } from '../../constants';
+import { YOUTUBE_SEARCH_ENABLED, DEFAULT_STATION_ID } from '../../constants';
 import { GAUGE, theme } from '../../constants';
-
-/** The default station — the owner's moidotsh playlist: one tap,
- *  zero setup, the moidotsh Music experience. */
-const DEFAULT_STATION = 'PL6fhs6TSspZv0F0YgsG-p7Mn189CU2XKS';
 import { bootMusicPlayer, syncFromStore } from '../../utils/youtube/playerHost';
 
 export function MusicSheet() {
   const { colors } = useAppTheme();
+  const { showToast } = useToast();
 
   // The player host boots once (web only) and every store change is
   // pushed to the player — this sheet is the player's single mount
@@ -52,6 +49,18 @@ export function MusicSheet() {
   const next = useMusicStore((s) => s.next);
   const prev = useMusicStore((s) => s.prev);
   const setPlaying = useMusicStore((s) => s.setPlaying);
+  const volume = useMusicStore((s) => s.volume);
+  const setVolume = useMusicStore((s) => s.setVolume);
+  const playbackNotice = useMusicStore((s) => s.playbackNotice);
+
+  // Playback errors surface as chit toasts (the sheet may be closed —
+  // the notice announces wherever the owner is).
+  const noticedIdRef = useRef(0);
+  useEffect(() => {
+    if (!playbackNotice || playbackNotice.id === noticedIdRef.current) return;
+    noticedIdRef.current = playbackNotice.id;
+    showToast('error', playbackNotice.message);
+  }, [playbackNotice, showToast]);
 
   const picksQuery = useMusicPicks(20);
   const picks = picksQuery.data ?? [];
@@ -184,7 +193,7 @@ export function MusicSheet() {
           zero setup). */}
       <View style={styles.block}>
         <Pressable
-          onPress={() => playPlaylist(DEFAULT_STATION)}
+          onPress={() => playPlaylist(DEFAULT_STATION_ID)}
           accessibilityRole="button"
           accessibilityLabel="Play the default station"
           style={({ pressed }) => [
@@ -284,6 +293,35 @@ export function MusicSheet() {
           </Pressable>
         </View>
       ) : null}
+
+      {/* THE VOLUME — furniture caps, ± steppers, the mono figure.
+          Persists; applies to the player on the next sync. */}
+      <View style={styles.volumeRow} testID="music-volume">
+        <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+          VOLUME
+        </Text>
+        <Pressable
+          onPress={() => setVolume(volume - 10)}
+          accessibilityRole="button"
+          accessibilityLabel={`Volume down, currently ${volume} percent`}
+          style={({ pressed }) => [styles.transportButton, pressed ? { opacity: 0.6 } : null]}
+          testID="music-volume-down"
+        >
+          <Minus size={18} color={colors.text} />
+        </Pressable>
+        <Text style={[styles.volumeFigure, { color: colors.text }]}>
+          {volume}
+        </Text>
+        <Pressable
+          onPress={() => setVolume(volume + 10)}
+          accessibilityRole="button"
+          accessibilityLabel={`Volume up, currently ${volume} percent`}
+          style={({ pressed }) => [styles.transportButton, pressed ? { opacity: 0.6 } : null]}
+          testID="music-volume-up"
+        >
+          <Plus size={18} color={colors.text} />
+        </Pressable>
+      </View>
     </MobileSheet>
   );
 }
@@ -424,6 +462,18 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  volumeRow: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  volumeFigure: {
+    ...theme.typography.mobileLedger,
+    fontSize: 15,
+    minWidth: 34,
+    textAlign: 'center',
   },
 });
 

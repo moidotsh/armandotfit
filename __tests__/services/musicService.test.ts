@@ -74,8 +74,19 @@ describe('the music store queue semantics', () => {
     expect(useMusicStore.getState().current?.videoId).toBe('b');
     next();
     expect(useMusicStore.getState().current?.videoId).toBe('c');
+    // Queue exhausted → the STATION continues (music never stops
+    // mid-gym), announced by a playback notice.
     next();
-    expect(useMusicStore.getState().playing).toBe(false); // queue exhausted
+    const after = useMusicStore.getState();
+    expect(after.playlistId).not.toBeNull();
+    expect(after.playing).toBe(true);
+    expect(after.playbackNotice?.message).toMatch(/station continues/i);
+  });
+
+  it('next with nothing queued still stops (no phantom station)', () => {
+    useMusicStore.getState().next();
+    expect(useMusicStore.getState().playing).toBe(false);
+    expect(useMusicStore.getState().playlistId).toBeNull();
   });
 
   it('prev walks back; handleEnded advances', () => {
@@ -97,5 +108,43 @@ describe('the music store queue semantics', () => {
     useMusicStore.getState().next();
     expect(useMusicStore.getState().skipSignal).toBe(before + 1);
     expect(useMusicStore.getState().current).toBeNull();
+  });
+});
+
+describe('the music store volume + notices', () => {
+  beforeEach(() => {
+    useMusicStore.getState().stop();
+    useMusicStore.setState({ playbackNotice: null, volume: 80 });
+  });
+
+  it('volume clamps to 0..100 in steps', () => {
+    const { setVolume } = useMusicStore.getState();
+    setVolume(65);
+    expect(useMusicStore.getState().volume).toBe(65);
+    setVolume(-10);
+    expect(useMusicStore.getState().volume).toBe(0);
+    setVolume(140);
+    expect(useMusicStore.getState().volume).toBe(100);
+  });
+
+  it('volume persists (and only volume) under the music key', async () => {
+    useMusicStore.getState().setVolume(30);
+    await Promise.resolve();
+    const raw = window.localStorage.getItem('armandotfit:music');
+    expect(raw).toBeTruthy();
+    const parsed = JSON.parse(raw as string) as { state: Record<string, unknown> };
+    expect(parsed.state.volume).toBe(30);
+    expect(Object.keys(parsed.state)).toEqual(['volume']);
+  });
+
+  it('playback notices bump their id so repeats still announce', () => {
+    useMusicStore.getState().reportPlaybackError('Track unavailable — skipped');
+    const first = useMusicStore.getState().playbackNotice;
+    expect(first?.message).toContain('skipped');
+    useMusicStore.getState().reportPlaybackError('Track unavailable — skipped');
+    const second = useMusicStore.getState().playbackNotice;
+    expect(second?.id).toBeGreaterThan(first?.id ?? 0);
+    useMusicStore.getState().clearPlaybackNotice();
+    expect(useMusicStore.getState().playbackNotice).toBeNull();
   });
 });
