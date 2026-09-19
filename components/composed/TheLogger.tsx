@@ -14,6 +14,13 @@
 // After every log, THE REST LINE counts recovery (thesis §7) —
 // steppers ±15s, tap the readout to dismiss, red while running.
 //
+// 2027-01 refinements: the steppers HOLD TO REPEAT (400 ms delay,
+// 80 ms cadence — paired cleanup per R4a); the armed field RE-ARMS
+// PREDICTIVELY per set (`suggestArm` — the field the recent sets
+// were actually changing); and an EARNED step (`earnedStep`, the
+// double-progression derivation) offers itself as one tappable
+// whisper beside the kicker — advice in muted ink, never red.
+//
 // THE STILL SYSTEM: nothing here moves. The odometer roll, the pin
 // drop, and the shadow die with THE GAUGE — values swap instantly,
 // the logger docks under the screen's one 2px rule, and it is
@@ -21,7 +28,7 @@
 // string → null — Number('') is 0, which would false-positive as
 // "0 kg").
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -30,7 +37,7 @@ import {
   View,
 } from 'react-native';
 import { useAppTheme } from '../../context';
-import { theme, REST_STEP_SEC } from '../../constants';
+import { theme, REST_STEP_SEC, ANIMATION } from '../../constants';
 import { weightStep } from '../../utils';
 import type { WeightUnit } from '../../utils/weight';
 import { parseNumber } from './parseNumber';
@@ -52,6 +59,20 @@ export interface TheLoggerProps {
   repsHint?: string | null;
   /** THE REST LINE — present while a rest runs or has settled. */
   rest?: RestLine | null;
+  /**
+   * PREDICTIVE ARMING — the field the recent sets were actually
+   * changing ('weight' when reps held, 'reps' when weight held).
+   * Applied when a NEW set begins (setNumber changes); never stomps
+   * an in-progress edit.
+   */
+  suggestArm?: 'weight' | 'reps';
+  /**
+   * THE EARNED STEP — the double-progression derivation's verdict
+   * (last time's top set hit the rep-range ceiling at this weight ⇒
+   * the next weight is earned). Non-null renders one tappable
+   * whisper; null renders nothing (and deload weeks pass null).
+   */
+  earnedStep?: number | null;
   /** The display unit — the stepper steps in it (2.5 kg / 5 lb). */
   unit?: WeightUnit;
   onLog: () => void;
@@ -60,7 +81,8 @@ export interface TheLoggerProps {
   testID?: string;
 }
 
-/** One stepper button — 44×44 measured. */
+/** One stepper button — 44×44 measured, hold-to-repeat (400 ms
+ *  delay, 80 ms cadence; both timers paired-cleared per R4a). */
 function StepButton({
   dir,
   label,
@@ -73,9 +95,30 @@ function StepButton({
   testID: string;
 }) {
   const { colors } = useAppTheme();
+  const delayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stop = () => {
+    if (delayRef.current != null) clearTimeout(delayRef.current);
+    if (intervalRef.current != null) clearInterval(intervalRef.current);
+    delayRef.current = null;
+    intervalRef.current = null;
+  };
+  // R4a: a hold that outlives the button still clears.
+  useEffect(() => stop, []);
+  // The repeat is an ENRICHMENT, never the path: onPress does the
+  // work (RN-web's synthesized touch taps reliably fire onPress;
+  // press-in/out arm and clear the hold loop where they flow).
+  const armHold = () => {
+    stop();
+    delayRef.current = setTimeout(() => {
+      intervalRef.current = setInterval(onPress, ANIMATION.FAST_INTERVAL);
+    }, ANIMATION.LONG_PRESS_DELAY);
+  };
   return (
     <Pressable
       onPress={onPress}
+      onPressIn={armHold}
+      onPressOut={stop}
       accessibilityRole="button"
       accessibilityLabel={label}
       style={({ pressed }) => [
@@ -179,6 +222,8 @@ export function TheLogger({
   reps,
   repsHint = null,
   rest = null,
+  suggestArm,
+  earnedStep = null,
   unit = 'kg',
   onLog,
   onChangeWeight,
@@ -195,6 +240,14 @@ export function TheLogger({
   const [field, setField] = useState<'weight' | 'reps'>('weight');
   const [editing, setEditing] = useState<'weight' | 'reps' | null>(null);
   const [draftText, setDraftText] = useState('');
+
+  // PREDICTIVE ARMING — applied when a new set begins (the ordinal
+  // changes); an in-progress edit always wins.
+  useEffect(() => {
+    if (editing == null && suggestArm) setField(suggestArm);
+    // setNumber is the trigger: each logged set starts a new arming.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setNumber]);
 
   const openKeyboard = (which: 'weight' | 'reps') => {
     setDraftText(
@@ -283,10 +336,26 @@ export function TheLogger({
         </View>
       ) : null}
 
-      {/* The kicker — the set ordinal + the target, printed caps. */}
-      <Text style={[styles.kicker, { color: colors.textMuted }]}>
-        {`SET ${String(setNumber).padStart(2, '0')}${repsHint ? ` · TGT ${repsHint}` : ''}`}
-      </Text>
+      {/* The kicker — the set ordinal + the target, printed caps —
+          with THE EARNED STEP riding beside it: one tappable whisper
+          (muted ink — advice is neither record nor live). */}
+      <View style={styles.kickerRow}>
+        <Text style={[styles.kicker, { color: colors.textMuted }]}>
+          {`SET ${String(setNumber).padStart(2, '0')}${repsHint ? ` · TGT ${repsHint}` : ''}`}
+        </Text>
+        {earnedStep != null && weight != null ? (
+          <Pressable
+            onPress={() => onChangeWeight(Math.round((weight! + earnedStep) * 100) / 100)}
+            accessibilityLabel={`Add ${earnedStep} — earned: last time hit the top of the rep range at this weight`}
+            style={({ pressed }) => [styles.earnedTap, pressed ? { opacity: 0.6 } : null]}
+            testID={`${testID ?? 'the-logger'}-earned`}
+          >
+            <Text style={[styles.earnedWord, { color: colors.textSecondary }]}>
+              {`+${earnedStep} EARNED`}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
 
       {/* THE ARMED EXPRESSION — `62.5 × 8` at figure scale. The armed
           field wears the 2px rule; values swap, nothing moves. */}
@@ -396,11 +465,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
+  kickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    minHeight: 24,
+    marginTop: 2,
+  },
   kicker: {
     ...theme.typography.mobileEyebrow,
-    textAlign: 'center',
-    minHeight: 20,
-    marginTop: 2,
+  },
+  // THE EARNED STEP — advice rides at whisper scale beside the
+  // kicker, muted ink, 44px target.
+  earnedTap: {
+    minHeight: 24,
+    justifyContent: 'center',
+  },
+  earnedWord: {
+    ...theme.typography.mobileEyebrow,
   },
   // THE ARMED EXPRESSION — fixed boxes so growth never reflows the
   // row: weight spans the decimal's room, reps two digits.

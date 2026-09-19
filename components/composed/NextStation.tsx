@@ -18,10 +18,15 @@ export interface NextStationProps {
   /** The next station's exercise name. */
   name: string;
   onPress: () => void;
+  /**
+   * REST SETTLED — the way forward brightens while the rest clock
+   * reads 0 (state change, not motion: the still law holds).
+   */
+  bright?: boolean;
   testID?: string;
 }
 
-export function NextStation({ name, onPress, testID }: NextStationProps) {
+export function NextStation({ name, onPress, bright = false, testID }: NextStationProps) {
   const { colors } = useAppTheme();
   return (
     <Pressable
@@ -36,7 +41,10 @@ export function NextStation({ name, onPress, testID }: NextStationProps) {
       testID={testID}
     >
       <Text style={[styles.nextWord, { color: colors.textMuted }]}>NEXT</Text>
-      <Text style={[styles.nextName, { color: colors.text }]} numberOfLines={1}>
+      <Text
+        style={[styles.nextName, { color: colors.text }, bright ? styles.nextNameBright : null]}
+        numberOfLines={1}
+      >
         {name}
       </Text>
       <ChevronRight size={20} color={colors.text} />
@@ -63,6 +71,10 @@ const styles = StyleSheet.create({
   nextName: {
     ...theme.typography.mobileItemTitle,
     flex: 1,
+  },
+  // The settled-rest read: full weight — the next set is yours.
+  nextNameBright: {
+    fontWeight: '700',
   },
 });
 

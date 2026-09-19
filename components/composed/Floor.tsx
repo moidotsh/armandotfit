@@ -44,8 +44,8 @@ import {
   safeGoBack,
 } from '../../navigation';
 import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, type TopSetFact } from '../../hooks';
-import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight } from '../../utils';
-import { useWorkoutStore, useIsOnline } from '../../stores';
+import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight, weightStep, hapticImpactLight } from '../../utils';
+import { useWorkoutStore, useIsOnline, useDeloadStore } from '../../stores';
 import { sessionSaveQueue } from '../../services';
 import { getDayTitle, TAG_VOCABULARY_SEED } from '../../shared/exercises';
 import {
@@ -89,8 +89,15 @@ export function Floor() {
   } = useFloorSession();
 
   // THE REST INSTRUMENT — recovery counts after every log (thesis
-  // §7); the readout rides the logger's rest line + the pinned strip.
+  // §7); the readout rides the logger's rest line. The rest remembers
+  // per exercise: a ±15 tune during a station's rest becomes that
+  // station's next default (restStore.perExercise).
   const restClock = useRestClock();
+
+  // THE DELOAD WEEK — while set, the TARGET rests at the Rx low end
+  // and the earned-load suggestion stays off (program stays TS-only;
+  // this is UI-state).
+  const deload = useDeloadStore((s) => s.active);
 
   // THE ANNOUNCEMENT LINE — the polite live region: screen readers
   // hear the log and the rest instrument's state changes (start,
@@ -104,18 +111,12 @@ export function Floor() {
       setAnnouncement(`Rest ${restClock.readout}`);
     } else if (restClock.settled && !prev.settled) {
       setAnnouncement('Rest complete');
+      // The settle pulse — the still system's one physical channel
+      // (rest is over; the next set is yours).
+      hapticImpactLight();
     }
     restPrevRef.current = { active: restClock.active, settled: restClock.settled };
   }, [restClock.active, restClock.settled, restClock.readout]);
-
-  const restLine: RestLine | null = restClock.active
-    ? {
-        readout: restClock.readout,
-        settled: restClock.settled,
-        onAdjust: restClock.adjustRest,
-        onDismiss: restClock.dismissRest,
-      }
-    : null;
 
   // Store actions — read directly, not drilled.
   const setSaving = useWorkoutStore((s) => s.setSaving);
@@ -243,6 +244,28 @@ export function Floor() {
     return Number.isFinite(low) && low > 0 ? low : null;
   }, [targetRx]);
 
+  // The Rx ceiling ("4×8–10" → 10) — the double-progression bar.
+  const targetRepsHigh = useMemo(() => {
+    const hint = targetRx?.split('×')[1]?.trim();
+    if (!hint) return null;
+    const parts = hint.split(/[\u2013\u2014-]/);
+    const high = parts.length > 1 ? parseInt(parts[1], 10) : parseInt(parts[0], 10);
+    return Number.isFinite(high) && high > 0 ? high : null;
+  }, [targetRx]);
+
+  // THE DELOAD TARGET — the Rx low end while the deload week runs.
+  const targetShown = useMemo(() => {
+    if (!targetRx || !deload) return targetRx;
+    const sets = targetRx.split('×')[0]?.trim();
+    const hint = targetRx.split('×')[1]?.trim();
+    const lowReps = hint ? parseInt(hint.split(/[\u2013\u2014-]/)[0], 10) : NaN;
+    const minSets = sets ? parseInt(sets, 10) : NaN;
+    if (Number.isFinite(lowReps) && Number.isFinite(minSets)) {
+      return `${minSets}×${lowReps}`;
+    }
+    return targetRx;
+  }, [targetRx, deload]);
+
   // The armed set for the current station: whatever the user has set,
   // else carry-forward from this exercise's last logged set, else the
   // previous session's TOP set for this exercise name, else fresh
@@ -267,7 +290,47 @@ export function Floor() {
     setArmedByExercise((prev) => ({ ...prev, [exercise.localId]: next }));
   };
 
+  // PREDICTIVE ARMING — the field the recent sets were actually
+  // changing: reps held while weight moved → arm weight (you're
+  // loading); weight held while reps moved → arm reps (you're
+  // rep-ing out). Two-set lookback; default weight.
+  const suggestArm: 'weight' | 'reps' = useMemo(() => {
+    const sets = exercise?.sets ?? [];
+    if (sets.length < 2) return 'weight';
+    const a = sets[sets.length - 2];
+    const b = sets[sets.length - 1];
+    if (a.reps === b.reps && a.weight !== b.weight) return 'weight';
+    if (a.weight === b.weight && a.reps !== b.reps) return 'reps';
+    return 'weight';
+  }, [exercise]);
+
+  // THE EARNED STEP (double progression, computed at read): last
+  // time's TOP set for this exercise hit the rep-range ceiling at
+  // the armed weight ⇒ the next increment is earned. Suppressed in a
+  // deload week and when the bar hasn't been met.
+  const earnedStep: number | null = useMemo(() => {
+    if (deload) return null;
+    if (!exercise || armed.weight == null || targetRepsHigh == null) return null;
+    const fact = armedPrefill.get(exercise.exerciseName.toLowerCase());
+    if (!fact) return null;
+    const armedKg = fromDisplayWeight(armed.weight, unit);
+    if (Math.abs(fact.weight - armedKg) > 0.01) return null;
+    if (fact.reps < targetRepsHigh) return null;
+    return weightStep(unit);
+  }, [deload, exercise, armed.weight, armedPrefill, targetRepsHigh, unit]);
+
   const repsHint = targetRx?.split('×')[1]?.trim() ?? null;
+
+  // The rest line rides the CURRENT station (per-exercise memory).
+  const stationName = exercise?.exerciseName ?? null;
+  const restLine: RestLine | null = restClock.active
+    ? {
+        readout: restClock.readout,
+        settled: restClock.settled,
+        onAdjust: (deltaSec: number) => restClock.adjustRest(deltaSec, stationName ?? undefined),
+        onDismiss: restClock.dismissRest,
+      }
+    : null;
 
   const handleLog = () => {
     if (!exercise) return;
@@ -287,8 +350,10 @@ export function Floor() {
       ...prev,
       [exercise.localId]: { weight: armed.weight ?? 0, reps: armed.reps },
     }));
-    // THE REST INSTRUMENT starts with the log (thesis §7).
-    restClock.startRest();
+    // THE REST INSTRUMENT starts with the log (thesis §7), at this
+    // station's remembered interval when one exists.
+    hapticImpactLight();
+    restClock.startRest(undefined, exercise.exerciseName);
     // The screen reader's record of the log (the live region below —
     // no toast mid-set, no visual change). The log announcement
     // carries the rest start: restPrevRef is pre-advanced so the
@@ -512,7 +577,7 @@ export function Floor() {
                 <View style={styles.stationMeta}>
                   {targetRx ? (
                     <Text style={[styles.stationRx, { color: colors.textMuted }]}>
-                      {`TARGET ${targetRx}`}
+                      {`TARGET ${targetShown}${deload ? ' · DELOAD' : ''}`}
                     </Text>
                   ) : null}
                   {/* THE COUNT — done sets over the program's ask, the
@@ -617,6 +682,7 @@ export function Floor() {
                 <NextStation
                   name={exercises[index + 1].exerciseName}
                   onPress={() => setStationIndex(index + 1)}
+                  bright={restClock.settled}
                   testID="stage-next-station"
                 />
               ) : null}
@@ -673,6 +739,8 @@ export function Floor() {
             reps={armed.reps}
             repsHint={repsHint}
             rest={restLine}
+            suggestArm={suggestArm}
+            earnedStep={earnedStep}
             unit={unit}
             onLog={handleLog}
             onChangeWeight={(weight) => setArmed({ ...armed, weight })}

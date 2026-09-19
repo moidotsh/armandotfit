@@ -1,11 +1,14 @@
 // stores/restStore.ts
-// THE REST INSTRUMENT (docs/architecture/gauge-thesis.md §7) — the
-// rest countdown's state. After every LOG SET the rest clock runs:
-// `endsAt` is the epoch-ms deadline (ephemeral, matching the draft's
-// in-memory lifecycle — a reload clears it, correctly, because the
-// draft itself lives in memory); `defaultSec` is the remembered
-// interval preference (persisted — the Settings panel's stepper
-// row). Nothing here joins the data spine. The 5 SECTION markers
+// THE REST INSTRUMENT (docs/architecture/scoreboard-thesis.md §7) —
+// the rest countdown's state. After every LOG SET the rest clock
+// runs: `endsAt` is the epoch-ms deadline (ephemeral, matching the
+// draft's in-memory lifecycle — a reload clears it, correctly,
+// because the draft itself lives in memory); `defaultSec` is the
+// remembered interval preference (persisted — the Settings panel's
+// stepper row); `perExercise` remembers the interval the owner LAST
+// TUNED per exercise name (deadlifts ≠ lateral raises — a ±15
+// adjustment during a station's rest becomes that station's next
+// default). Nothing here joins the data spine. The 5 SECTION markers
 // below are load-bearing: audit-state (D10) flags any Zustand store
 // missing them.
 
@@ -61,8 +64,10 @@ interface RestState {
   // SECTION: UI
   endsAt: number | null;
   defaultSec: number;
-  startRest: (sec?: number) => void;
-  adjustRest: (deltaSec: number) => void;
+  /** The owner's last-tuned interval per exercise name (seconds). */
+  perExercise: Record<string, number>;
+  startRest: (sec?: number, exerciseName?: string) => void;
+  adjustRest: (deltaSec: number, exerciseName?: string) => void;
   dismissRest: () => void;
 }
 
@@ -84,26 +89,39 @@ export const useRestStore = create<RestState>()(
       // SECTION: UI
       endsAt: null,
       defaultSec: REST_DEFAULT_SEC,
-      startRest: (sec) => {
-        const s = Math.max(1, Math.min(REST_MAX_SEC, sec ?? get().defaultSec));
+      perExercise: {},
+      startRest: (sec, exerciseName) => {
+        const s = Math.max(
+          1,
+          Math.min(
+            REST_MAX_SEC,
+            sec ?? (exerciseName != null ? get().perExercise[exerciseName] : undefined) ?? get().defaultSec,
+          ),
+        );
         set({ endsAt: Date.now() + s * 1000 });
       },
-      adjustRest: (deltaSec) => {
+      adjustRest: (deltaSec, exerciseName) => {
         const { endsAt } = get();
         if (endsAt == null) return;
         const remaining = Math.max(0, endsAt - Date.now());
         const next = Math.max(0, Math.min(REST_MAX_SEC, remaining / 1000 + deltaSec));
-        set({ endsAt: Date.now() + next * 1000 });
+        // A tune is a vote: the adjusted interval becomes this
+        // exercise's remembered default (UI-state only).
+        if (exerciseName != null && next > 0) {
+          set({ endsAt: Date.now() + next * 1000, perExercise: { ...get().perExercise, [exerciseName]: Math.round(next) } });
+        } else {
+          set({ endsAt: Date.now() + next * 1000 });
+        }
       },
       dismissRest: () => set({ endsAt: null }),
     }),
     {
       name: 'armandotfit:rest-instrument',
       storage: createJSONStorage(() => zustandStorage),
-      // Only the preference persists — the running countdown is
+      // Only the preferences persist — the running countdown is
       // session UI-state and dies with the draft (a reload mid-rest
       // clears it, exactly like the draft itself).
-      partialize: (state) => ({ defaultSec: state.defaultSec }),
+      partialize: (state) => ({ defaultSec: state.defaultSec, perExercise: state.perExercise }),
     },
   ),
 );
