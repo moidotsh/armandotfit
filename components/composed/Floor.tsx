@@ -43,7 +43,6 @@ import { useToast, useAppTheme } from '../../context';
 import {
   navigateToExerciseDatabase,
   replaceWithHome,
-  safeGoBack,
 } from '../../navigation';
 import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, type TopSetFact } from '../../hooks';
 import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight, weightStep, hapticImpactLight } from '../../utils';
@@ -156,12 +155,14 @@ export function Floor() {
     setSaving(logMutation.isPending);
   }, [logMutation.isPending, setSaving]);
 
-  // On successful save, toast + reset + go back.
+  // On successful save, toast + reset. The reset is the whole exit:
+  // the dispatcher's redirect (replace → selector) is the flow's ONE
+  // navigation — a back() fired here beside it raced the reset
+  // re-render and the late pop ate the redirect (stranded spinner).
   useEffect(() => {
     if (logMutation.isSuccess) {
       showToast('success', 'Session saved');
       resetSession();
-      safeGoBack();
     }
   }, [logMutation.isSuccess, showToast, resetSession]);
 
@@ -386,8 +387,9 @@ export function Floor() {
       sessionSaveQueue.enqueue(dto);
       setFinishOpen(false);
       showToast('success', 'Session saved — syncs when back online');
+      // The reset alone exits — the dispatcher's redirect is the one
+      // navigation (see the save-success effect above).
       resetSession();
-      safeGoBack();
       return;
     }
     logMutation.mutate(dto);
@@ -776,8 +778,9 @@ export function Floor() {
                 return;
               }
               setFinishOpen(false);
+              // The reset alone exits — the dispatcher's redirect is
+              // the one navigation.
               resetSession();
-              safeGoBack();
             }}
             testID="stage-discard"
           >

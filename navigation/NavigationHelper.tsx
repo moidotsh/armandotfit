@@ -161,6 +161,18 @@ export function replaceWithHome() {
 }
 
 /**
+ * Replace with the selector — the dead-floor redirect (workout-detail
+ * with no session and no id, whatever brought it there: save, discard,
+ * or a stale URL). REPLACE, never push: the dead stage entry must not
+ * stay in the back stack, and the redirect must be the FLOW'S ONE
+ * navigation — a back() fired beside it races the reset re-render and
+ * the late pop eats the redirect (the stranded-spinner bug).
+ */
+export function replaceWithSplitSelection() {
+  replace('/split-selection');
+}
+
+/**
  * Return to the live session by REPLACING the current entry — the
  * session strip and resume paths must never stack a second stage on
  * top of a hidden one (duplicate mounted screens grow the stack every

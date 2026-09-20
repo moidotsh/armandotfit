@@ -18,7 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoadingSpinner } from '../components/primitives';
 import { Floor, Receipt } from '../components/composed';
 import { useAppTheme } from '../context';
-import { navigateToSplitSelection } from '../navigation';
+import { replaceWithSplitSelection } from '../navigation';
 import { useWorkoutStore } from '../stores';
 import { SCREEN_BODY_STYLE } from '../constants';
 
@@ -27,10 +27,15 @@ export default function WorkoutDetailScreen() {
   const { colors } = useAppTheme();
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
 
-  // If no id and no active draft, redirect to split-selection once.
+  // If no id and no active draft, redirect to the selector — by
+  // REPLACE, and as the flow's ONE navigation. Save/discard reset the
+  // session and rely on this redirect alone: a back() fired beside it
+  // (deferred under the curtain) popped the redirect after it landed
+  // and left this screen stranded on the spinner (the race that broke
+  // finish/discard).
   useEffect(() => {
     if (!id && !isSessionActive) {
-      navigateToSplitSelection();
+      replaceWithSplitSelection();
     }
   }, [id, isSessionActive]);
 
