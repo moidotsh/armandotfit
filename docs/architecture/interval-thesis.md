@@ -1,5 +1,51 @@
 # THE INTERVAL — the live figure owns the counter
 
+> **REVISION — THE ATELIER PASS (the fifteenth pass; finissage, not a
+> succession).** The owner's verdict on the thirteenth-iteration
+> system: disciplined, light, minimal — but lacking grace, elegance,
+> premiumness. The diagnosis: the movement was finished; the
+> finissage was not. Restraint that did not yet feel cared for. Four
+> layers landed, every one inside the standing laws (no new hues, no
+> shadows, no radii, no motion, nothing drawn — the gate holds):
+>
+> 1. **THE STOCK.** The paper's tooth: one full-bleed grain layer over
+>    the ground (BoardShell + the Floor) — dark tooth on the printed
+>    card at 2.5%, chalk tooth on the unlit board at 5% — and the
+>    verbs (LOG SET, LOG CARDIO) wear the kit's ink grain. The
+>    vignette deepens toward a plate-press edge. The ground stops
+>    reading as a screen and starts reading as stock.
+> 2. **THE FINISSAGE.** One FACT JOIN — every fact line, tag run, and
+>    whisper list joins through `joinFacts()`: middot flanked by HAIR
+>    SPACES, not word spaces (the 14 raw joins collapse to one
+>    authored breath). Statements and facts print `textWrap: balance`
+>    where the platform knows it. The section whisper's air unifies
+>    at 8.
+> 3. **THE CADENCE.** THE SECTION LANDMARK (`SectionWhisper`): one
+>    hairline above each section whisper on the Desk's long pages —
+>    the ≤3-hairline budget finally spends as rhythm; walls of rows
+>    become pages with paragraph marks. THE FIGURE PLATE:
+>    figure-statements get the plate's air — the streak, the tonnage,
+>    the count stand alone.
+> 4. **THE MOMENTS.** THE FINISH MOMENT: a saved session lands on its
+>    receipt — the day's tonnage under the lifted curtain, one
+>    success haptic (the reset rides a beat behind the id-keyed
+>    navigation; no redirect window). THE HAPTIC GRAMMAR: arm =
+>    selection tick, stepper hold = the rigid tap, rest settle = the
+>    grammar's one MEDIUM impact — grace you feel with the screen off,
+>    still-system-perfect. THE RECORD WHISPER: THE RECORD BOOK · BEST
+>    RUN while the live streak holds the all-time best.
+> 5. **THE INSTRUMENTS.** THE BORDERLESS STEPPER: the +/− glyphs stand
+>    free of their little plates — the panel tier's last hiding place,
+>    retired at micro scale. The MAP chip's word states its action
+>    (MAP offers the board, HIDE folds it).
+>
+> **LANDING.** Four commits, each gated before staging and pushed
+> separately: `84775208d` (the stock and the finissage), `b736077f3`
+> (the cadence), `a21ad0f29` (the moments), `c13fce25f` (the
+> instruments). The spine — the live figure, ink-is-state, the red
+> ration, the square cut, the still system, the re-weight — is
+> untouched; every layer is material, spacing, and finishing.
+
 > **REVISION — PASS 14A, THE LAW-RESTORATION MENDS (the fourteenth
 > pass; an amendment, not a succession).** The first pass written from
 > the source alone (no eyes): every delta below was found by reading,
