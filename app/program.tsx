@@ -39,7 +39,7 @@ import {
   getSlotsForDay,
   type SessionWindow,
 } from '../shared/exercises';
-import { INTERVAL, ROW_GAP, theme, PAGE_GUTTER, PRESS_DIP } from '../constants';
+import { INTERVAL, ROW_GAP, theme, PAGE_GUTTER, PRESS_DIP, paperToothStyle } from '../constants';
 import { joinFacts } from '../utils';
 import { CURRENT_ERA } from '../shared/exercises';
 import type { PreferredSplit } from '../shared/types';
@@ -62,7 +62,7 @@ const isEdition = (v: string | undefined): v is PreferredSplit =>
   v === 'twoADay' || v === 'oneADay';
 
 export default function ProgramScreen() {
-  const { colors } = useAppTheme();
+  const { colors, colorScheme } = useAppTheme();
   const { showToast } = useToast();
   const split = useSplitPreferenceStore((s) => s.splitType);
   const { edition } = useLocalSearchParams<{ edition?: string }>();
@@ -240,11 +240,56 @@ export default function ProgramScreen() {
   const share = derivePlanMuscleShare(planSlots, 99);
   const lead = share[0]?.share ?? 1;
 
+  // THE STICKY DAY HEADS — each day is TWO direct children of the
+  // scroller (head row, then body) so stickyHeaderIndices can pin the
+  // heads: the day you're inside rides the top while its slots scroll
+  // under it. The heads carry opaque grounds WITH the paper's tooth
+  // (no show-through, no flat patch amid the grain).
+  const dayElements = days.flatMap((day, di) => [
+    <View
+      key={`day-head-${day.day}`}
+      style={[
+        styles.dayHeadSticky,
+        di === 0 ? styles.dayHeadFirst : styles.daySeparated,
+        di > 0 ? { borderTopColor: colors.mobilePremium.hairlineBorder } : null,
+        { backgroundColor: colors.background },
+        paperToothStyle(colorScheme),
+      ]}
+    >
+      <View style={styles.dayHeadRow}>
+        <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
+          {day.title}
+        </Text>
+        <Text style={[styles.dayHeadFigure, { color: colors.textMuted }]}>
+          {`${dayLifts(day.day)} lifts`}
+        </Text>
+      </View>
+    </View>,
+    <View key={`day-body-${day.day}`}>
+      {windows.map((window) => (
+        <View key={window} style={styles.windowBlock}>
+          {isTwoADay ? (
+            <Text style={[styles.windowLabel, { color: colors.textMuted }]}>
+              {window.toUpperCase()}
+            </Text>
+          ) : null}
+          {resolveSlots(viewedSplit, day.day, window, overrides).map((_, i) =>
+            renderSlot(day.day, window, i + 1),
+          )}
+        </View>
+      ))}
+    </View>,
+  ]);
+  // Head elements sit at scroller children 1, 3, 5, 7 (the page head
+  // is child 0); BoardShell forwards the indices to the ScrollView.
+  const stickyIndices = days.map((_, di) => 1 + di * 2);
+
   return (
     <BoardShell
       surface="analytics"
       onBack={safeGoBack}
       testID="program-days"
+      stickyHeaderIndices={stickyIndices}
       contentContainerStyle={styles.bodyContent}
     >
       <View style={styles.dayFirst}>
@@ -263,50 +308,23 @@ export default function ProgramScreen() {
         </Text>
       </View>
 
-      {/* EVERY DAY AN EQUAL CHAPTER — no elevated day 1 (the owner's
-          correction): the statement above is the EDITION's name, and
-          the days read as its table of contents. */}
-      {days.map((day, di) => (
-        <View
-          key={day.day}
-          style={[
-            di === 0 ? styles.dayFirstChapter : styles.daySeparated,
-            di > 0 ? { borderTopColor: colors.mobilePremium.hairlineBorder } : null,
-          ]}
-        >
-          <View style={styles.dayHeadRow}>
-            <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
-              {day.title}
-            </Text>
-            <Text style={[styles.dayHeadFigure, { color: colors.textMuted }]}>
-              {`${dayLifts(day.day)} lifts`}
-            </Text>
-          </View>
-          {windows.map((window) => (
-            <View key={window} style={styles.windowBlock}>
-              {isTwoADay ? (
-                <Text style={[styles.windowLabel, { color: colors.textMuted }]}>
-                  {window.toUpperCase()}
-                </Text>
-              ) : null}
-              {resolveSlots(viewedSplit, day.day, window, overrides).map((_, i) =>
-                renderSlot(day.day, window, i + 1),
-              )}
-            </View>
-          ))}
-        </View>
-      ))}
+      {/* THE STICKY DAY HEADS — each day is TWO direct children of
+          the scroller (head row, then body) so stickyHeaderIndices can
+          pin the heads: the day you're inside rides the top while its
+          slots scroll under it. The heads carry opaque grounds WITH
+          the paper's tooth (no show-through, no flat patch). */}
+      {dayElements}
 
-        {share.length > 0 ? (
-          <View
-            style={[styles.shareBlock, { borderTopColor: colors.text }]}
-            testID="program-share"
-          >
-            {/* THE WORK CLOSES THE PAGE — the days are the content
-                and lead; the share is the summary the page ends on
-                (the 2px rule is the page's one: the closer's
-                landmark, the home day register's echo). */}
-            <SectionWhisper rule={false}>THE WORK</SectionWhisper>
+      {/* THE WORK CLOSES THE PAGE — the days are the content
+          and lead; the share is the summary the page ends on
+          (the 2px rule is the page's one: the closer's
+          landmark, the home day register's echo). */}
+      {share.length > 0 ? (
+        <View
+          style={[styles.shareBlock, { borderTopColor: colors.text }]}
+          testID="program-share"
+        >
+          <SectionWhisper rule={false}>THE WORK</SectionWhisper>
             {share.map((row) => (
               <View key={row.muscle} style={styles.shareRow}>
                 <Text style={[styles.shareLabel, { color: colors.textSecondary }]} numberOfLines={1}>
@@ -320,8 +338,8 @@ export default function ProgramScreen() {
                 </Text>
               </View>
             ))}
-          </View>
-        ) : null}
+        </View>
+      ) : null}
 
       {overriddenCount > 0 ? (
         <MobilePrimaryButton
@@ -386,6 +404,16 @@ const styles = StyleSheet.create({
   },
   day: {
     ...INTERVAL.block,
+  },
+  // THE STICKY DAY HEAD — opaque ground (toothed) so the slots
+  // scrolling under it never show through; pinned via
+  // stickyHeaderIndices.
+  dayHeadSticky: {
+    paddingTop: 8,
+    paddingBottom: 6,
+  },
+  dayHeadFirst: {
+    marginTop: 28,
   },
   // Days 2-4: the hairline landmark (the ≤3 budget, spent) — the
   // chapter's paragraph mark; Day 1 is demarcated by THE WORK's 2px
