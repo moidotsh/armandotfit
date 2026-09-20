@@ -33,7 +33,7 @@ import { APP_DISPLAY_NAME, APP_LAYOUT } from '../constants';
 import { isWeb, hasDocument, hasWindow } from '../utils/platform';
 import { logger } from '../utils';
 import { curtainEnabled, markBootReady } from '../utils/routeTransition';
-import { initializeNetworkListeners } from '../stores';
+import { initializeNetworkListeners, zustandStorage } from '../stores';
 import { AuthProvider, ToastProvider, ThemeProvider, useAppTheme } from '../context';
 import { AuthGuard, ToastContainer, AppErrorBoundary } from '../components/primitives';
 import { QueryProvider } from '../lib/react-query';
@@ -61,11 +61,30 @@ function RootShell() {
   }, []);
 
   // Boot-plate handshake (web only): lift the pre-JS ink cover pasted
-  // into index.html. Setting data-boot-ready is a no-op when no boot CSS
-  // exists.
+  // into index.html — but only when a PRESENTABLE frame is under it.
+  // The theme hydrates the persisted scheme in an effect (its first
+  // frame is always the default) and the display faces load async, so
+  // lifting on mount flashed a light, serif frame in dark mode. Read
+  // the same storage key the theme reads, wait for the faces, then
+  // paint one frame before lifting. A no-op when no boot CSS exists.
   useEffect(() => {
     if (!isWeb || !hasDocument()) return;
-    markBootReady();
+    let alive = true;
+    const lift = () => {
+      requestAnimationFrame(() => {
+        if (alive) requestAnimationFrame(() => { if (alive) markBootReady(); });
+      });
+    };
+    void (async () => {
+      try {
+        await zustandStorage.getItem('arqavellum:color-scheme');
+      } catch {}
+      await Promise.resolve(document.fonts?.ready);
+      lift();
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
   // PWA runtime injection + service worker registration. Both gated on
