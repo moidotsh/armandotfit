@@ -16,7 +16,8 @@ describe('the air law carries over (taste-independent)', () => {
 
   it('spreads the statement from the shell token', () => {
     expect(INTERVAL.statement.fontSize).toBe(36);
-    expect(INTERVAL.statement.fontFamily).toBe('Space Grotesk');
+    // THE EDITORIAL PASS: the statement speaks the serif.
+    expect(INTERVAL.statement.fontFamily).toBe('Instrument Serif');
     expect(INTERVAL.row.fontSize).toBe(18);
   });
 

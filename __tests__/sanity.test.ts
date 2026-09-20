@@ -18,16 +18,17 @@ describe('theme', () => {
     expect(lightKeys).toEqual(darkKeys);
   });
 
-  it('uses the scoreboard red ink + the ink verb in light mode', () => {
-    // THE SCOREBOARD palette (docs/architecture/scoreboard-thesis.md
-    // §4) — brand is RED INK (marks records, links, the live pulse;
-    // 5.29:1 with its on-fill text), brandText is the AA small-text
-    // companion, and THE VERB IS INK: buttonBackground is the
-    // ground's text color with the ground as its label (15.7:1).
-    expect(theme.colors.light.brand).toBe('#BE2B20');
-    expect(theme.colors.light.brandText).toBe('#A8241B');
+  it('uses the oxblood red ink + the ink verb in light mode', () => {
+    // THE EDITORIAL PASS palette: brand is OXBLOOD RED INK (marks
+    // records, links, the live pulse; AA with its on-fill text — the
+    // matrix in verify-design recomputes and enforces), brandText is
+    // the AA small-text companion, and THE VERB IS INK:
+    // buttonBackground is the ground's espresso with the cream ground
+    // as its label.
+    expect(theme.colors.light.brand).toBe('#B42B1E');
+    expect(theme.colors.light.brandText).toBe('#9A2318');
     expect(theme.colors.light.buttonBackground).toBe(theme.colors.light.text);
-    expect(theme.colors.light.textOnBrand).toBe('#F4F2EE');
+    expect(theme.colors.light.textOnBrand).toBe('#F5F1E9');
   });
 
   it('ships the mode-independent wire in both palettes', () => {
@@ -69,15 +70,20 @@ describe('theme', () => {
     // statements in Space Grotesk (no condensed second family), every
     // working figure in Martian Mono (tabular by construction),
     // reading in the platform sans.
+    // THE EDITORIAL PASS: the statement rank (36) speaks the SERIF —
+    // rows keep the grotesk, figures keep the mono.
     expect(theme.typography.mobileTitle.fontSize).toBe(18);
     expect(theme.typography.mobileTitle.fontFamily).toBe(theme.fonts.display);
     expect(theme.typography.mobileDisplay.fontSize).toBe(36);
-    expect(theme.typography.mobileDisplay.fontFamily).toBe(theme.fonts.display);
+    expect(theme.typography.mobileDisplay.fontFamily).toBe(theme.fonts.serif);
     // No condensed second family: the slot resolves to the display face.
     expect(theme.fonts.displayCondensed).toBe(theme.fonts.display);
     // The hero rank is retired — no size of its own, just the statement.
     expect(theme.typography.mobileHero.fontSize).toBe(36);
-    expect(theme.typography.mobileAction.fontWeight).toBe('700');
+    // THE EDITORIAL PASS: the verb label speaks the serif at its one
+    // true weight (400) — the ink plate reads like a title page.
+    expect(theme.typography.mobileAction.fontWeight).toBe('400');
+    expect(theme.typography.mobileAction.fontFamily).toBe('Instrument Serif');
     expect(theme.typography.mobileCounter.fontSize).toBe(72);
     // The counter rides the mono face's CONDENSED cut (the sight
     // amendment): the regular cut at 72 truncated the expression

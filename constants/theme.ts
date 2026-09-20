@@ -65,6 +65,12 @@ export interface TypeFaces {
   /** Display face — poster titles, display figures, totals. */
   display?: string;
   /**
+   * THE STATEMENT'S VOICE (the editorial pass): the serif that speaks
+   * the statements, the day titles, and the verb labels. One weight
+   * (400) — display sizes carry it; rows and figures never do.
+   */
+  serif?: string;
+  /**
    * Condensed position of the display face — for consumers whose
    * display face carries a width axis. Declared as a second
    * @font-face over the SAME variable file with `font-stretch` pinned
@@ -90,6 +96,11 @@ export interface TypeFaces {
 }
 
 const FONTS = {
+  // THE EDITORIAL PASS: Instrument Serif speaks the statement (one
+  // TTF, one weight — the editorial-minimal voice); Space Grotesk
+  // keeps the rows; Martian keeps every figure. Three faces, three
+  // jobs, 130 KB.
+  serif: 'Instrument Serif',
   // THE SCOREBOARD pair (docs/architecture/scoreboard-thesis.md §3.1)
   // — Space Grotesk (one variable file, wght 300–700) speaks the
   // scoreboard's words: the statement (one per screen), subheads,
@@ -183,39 +194,39 @@ export const theme = {
     // surface it rides.
     light: {
       // UI element colors
-      background: '#F4F2EE',
-      backgroundAlt: '#EFEDE8',
-      card: '#F4F2EE',
-      cardAlt: '#ECE9E4',
-      border: '#DAD6CE',
+      background: '#F5F1E9',
+      backgroundAlt: '#F0EBE0',
+      card: '#F5F1E9',
+      cardAlt: '#EDE7D9',
+      border: '#DAD2C1',
 
       // Panel edge colors — a 1px rule is the only edge a card has.
-      cardBorder: 'rgba(27, 25, 22, 0.22)',
-      cardBorderHover: 'rgba(27, 25, 22, 0.34)',
+      cardBorder: 'rgba(37, 31, 24, 0.22)',
+      cardBorderHover: 'rgba(37, 31, 24, 0.34)',
 
       // Text colors. Every informative slot clears WCAG AA (4.5:1) on
       // every surface it rides (matrix in thesis §4.3).
-      text: '#1B1916',
-      textMuted: '#6B665D',
-      textSecondary: '#4C4841',
+      text: '#251F18',
+      textMuted: '#6E6656',
+      textSecondary: '#544C3F',
 
       // Interactive element colors — the `brand` slot: RED INK.
       // Marks records, links, and the live pulse; appears as a fill
       // only in toasts/tints (measured 5.29 with its on-fill text).
-      brand: '#BE2B20',
-      brandHover: '#AE271D',
-      brandPress: '#9E231A',
-      brandMuted: 'rgba(190, 43, 32, 0.08)',
-      brandSoft: 'rgba(190, 43, 32, 0.12)',
+      brand: '#B42B1E',
+      brandHover: '#A5261B',
+      brandPress: '#962218',
+      brandMuted: 'rgba(180, 43, 30, 0.08)',
+      brandSoft: 'rgba(180, 43, 30, 0.12)',
       // THE VERB IS INK (thesis pillar 3): the heaviest mark on the
       // page is the ground's own ink, not a hue. 15.7:1 with its label.
-      buttonBackground: '#1B1916',
-      buttonBackgroundDisabled: 'rgba(27, 25, 22, 0.4)',
+      buttonBackground: '#251F18',
+      buttonBackgroundDisabled: 'rgba(37, 31, 24, 0.4)',
 
       // The brand slot's TEXT companion — the same red deepened until
       // it clears WCAG AA (4.5:1) as small text (labels, kickers,
       // links) on the ground and cardAlt.
-      brandText: '#A8241B',
+      brandText: '#9A2318',
 
       // Brand-hue accent for wire plates (the chit, the curtain) —
       // a brightened red reads on the near-black wire.
@@ -237,14 +248,14 @@ export const theme = {
 
       // Text color for content rendered on top of the ink verb (button
       // labels, the selected check). One paint per plate: ground on ink.
-      textOnBrand: '#F4F2EE',
+      textOnBrand: '#F5F1E9',
 
       // Secondary text on ink fills. One paint per plate: hierarchy on
       // an ink fill comes from size/face, not alpha.
-      textOnBrandMuted: '#F4F2EE',
+      textOnBrandMuted: '#F5F1E9',
 
       // Deeper background for full-bleed screens — the card's edge tone.
-      backgroundDeep: '#EAE7E1',
+      backgroundDeep: '#E9E2D2',
 
       // Text color variants. `textColors.muted` and `textMuted` are
       // unified (same value, both names). `tertiary` is DECORATIVE ONLY
@@ -252,9 +263,9 @@ export const theme = {
       // — it never carries information; informative quiet text reads
       // `textMuted`.
       textColors: {
-        muted: '#6B665D',
-        secondary: '#4C4841',
-        tertiary: '#9B958A',
+        muted: '#6E6656',
+        secondary: '#544C3F',
+        tertiary: '#9D947F',
       },
 
       // Icon background tints (semantic — darker hue on pale tint).
@@ -269,15 +280,15 @@ export const theme = {
       // Glass tokens (kept for the shell's glass-dialect primitives).
       // On the one-ground system these read as neutral tints.
       glass: {
-        background: 'rgba(244, 242, 238, 0.72)',
-        backgroundLight: 'rgba(244, 242, 238, 0.55)',
-        border: 'rgba(27, 25, 22, 0.22)',
-        borderHighlight: 'rgba(27, 25, 22, 0.30)',
-        borderHover: 'rgba(27, 25, 22, 0.26)',
-        emptyInputBorder: 'rgba(27, 25, 22, 0.34)',
-        panelBackground: 'rgba(234, 231, 225, 0.6)',
-        inputBackground: 'rgba(27, 25, 22, 0.04)',
-        inputFocusBackground: 'rgba(27, 25, 22, 0.07)',
+        background: 'rgba(245, 241, 233, 0.72)',
+        backgroundLight: 'rgba(245, 241, 233, 0.55)',
+        border: 'rgba(37, 31, 24, 0.22)',
+        borderHighlight: 'rgba(37, 31, 24, 0.30)',
+        borderHover: 'rgba(37, 31, 24, 0.26)',
+        emptyInputBorder: 'rgba(37, 31, 24, 0.34)',
+        panelBackground: 'rgba(233, 226, 210, 0.6)',
+        inputBackground: 'rgba(37, 31, 24, 0.04)',
+        inputFocusBackground: 'rgba(37, 31, 24, 0.07)',
       },
 
       // Alert background tint for error containers.
@@ -289,13 +300,13 @@ export const theme = {
       // 'none' — the logger docks under a 2px rule, not a lift.
       mobilePremium: {
         // Hairline border (inner) — ink at low opacity.
-        hairlineBorder: 'rgba(27, 25, 22, 0.22)',
-        hairlineBorderStrong: 'rgba(27, 25, 22, 0.34)',
+        hairlineBorder: 'rgba(37, 31, 24, 0.22)',
+        hairlineBorderStrong: 'rgba(37, 31, 24, 0.34)',
 
         // Surface gradient stops — flat; kept for primitives that
         // composite the axis (both stops zero).
-        surfaceGradientTop: 'rgba(27, 25, 22, 0.0)',
-        surfaceGradientBottom: 'rgba(27, 25, 22, 0.0)',
+        surfaceGradientTop: 'rgba(37, 31, 24, 0.0)',
+        surfaceGradientBottom: 'rgba(37, 31, 24, 0.0)',
 
         // Contact shadow — none. Nothing is lifted.
         surfaceGlow: 'none',
@@ -308,7 +319,7 @@ export const theme = {
         surfaceBackdropBlur: 'blur(24px) saturate(160%)',
 
         // Android Chrome fallback — near-solid surface + milder blur.
-        androidChromeSurfaceBackground: 'rgba(244, 242, 238, 0.88)',
+        androidChromeSurfaceBackground: 'rgba(245, 241, 233, 0.88)',
         androidChromeSurfaceBlur: 'blur(12px)',
 
         // Nav drawer (shell parity; the drawer stays synced but unwired
@@ -318,10 +329,10 @@ export const theme = {
         navPanelShadow: 'none',
 
         // Faint vignette to settle the card into its edges (web).
-        atmosphereVignette: 'inset 0 0 210px 80px rgba(27, 25, 22, 0.055)',
+        atmosphereVignette: 'inset 0 0 210px 80px rgba(37, 31, 24, 0.06)',
 
         // Rail (progress) — fill travels across a 2px track.
-        railTrack: 'rgba(27, 25, 22, 0.14)',
+        railTrack: 'rgba(37, 31, 24, 0.14)',
         railFillShadow: 'none',
       },
 
@@ -338,36 +349,36 @@ export const theme = {
     // structural shape MUST match `light` so
     // `theme.colors[colorScheme].*` is type-safe.
     dark: {
-      background: '#161412',
-      backgroundAlt: '#1A1815',
-      card: '#161412',
-      cardAlt: '#1E1B18',
-      border: '#2B2723',
+      background: '#141110',
+      backgroundAlt: '#191613',
+      card: '#141110',
+      cardAlt: '#1E1A15',
+      border: '#2C261E',
 
       // Panel edge colors — chalk rules on the unlit board.
-      cardBorder: 'rgba(237, 234, 228, 0.20)',
-      cardBorderHover: 'rgba(237, 234, 228, 0.30)',
+      cardBorder: 'rgba(240, 233, 221, 0.20)',
+      cardBorderHover: 'rgba(240, 233, 221, 0.30)',
 
       // Text colors — measured (thesis §4.3): text ~15.3 on ground,
       // secondary ~10.3, muted ≥5.4 on cardAlt.
-      text: '#EDEAE4',
-      textMuted: '#978F85',
-      textSecondary: '#C6C1B8',
+      text: '#F0E9DD',
+      textMuted: '#9C907E',
+      textSecondary: '#CDC4B2',
 
       // The `brand` slot at night: bright red ink — high contrast on
       // the board as fill/large type; `brandText` carries small text.
-      brand: '#FF6B5E',
-      brandHover: '#FF7B6E',
-      brandPress: '#E95F53',
-      brandMuted: 'rgba(255, 107, 94, 0.14)',
-      brandSoft: 'rgba(255, 107, 94, 0.18)',
+      brand: '#FF7161',
+      brandHover: '#FF8071',
+      brandPress: '#ED6555',
+      brandMuted: 'rgba(255, 113, 97, 0.14)',
+      brandSoft: 'rgba(255, 113, 97, 0.18)',
       // THE VERB IS INK: at night the ink is chalk — the heaviest mark
       // inverts with the room. 15.3:1 with its label.
-      buttonBackground: '#EDEAE4',
-      buttonBackgroundDisabled: 'rgba(237, 234, 228, 0.4)',
+      buttonBackground: '#F0E9DD',
+      buttonBackgroundDisabled: 'rgba(240, 233, 221, 0.4)',
 
       // Text companion of `brand` (see `light.brandText`).
-      brandText: '#FF8577',
+      brandText: '#FF8D7E',
 
       // Brand-hue accent for wire plates (identical register both
       // modes — see light.brandOnInk).
@@ -387,20 +398,20 @@ export const theme = {
       alert: '#F27F72',
 
       // Night ink on the chalk verb — one paint per plate.
-      textOnBrand: '#161412',
+      textOnBrand: '#141110',
 
       // One paint per plate (see light.textOnBrandMuted).
-      textOnBrandMuted: '#161412',
+      textOnBrandMuted: '#141110',
 
       // Page tone for full-bleed screens — the board's edge.
-      backgroundDeep: '#100F0D',
+      backgroundDeep: '#0E0C0A',
 
       // Text color variants. `tertiary` is DECORATIVE ONLY — never
       // carries information.
       textColors: {
-        muted: '#978F85',
-        secondary: '#C6C1B8',
-        tertiary: '#6E675E',
+        muted: '#9C907E',
+        secondary: '#CDC4B2',
+        tertiary: '#716555',
       },
 
       // Icon background tints — bright hue on dark tint.
@@ -414,15 +425,15 @@ export const theme = {
 
       // Glassmorphism (dark) — smoked ground tints.
       glass: {
-        background: 'rgba(22, 20, 18, 0.72)',
-        backgroundLight: 'rgba(22, 20, 18, 0.55)',
-        border: 'rgba(237, 234, 228, 0.20)',
-        borderHighlight: 'rgba(237, 234, 228, 0.28)',
-        borderHover: 'rgba(237, 234, 228, 0.24)',
-        emptyInputBorder: 'rgba(237, 234, 228, 0.32)',
-        panelBackground: 'rgba(16, 15, 13, 0.6)',
-        inputBackground: 'rgba(237, 234, 228, 0.05)',
-        inputFocusBackground: 'rgba(237, 234, 228, 0.09)',
+        background: 'rgba(20, 17, 16, 0.72)',
+        backgroundLight: 'rgba(20, 17, 16, 0.55)',
+        border: 'rgba(240, 233, 221, 0.20)',
+        borderHighlight: 'rgba(240, 233, 221, 0.28)',
+        borderHover: 'rgba(240, 233, 221, 0.24)',
+        emptyInputBorder: 'rgba(240, 233, 221, 0.32)',
+        panelBackground: 'rgba(14, 12, 10, 0.6)',
+        inputBackground: 'rgba(240, 233, 221, 0.05)',
+        inputFocusBackground: 'rgba(240, 233, 221, 0.09)',
       },
 
       // Alert background tint for error containers (dark red wash).
@@ -431,11 +442,11 @@ export const theme = {
       // ── Mobile premium primitive kit tokens (dark) ───────────────────
       // Still at night: rules up, no lifts.
       mobilePremium: {
-        hairlineBorder: 'rgba(237, 234, 228, 0.20)',
-        hairlineBorderStrong: 'rgba(237, 234, 228, 0.32)',
+        hairlineBorder: 'rgba(240, 233, 221, 0.20)',
+        hairlineBorderStrong: 'rgba(240, 233, 221, 0.32)',
 
-        surfaceGradientTop: 'rgba(237, 234, 228, 0.0)',
-        surfaceGradientBottom: 'rgba(237, 234, 228, 0.0)',
+        surfaceGradientTop: 'rgba(240, 233, 221, 0.0)',
+        surfaceGradientBottom: 'rgba(240, 233, 221, 0.0)',
 
         surfaceGlow: 'none',
 
@@ -443,7 +454,7 @@ export const theme = {
 
         surfaceBackdropBlur: 'blur(24px) saturate(140%)',
 
-        androidChromeSurfaceBackground: 'rgba(22, 20, 18, 0.88)',
+        androidChromeSurfaceBackground: 'rgba(20, 17, 16, 0.88)',
         androidChromeSurfaceBlur: 'blur(12px)',
 
         navScrimBackdropBlur: 'blur(8px)',
@@ -452,7 +463,7 @@ export const theme = {
 
         atmosphereVignette: 'inset 0 0 210px 80px rgba(0, 0, 0, 0.38)',
 
-        railTrack: 'rgba(237, 234, 228, 0.16)',
+        railTrack: 'rgba(240, 233, 221, 0.16)',
         railFillShadow: 'none',
       },
 
@@ -617,11 +628,13 @@ export const theme = {
       fontFamily: undefined,
     } satisfies TypographyToken,
     mobileAction: {
+      // THE VERB'S TITLE (the editorial pass): caps in the serif —
+      // the ink plate reads like a book's title page.
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: '400',
       lineHeight: 24,
       letterSpacing: 0.8,
-      fontFamily: FONTS.display,
+      fontFamily: FONTS.serif,
     } satisfies TypographyToken,
     mobileEyebrow: {
       fontSize: 12,
@@ -644,17 +657,23 @@ export const theme = {
     // `62.5 × 8` at figure scale, the app's most confident mark.
     mobileHero: {
       fontSize: 36,
-      fontWeight: '700',
+      // The editorial pass: the statement speaks the serif at its one
+      // true weight — 400 is the face's whole voice, and display
+      // sizes carry it without bold.
+      fontWeight: '400',
       lineHeight: 42,
       letterSpacing: -0.5,
-      fontFamily: FONTS.display,
+      fontFamily: FONTS.serif,
     } satisfies TypographyToken,
     mobileDisplay: {
       fontSize: 36,
-      fontWeight: '700',
+      // The editorial pass: the statement speaks the serif at its one
+      // true weight — 400 is the face's whole voice, and display
+      // sizes carry it without bold.
+      fontWeight: '400',
       lineHeight: 42,
       letterSpacing: -0.5,
-      fontFamily: FONTS.display,
+      fontFamily: FONTS.serif,
     } satisfies TypographyToken,
     mobileFigure: {
       fontSize: 18,
@@ -676,10 +695,13 @@ export const theme = {
     // resolves to the display face itself.)
     mobileTitleCondensed: {
       fontSize: 36,
-      fontWeight: '700',
+      // The editorial pass: the statement speaks the serif at its one
+      // true weight — 400 is the face's whole voice, and display
+      // sizes carry it without bold.
+      fontWeight: '400',
       lineHeight: 42,
       letterSpacing: -0.5,
-      fontFamily: FONTS.display,
+      fontFamily: FONTS.serif,
     } satisfies TypographyToken,
     // THE ARMED EXPRESSION — the logger's `weight × reps` line and
     // the streak: mono 72, the biggest mark in the system. Under

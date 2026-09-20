@@ -30,8 +30,8 @@
       injection agree.
       Full design + debugging checklist: docs/architecture/pwa-installability.md.
     -->
-    <meta name="theme-color" content="#EAE7E1" media="(min-width: 701px)" />
-    <meta name="theme-color" content="#EAE7E1" media="(max-width: 700px)" />
+    <meta name="theme-color" content="#E9E2D2" media="(min-width: 701px)" />
+    <meta name="theme-color" content="#E9E2D2" media="(max-width: 700px)" />
 
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icons/192.png" />
@@ -59,7 +59,18 @@
     -->
     <link rel="preload" href="/fonts/space-grotesk-var.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/martian-mono-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/instrument-serif.ttf" as="font" type="font/ttf" crossorigin />
     <style id="arq-font-faces">
+      /* THE STATEMENT'S VOICE (the editorial pass): Instrument Serif —
+         the statement, the day titles, and the verb labels speak it;
+         one weight (400), display sizes, the editorial minimal read. */
+      @font-face {
+        font-family: 'Instrument Serif';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('/fonts/instrument-serif.ttf') format('truetype');
+      }
       @font-face {
         font-family: 'Space Grotesk';
         font-style: normal;
@@ -92,7 +103,7 @@
     <!--
       THE INTERVAL boot plate — the pre-JS cover. armandotfit's
       design language opens as the printed card: the card's edge tone
-      (#EAE7E1) with the name stamped in ink Space Grotesk caps and a
+      (#E9E2D2 — the editorial pass's card edge) with the name stamped in ink
       2px red-ink rule beneath it — not a white flash, not a colored
       plate. The root layout lifts it via markBootReady() →
       html[data-boot-ready] as soon as React mounts (see
@@ -102,7 +113,7 @@
     -->
     <style id="ink-boot-plate">
       html:not([data-boot-ready]) body {
-        background: #eae7e1;
+        background: #e9e2d2;
       }
       html:not([data-boot-ready]) #root::before {
         content: 'ARMANDOTFIT';
@@ -111,8 +122,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #eae7e1;
-        color: #1b1916;
+        background: #e9e2d2;
+        color: #251f18;
         font-family: 'Space Grotesk', -apple-system, sans-serif;
         font-size: 18px;
         font-weight: 700;
@@ -151,7 +162,7 @@
         height: 100%;
         margin: 0;
         padding: 0;
-        background: #eae7e1;
+        background: #e9e2d2;
       }
       #root {
         display: flex;
