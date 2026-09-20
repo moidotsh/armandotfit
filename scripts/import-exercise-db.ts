@@ -245,8 +245,10 @@ for (const file of files) {
       `    description: '${description.replace(/'/g, "\\'")}',`,
       `    instructions: '${instructions.replace(/'/g, "\\'")}',`,
       `    tips: '',`,
-      `    primaryMuscles: ['${prim.join("', '")}'],`,
-      `    secondaryMuscles: ['${sec.join("', '")}'],`,
+      // Empty muscle sets emit [] — a join on an empty array would
+      // print [''] (one illegal empty slug).
+      `    primaryMuscles: ${prim.length ? `['${prim.join("', '")}']` : '[]'},`,
+      `    secondaryMuscles: ${sec.length ? `['${sec.join("', '")}']` : '[]'},`,
       `    equipment: [],`,
       `    defaultSets: 3,`,
       `    defaultReps: [8, 12],`,

@@ -9,13 +9,18 @@ import { SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
 describe('rankAlternatives', () => {
   it('lat pulldown taken → cable/machine rows + pull-up rank high, floor work low', () => {
     const pulldown = SYSTEM_EXERCISES_BY_SLUG['lat-pulldown'];
-    const alts = rankAlternatives(pulldown);
+    // The imported catalog (660 lifts) crowds the old roster: pure-lat
+    // variants (Close-Grip Pulldown, Full-ROM Pulldown) legitimately
+    // outrank the old staples by muscle overlap. The head is asserted
+    // over the top-3, membership over the top-20 — the ranking's LAW
+    // is overlap, not roster.
+    const alts = rankAlternatives(pulldown, 20);
     const names = alts.map((a) => a.exercise.name);
 
-    // Same-musle, same-modality alternatives at the top.
-    expect(names).toContain('Machine Seated Row');
+    // Same-muscle, same-modality alternatives at the head.
+    expect(names.slice(0, 3)).toContain('Pull-up');
+    expect(names.slice(0, 3)).toContain('Machine Seated Row');
     expect(names).toContain('Cable Row');
-    expect(names).toContain('Pull-up');
 
     // The pull-up (same family, machine station) beats unrelated floor work.
     const pullUpIdx = names.indexOf('Pull-up');
