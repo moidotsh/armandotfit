@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   triggerLabel: {
-    fontSize: 16,
+    fontSize: theme.typography.mobileTitle.fontSize,
     fontWeight: '500',
     flex: 1,
     paddingRight: 8,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sheetTitle: {
-    fontSize: 16,
+    fontSize: theme.typography.mobileTitle.fontSize,
     fontWeight: '600',
     flex: 1,
     textAlign: 'center',
@@ -318,16 +318,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   optionLabel: {
-    fontSize: 16,
+    fontSize: theme.typography.mobileTitle.fontSize,
   },
   optionDesc: {
-    fontSize: 13,
+    fontSize: theme.typography.mobileEyebrow.fontSize,
     marginTop: 2,
   },
   optionCheck: {
     width: 22,
     height: 22,
-    borderRadius: 11,
+    borderRadius: 11, // mark-exempt: the selection check is a 22px disc — a mark, not a plate
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,

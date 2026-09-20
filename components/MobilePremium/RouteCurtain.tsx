@@ -367,10 +367,12 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     // The mono face when one is declared; heavy platform type otherwise.
+    // The stamp rides the ramp like every other piece of chrome — the
+    // incumbent's 11px/2.4 tracking was type the law never spent.
     fontFamily: theme.fonts.mono,
-    fontSize: 11,
+    fontSize: theme.typography.mobileEyebrow.fontSize,
     fontWeight: '700',
-    letterSpacing: 2.4,
+    letterSpacing: theme.typography.mobileEyebrow.letterSpacing,
     textTransform: 'uppercase',
     marginBottom: 8,
   },
@@ -380,7 +382,7 @@ const styles = StyleSheet.create({
     // the weight spelled out.
     fontFamily: theme.fonts.displayCondensed ?? theme.fonts.display,
     fontWeight: theme.fonts.displayCondensed ?? theme.fonts.display ? '700' : '800',
-    letterSpacing: 0.5,
+    letterSpacing: 0,
     textTransform: 'uppercase',
   },
 });

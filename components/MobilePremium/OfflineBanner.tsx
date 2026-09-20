@@ -17,6 +17,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useAppTheme } from '../../context';
+import { theme } from '../../constants';
 import { MobilePrimaryButton } from './MobilePrimaryButton';
 
 export type OfflineBannerVariant = 'offline' | 'syncing' | 'sync-failed';
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderLeftWidth: 3,
-    borderRadius: 8,
+    borderRadius: theme.shapes.control,
   },
   dotWrap: {
     paddingRight: 10,
@@ -140,9 +141,9 @@ const styles = StyleSheet.create({
   text: {
     flexShrink: 1,
     flexGrow: 1,
-    fontSize: 14,
+    fontSize: theme.typography.mobileBody.fontSize,
     fontWeight: '500',
-    lineHeight: 18,
+    lineHeight: theme.typography.mobileBody.lineHeight,
   },
   actionWrap: {
     flexShrink: 0,

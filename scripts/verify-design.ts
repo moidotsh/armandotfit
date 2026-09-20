@@ -152,10 +152,14 @@ for (const mode of ['light', 'dark'] as const) {
 // No ad-hoc type in the consumer-authored layer: every numeric
 // fontSize ∈ {12,18,36,72} and every numeric letterSpacing ∈
 // {−1.5, −0.5, 0, +0.8}. The kit primitives THIS app renders are
-// held to the same law (they read the consumer's tokens); the
-// shell's unrendered primitives, the showcase (the shell's gallery),
-// and the wire machinery (RouteCurtain — the mode-independent
-// interrupt register) are the shell's own surfaces and stay exempt.
+// held to the same law (they read the consumer's tokens) — the
+// states amendment widened the list from ten hand-named files to
+// every kit file the shell layout or a route actually mounts
+// (OfflineBanner, RouteCurtain's stamp, the form trio, the
+// atmosphere); a literal above mark scale needs the mark's own
+// `mark-exempt:` excuse on its line. The shell's unrendered
+// primitives and the showcase (the shell's gallery) stay exempt —
+// they are the shell's own surfaces.
 const SCRIPT_DIR = new URL('.', import.meta.url).pathname;
 const REPO_ROOT = join(SCRIPT_DIR, '..');
 function* tsxFiles(dir: string): Generator<string> {
@@ -175,10 +179,15 @@ const CLEAN_KIT_FILES = [
   'components/MobilePremium/FilterChip.tsx',
   'components/MobilePremium/MobileActionFooter.tsx',
   'components/MobilePremium/MobileAlert.tsx',
+  'components/MobilePremium/MobileAtmosphere.tsx',
   'components/MobilePremium/MobileHeader.tsx',
   'components/MobilePremium/MobileInput.tsx',
   'components/MobilePremium/MobilePrimaryButton.tsx',
+  'components/MobilePremium/MobileSelect.tsx',
   'components/MobilePremium/MobileSheet.tsx',
+  'components/MobilePremium/DatePickerField.tsx',
+  'components/MobilePremium/OfflineBanner.tsx',
+  'components/MobilePremium/RouteCurtain.tsx',
   'components/MobilePremium/SearchField.tsx',
   'components/MobilePremium/SegmentedControl.tsx',
   // The focus-ring primitive — the ring rides the host's shape law
@@ -217,8 +226,16 @@ for (const rel of [...SCAN_DIRS, ...CLEAN_KIT_FILES]) {
     }
     for (const m of src.matchAll(BORDER_RADIUS_RE)) {
       const r = Number(m[1]);
+      if (r <= MARK_SCALE_RADIUS) continue;
+      // A literal above mark scale needs the mark's own excuse: a
+      // trailing `mark-exempt:` comment on its line.
+      const at = m.index ?? 0;
+      const lineStart = src.lastIndexOf('\n', at) + 1;
+      const lineEnd = src.indexOf('\n', at);
+      const line = src.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+      if (line.includes('mark-exempt:')) continue;
       check(
-        r <= MARK_SCALE_RADIUS,
+        false,
         `square cut: ${relName} borderRadius ${r} ≤ mark scale (${MARK_SCALE_RADIUS})`,
       );
     }

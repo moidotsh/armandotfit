@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   },
   orb: {
     position: 'absolute',
-    borderRadius: 999,
+    borderRadius: 999, // mark-exempt: the atmosphere orb is a mark, not a plate
   },
   orbBandFull: { ...StyleSheet.absoluteFillObject },
   orbBandColumned: {

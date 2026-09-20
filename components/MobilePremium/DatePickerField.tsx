@@ -269,14 +269,14 @@ const styles = StyleSheet.create({
   trigger: {
     height: 54,
     borderWidth: 1.5,
-    borderRadius: 14,
+    borderRadius: theme.shapes.control,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   triggerLabel: {
-    fontSize: 16,
+    fontSize: theme.typography.mobileTitle.fontSize,
     fontWeight: '500',
     flex: 1,
     paddingRight: 8,
@@ -296,13 +296,13 @@ const styles = StyleSheet.create({
     width: 8,
   },
   errorText: {
-    fontSize: 12,
+    fontSize: theme.typography.mobileFieldLabel.fontSize,
     fontWeight: '500',
     lineHeight: 16,
     marginTop: 2,
   },
   helperText: {
-    fontSize: 13,
+    fontSize: theme.typography.mobileEyebrow.fontSize,
     lineHeight: 18,
     marginTop: 2,
   },
