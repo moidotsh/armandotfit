@@ -108,53 +108,90 @@ export default function ProgramScreen() {
       testID="program-scroll"
       contentContainerStyle={styles.bodyContent}
     >
+      {/* THE PAGE HEAD — the first chapter's title is the page's
+          statement (the thesis's rule); the edition view rides under
+          its fact; THE WORK prints the WHOLE ROTATION's muscle share
+          (every day, every window — the entirety of the program, not a
+          single session's slice). */}
+      <View style={styles.dayFirst}>
+        <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
+          {`THE ROTATION · ${days.length} DAYS · ${CURRENT_ERA}`}
+        </Text>
+        <Text style={[styles.dayTitleLead, { color: colors.text }]} numberOfLines={1}>
+          {days[0].title}
+        </Text>
+        <Text
+          style={[styles.dayFact, { color: colors.textMuted }]}
+          numberOfLines={1}
+        >
+          {`${isTwoADay ? 'AM + PM · ' : ''}${dayLifts(days[0].day)} lifts`}
+        </Text>
+        <View style={styles.editionToggle}>
+          {/* THE EDITION VIEW — inspect either plan; viewing is not
+              switching (the preference changes on GO). */}
+          <SegmentedControl<PreferredSplit>
+            variant="selection"
+            chromeless
+            segments={[
+              { value: 'twoADay', label: 'two-a-day' },
+              { value: 'oneADay', label: 'one-a-day' },
+            ]}
+            value={viewedSplit}
+            onChange={setViewedSplit}
+            accessibilityLabel="Plan edition view"
+            testID="program-edition"
+          />
+        </View>
+        {(() => {
+          const planSlots = days.flatMap((day) =>
+            (isTwoADay ? ['am', 'pm'] : ['single']).flatMap((w) =>
+              resolveSlots(viewedSplit, day.day, w as SessionWindow, overrides),
+            ),
+          );
+          const share = derivePlanMuscleShare(planSlots);
+          if (share.length === 0) return null;
+          return (
+            <View style={styles.shareBlock} testID="program-share">
+              <SectionWhisper rule={false}>THE WORK</SectionWhisper>
+              {share.map((row) => (
+                <View key={row.muscle} style={styles.shareRow}>
+                  <Text style={[styles.shareLabel, { color: colors.textSecondary }]} numberOfLines={1}>
+                    {MUSCLE_DISPLAY_NAMES[row.muscle].toUpperCase()}
+                  </Text>
+                  <Text style={[styles.shareBar, { color: colors.text }]}>
+                    {'\u2588'.repeat(Math.max(1, Math.round((row.share / 100) * 20)))}
+                  </Text>
+                  <Text style={[styles.sharePct, { color: colors.textMuted }]}>
+                    {`${row.share}%`}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          );
+        })()}
+      </View>
+
       {days.map((day, di) => {
         const windows: SessionWindow[] = isTwoADay ? ['am', 'pm'] : ['single'];
         const dayFact = `${isTwoADay ? 'AM + PM · ' : ''}${dayLifts(day.day)} lifts`;
         return (
-          <View key={day.day} style={di === 0 ? styles.dayFirst : styles.day}>
-            {/* Day head: the first day is the page's statement under
-                the page-identity whisper (THE ROTATION · N DAYS —
-                spoken at rest, held in the column); the rest are
-                subheads. One fact line beneath each. */}
-            {di === 0 ? (
+          <View key={day.day} style={di === 0 ? styles.dayFirstChapter : styles.day}>
+            {/* Day head: the FIRST chapter's title already served as
+                the page statement above (it renders headless here);
+                the rest are subheads with their fact line. */}
+            {di === 0 ? null : (
               <>
-                <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
-                  {`THE ROTATION · ${days.length} DAYS · ${CURRENT_ERA}`}
-                </Text>
-                <Text style={[styles.dayTitleLead, { color: colors.text }]} numberOfLines={1}>
+                <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
                   {day.title}
                 </Text>
+                <Text
+                  style={[styles.dayFact, { color: colors.textMuted }]}
+                  numberOfLines={1}
+                >
+                  {dayFact}
+                </Text>
               </>
-            ) : (
-              <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
-                {day.title}
-              </Text>
             )}
-            <Text
-              style={[styles.dayFact, { color: colors.textMuted }]}
-              numberOfLines={1}
-            >
-              {dayFact}
-            </Text>
-            {di === 0 ? (
-              <View style={styles.editionToggle}>
-                {/* THE EDITION VIEW — inspect either plan; viewing is
-                    not switching (the preference changes on GO). */}
-                <SegmentedControl<PreferredSplit>
-                  variant="selection"
-                  chromeless
-                  segments={[
-                    { value: 'twoADay', label: 'two-a-day' },
-                    { value: 'oneADay', label: 'one-a-day' },
-                  ]}
-                  value={viewedSplit}
-                  onChange={setViewedSplit}
-                  accessibilityLabel="Plan edition view"
-                  testID="program-edition"
-                />
-              </View>
-            ) : null}
             {windows.map((window) => (
               <View key={window} style={styles.windowBlock}>
                 {isTwoADay ? (
@@ -167,36 +204,6 @@ export default function ProgramScreen() {
                 )}
               </View>
             ))}
-            {/* THE SHARE — the day's muscle breakdown as PRINTED
-                BARS: block glyphs scaled to the share (type as data,
-                the register grid's own trick — nothing drawn). Set
-                counts credit each slot's primary muscles; computed at
-                read from the program. */}
-            {(() => {
-              const daySlots = windows.flatMap((w) =>
-                resolveSlots(viewedSplit, day.day, w, overrides),
-              );
-              const share = derivePlanMuscleShare(daySlots);
-              if (share.length === 0) return null;
-              return (
-                <View style={styles.shareBlock} testID={`program-share-${day.day}`}>
-                  <SectionWhisper rule={false}>THE WORK</SectionWhisper>
-                  {share.map((row) => (
-                    <View key={row.muscle} style={styles.shareRow}>
-                      <Text style={[styles.shareLabel, { color: colors.textSecondary }]} numberOfLines={1}>
-                        {MUSCLE_DISPLAY_NAMES[row.muscle].toUpperCase()}
-                      </Text>
-                      <Text style={[styles.shareBar, { color: colors.text }]}>
-                        {'\u2588'.repeat(Math.max(1, Math.round((row.share / 100) * 20)))}
-                      </Text>
-                      <Text style={[styles.sharePct, { color: colors.textMuted }]}>
-                        {`${row.share}%`}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              );
-            })()}
           </View>
         );
       })}
@@ -257,6 +264,10 @@ const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 80 },
   dayFirst: {
     ...INTERVAL.blockFirst,
+  },
+  // The first chapter follows the page head (which carries its title).
+  dayFirstChapter: {
+    marginTop: 20,
   },
   day: {
     ...INTERVAL.block,
