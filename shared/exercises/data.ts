@@ -220,6 +220,14 @@ export interface SystemExerciseData {
   secondaryMuscles: MuscleSlug[];
   /** Equipment slugs + required/optional flag (default required). */
   equipment: Array<EquipmentSlug | { slug: EquipmentSlug; isRequired: boolean }>;
+  /**
+   * THE PLATE (the field-guide pass): the exercise's printed figure —
+   * a monochrome plate on the spec sheet, served from
+   * /exercise-plates/<slug>.jpg (public domain, free-exercise-db,
+   * resampled 640px). Optional: entries without plates render no
+   * figure (the instructions carry the meaning).
+   */
+  image?: string;
   /** Suggested sets (planning hint only). */
   defaultSets: number;
   /** Suggested rep range as [min, max]. */
@@ -264,7 +272,10 @@ export const ZONES: ReadonlyArray<{
   { modality: 'cardio', zone: 'CARDIO', chip: 'CD' },
 ];
 
-export const SYSTEM_EXERCISES: SystemExerciseData[] = [
+// The core catalog (hand-authored, the split's 26 identities + curated
+// extras) — composed with THE IMPORTED CATALOG below into the one
+// display source. Ours wins: the importer skips core names.
+const CORE_EXERCISES: SystemExerciseData[] = [
   // ── Chest ──────────────────────────────────────────────────────────
   {
     slug: 'incline-barbell-press',
@@ -2042,6 +2053,17 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [15, 30],
   },
 
+];
+
+// THE IMPORTED CATALOG (shared/exercises/importedData.ts — generated
+// from yuhonas/free-exercise-db, public domain): 660 strength-family
+// lifts with plates. Cast at the seam: the generated file is
+// self-contained (string slugs) so no import cycle exists.
+import { IMPORTED_EXERCISES } from './importedData';
+
+export const SYSTEM_EXERCISES: SystemExerciseData[] = [
+  ...CORE_EXERCISES,
+  ...(IMPORTED_EXERCISES as unknown as SystemExerciseData[]),
 ];
 
 // ──────────────────────────────────────────────────────────────────────
