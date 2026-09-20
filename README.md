@@ -45,7 +45,9 @@ The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 13-audit pre-co
 | Concern | Where it lives |
 |---|---|
 | The AM/PM program (slots, Rx, suggested tags) | `shared/exercises/splits.ts` |
-| Exercise catalog (display source, 93 entries) | `shared/exercises/data.ts` |
+| Exercise catalog (display source, 97 entries) | `shared/exercises/data.ts` |
+| Cardio station registry (fields, steps, formats) | `shared/exercises/cardio.ts` |
+| Cardio rows (`logged_cardio`) | migration `20270326000000_logged_cardio.sql` |
 | Active session state (draft, tags, set CRUD — persisted) | `stores/workoutStore.ts` |
 | Offline session-save queue | `services/sessionSaveQueue.ts` |
 | Logging write/read paths | `WorkoutRepository` + `workoutService` + `hooks/mutations/useLogWorkout.ts` |
