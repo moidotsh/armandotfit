@@ -15,6 +15,7 @@ export { zustandStorage } from './storage';
 // armandotfit domain stores
 export {
   useWorkoutStore,
+  rxLabel,
   type DraftSession,
   type DraftExercise,
   type DraftSet,

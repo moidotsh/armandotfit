@@ -26,10 +26,15 @@ import { QueryErrorNote } from './QueryErrorNote';
 import { useToast, useAppTheme } from '../../context';
 import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags } from '../../hooks';
 import { navigateToWorkoutDetail, safeGoBack } from '../../navigation';
-import { sumVolume } from '../../services';
-import { useSplitPreferenceStore, useWorkoutStore } from '../../stores';
+import { resolveSlots, sumVolume } from '../../services';
+import {
+  rxLabel,
+  useProgramOverrideStore,
+  useSplitPreferenceStore,
+  useWorkoutStore,
+} from '../../stores';
 import { INTERVAL, PAGE_GUTTER, theme } from '../../constants';
-import { eraFor } from '../../shared/exercises';
+import { eraFor, SYSTEM_EXERCISES, SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
 import {
   CARDIO_STATIONS,
   formatCardioDuration,
@@ -81,19 +86,48 @@ export function Receipt({ id }: ReceiptProps) {
     ? session.exercises.reduce((n, e) => n + sumVolume(e.sets), 0)
     : 0;
 
-  // CONTINUE THE DAY — a fresh block on the same day-of-split (the
-  // wood-chops case). The settled session never reopens; its day does.
-  const startSession = useWorkoutStore((s) => s.startSession);
+  // CONTINUE THE DAY — the day continues as a NEW block SEEDED with
+  // this session's own stations: names + tags carry, the program's Rx
+  // recovers where the slot resolves (standing substitutions included),
+  // set rows start fresh (the settled block's history stays right here
+  // on its receipt). Cardio stations seed as machines. The wood-chops
+  // case still works — add from the library on top.
+  const continueSession = useWorkoutStore((s) => s.continueSession);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
   const splitType = useSplitPreferenceStore((s) => s.splitType);
   const handleContinue = () => {
     if (!session) return;
-    startSession({
+    const window = windowLabel === 'AM' ? 'am' : 'pm';
+    // Rx recovery: match each logged name back to its programmed slot
+    // (the override-aware resolution — a standing substitution carries).
+    const slots =
+      session.splitDay != null
+        ? resolveSlots(
+            splitType,
+            session.splitDay,
+            window,
+            useProgramOverrideStore.getState().overrides,
+          )
+        : [];
+    const exercises = session.exercises.map((ex) => {
+      const slot =
+        slots.find((sl) => SYSTEM_EXERCISES_BY_SLUG[sl.exercise]?.name === ex.exerciseName) ??
+        null;
+      return {
+        exerciseName: ex.exerciseName,
+        exerciseSlug:
+          slot?.exercise ?? SYSTEM_EXERCISES.find((e) => e.name === ex.exerciseName)?.slug ?? '',
+        tags: ex.tags,
+        targetRx: slot ? rxLabel(slot) : null,
+      };
+    });
+    const cardio = [...new Set(session.cardio.map((c) => c.station))];
+    continueSession({
       splitType,
       day: session.splitDay ?? null,
-      sessionMode: windowLabel === 'AM' ? 'am' : 'pm',
-      // Fresh stations — the split's four are already on this receipt.
-      adHoc: true,
+      sessionMode: window,
+      exercises,
+      cardio,
     });
     navigateToWorkoutDetail();
   };
@@ -228,11 +262,12 @@ export function Receipt({ id }: ReceiptProps) {
             </View>
           ) : null}
 
-          {/* CONTINUE THE DAY — the wood-chops case: the day continues
-              as a NEW block (same day-of-split, fresh stations), never
-              a reopening of this settled one (history is immutable raw
-              fact — a receipt is settled). Hidden while a session runs:
-              the ticker already owns the way back to a live floor. */}
+          {/* CONTINUE THE DAY — the day continues as a NEW block seeded
+              with this session's stations (fresh set rows — the settled
+              block's history stays on its receipt; history is immutable
+              raw fact, a receipt is settled). Hidden while a session
+              runs: the ticker already owns the way back to a live
+              floor. */}
           {!isSessionActive ? (
             <View style={styles.receiptBlock}>
               <MobileActionFooter>

@@ -93,6 +93,37 @@ describe('workoutStore', () => {
     expect(dto!.exercises[0].exerciseName).toBe('Cable Wood Chop');
   });
 
+  it('continueSession seeds the continued session’s stations with fresh rows', () => {
+    // The receipt's CONTINUE verb: the new block carries the settled
+    // session's exercises (names + tags + the recovered Rx) and cardio
+    // stations, with ZERO set rows — the old block's history stays on
+    // its receipt.
+    useWorkoutStore.getState().continueSession({
+      splitType: 'twoADay',
+      day: 3,
+      sessionMode: 'am',
+      exercises: [
+        { exerciseName: 'Incline Barbell Press', exerciseSlug: 'incline-barbell-press', tags: ['pause'], targetRx: '3 × 8–10' },
+        { exerciseName: 'Custom Move', exerciseSlug: '', tags: [], targetRx: null },
+      ],
+      cardio: ['treadmill'],
+    });
+
+    const draft = useWorkoutStore.getState().draft!;
+    expect(draft.adHoc).toBe(true);
+    expect(draft.day).toBe(3);
+    expect(draft.exercises.map((e) => e.exerciseName)).toEqual([
+      'Incline Barbell Press',
+      'Custom Move',
+    ]);
+    expect(draft.exercises[0].tags).toEqual(['pause']);
+    expect(draft.exercises[0].targetRx).toBe('3 × 8–10');
+    expect(draft.exercises.every((e) => e.sets.length === 0)).toBe(true);
+    expect(draft.cardio.map((c) => c.station)).toEqual(['treadmill']);
+    expect(draft.cardio[0].rows).toHaveLength(0);
+    expect(useWorkoutStore.getState().isSessionActive).toBe(true);
+  });
+
   it('cardio stations: commit carries values, laps derive meters, DTO flattens', () => {
     useWorkoutStore.getState().startSession({ splitType: 'twoADay', day: 2, sessionMode: 'am' });
 

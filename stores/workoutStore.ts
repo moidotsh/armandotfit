@@ -147,6 +147,24 @@ interface WorkoutState {
     /** Open with fresh stations — no split hydration (continuations). */
     adHoc?: boolean;
   }) => void;
+  /**
+   * CONTINUE THE DAY (the receipt's verb): a NEW block seeded with the
+   * continued session's OWN stations — names + tags + the program's Rx
+   * where the slot resolves — with FRESH set rows (the settled block's
+   * history stays on its receipt). Cardio stations seed as machines.
+   */
+  continueSession: (init: {
+    splitType: PreferredSplit;
+    day: number | null;
+    sessionMode: SessionMode;
+    exercises: Array<{
+      exerciseName: string;
+      exerciseSlug: string;
+      tags: string[];
+      targetRx: string | null;
+    }>;
+    cardio: CardioStationKey[];
+  }) => void;
   addExerciseToDraft: (exercise: {
     exerciseName: string;
     exerciseSlug?: string;
@@ -201,7 +219,7 @@ const newLocalId = (): string =>
     : `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 /** Rx label from a programmed slot: '3 × 8–10' (uses sets max). */
-function rxLabel(slot: ResolvedSlot): string {
+export function rxLabel(slot: ResolvedSlot): string {
   const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
   return `${sets} × ${slot.reps[0]}–${slot.reps[1]}`;
 }
@@ -246,6 +264,51 @@ export const useWorkoutStore = create<WorkoutState>()(
           sessionStartedAt: startedAt,
           isSessionActive: true,
           selectedExerciseLocalId: null,
+          sessionError: null,
+        });
+      },
+
+      continueSession: ({ splitType, day, sessionMode, exercises, cardio }) => {
+        const startedAt = new Date().toISOString();
+        const draft: DraftSession = {
+          date: startedAt,
+          splitType,
+          day,
+          // Seeded, not hydrated: even with every station removed the
+          // split never auto-fills a continuation.
+          adHoc: true,
+          sessionMode,
+          notes: null,
+          exercises: exercises.map((e, i) => ({
+            localId: newLocalId(),
+            exerciseSlug: e.exerciseSlug,
+            exerciseName: e.exerciseName,
+            position: i + 1,
+            tags: [...e.tags],
+            targetRx: e.targetRx,
+            note: null,
+            // Fresh rows — the new block's ledger starts empty.
+            sets: [],
+          })),
+          cardio: cardio.map((station) => ({
+            localId: newLocalId(),
+            station,
+            armed: {
+              durationSec: null,
+              level: null,
+              speedKmh: null,
+              laps: null,
+              distanceM: null,
+              kcal: null,
+            },
+            rows: [],
+          })),
+        };
+        set({
+          draft,
+          sessionStartedAt: startedAt,
+          isSessionActive: true,
+          selectedExerciseLocalId: draft.exercises[0]?.localId ?? null,
           sessionError: null,
         });
       },
