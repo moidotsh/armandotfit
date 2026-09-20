@@ -1,5 +1,40 @@
 # THE INTERVAL — the live figure owns the counter
 
+> **REVISION — THE EDITORIAL PASS (the sixteenth pass; the visible
+> amendment).** The owner's verdict on the atelier pass: real craft,
+> invisible at arm's length — "I can't even tell what changed." This
+> pass changes what you SEE. Two levers, both structural:
+>
+> 1. **THE SERIF VOICE.** Instrument Serif (OFL, one TTF, one weight)
+>    speaks the statement rank — every screen's headline, the day
+>    titles, the spec-sheet names — and the verb labels (caps in serif
+>    on the ink plate read like a book's title page). Statement
+>    weights amend 700→400: the face's one true voice; display sizes
+>    carry it without bold. Three faces, three jobs — the serif speaks
+>    headlines, Space Grotesk keeps the rows, Martian keeps every
+>    figure. The ramp, tracking, and LH arithmetic are untouched.
+> 2. **THE STATIONER'S PALETTE.** The printed card goes CREAM
+>    (#F5F1E9, edge #E9E2D2); the ink goes ESPRESSO (#251F18); the red
+>    goes OXBLOOD (#B42B1E / text #9A2318) — deeper, richer, a wine
+>    stain instead of a fire alarm. The unlit board goes deeper and
+>    warmer (#141110, chalk #F0E9DD, ember #FF7161). Boot plate +
+>    theme-colors mirror the new edge; the WCAG matrix recomputes from
+>    the new hexes at gate time and HOLDS (muted ≥4.5 on both grounds,
+>    oxblood text ≥5).
+>
+> What did NOT change: the harmonic ramp, the counter's condensed
+> mono, ink-is-state, the red ration, the square cut, the still
+> system, the re-weight, the budgets. The thesis's arithmetic spine
+> carries a new voice and a new paper — the sixteenth skin, the same
+> bones.
+>
+> **LANDING.** One commit, gated (`4baf12568`): the face
+> (public/fonts/instrument-serif.ttf + the @font-face/preload pair in
+> index.html, mirrored by the injector + runtime block), the tokens
+> (statement rank + verb to `fonts.serif` at 400), the palettes (both
+> modes, every slot retuned), the boot plate + theme-colors, and the
+> repinned tests.
+
 > **REVISION — THE ATELIER PASS (the fifteenth pass; finissage, not a
 > succession).** The owner's verdict on the thirteenth-iteration
 > system: disciplined, light, minimal — but lacking grace, elegance,
