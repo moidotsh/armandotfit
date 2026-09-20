@@ -31,6 +31,7 @@ import {
   type CardioStationKey,
 } from '../../shared/exercises/cardio';
 import { parseNumber } from './parseNumber';
+import { hapticSelection, hapticImpactRigid } from '../../utils';
 
 /** All armed-able field keys (one armed at a time — the one-field law). */
 type CardioFieldKey = CardioFieldSpec['key'];
@@ -77,6 +78,8 @@ function StepButton({
   useEffect(() => stop, []);
   const armHold = () => {
     stop();
+    // THE HOLD PULSE — same grammar as the logger's steppers.
+    hapticImpactRigid();
     setDelay(setTimeout(() => setInterval_(setInterval(onPress, 80)), 400));
   };
   return (
@@ -199,7 +202,14 @@ export function TheCardioDock({
     return (
       <Pressable
         key={key}
-        onPress={() => (isArmed ? openKeyboard(key) : setField(key))}
+        onPress={() => {
+          // THE ARM TICK — arming is a selection.
+          if (isArmed) openKeyboard(key);
+          else {
+            hapticSelection();
+            setField(key);
+          }
+        }}
         accessibilityRole="button"
         accessibilityLabel={`${s.label}, ${rawOf(key) ?? 'not set'}`}
         accessibilityState={{ selected: isArmed }}

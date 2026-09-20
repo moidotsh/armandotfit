@@ -48,7 +48,7 @@ import { theme, REST_STEP_SEC, ANIMATION,
   PRESS_DIP_PLATE
 } from '../../constants';
 
-import { weightStep } from '../../utils';
+import { weightStep, hapticSelection, hapticImpactRigid } from '../../utils';
 import type { WeightUnit } from '../../utils/weight';
 import { parseNumber } from './parseNumber';
 
@@ -120,6 +120,9 @@ function StepButton({
   // press-in/out arm and clear the hold loop where they flow).
   const armHold = () => {
     stop();
+    // THE HOLD PULSE (the haptic grammar): the repeat arms with the
+    // rigid tap — machined feel, no visual motion (the still law).
+    hapticImpactRigid();
     delayRef.current = setTimeout(() => {
       intervalRef.current = setInterval(onPress, ANIMATION.FAST_INTERVAL);
     }, ANIMATION.LONG_PRESS_DELAY);
@@ -446,8 +449,13 @@ export function TheLogger({
           inputAccessibilityLabel="Weight input"
           onOpenKeyboard={() => openKeyboard('weight')}
           onPressField={() => {
+            // THE ARM TICK (the haptic grammar): arming a field is a
+            // selection — the tick says which field owns the steppers.
             if (field === 'weight') openKeyboard('weight');
-            else setField('weight');
+            else {
+              hapticSelection();
+              setField('weight');
+            }
           }}
           testID={`${tid}-weight-tap`}
         />
@@ -474,7 +482,10 @@ export function TheLogger({
           onOpenKeyboard={() => openKeyboard('reps')}
           onPressField={() => {
             if (field === 'reps') openKeyboard('reps');
-            else setField('reps');
+            else {
+              hapticSelection();
+              setField('reps');
+            }
           }}
           testID={`${tid}-reps-tap`}
         />

@@ -42,10 +42,11 @@ import {
 import { useToast, useAppTheme } from '../../context';
 import {
   navigateToExerciseDatabase,
+  navigateToWorkoutDetail,
   replaceWithHome,
 } from '../../navigation';
 import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, type TopSetFact } from '../../hooks';
-import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight, weightStep, hapticImpactLight, joinFacts } from '../../utils';
+import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight, weightStep, hapticImpactLight, hapticImpactMedium, hapticNotificationSuccess, joinFacts } from '../../utils';
 import { useWorkoutStore, useIsOnline, useDeloadStore } from '../../stores';
 import { sessionSaveQueue } from '../../services';
 import { TAG_VOCABULARY_SEED } from '../../shared/exercises';
@@ -121,9 +122,10 @@ export function Floor() {
       setAnnouncement(`Rest ${restClock.readout}`);
     } else if (restClock.settled && !prev.settled) {
       setAnnouncement('Rest complete');
-      // The settle pulse — the still system's one physical channel
-      // (rest is over; the next set is yours).
-      hapticImpactLight();
+      // The settle pulse — the one MEDIUM impact in the grammar (the
+      // atelier pass): rest is over, the next set is yours — grace you
+      // feel with the screen off.
+      hapticImpactMedium();
     }
     restPrevRef.current = { active: restClock.active, settled: restClock.settled };
   }, [restClock.active, restClock.settled, restClock.readout]);
@@ -190,16 +192,25 @@ export function Floor() {
     setSaving(logMutation.isPending);
   }, [logMutation.isPending, setSaving]);
 
-  // On successful save, toast + reset. The reset is the whole exit:
-  // the dispatcher's redirect (replace → selector) is the flow's ONE
-  // navigation — a back() fired here beside it raced the reset
-  // re-render and the late pop ate the redirect (stranded spinner).
+  // THE FINISH MOMENT (the atelier pass): the save's celebration is
+  // the RECEIPT — the day's tonnage as a printed artifact under the
+  // lifted curtain — plus the one success haptic you feel with the
+  // screen off. The receipt is id-keyed, so the session resets one
+  // beat BEHIND the navigation (the redirect is !id-guarded; there is
+  // no window to race — the stranded-spinner lesson, honored).
   useEffect(() => {
     if (logMutation.isSuccess) {
+      const savedId = logMutation.data?.id;
       showToast('success', 'Session saved');
-      resetSession();
+      if (savedId) {
+        hapticNotificationSuccess();
+        navigateToWorkoutDetail(savedId);
+        setTimeout(() => resetSession(), 50);
+      } else {
+        resetSession();
+      }
     }
-  }, [logMutation.isSuccess, showToast, resetSession]);
+  }, [logMutation.isSuccess, logMutation.data, showToast, resetSession]);
 
   // Surface mutation errors via the store.
   useEffect(() => {

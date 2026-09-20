@@ -26,7 +26,7 @@ import { useDashboardSummary, usePersonalBests, useWeightUnit, useRecentSessionD
 import { SYSTEM_EXERCISES } from '../shared/exercises';
 import { INTERVAL, PAGE_GUTTER } from '../constants';
 import { derivePrTimeline } from '../services';
-import { toDisplayWeight, roundDisplayWeight, weightUnitLabel, formatWeight } from '../utils';
+import { toDisplayWeight, roundDisplayWeight, weightUnitLabel, formatWeight, joinFacts } from '../utils';
 
 const PB_COUNT = 5;
 
@@ -77,7 +77,14 @@ export default function ProgressionScreen() {
               whisper. */}
           <BoardHead
             statement={String(summary?.streak.current ?? 0)}
-            whisper="THE RECORD BOOK"
+            whisper={joinFacts([
+              'THE RECORD BOOK',
+              summary?.streak.current != null &&
+              summary.streak.current > 0 &&
+              summary.streak.current >= (summary.streak.best ?? 0)
+                ? 'BEST RUN'
+                : null,
+            ])}
             fact={`day streak · best ${summary?.streak.best ?? 0}`}
             variant="figure"
             tone="record"
