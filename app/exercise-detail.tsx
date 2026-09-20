@@ -13,7 +13,7 @@
 // active, ADD TO SESSION is the page's one verb.
 
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View, type ImageStyle } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import {
   MobilePrimaryButton,
@@ -137,6 +137,24 @@ export default function ExerciseDetailScreen() {
               {exercise.name}
             </Text>
           </View>
+
+          {/* THE PLATE (the field-guide pass): the exercise's figure as
+              a PRINT — monochrome (grayscale, a breath of sepia toward
+              the cream ground), square-cut, bounded by hairline rules
+              top and bottom. A field guide's engraving, not a photo
+              grid: one figure per entry, static, the instructions
+              carry the meaning. */}
+          {exercise.image ? (
+            <View style={[styles.plate, { borderTopColor: colors.mobilePremium.hairlineBorder, borderBottomColor: colors.mobilePremium.hairlineBorder }]}>
+              <Image
+                source={{ uri: exercise.image }}
+                style={styles.plateImage}
+                accessibilityLabel={`Plate: ${exercise.name}`}
+                testID="entry-plate"
+                resizeMode="contain"
+              />
+            </View>
+          ) : null}
 
           {/* THE NUMBER TO BEAT — the last top set as a ruled row
               under its whisper. The FIGURE is the record (red); the
@@ -414,6 +432,23 @@ const styles = StyleSheet.create({
   headline: {
     ...INTERVAL.statement,
   },
+  // THE PLATE — a figure between rules: full column width, contained,
+  // monochrome print (the filter tints toward the ground — the image
+  // reads as an engraving on the cream card, not a photo on a screen).
+  // RN does not type `filter`; RN-web renders it (the grain/grain cast).
+  plate: {
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    paddingVertical: 12,
+    marginTop: 12,
+  },
+  plateImage: {
+    width: '100%',
+    height: 220,
+    // RN does not type `filter`; RN-web renders it — the monochrome
+    // print treatment (the cast keeps the literal out of ImageStyle).
+    filter: 'grayscale(1) sepia(0.22) contrast(1.04) brightness(1.03)',
+  } as unknown as ImageStyle,
   // The number-to-beat block sits in the statement's halo.
   lastBlock: {
     marginTop: 20,
