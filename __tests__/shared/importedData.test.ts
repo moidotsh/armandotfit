@@ -32,7 +32,8 @@ describe('imported catalog', () => {
 
   it('every declared plate resolves on disk (sampled)', () => {
     const withPlates = SYSTEM_EXERCISES.filter((e) => e.image != null);
-    expect(withPlates.length).toBeGreaterThan(500);
+    // 657 imported + 82 core-matched plates compose onto the catalog.
+    expect(withPlates.length).toBeGreaterThan(700);
     const root = join(__dirname, '..', '..', 'public');
     for (const e of withPlates.slice(0, 40)) {
       const p = join(root, e.image!.replace(/^\//, ''));

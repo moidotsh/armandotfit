@@ -2060,9 +2060,12 @@ const CORE_EXERCISES: SystemExerciseData[] = [
 // lifts with plates. Cast at the seam: the generated file is
 // self-contained (string slugs) so no import cycle exists.
 import { IMPORTED_EXERCISES } from './importedData';
+import { CORE_PLATES } from './corePlates';
 
 export const SYSTEM_EXERCISES: SystemExerciseData[] = [
-  ...CORE_EXERCISES,
+  // Core entries wear their matched plates (corePlates.ts — generated;
+  // a core `image` field, if ever hand-set, wins over the match).
+  ...CORE_EXERCISES.map((e) => ({ ...e, image: e.image ?? CORE_PLATES[e.slug] })),
   ...(IMPORTED_EXERCISES as unknown as SystemExerciseData[]),
 ];
 

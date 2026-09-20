@@ -76,6 +76,74 @@ const MUSCLE_OF: Record<string, string> = {
   triceps: 'TRICEPS',
 };
 
+// ── CORE PLATES (the hand-reviewed alias table) ─────────────────────────
+// Core-catalog lifts matched to their fedb figures BY NAME — every pair
+// reviewed by hand (a wrong plate is worse than no plate; containment
+// matching produced wrist curls for dumbbell curls and was rejected).
+// Unlisted core lifts (Bulgarian Split Squat, Nordic Curl, Tibia Raise,
+// the cardio stations…) carry no plate — the instructions carry them.
+const CORE_PLATE_ALIASES: Record<string, string> = {
+  'Incline Barbell Press': 'Barbell Incline Bench Press - Medium Grip',
+  'Incline Dumbbell Fly': 'Incline Dumbbell Flyes',
+  'Machine Chest Fly': 'Butterfly',
+  'Machine Incline Press': 'Leverage Incline Chest Press',
+  'Cable Overhead Tricep Extension': 'Cable Rope Overhead Triceps Extension',
+  'Dumbbell Curl': 'Dumbbell Bicep Curl',
+  'Cable Curl': 'Standing Biceps Cable Curl',
+  'Cable Lateral Raise': 'Cable Seated Lateral Raise',
+  'Shoulder Press': 'Standing Military Press',
+  'Dumbbell Overhead Press': 'Dumbbell Shoulder Press',
+  'Back Extension': 'Hyperextensions (Back Extensions)',
+  'Machine Back Extension': 'Hyperextensions (Back Extensions)',
+  'Cable Row': 'Seated Cable Rows',
+  'Wide-Grip Cable Row': 'Seated Cable Rows',
+  'Lat Pulldown': 'Wide-Grip Lat Pulldown',
+  'Machine Shrug': 'Leverage Shrug',
+  'Machine Leg Curl': 'Seated Leg Curl',
+  'Leg Press Calf Raise': 'Calf Press On The Leg Press Machine',
+  'Standing Machine Calf Raise': 'Smith Machine Calf Raise',
+  'Leg Raise': 'Hanging Leg Raise',
+  'Hanging Knee Raise': 'Hanging Leg Raise',
+  'Floor Leg Raise': 'Flat Bench Lying Leg Raise',
+  'Overhead Tricep Extension': 'Standing Dumbbell Triceps Extension',
+  'Overhead Press': 'Standing Military Press',
+  'Lateral Raise': 'Side Lateral Raise',
+  'Lying Leg Curl': 'Lying Leg Curls',
+  'Pull-up': 'Pullups',
+  'Walking Lunge': 'Barbell Walking Lunge',
+  'Dumbbell Pullover': 'Straight-Arm Dumbbell Pullover',
+  'Bench Dip': 'Bench Dips',
+  'Barbell Row': 'Bent Over Barbell Row',
+  'Barbell Back Squat': 'Barbell Squat',
+  'Dumbbell Goblet Squat': 'Goblet Squat',
+  'Dumbbell Romanian Deadlift': 'Stiff-Legged Dumbbell Deadlift',
+  'Barbell Overhead Tricep Extension': 'Standing Overhead Barbell Triceps Extension',
+  'Dumbbell Rear Delt Fly': 'Reverse Flyes',
+  'Cable Chest Fly': 'Flat Bench Cable Flyes',
+  'Floor Crunch': 'Crunches',
+  'Barbell Split Squat': 'Split Squats',
+  'Pistol Squat': 'One Leg Barbell Squat',
+  'Barbell Pullover': 'Bent-Arm Barbell Pullover',
+  'Barbell Skull Crusher': 'Lying Triceps Press',
+  'Cable Tricep Pushdown': 'Triceps Pushdown',
+  'Chest-Supported Dumbbell Row': 'Dumbbell Incline Row',
+  'Flat Barbell Bench Press': 'Barbell Bench Press - Medium Grip',
+  'Flat Dumbbell Bench Press': 'Dumbbell Bench Press',
+  'Machine Chest Press': 'Leverage Chest Press',
+  'T-Bar Row': 'T-Bar Row with Handle',
+  'Machine Seated Row': 'Leverage Iso Row',
+  'Arnold Press': 'Arnold Dumbbell Press',
+  'Hammer Curl': 'Hammer Curls',
+  'Preacher Curl Machine': 'Machine Preacher Curls',
+  'Concentration Curl': 'Concentration Curls',
+  'Close-Grip Bench Press': 'Close-Grip Barbell Bench Press',
+  'Machine Overhead Tricep Extension': 'Machine Triceps Extension',
+  'Front Squat': 'Front Barbell Squat',
+  'Leg Extension': 'Leg Extensions',
+  'Glute Bridge': 'Barbell Glute Bridge',
+  'Dumbbell Step-Up': 'Step-up with Knee Raise',
+};
+
 interface FedEntry {
   name: string;
   category: string;
@@ -172,6 +240,61 @@ for (const file of files) {
   stats.kept += 1;
 }
 
+// ── Core plates: exact token-set matches (plural-tolerant) + the
+// reviewed aliases. The plate file reuses the imported figure when one
+// exists; otherwise the manifest gains the entry.
+const byName = new Map<string, FedEntry>();
+for (const file of files) {
+  const e = JSON.parse(readFileSync(join(EX_DIR, file), 'utf8')) as FedEntry;
+  byName.set(e.name.toLowerCase(), e);
+}
+const plateOf = (fedName: string): { image: string; source: string } | null => {
+  const entry = byName.get(fedName.toLowerCase());
+  const first = entry?.images?.[0];
+  if (!entry || !first) return null;
+  // Reuse the imported plate when the target was imported (same figure,
+  // one file); else name the plate for the CORE slug.
+  const importedSlug = slugSeen.has(slugify(entry.name)) ? slugify(entry.name) : null;
+  const coreSlug = importedSlug ?? slugify(fedName);
+  const rel = first.replace(/^\.\//, '');
+  manifest.push(`${coreSlug}\t${join(EX_DIR, rel)}`);
+  return { image: `/exercise-plates/${coreSlug}.jpg`, source: entry.name };
+};
+
+const normTokens = (n: string) =>
+  new Set(
+    n.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean)
+      .map((t) => t.replace(/s$/, '')),
+  );
+const sameTokens = (a: string, b: string) => {
+  const A = normTokens(a), B = normTokens(b);
+  if (A.size !== B.size) return false;
+  for (const t of A) if (!B.has(t)) return false;
+  return true;
+};
+
+const corePlates: string[] = [];
+let corePlated = 0;
+// The core catalog's PRETTY names (the regex above the import loop
+// collected only the lowercased keys).
+const corePrettyNames = [...coreSrc.matchAll(/^    name: '([^']+)',$/gm)].map(
+  (m) => m[1],
+);
+for (const pretty of corePrettyNames) {
+  let target: string | null = CORE_PLATE_ALIASES[pretty] ?? null;
+  if (!target) {
+    // plural-tolerant exact token-set match against fedb names
+    for (const [fedName] of byName) {
+      if (sameTokens(pretty, fedName)) { target = fedName; break; }
+    }
+  }
+  const plate = target ? plateOf(target) : null;
+  if (plate) {
+    corePlated += 1;
+    corePlates.push(`  '${slugify(pretty)}': '${plate.image}', // <- ${plate.source}`);
+  }
+}
+
 const header = `// shared/exercises/importedData.ts
 //
 // THE IMPORTED CATALOG — generated by scripts/import-exercise-db.ts
@@ -212,5 +335,23 @@ ${imported.join('\n')}
 
 writeFileSync(OUT_TS, header);
 writeFileSync(OUT_MANIFEST, manifest.join('\n') + '\n');
+writeFileSync(
+  'shared/exercises/corePlates.ts',
+  `// shared/exercises/corePlates.ts
+//
+// THE CORE PLATES — generated by scripts/import-exercise-db.ts: core
+// lifts matched to their free-exercise-db figures by exact (plural-
+// tolerant) name match or the hand-reviewed alias table in the
+// importer. Regenerate, never hand-edit. Plates reuse the imported
+// figure files where the target was imported.
+//
+// Core entries plated: ${corePlated} of ${coreNames.size}.
+
+export const CORE_PLATES: Record<string, string> = {
+${corePlates.join('\n')}
+};
+`,
+);
+console.log('core plates:', corePlated, 'of', coreNames.size);
 console.log('import stats:', JSON.stringify(stats));
 console.log('wrote', OUT_TS, `(${imported.length} entries) and the plate manifest (${manifest.length})`);
