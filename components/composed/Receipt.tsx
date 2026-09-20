@@ -172,9 +172,12 @@ export function Receipt({ id }: ReceiptProps) {
           ))}
           <View style={styles.receiptBlock}>
             <MobileActionFooter>
+              {/* The destructive tail arms by ink, never by a second
+                  red: unarmed is the quiet ghost whisper; the tap-again
+                  step IS the armed state and reads the full ink plate
+                  (ink is state — the verb stays ink in both steps). */}
               <MobilePrimaryButton
-                variant="ghost"
-                accentColor={colors.alert}
+                variant={confirmDelete ? 'primary' : 'ghost'}
                 onPress={() => {
                   if (!confirmDelete) {
                     setConfirmDelete(true);

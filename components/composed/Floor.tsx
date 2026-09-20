@@ -613,7 +613,6 @@ export function Floor() {
                   ).slice(0, 3)}
                   onToggleTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
                   onAddTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
-                  register="desk"
                   testID={`tag-chips-${exercise.localId}`}
                 />
               ) : null}
@@ -765,9 +764,11 @@ export function Floor() {
               : 'LOG A SET FIRST'}
           </MobilePrimaryButton>
           <View style={{ height: 8 }} />
+          {/* The destructive tail arms by ink, never by a second red:
+              unarmed is the quiet ghost whisper; the tap-again step is
+              the armed state and reads the full ink plate. */}
           <MobilePrimaryButton
-            variant="ghost"
-            accentColor={colors.alert}
+            variant={confirmDiscard ? 'primary' : 'ghost'}
             onPress={() => {
               if (!confirmDiscard) {
                 setConfirmDiscard(true);
