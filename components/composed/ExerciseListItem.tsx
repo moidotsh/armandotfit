@@ -24,6 +24,7 @@ const MODALITY_LABEL: Record<NonNullable<SystemExerciseData['modality']>, string
   barbell: 'BB',
   machine: 'Mach',
   cable: 'Cab',
+  cardio: 'Card',
 };
 
 export interface ExerciseListItemProps {

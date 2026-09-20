@@ -5,7 +5,7 @@
 // the sole display source.
 
 /** Display-only exercise type filter for the browse UI. */
-export type ExerciseType = 'calisthenic' | 'free_weight' | 'cable' | 'machine';
+export type ExerciseType = 'calisthenic' | 'free_weight' | 'cable' | 'machine' | 'cardio';
 
 /** Display-only difficulty label. */
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';

@@ -69,6 +69,7 @@ function genSession(rand: () => number, dayOffset: number): SessionWithDetails {
     note: null,
     splitDay: 1,
     exercises,
+    cardio: [],
   };
 }
 

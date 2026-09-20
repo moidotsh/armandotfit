@@ -1,17 +1,20 @@
 // shared/types/workout.ts
-// Domain types for the five-table logging chain:
+// Domain types for the logging chain:
 //   sessions → logged_exercises → logged_sets
+//            → logged_cardio (duration-first work — pass C1)
 // Owned by WorkoutRepository. SessionWithDetails is the composite view
 // the UI consumes (detail screen, history list, progression reads).
 //
 // Design rules:
 //   - Raw facts only. No derived values (duration, PRs, streaks are
 //     computed at read time), no target/planning columns, no completion
-//     flags — a logged_sets row IS a completed set.
+//     flags — a logged_sets row IS a completed set, a logged_cardio row
+//     IS a machine sitting.
 //   - Realization context (grip, attachment, machine, stance, execution
 //     style) is captured as free-form tags on logged_exercises.
 
 import type { ID } from './api';
+import type { CardioStationKey } from '../exercises/cardio';
 
 /** Training session header. AM and PM are two separate rows. */
 export interface TrainingSession {
@@ -58,9 +61,29 @@ export interface LoggedExerciseWithSets extends LoggedExercise {
   sets: LoggedSet[];
 }
 
-/** Full session for the detail screen: header + nested exercises. */
+/** Full session for the detail screen: header + nested exercises + cardio. */
 export interface SessionWithDetails extends TrainingSession {
   exercises: LoggedExerciseWithSets[];
+  cardio: LoggedCardio[];
+}
+
+/**
+ * A cardio machine sitting — one row per sitting (treadmill run, bike
+ * block, stair climb, loop walk). Duration is the one required
+ * quantity; the rest are what the machine told you. Stations/fields
+ * vocabulary lives in shared/exercises/cardio.ts, never the schema.
+ */
+export interface LoggedCardio {
+  id: ID;
+  sessionId: ID;
+  station: CardioStationKey;
+  durationSec: number;
+  /** The machine's intensity dial (incline % / resistance / level). */
+  level: number | null;
+  speedKmh: number | null;
+  distanceM: number | null;
+  kcal: number | null;
+  note: string | null;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -87,12 +110,25 @@ export interface LoggedExerciseInputDTO {
   sets: LoggedSetInputDTO[];
 }
 
+/** One cardio sitting's payload (station key + machine values). */
+export interface CardioInputDTO {
+  station: CardioStationKey;
+  durationSec: number;
+  level?: number | null;
+  speedKmh?: number | null;
+  distanceM?: number | null;
+  kcal?: number | null;
+  note?: string | null;
+}
+
 /** Composite payload for logging a complete session. */
 export interface LogSessionDTO {
   startedAt: string;
   splitDay?: number | null;
   note?: string | null;
   exercises: LoggedExerciseInputDTO[];
+  /** Cardio sittings in this session (order preserved). */
+  cardio?: CardioInputDTO[];
 }
 
 /** Payload for updating a session header post-completion. */

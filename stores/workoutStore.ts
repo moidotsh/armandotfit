@@ -40,6 +40,7 @@ import type { SessionMode } from '../constants';
 import type { LoggedExerciseInputDTO, LogSessionDTO, PreferredSplit } from '../shared/types';
 import type { ExerciseKey, ResolvedSlot } from '../shared/exercises/splits';
 import { SYSTEM_EXERCISES_BY_SLUG } from '../shared/exercises/data';
+import { CARDIO_STATIONS, type CardioStationKey } from '../shared/exercises/cardio';
 
 /** Client-only draft set (no server id yet). */
 export interface DraftSet {
@@ -88,6 +89,34 @@ export interface DraftSession {
   sessionMode: SessionMode;
   notes: string | null;
   exercises: DraftExercise[];
+  /** Cardio stations in this session (duration-first work — pass C1). */
+  cardio: DraftCardioStation[];
+}
+
+/** One committed cardio sitting (armed expression → row at LOG). */
+export interface DraftCardioRow {
+  localId: string;
+  durationSec: number;
+  level: number | null;
+  speedKmh: number | null;
+  distanceM: number | null;
+  kcal: number | null;
+}
+
+/** A cardio station's draft: the armed expression + committed rows. */
+export interface DraftCardioStation {
+  localId: string;
+  station: CardioStationKey;
+  /** The dock's armed fields — one armed at a time (the one-field law). */
+  armed: {
+    durationSec: number | null;
+    level: number | null;
+    speedKmh: number | null;
+    laps: number | null;
+    distanceM: number | null;
+    kcal: number | null;
+  };
+  rows: DraftCardioRow[];
 }
 
 interface WorkoutState {
@@ -131,6 +160,17 @@ interface WorkoutState {
    */
   hydrateFromSplit: (slots: ResolvedSlot[]) => void;
   removeExerciseFromDraft: (localId: string) => void;
+  /** CARDIO (pass C1): add a machine station to the draft. */
+  addCardioToDraft: (station: CardioStationKey) => string;
+  /** Patch the station's armed fields (the dock's steppers/keyboard). */
+  updateCardioArmed: (
+    localId: string,
+    patch: Partial<DraftCardioStation['armed']>,
+  ) => void;
+  /** Commit the armed expression as a sitting row (LOG CARDIO). */
+  commitCardioRow: (localId: string) => void;
+  removeCardioRow: (stationLocalId: string, rowLocalId: string) => void;
+  removeCardioStation: (localId: string) => void;
   addSetToDraft: (exerciseLocalId: string, partial?: Partial<DraftSet>) => string;
   updateSetInDraft: (exerciseLocalId: string, setLocalId: string, patch: Partial<DraftSet>) => void;
   removeSetFromDraft: (exerciseLocalId: string, setLocalId: string) => void;
@@ -199,6 +239,7 @@ export const useWorkoutStore = create<WorkoutState>()(
           sessionMode,
           notes: null,
           exercises: [],
+          cardio: [],
         };
         set({
           draft,
@@ -228,6 +269,101 @@ export const useWorkoutStore = create<WorkoutState>()(
           selectedExerciseLocalId: localId,
         });
         return localId;
+      },
+
+      addCardioToDraft: (station) => {
+        const draft = get().draft;
+        if (!draft) return '';
+        const localId = newLocalId();
+        const spec = CARDIO_STATIONS[station];
+        const next: DraftCardioStation = {
+          localId,
+          station,
+          armed: {
+            durationSec: null,
+            level: null,
+            speedKmh: null,
+            laps: null,
+            distanceM: null,
+            kcal: null,
+          },
+          rows: [],
+        };
+        set({
+          draft: { ...draft, cardio: [...draft.cardio, next] },
+          selectedExerciseLocalId: null,
+        });
+        void spec;
+        return localId;
+      },
+
+      updateCardioArmed: (localId, patch) => {
+        const draft = get().draft;
+        if (!draft) return;
+        set({
+          draft: {
+            ...draft,
+            cardio: draft.cardio.map((c) =>
+              c.localId === localId ? { ...c, armed: { ...c.armed, ...patch } } : c,
+            ),
+          },
+        });
+      },
+
+      commitCardioRow: (localId) => {
+        const draft = get().draft;
+        if (!draft) return;
+        const station = draft.cardio.find((c) => c.localId === localId);
+        if (!station) return;
+        const a = station.armed;
+        if (a.durationSec == null || a.durationSec <= 0) return;
+        // The walk loop's distance derives from its laps (one loop is
+        // 100 m — the registry owns the length).
+        const derivedDistance =
+          a.distanceM ?? (a.laps != null && a.laps > 0
+            ? a.laps * (CARDIO_STATIONS[station.station].loopMeters ?? 100)
+            : null);
+        const row: DraftCardioRow = {
+          localId: newLocalId(),
+          durationSec: a.durationSec,
+          level: a.level,
+          speedKmh: a.speedKmh,
+          distanceM: derivedDistance,
+          kcal: a.kcal,
+        };
+        // The armed values CARRY (the next sitting defaults to what
+        // just worked — the same carry-forward law as the barbell).
+        set({
+          draft: {
+            ...draft,
+            cardio: draft.cardio.map((c) =>
+              c.localId === localId ? { ...c, rows: [...c.rows, row] } : c,
+            ),
+          },
+        });
+      },
+
+      removeCardioRow: (stationLocalId, rowLocalId) => {
+        const draft = get().draft;
+        if (!draft) return;
+        set({
+          draft: {
+            ...draft,
+            cardio: draft.cardio.map((c) =>
+              c.localId === stationLocalId
+                ? { ...c, rows: c.rows.filter((r) => r.localId !== rowLocalId) }
+                : c,
+            ),
+          },
+        });
+      },
+
+      removeCardioStation: (localId) => {
+        const draft = get().draft;
+        if (!draft) return;
+        set({
+          draft: { ...draft, cardio: draft.cardio.filter((c) => c.localId !== localId) },
+        });
       },
 
       hydrateFromSplit: (slots) => {
@@ -420,11 +556,24 @@ export const useWorkoutStore = create<WorkoutState>()(
             )
             .map((s) => ({ reps: s.reps, weight: s.weight, note: s.note })),
         }));
+        // Cardio sittings flatten station → rows, order preserved.
+        const cardio = draft.cardio.flatMap((c) =>
+          c.rows.map((r) => ({
+            station: c.station,
+            durationSec: r.durationSec,
+            level: r.level,
+            speedKmh: r.speedKmh,
+            distanceM: r.distanceM,
+            kcal: r.kcal,
+            note: null,
+          })),
+        );
         return {
           startedAt: draft.date,
           splitDay: draft.day,
           note: draft.notes,
           exercises,
+          cardio,
         };
       },
 

@@ -20,6 +20,7 @@ import {
 } from './types';
 import type {
   ID,
+  LoggedCardio,
   LoggedExercise,
   LoggedExerciseWithSets,
   LoggedSet,
@@ -28,6 +29,7 @@ import type {
   SessionWithDetails,
   TrainingSession,
 } from '../../../shared/types';
+import type { CardioStationKey } from '../../../shared/exercises/cardio';
 
 // ──────────────────────────────────────────────────────────────────────
 // Row shapes
@@ -61,6 +63,18 @@ interface LoggedSetRow {
   note: string | null;
 }
 
+interface LoggedCardioRow {
+  id: string;
+  session_id: string;
+  station: string;
+  duration_sec: number;
+  level: number | string | null;
+  speed_kmh: number | string | null;
+  distance_m: number | null;
+  kcal: number | null;
+  note: string | null;
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // Repository
 // ──────────────────────────────────────────────────────────────────────
@@ -72,6 +86,7 @@ export class WorkoutRepository
   private static SESSIONS = 'sessions';
   private static LOGGED_EXERCISES = 'logged_exercises';
   private static LOGGED_SETS = 'logged_sets';
+  private static LOGGED_CARDIO = 'logged_cardio';
 
   /** List recent sessions (headers) for the home / history screens. */
   async findAll(
@@ -123,13 +138,14 @@ export class WorkoutRepository
     try {
       const { data: rows, error } = await supabase
         .from(WorkoutRepository.SESSIONS)
-        .select('*, logged_exercises(*, exercise:exercises(name), logged_sets(*))')
+        .select('*, logged_exercises(*, exercise:exercises(name), logged_sets(*)), logged_cardio(*)')
         .eq('user_id', userId)
         .order('started_at', { ascending: false })
         .limit(limit);
       if (error) throw error;
       return ok((rows as unknown as Array<SessionRow & {
         logged_exercises: Array<LoggedExerciseRow & { logged_sets: LoggedSetRow[] }>;
+        logged_cardio: LoggedCardioRow[] | null;
       }>).map(toSessionWithDetails));
     } catch (e) {
       return this.handleError('findRecentWithDetails', e);
@@ -143,7 +159,7 @@ export class WorkoutRepository
     try {
       const { data, error } = await supabase
         .from(WorkoutRepository.SESSIONS)
-        .select('*, logged_exercises(*, exercise:exercises(name), logged_sets(*))')
+        .select('*, logged_exercises(*, exercise:exercises(name), logged_sets(*)), logged_cardio(*)')
         .eq('id', id)
         .maybeSingle();
       if (error) throw error;
@@ -152,6 +168,7 @@ export class WorkoutRepository
         toSessionWithDetails(
           data as unknown as SessionRow & {
             logged_exercises: Array<LoggedExerciseRow & { logged_sets: LoggedSetRow[] }>;
+            logged_cardio: LoggedCardioRow[] | null;
           },
         ),
       );
@@ -236,7 +253,30 @@ export class WorkoutRepository
           });
         }
 
-        return ok({ ...session, exercises: builtExercises });
+        // 3. Cardio sittings (duration-first work — pass C1): one row
+        //    each, order preserved. Values are what the machine told
+        //    you; nulls ride through as nulls.
+        const builtCardio: LoggedCardio[] = [];
+        for (const c of data.cardio ?? []) {
+          const { data: cardioRow, error: cardioErr } = await supabase
+            .from(WorkoutRepository.LOGGED_CARDIO)
+            .insert({
+              session_id: session.id,
+              station: c.station,
+              duration_sec: c.durationSec,
+              level: c.level ?? null,
+              speed_kmh: c.speedKmh ?? null,
+              distance_m: c.distanceM ?? null,
+              kcal: c.kcal ?? null,
+              note: c.note ?? null,
+            })
+            .select('*')
+            .single();
+          if (cardioErr) throw cardioErr;
+          builtCardio.push(toCardio(cardioRow as LoggedCardioRow));
+        }
+
+        return ok({ ...session, exercises: builtExercises, cardio: builtCardio });
       } catch (downstream) {
         // Best-effort cleanup: delete the session, cascade clears the rest.
         await supabase.from(WorkoutRepository.SESSIONS).delete().eq('id', session.id);
@@ -426,11 +466,27 @@ function toSet(row: LoggedSetRow): LoggedSet {
   };
 }
 
+function toCardio(row: LoggedCardioRow): LoggedCardio {
+  return {
+    id: row.id,
+    sessionId: row.session_id,
+    station: row.station as CardioStationKey,
+    durationSec: row.duration_sec,
+    level: row.level == null ? null : Number(row.level),
+    speedKmh: row.speed_kmh == null ? null : Number(row.speed_kmh),
+    distanceM: row.distance_m,
+    kcal: row.kcal,
+    note: row.note,
+  };
+}
+
 function toSessionWithDetails(row: SessionRow & {
   logged_exercises: Array<LoggedExerciseRow & { logged_sets: LoggedSetRow[] }>;
+  logged_cardio?: LoggedCardioRow[] | null;
 }): SessionWithDetails {
   return {
     ...toSession(row),
+    cardio: (row.logged_cardio ?? []).map(toCardio),
     exercises: (row.logged_exercises ?? [])
       .slice()
       .sort((a, b) => a.position - b.position)

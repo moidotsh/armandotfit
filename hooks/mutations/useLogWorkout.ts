@@ -47,6 +47,19 @@ export function useLogWorkout() {
           note: dto.note ?? null,
           splitDay: dto.splitDay ?? null,
           exercises: [],
+          // The optimistic entry carries the sittings raw (ids pending) —
+          // the invalidated read replaces it with server truth.
+          cardio: (dto.cardio ?? []).map((c, i) => ({
+            id: `pending-cardio-${i}`,
+            sessionId: `pending-${Date.now()}`,
+            station: c.station,
+            durationSec: c.durationSec,
+            level: c.level ?? null,
+            speedKmh: c.speedKmh ?? null,
+            distanceM: c.distanceM ?? null,
+            kcal: c.kcal ?? null,
+            note: c.note ?? null,
+          })),
         };
         queryClient.setQueryData<SessionWithDetails[]>(historyKey, [
           optimistic,

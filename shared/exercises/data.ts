@@ -87,6 +87,9 @@ export const EquipmentSlug = {
   LYING_LEG_CURL_MACHINE: 'lying-leg-curl-machine',
   PEC_DECK_MACHINE: 'pec-deck-machine',
   FLOOR_SPACE: 'floor-space',
+  TREADMILL: 'treadmill',
+  STATIONARY_BIKE: 'stationary-bike',
+  STAIRMASTER: 'stairmaster',
 } as const;
 
 export type EquipmentSlug = (typeof EquipmentSlug)[keyof typeof EquipmentSlug];
@@ -105,6 +108,7 @@ export const EXERCISE_TYPE_DISPLAY: Record<ExerciseType, string> = {
   calisthenic: 'Bodyweight',
   machine: 'Machine',
   cable: 'Cable',
+  cardio: 'Cardio',
 };
 
 export const MUSCLE_DISPLAY_NAMES: Record<MuscleSlug, string> = {
@@ -159,6 +163,9 @@ export const EQUIPMENT_DISPLAY_NAMES: Record<EquipmentSlug, string> = {
   [EquipmentSlug.DIP_MACHINE]: 'Dip Machine',
   [EquipmentSlug.ABDOMINAL_MACHINE]: 'Abdominal Machine',
   [EquipmentSlug.BACK_EXTENSION_STATION]: 'Back Extension Station',
+  [EquipmentSlug.TREADMILL]: 'Treadmill',
+  [EquipmentSlug.STATIONARY_BIKE]: 'Stationary Bike',
+  [EquipmentSlug.STAIRMASTER]: 'Stairmaster',
   [EquipmentSlug.CAPTAINS_CHAIR]: "Captain's Chair",
   [EquipmentSlug.RESISTANCE_BAND]: 'Resistance Band',
   [EquipmentSlug.TIBIA_RAISE_MACHINE]: 'Tibia Raise Machine',
@@ -192,7 +199,7 @@ export interface SystemExerciseData {
    * families offer floor / dumbbell / barbell / machine / cable options
    * where they genuinely exist.
    */
-  modality?: 'floor' | 'dumbbell' | 'barbell' | 'machine' | 'cable';
+  modality?: 'floor' | 'dumbbell' | 'barbell' | 'machine' | 'cable' | 'cardio';
   /**
    * Movement family — the substitution role ('chest-press',
    * 'vertical-pull', ...). DISPLAY-ONLY: families group the browse UI
@@ -254,6 +261,7 @@ export const ZONES: ReadonlyArray<{
   { modality: 'cable', zone: 'CABLE COLUMN', chip: 'CB' },
   { modality: 'machine', zone: 'MACHINES', chip: 'M' },
   { modality: 'floor', zone: 'THE FLOOR', chip: 'BW' },
+  { modality: 'cardio', zone: 'CARDIO', chip: 'CD' },
 ];
 
 export const SYSTEM_EXERCISES: SystemExerciseData[] = [
@@ -1954,6 +1962,84 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     equipment: [EquipmentSlug.PULL_UP_BAR],
     defaultSets: 3,
     defaultReps: [10, 15],
+  },
+
+  // ── Cardio stations (duration-first work — see shared/exercises/cardio.ts) ──
+  // Catalog entries carry NO muscles: cardio contributes nothing to THE
+  // BALANCE (empty primaryMuscles add no volume to any group) and swaps
+  // never rank it against barbell families. The cardio registry owns the
+  // machines' field vocabulary; these entries are the library door.
+  {
+    slug: 'treadmill',
+    modality: 'cardio',
+    family: 'treadmill',
+    name: 'Treadmill',
+    category: 'Cardio',
+    exerciseType: 'cardio',
+    difficultyLevel: 'beginner',
+    description: 'Treadmill walking or running — time, speed, and incline from the console; distance and calories read off at the end.',
+    instructions:
+      'Set speed and incline, walk or run for the planned time, then key the console\u2019s distance and calories into the outcome fields.',
+    tips: 'Speed and incline are the prescription; distance is the outcome. Hold the rails only to steady, never to lean.',
+    primaryMuscles: [],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.TREADMILL],
+    defaultSets: 1,
+    defaultReps: [20, 30],
+  },
+  {
+    slug: 'stationary-bike',
+    modality: 'cardio',
+    family: 'bike',
+    name: 'Stationary Bike',
+    category: 'Cardio',
+    exerciseType: 'cardio',
+    difficultyLevel: 'beginner',
+    description: 'Stationary bike — time and the machine\u2019s resistance level; distance and calories read off the console.',
+    instructions:
+      'Set the resistance level and ride for the planned time, then key the console\u2019s distance and calories into the outcome fields.',
+    tips: 'Level is the prescription (each machine differs — your history is per-machine); distance is the outcome.',
+    primaryMuscles: [],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.STATIONARY_BIKE],
+    defaultSets: 1,
+    defaultReps: [20, 40],
+  },
+  {
+    slug: 'stairmaster',
+    modality: 'cardio',
+    family: 'stair-climber',
+    name: 'Stairmaster',
+    category: 'Cardio',
+    exerciseType: 'cardio',
+    difficultyLevel: 'intermediate',
+    description: 'Stair climber — time and the machine\u2019s level; calories read off the console.',
+    instructions:
+      'Set the level and climb for the planned time, then key the console\u2019s calories into the outcome fields.',
+    tips: 'Stand tall, whole foot on each step; the level is the prescription, the clock is the work.',
+    primaryMuscles: [],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.STAIRMASTER],
+    defaultSets: 1,
+    defaultReps: [10, 20],
+  },
+  {
+    slug: 'walk-loop',
+    modality: 'cardio',
+    family: 'walk-loop',
+    name: 'Walk Loop',
+    category: 'Cardio',
+    exerciseType: 'cardio',
+    difficultyLevel: 'beginner',
+    description: 'The outdoor 100 m loop — time and laps; the distance is the laps, counted for you.',
+    instructions:
+      'Walk the loop, count the laps, key the time. Every lap is 100 m — the distance computes itself.',
+    tips: 'One loop is 100 m; the distance field fills itself from the laps.',
+    primaryMuscles: [],
+    secondaryMuscles: [],
+    equipment: [EquipmentSlug.FLOOR_SPACE],
+    defaultSets: 1,
+    defaultReps: [15, 30],
   },
 
 ];
