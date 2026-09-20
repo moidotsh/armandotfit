@@ -34,7 +34,7 @@ Load-bearing rules that aren't obvious from the code:
 
 ## Pre-commit checks (read before committing)
 
-Armandotfit has 13 structural audits + `verify-design` (the design-law verifier: ramp arithmetic, the square cut, the wire, and the full WCAG matrix from `theme.ts` hexes — chained into `lint:structure`) + `tsc --noEmit` + structural ESLint on every `git commit` via `.husky/pre-commit`. Run them on the working tree **before** staging:
+Armandotfit has 13 structural audits + `verify-design` (the design-law verifier: ramp arithmetic, the square cut, the wire, the full WCAG matrix from `theme.ts` hexes, the red-ration scan — no `accentColor={colors.alert}`, `colors.focus.*` on the chit alone — and the press scan — no numeric dip literal outside `PRESS_DIP`/`PRESS_DIP_PLATE`; chained into `lint:structure`) + `tsc --noEmit` + structural ESLint on every `git commit` via `.husky/pre-commit`. Run them on the working tree **before** staging:
 
     cd armandotfit && bun run lint:structure && bunx tsc --noEmit
 

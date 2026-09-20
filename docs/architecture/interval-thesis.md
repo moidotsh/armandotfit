@@ -1,5 +1,81 @@
 # THE INTERVAL — the live figure owns the counter
 
+> **REVISION — PASS 14A, THE LAW-RESTORATION MENDS (the fourteenth
+> pass; an amendment, not a succession).** The first pass written from
+> the source alone (no eyes): every delta below was found by reading,
+> landed one mend per commit, and is asserted by the GATE, not by
+> walks. The spine was never in question; what the read found was
+> drift at the seams the amendments never re-walked, and laws the
+> thesis had already written but the screens had never shipped. Six
+> mends, each asserted:
+>
+> 1. **THE RED COMES HOME.** Seen: the destructive tails (the
+>    receipt's delete, the Floor's discard) wearing a SECOND red —
+>    `colors.alert` on the verb — while the law says the verb is ink;
+>    the dead tag-editor focus register leaking the WIRE's interrupt
+>    red onto a stage control (a fourth red job in redface); the
+>    timetable spending TWO red nodes per standing substitution (name
+>    AND Rx — three swaps wallpapered the ≤3 ration); the record
+>    statement on `brand` while every other record mark reads
+>    `brandText`; and the waits (spinner, overlay) idling in red —
+>    furniture wearing it. Now: destructive tails ARM BY INK (unarmed
+>    ghost whisper → the tap-again step reads the full ink plate), the
+>    wire register is deleted, one red node per live edit (the Rx), one
+>    record token (`brandText`), the waits read ink. The gate grew the
+>    RED-RATION SCAN: no `accentColor={colors.alert}` in the authored
+>    layer, and `colors.focus.*` is the chit's alone.
+> 2. **THE PRESS IS AUTHORED.** Seen: 39 hand-rolled dips in four
+>    values (0.6/0.7/0.75/0.85) — the one sanctioned touch feedback
+>    with no constant and no gate, the same drift class the eleventh
+>    pass killed for type. Now: `PRESS_DIP` (0.6, furniture and rows)
+>    and `PRESS_DIP_PLATE` (0.85, filled ink plates) in
+>    `constants/interval.ts`; every literal swept; the gate flags any
+>    numeric dip in a pressed expression.
+> 3. **THE MEASURE WAITS FOR ITS READ.** Seen: the settings rest-days
+>    measure deriving its next set from a cache that is `[]` until the
+>    profile read lands — a toggle in that window clobbers the stored
+>    preference. Now the toggle waits for a successful read (the
+>    measure stays silent; loading asserts nothing).
+> 4. **ONE FACE FOR WORDS.** Seen: the ticker's station NAME setting
+>    in Martian (words never ride the quantity face), and the PR
+>    timeline's DATE riding Space Grotesk inside one label string. Now:
+>    the station speaks Space Grotesk at the row rank; RegisterLine
+>    grows `monoPrefix` — a quantity leading a name renders as its own
+>    mono node.
+> 5. **ONE VOICE FOR LINKS, ONE ROW FOR EVERY WAY FORWARD.** Seen: the
+>    gate speaking three link grammars (red-underlined, ink-underlined,
+>    red-inline) and progression's analytics exit reading as a stray
+>    cue-less label. Now: the link word inside a muted sentence wears
+>    the red underlined read everywhere; NextStation (which grows
+>    `label`) is the one way-forward row — `THE LEDGER · Analytics →`
+>    off the records.
+> 6. **THE FACTS STAY WHOLE.** Seen: the settings promotion-audit line
+>    truncating computed facts at one line (a tag list that ellipsizes
+>    lies about what was earned), BoardHead's fact line carrying the
+>    exact `numberOfLines` ellipsis its own comment calls a lie, the
+>    swap bench's last row drawing a hairline to nowhere, and the spec
+>    sheet's last sentence-case verb. Now: computed facts wrap, the
+>    fact line wraps, the last bench row draws no rule, ADD TO SESSION
+>    prints caps — and the trajectory renders from ONE logged session
+>    (one rung; the count label says it).
+>
+> Two survey findings were FALSIFIED by the source and are recorded as
+> such: the directory's empty state does not impersonate a load (the
+> catalog read is local and synchronous — a zero count is always a true
+> miss), and the spec sheet's "Unknown exercise." prints no load window
+> (the identity read is a synchronous TS-catalog lookup).
+>
+> **LANDING.** Six mends, one commit each, every one gated
+> (`lint:structure` + `tsc --noEmit`) before staging and pushed
+> separately: `8d4954259` (verbs arm by ink; the wire register dies),
+> `252692aee` (the ration at the source + the red-ration scan),
+> `f898f5d46` (THE PRESS authored + the press scan), `d573a0578` (the
+> measure waits; the rung renders), `1e7adfa80` (one face, one link
+> voice, one way-forward row), `60318fe3c` (the drift traps marked or
+> gone — ScreenScaffold quarantined as non-canonical, the dead
+> consistency-grid adapter deleted). Pass 14B (rituals), 14C (printed
+> data), and 14D (material) remain proposed, unlanded.
+
 > **REVISION 2027-03 — THE STATES AMENDMENT (the thirteenth pass; an
 > amendment, not a succession).** The third pass written with eyes,
 > and the first that hunted the cells no walk had ever photographed:
@@ -537,7 +613,7 @@ here.
 | Id | Name | What | Trigger | Law |
 |---|---|---|---|---|
 | S1 | THE CURTAIN | the shell's ink route curtain | navigation | shell machinery, unchanged; reduced-motion → instant |
-| S2 | THE PRESS | opacity dips to 0.6 on touch | press | instant in/out; no scale, no color shift |
+| S2 | THE PRESS | opacity dips on touch — `PRESS_DIP` (0.6) for furniture and rows, `PRESS_DIP_PLATE` (0.85) for filled ink plates (the verb, the ticker); authored in `constants/interval.ts`, gate-scanned (pass 14A) | press | instant in/out; no scale, no color shift |
 | S3 | THE SHEET | portal sheets slide | open/close | transform only; reduced-motion → fade/instant |
 | — | **THE RE-WEIGHT** | the counter rank exchanges clock ↔ expression | LOG · settle | a REPAINT, not a motion: no transform, no animation, no transition; both states fully tappable at frame 1 |
 
