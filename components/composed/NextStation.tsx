@@ -21,6 +21,13 @@ export interface NextStationProps {
   name: string;
   onPress: () => void;
   /**
+   * The way-forward furniture word (caps, ≤3 words) — 'NEXT' on the
+   * Floor; other exits spend their own ('THE LEDGER' off the records).
+   */
+  label?: string;
+  /** Overrides the default 'Next station: …' screen-reader phrase. */
+  accessibilityLabel?: string;
+  /**
    * REST SETTLED — the way forward brightens while the rest clock
    * reads 0 (state change, not motion: the still law holds).
    */
@@ -28,13 +35,20 @@ export interface NextStationProps {
   testID?: string;
 }
 
-export function NextStation({ name, onPress, bright = false, testID }: NextStationProps) {
+export function NextStation({
+  name,
+  onPress,
+  label = 'NEXT',
+  accessibilityLabel,
+  bright = false,
+  testID,
+}: NextStationProps) {
   const { colors } = useAppTheme();
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`Next station: ${name}`}
+      accessibilityLabel={accessibilityLabel ?? `Next station: ${name}`}
       style={({ pressed }) => [
         styles.row,
         { borderTopColor: colors.mobilePremium.hairlineBorder },
@@ -42,7 +56,7 @@ export function NextStation({ name, onPress, bright = false, testID }: NextStati
       ]}
       testID={testID}
     >
-      <Text style={[styles.nextWord, { color: colors.textMuted }]}>NEXT</Text>
+      <Text style={[styles.nextWord, { color: colors.textMuted }]}>{label}</Text>
       <Text
         style={[styles.nextName, { color: colors.text }, bright ? styles.nextNameBright : null]}
         numberOfLines={1}

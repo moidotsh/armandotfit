@@ -109,7 +109,10 @@ export default function LoginScreen() {
             style={styles.helpLinkBox}
           >
             <Text style={[styles.helpLink, { color: colors.textMuted }]}>
-              New here? <Text style={styles.helpLinkUnderline}>Create an account</Text>
+              New here?{' '}
+              <Text style={[styles.helpLinkUnderline, { color: colors.brandText }]}>
+                Create an account
+              </Text>
             </Text>
           </Pressable>
         </View>

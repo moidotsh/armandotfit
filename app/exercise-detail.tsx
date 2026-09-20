@@ -310,7 +310,9 @@ export default function ExerciseDetailScreen() {
                 safeGoBack();
               }}
             >
-              Add to session
+              {/* The verb prints caps — the touch amendment's delta 2,
+                  reached on the last sentence-case call site. */}
+              ADD TO SESSION
             </MobilePrimaryButton>
           </MobileActionFooter>
         </View>

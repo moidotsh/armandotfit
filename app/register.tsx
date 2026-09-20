@@ -146,7 +146,8 @@ export default function RegisterScreen() {
                 style={styles.helpLinkBox}
               >
                 <Text style={[styles.helpLink, { color: colors.textMuted }]}>
-                  Already have an account? <Text style={styles.helpLinkUnderline}>Sign in</Text>
+                  Already have an account?{' '}
+                  <Text style={[styles.helpLinkUnderline, { color: colors.brandText }]}>Sign in</Text>
                 </Text>
               </Pressable>
             </View>

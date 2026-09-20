@@ -11,10 +11,10 @@
 // raw sessions; nothing stored.
 
 import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { BoardShell, BoardHead, QueryErrorNote, RegisterLine } from '../components/composed';
+import { BoardShell, BoardHead, NextStation, QueryErrorNote, RegisterLine } from '../components/composed';
 import { useAppTheme } from '../context';
 import {
   navigateToExerciseDetail,
@@ -24,9 +24,7 @@ import {
 } from '../navigation';
 import { useDashboardSummary, usePersonalBests, useWeightUnit, useRecentSessionDetails } from '../hooks';
 import { SYSTEM_EXERCISES } from '../shared/exercises';
-import { INTERVAL, theme, PAGE_GUTTER,
-  PRESS_DIP
-} from '../constants';
+import { INTERVAL, PAGE_GUTTER } from '../constants';
 import { derivePrTimeline } from '../services';
 import { toDisplayWeight, roundDisplayWeight, weightUnitLabel, formatWeight } from '../utils';
 
@@ -137,7 +135,8 @@ export default function ProgressionScreen() {
                 {prTimeline.map((pr, i) => (
                   <RegisterLine
                     key={`${pr.at}-${pr.exerciseName}-${i}`}
-                    label={`${new Date(pr.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${pr.exerciseName}`}
+                    monoPrefix={new Date(pr.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    label={pr.exerciseName}
                     figure={`${formatWeight(pr.weight, unit)} × ${pr.reps}`}
                     accessibilityLabel={`${new Date(pr.at).toLocaleDateString()}: ${pr.exerciseName} new best, ${formatWeight(pr.weight, unit)} ${weightUnitLabel(unit)} for ${pr.reps}`}
                     testID={`pr-timeline-line-${i}`}
@@ -147,18 +146,17 @@ export default function ProgressionScreen() {
             </View>
           ) : null}
 
-          {/* THE TAIL — the analytics door waits with the body: a link
-              under a bare spinner asserted a destination before the
-              record book existed (the loading posture asserts
-              nothing). */}
-          <Pressable
+          {/* THE TAIL — the analytics door as the way-forward row: one
+              grammar for every exit that points onward (the hairline
+              row, the destination's thesis name, the chevron — not a
+              stray label pretending it isn't a door). */}
+          <NextStation
+            name="Analytics"
+            label="THE LEDGER"
             onPress={navigateToAnalytics}
-            accessibilityRole="button"
             accessibilityLabel="View analytics"
-            style={({ pressed }) => [styles.analyticsLink, pressed ? { opacity: PRESS_DIP } : null]}
-          >
-            <Text style={[styles.analyticsLinkText, { color: colors.text }]}>Analytics</Text>
-          </Pressable>
+            testID="progression-analytics-link"
+          />
         </>
       )}
     </BoardShell>
@@ -176,9 +174,5 @@ const styles = StyleSheet.create({
   sectionWhisper: {
     ...INTERVAL.whisper,
     marginBottom: 4,
-  },
-  analyticsLink: { marginTop: INTERVAL.block.marginTop, minHeight: 48, justifyContent: 'center' },
-  analyticsLinkText: {
-    ...theme.typography.mobileItemTitle,
   },
 });

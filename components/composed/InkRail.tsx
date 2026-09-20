@@ -147,7 +147,7 @@ export function InkRail({
           THE SWAP BENCH
         </Text>
         <View style={styles.list}>
-          {items.rows.map((item) => (
+          {items.rows.map((item, i) => (
             <Pressable
               key={item.slug}
               onPress={() => {
@@ -170,6 +170,9 @@ export function InkRail({
               style={({ pressed }) => [
                 styles.row,
                 { borderBottomColor: colors.mobilePremium.hairlineBorder },
+                // The LAST row draws no rule — a hairline under the
+                // final bench row is a rule to nowhere.
+                i === items.rows.length - 1 ? { borderBottomWidth: 0 } : null,
                 // The current pick reads as ink emphasis (quiet plate),
                 // not a brand wash — the bench has no strike moment.
                 item.isCurrent ? { backgroundColor: colors.cardAlt } : null,

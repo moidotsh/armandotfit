@@ -98,8 +98,12 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileLedger,
     fontWeight: '700',
   },
+  // The station is the strip's one CONTENT word — Space Grotesk at the
+  // row rank (thesis §3.3: names never ride the quantity face; the
+  // elapsed figure beside it does).
   station: {
-    ...theme.typography.mobileLedger,
+    ...theme.typography.mobileItemTitle,
+    fontWeight: '400',
     flex: 1,
     textAlign: 'center',
   },

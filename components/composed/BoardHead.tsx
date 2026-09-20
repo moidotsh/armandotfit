@@ -72,10 +72,9 @@ export function BoardHead({
         {statement}
       </Text>
       {fact ? (
-        // Two lines, never an ellipsis: the fact is content, and a
-        // fact line that truncates lies about the day (the sight
-        // amendment — four wide-mono muscle names overflow one line).
-        <Text style={[styles.fact, { color: colors.textMuted }]} numberOfLines={2}>
+        // Wraps, never ellipsizes (the sight amendment): the fact is
+        // content, and a fact line that truncates lies about the day.
+        <Text style={[styles.fact, { color: colors.textMuted }]}>
           {fact}
         </Text>
       ) : null}

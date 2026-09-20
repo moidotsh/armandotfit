@@ -103,7 +103,7 @@ export default function ForgotPasswordScreen() {
             style={styles.helpLinkBox}
           >
             <Text style={[styles.helpLink, { color: colors.textMuted }]}>
-              <Text style={styles.helpLinkUnderline}>Back to sign in</Text>
+              <Text style={[styles.helpLinkUnderline, { color: colors.brandText }]}>Back to sign in</Text>
             </Text>
           </Pressable>
         </View>

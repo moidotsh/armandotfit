@@ -21,6 +21,12 @@ import { theme,
 export interface RegisterLineProps {
   /** The entry's name — content, sentence case (Space Grotesk 18). */
   label: string;
+  /**
+   * A quantity leading the name (a date, an ordinal) — renders as its
+   * own mono node so the date stops riding the word face; the name
+   * itself stays Space Grotesk (thesis §3.3: words in the word face).
+   */
+  monoPrefix?: string | null;
   /** The label is itself a quantity (an ordinal, a date) — set mono. */
   monoLabel?: boolean;
   /** The right-aligned mono figure (18). Null = no figure. */
@@ -43,6 +49,7 @@ export interface RegisterLineProps {
 
 export function RegisterLine({
   label,
+  monoPrefix = null,
   monoLabel = false,
   figure = null,
   figureTone = 'ink',
@@ -73,6 +80,11 @@ export function RegisterLine({
 
   const body = (
     <View style={styles.row}>
+      {monoPrefix != null ? (
+        <Text style={[styles.labelMonoPrefix, { color: labelColor }]} numberOfLines={1}>
+          {monoPrefix}
+        </Text>
+      ) : null}
       <Text
         style={[
           monoLabel ? styles.labelMono : styles.label,
@@ -142,6 +154,13 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileFigure,
     fontWeight: '500',
     flexShrink: 1,
+  },
+  // The quantity PREFIX (a date leading a name) — figure rank, mono
+  // face, never shrunk out of its print.
+  labelMonoPrefix: {
+    ...theme.typography.mobileFigure,
+    fontWeight: '500',
+    flexShrink: 0,
   },
   labelBold: {
     fontWeight: '700',
