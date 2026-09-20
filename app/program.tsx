@@ -23,6 +23,7 @@
 
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ChevronRight } from '@tamagui/lucide-icons-2';
 import { useLocalSearchParams } from 'expo-router';
 import { MobilePrimaryButton } from '../components/MobilePremium';
 import { BoardShell, InkRail, SectionWhisper, SwapGlyph } from '../components/composed';
@@ -53,6 +54,12 @@ const EDITION_NAME: Record<PreferredSplit, string> = {
   oneADay: 'One-a-day',
 };
 
+/** The overview's statement: the live program as a sentence. */
+const editionSentence = (which: PreferredSplit, days: number): string =>
+  which === 'twoADay'
+    ? `${days} days, twice a day.`
+    : `${days} days, one sitting.`;
+
 const isEdition = (v: string | undefined): v is PreferredSplit =>
   v === 'twoADay' || v === 'oneADay';
 
@@ -78,15 +85,7 @@ export default function ProgramScreen() {
         windows.flatMap((w) => resolveSlots(which, day.day, w, overrides)),
       );
       const sessions = days.length * windows.length;
-      const share = derivePlanMuscleShare(slots, 3);
-      return {
-        days: days.length,
-        lifts: slots.length,
-        sessions,
-        top: share
-          .map((r) => `${MUSCLE_DISPLAY_NAMES[r.muscle].toUpperCase()} ${r.share}%`)
-          .join(' \u2009·\u2009 '),
-      };
+      return { days: days.length, lifts: slots.length, sessions };
     };
     const liveStats = statsOf(split);
 
@@ -102,8 +101,8 @@ export default function ProgramScreen() {
         <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
           {joinFacts(['THE PROGRAM', CURRENT_ERA])}
         </Text>
-        <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
-          {liveName}
+        <Text style={[styles.statement, { color: colors.text }]} numberOfLines={2}>
+          {editionSentence(split, liveStats.days)}
         </Text>
         <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
           {joinFacts([
@@ -118,40 +117,87 @@ export default function ProgramScreen() {
         {(['twoADay', 'oneADay'] as const).map((which, i) => {
           const st = statsOf(which);
           const isLive = which === split;
+          // INK IS STATE, SPENT ON THE CARDS: the running program
+          // prints in FULL INK under the screen's 2px rule; the other
+          // edition demotes — muted ink, hairline rule. The split
+          // between the programs is hierarchy, not two identical
+          // boxes.
+          const edDays = which === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
+          const edWindows: SessionWindow[] = which === 'twoADay' ? ['am', 'pm'] : ['single'];
+          const edSlots = edDays.flatMap((d) =>
+            edWindows.flatMap((w) => resolveSlots(which, d.day, w, overrides)),
+          );
+          const rows = derivePlanMuscleShare(edSlots, 4);
+          const edLead = rows[0]?.share ?? 1;
+          // THE ROTATION STRIP — the edition's anatomy as printed
+          // cells: one block glyph per window, day-labeled. Twice-a-day
+          // reads twice; one-a-day reads once. The split, visible.
+          const strip = edDays
+            .map((d) => `D${d.day} ${'\u2588'.repeat(edWindows.length)}`)
+            .join(' \u2009·\u2009 ');
+          const titleInk = isLive ? colors.text : colors.textMuted;
+          const labelInk = isLive ? colors.textSecondary : colors.textMuted;
+          const barInk = isLive ? colors.text : colors.textMuted;
           return (
             <Pressable
               key={which}
               onPress={() => navigateToProgram(which)}
               accessibilityRole="button"
-              accessibilityLabel={`${EDITION_NAME[which]} program — ${st.days} days, ${st.lifts} lifts. View the days`}
+              accessibilityLabel={`${EDITION_NAME[which]} program — ${st.days} days, ${st.lifts} lifts, ${st.sessions} sessions a week. View the days`}
               style={({ pressed }) => [
                 styles.card,
-                { borderTopColor: colors.text },
+                {
+                  borderTopWidth: isLive ? 2 : 1,
+                  borderTopColor: isLive ? colors.text : colors.mobilePremium.hairlineBorder,
+                },
                 i > 0 ? styles.cardNotFirst : null,
                 pressed ? { opacity: PRESS_DIP } : null,
               ]}
               testID={`program-card-${which}`}
             >
               <View style={styles.cardHead}>
-                <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>
+                <Text style={[styles.cardTitle, { color: titleInk }]} numberOfLines={1}>
                   {EDITION_NAME[which]}
                 </Text>
                 {isLive ? (
                   <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
                 ) : null}
+                <ChevronRight size={20} color={titleInk} />
               </View>
-              <Text style={[styles.cardFact, { color: colors.textMuted }]} numberOfLines={1}>
-                {joinFacts([
-                  `${st.days} days`,
-                  which === 'twoADay' ? 'AM + PM' : 'one session',
-                  `${st.lifts} lifts`,
-                  `${st.sessions} sessions/week`,
-                ])}
-              </Text>
-              {st.top ? (
-                <Text style={[styles.cardTop, { color: colors.textSecondary }]} numberOfLines={1}>
-                  {st.top}
+              <View style={styles.cardFigureRow}>
+                {/* THE CARD'S BIG FIGURE — the demoted-figure grammar
+                    (36 mono): the edition's sessions per week, the one
+                    number that IS the split. */}
+                <Text
+                  style={[styles.cardBigFigure, { color: titleInk }]}
+                  accessibilityLabel={`${st.sessions} sessions per week`}
+                >
+                  {String(st.sessions)}
                 </Text>
+                <Text style={[styles.cardBigUnit, { color: labelInk }]}>SESSIONS/WK</Text>
+                <Text style={[styles.cardSideFacts, { color: labelInk }]} numberOfLines={1}>
+                  {joinFacts([`${st.days} days`, `${st.lifts} lifts`])}
+                </Text>
+              </View>
+              <Text style={[styles.cardStrip, { color: labelInk }]} numberOfLines={1}>
+                {strip}
+              </Text>
+              {rows.length > 0 ? (
+                <View style={styles.cardShare}>
+                  {rows.map((row) => (
+                    <View key={row.muscle} style={styles.cardShareRow}>
+                      <Text style={[styles.cardShareLabel, { color: labelInk }]} numberOfLines={1}>
+                        {MUSCLE_DISPLAY_NAMES[row.muscle].toUpperCase()}
+                      </Text>
+                      <Text style={[styles.cardShareBar, { color: barInk }]}>
+                        {'\u2588'.repeat(Math.max(1, Math.round((row.share / edLead) * 10)))}
+                      </Text>
+                      <Text style={[styles.cardSharePct, { color: colors.textMuted }]}>
+                        {`${row.share}%`}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
               ) : null}
             </Pressable>
           );
@@ -247,15 +293,14 @@ export default function ProgramScreen() {
           the days read as its table of contents. */}
       {days.map((day, di) => (
         <View key={day.day} style={di === 0 ? styles.dayFirstChapter : styles.day}>
-          <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
-            {day.title}
-          </Text>
-          <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
-            {joinFacts([
-              isTwoADay ? 'AM + PM' : null,
-              `${dayLifts(day.day)} lifts`,
-            ])}
-          </Text>
+          <View style={styles.dayHeadRow}>
+            <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
+              {day.title}
+            </Text>
+            <Text style={[styles.dayHeadFigure, { color: colors.textMuted }]}>
+              {`${dayLifts(day.day)} lifts`}
+            </Text>
+          </View>
           {windows.map((window) => (
             <View key={window} style={styles.windowBlock}>
               {isTwoADay ? (
@@ -354,11 +399,9 @@ const styles = StyleSheet.create({
   // wholes with the press dip.
   card: {
     borderTopWidth: 2,
-    paddingTop: 10,
-    paddingBottom: 4,
-    minHeight: 96,
-    justifyContent: 'center',
-  },
+    paddingTop: 12,
+    paddingBottom: 8,
+    },
   cardNotFirst: {
     marginTop: 24,
   },
@@ -375,13 +418,65 @@ const styles = StyleSheet.create({
   liveWord: {
     ...theme.typography.mobileEyebrow,
   },
-  cardFact: {
-    ...INTERVAL.fact,
-    marginTop: 2,
+  cardFigureRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+    marginTop: 10,
   },
-  cardTop: {
+  // THE BIG FIGURE — the demoted-figure grammar (36 mono, 500): the
+  // card's one loud number.
+  cardBigFigure: {
+    ...INTERVAL.demotedFigure,
+  },
+  cardBigUnit: {
+    ...theme.typography.mobileEyebrow,
+  },
+  cardSideFacts: {
     ...theme.typography.mobileLedger,
-    marginTop: 4,
+    marginLeft: 'auto',
+    flexShrink: 1,
+  },
+  // THE ROTATION STRIP — day-labeled window cells at the ledger rank.
+  cardStrip: {
+    ...theme.typography.mobileLedger,
+    letterSpacing: 0,
+    marginTop: 6,
+  },
+  cardShare: {
+    marginTop: 10,
+  },
+  cardShareRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 18,
+  },
+  cardShareLabel: {
+    ...theme.typography.mobileEyebrow,
+    width: 84,
+    flexShrink: 0,
+  },
+  cardShareBar: {
+    ...theme.typography.mobileLedger,
+    letterSpacing: 0,
+    color: undefined,
+  },
+  cardSharePct: {
+    ...theme.typography.mobileLedger,
+    marginLeft: 'auto',
+    fontVariant: ['tabular-nums'],
+  },
+  dayHeadRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  dayHeadFigure: {
+    ...theme.typography.mobileFigure,
+    fontVariant: ['tabular-nums'],
+    flexShrink: 0,
   },
   windowBlock: {
     marginTop: ROW_GAP / 2,
