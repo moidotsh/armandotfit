@@ -45,7 +45,7 @@ The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 13-audit pre-co
 | Concern | Where it lives |
 |---|---|
 | The AM/PM program (slots, Rx, suggested tags) | `shared/exercises/splits.ts` |
-| Exercise catalog (display source, 757 entries: 97 core + 660 imported) | `shared/exercises/data.ts` + `shared/exercises/importedData.ts` |
+| Exercise catalog (display source, 699 entries: 97 core + 602 imported) | `shared/exercises/data.ts` + `shared/exercises/importedData.ts` |
 | Catalog importer (free-exercise-db, public domain) | `scripts/import-exercise-db.ts` |
 | Exercise plates (657 monochrome figures) | `public/exercise-plates/` |
 | Cardio station registry (fields, steps, formats) | `shared/exercises/cardio.ts` |
