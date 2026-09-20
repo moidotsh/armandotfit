@@ -27,6 +27,8 @@ export {
   type PrEvent,
   type GroupWeekVolume,
   type MuscleGroup,
+  derivePlanMuscleShare,
+  type PlanMuscleShareRow,
 } from './chartData';
 export { slotKey, resolveSlots } from './programService';
 export {

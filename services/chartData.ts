@@ -15,10 +15,12 @@
 
 import {
   SYSTEM_EXERCISES,
+  SYSTEM_EXERCISES_BY_SLUG,
   MUSCLE_DISPLAY_NAMES,
   type MuscleSlug,
 } from '../shared/exercises';
 import type { SessionWithDetails } from '../shared/types';
+import type { ResolvedSlot } from '../shared/exercises/splits';
 
 /** Catalog identity joins by NAME (lowercased) — the data-spine rule. */
 const CATALOG_BY_NAME = new Map(
@@ -319,4 +321,42 @@ export function deriveWeeklyGroupVolume(
     }))
     .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
     .slice(-weeks);
+}
+
+
+// ── THE PLAN'S SHARE (the timetable's muscle breakdown) ────────────────
+
+export interface PlanMuscleShareRow {
+  muscle: MuscleSlug;
+  /** Programmed set-count credit (primary muscles, per slot). */
+  sets: number;
+  /** Share of the day's programmed work, 0–100 (rounded). */
+  share: number;
+}
+
+/**
+ * A day-plan's muscle share, computed at read from the SLOTS the
+ * program authors: each slot credits its programmed set count (max,
+ * else min) to each of its primary muscles. The timetable prints it as
+ * GLYPH BARS — type as data (the register grid's own trick), never a
+ * drawn chart. Sorted most-work-first, capped to `cap` rows.
+ */
+export function derivePlanMuscleShare(
+  slots: ResolvedSlot[],
+  cap = 5,
+): PlanMuscleShareRow[] {
+  const tally = new Map<MuscleSlug, number>();
+  let total = 0;
+  for (const slot of slots) {
+    const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
+    for (const m of SYSTEM_EXERCISES_BY_SLUG[slot.exercise]?.primaryMuscles ?? []) {
+      tally.set(m, (tally.get(m) ?? 0) + sets);
+      total += sets;
+    }
+  }
+  if (total === 0) return [];
+  return [...tally.entries()]
+    .map(([muscle, sets]) => ({ muscle, sets, share: Math.round((sets / total) * 100) }))
+    .sort((a, b) => b.sets - a.sets)
+    .slice(0, cap);
 }
