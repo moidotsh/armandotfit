@@ -202,6 +202,21 @@ const LETTER_SPACING_RE = /letterSpacing:\s*(-?\d+(?:\.\d+)?)/g;
 // status dot, a 4px progress track, a 3px hue tick stay marks) fails.
 const BORDER_RADIUS_RE = /borderRadius:\s*(-?\d+(?:\.\d+)?)/g;
 const MARK_SCALE_RADIUS = 4;
+// ── THE RED RATION AT THE SOURCE (pass 14A) ───────────────────────────
+// Two leaks the states amendment could not see, now gated: (1) the verb
+// never wears the status red — `accentColor` must not carry colors.alert
+// (destructive tails arm by ink, not by a second red); (2) the wire
+// (colors.focus.*) is the chit's and the curtain's register ONLY — no
+// authored surface reads it. The chit itself (primitives/Toast.tsx) is
+// the one sanctioned wire site in the authored layer.
+const WIRE_SANCTIONED = new Set(['components/primitives/Toast.tsx']);
+function isAuthoredLayer(relName: string): boolean {
+  return (
+    relName.startsWith('app/') ||
+    relName.startsWith('components/composed/') ||
+    relName.startsWith('components/primitives/')
+  );
+}
 let scanned = 0;
 for (const rel of [...SCAN_DIRS, ...CLEAN_KIT_FILES]) {
   const full = join(REPO_ROOT, rel);
@@ -238,6 +253,20 @@ for (const rel of [...SCAN_DIRS, ...CLEAN_KIT_FILES]) {
         false,
         `square cut: ${relName} borderRadius ${r} ≤ mark scale (${MARK_SCALE_RADIUS})`,
       );
+    }
+    if (isAuthoredLayer(relName)) {
+      if (/accentColor=\{[^}]*colors\.alert/.test(src)) {
+        check(
+          false,
+          `red ration: ${relName} — the verb never wears the status red (arm by ink)`,
+        );
+      }
+      if (src.includes('colors.focus.') && !WIRE_SANCTIONED.has(relName)) {
+        check(
+          false,
+          `the wire: ${relName} — colors.focus.* belongs to the chit and the curtain only`,
+        );
+      }
     }
   }
 }

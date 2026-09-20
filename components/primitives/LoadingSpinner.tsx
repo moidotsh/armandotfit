@@ -18,8 +18,10 @@ export function LoadingSpinner({ size = 'small', color }: LoadingSpinnerProps) {
   const { colors } = useAppTheme();
   return (
     <View style={styles.container}>
-      {/* c4-exempt: this primitive IS the ActivityIndicator wrapper. */}
-      <ActivityIndicator size={size} color={color ?? colors.brand} />
+      {/* c4-exempt: this primitive IS the ActivityIndicator wrapper.
+          The wait reads ink — loading is furniture, and furniture never
+          wears the red (interval-thesis §2). */}
+      <ActivityIndicator size={size} color={color ?? colors.text} />
     </View>
   );
 }

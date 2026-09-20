@@ -32,7 +32,8 @@ export function LoadingOverlay({
   accentColor,
 }: LoadingOverlayProps) {
   const { colors } = useAppTheme();
-  const accent = accentColor ?? colors.brand;
+  // The wait reads ink — loading is furniture and never wears the red.
+  const accent = accentColor ?? colors.text;
 
   // MobileDialog handles its own mounting. Pass `open` so it returns null
   // internally when invisible. The remaining props disable every dismiss

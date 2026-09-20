@@ -62,7 +62,10 @@ export function BoardHead({
         testID={statementTestID}
         style={[
           variant === 'figure' ? styles.figureStatement : styles.statement,
-          { color: tone === 'record' ? colors.brand : colors.text },
+          // The record read wears brandText — the text companion — so
+          // every record mark in the app speaks one red token (RegisterLine,
+          // the clock, the grid's today); `brand` stays the fill slot.
+          { color: tone === 'record' ? colors.brandText : colors.text },
         ]}
         numberOfLines={2}
       >

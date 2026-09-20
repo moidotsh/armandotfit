@@ -60,10 +60,15 @@ export default function ProgramScreen() {
     const name = entry?.name ?? slot.exercise;
     const isOverridden = key in overrides;
 
+    // A standing substitution reads in the RED RX only (thesis §8 — the
+    // live edit): one red node per override. The name stays ink — a
+    // name+Rx pair both in red spent two marks on one edit and, at
+    // three substitutions, wallpapered the ration the sight amendment
+    // set (red text nodes ≤3 per screen).
     return (
       <View key={key} style={styles.slotRow}>
         <Text
-          style={[styles.slotName, { color: isOverridden ? colors.brandText : colors.text }]}
+          style={[styles.slotName, { color: colors.text }]}
           numberOfLines={1}
         >
           {name}
