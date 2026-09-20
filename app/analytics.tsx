@@ -85,12 +85,16 @@ export default function AnalyticsScreen() {
       contentContainerStyle={styles.bodyContent}
     >
       {/* THE STATEMENT — the count. The page's sentence is "you
-          trained N of R days"; the number carries it. */}
-      <BoardHead
-        statement={String(sessionsInRange)}
-        fact={`sessions · last ${range} days`}
-        variant="figure"
-      />
+          trained N of R days"; the number carries it. The loading
+          posture asserts nothing: the head prints when the facts
+          arrive, never a 0 impersonating a settled count. */}
+      {!historyQuery.isLoading ? (
+        <BoardHead
+          statement={String(sessionsInRange)}
+          fact={`sessions · last ${range} days`}
+          variant="figure"
+        />
+      ) : null}
 
       {/* The range pick. */}
       <View style={styles.block}>

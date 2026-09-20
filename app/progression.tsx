@@ -63,7 +63,7 @@ export default function ProgressionScreen() {
         <EmptyState
           title="Nothing to progress yet"
           message="Log your first session and the streak, totals, and bests start here."
-          action={{ label: 'Start workout', onPress: navigateToSplitSelection }}
+          action={{ label: 'START WORKOUT', onPress: navigateToSplitSelection }}
           testID="progression-empty"
         />
       ) : (
@@ -117,38 +117,44 @@ export default function ProgressionScreen() {
               </View>
             </View>
           ) : null}
+
+          {/* THE PR TIMELINE — when the records fell, latest first, as
+              ruled rows: date left · air · the figure right, ink (the
+              rationed red stays on the streak). It waits with the body
+              — no ruled row asserts a record before the reads settle. */}
+          {prTimeline.length > 0 ? (
+            <View style={styles.block}>
+              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+                THE PR TIMELINE
+              </Text>
+              <View testID="pr-timeline">
+                {prTimeline.map((pr, i) => (
+                  <RegisterLine
+                    key={`${pr.at}-${pr.exerciseName}-${i}`}
+                    label={`${new Date(pr.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${pr.exerciseName}`}
+                    figure={`${formatWeight(pr.weight, unit)} × ${pr.reps}`}
+                    accessibilityLabel={`${new Date(pr.at).toLocaleDateString()}: ${pr.exerciseName} new best, ${formatWeight(pr.weight, unit)} ${weightUnitLabel(unit)} for ${pr.reps}`}
+                    testID={`pr-timeline-line-${i}`}
+                  />
+                ))}
+              </View>
+            </View>
+          ) : null}
+
+          {/* THE TAIL — the analytics door waits with the body: a link
+              under a bare spinner asserted a destination before the
+              record book existed (the loading posture asserts
+              nothing). */}
+          <Pressable
+            onPress={navigateToAnalytics}
+            accessibilityRole="button"
+            accessibilityLabel="View analytics"
+            style={({ pressed }) => [styles.analyticsLink, pressed ? { opacity: 0.6 } : null]}
+          >
+            <Text style={[styles.analyticsLinkText, { color: colors.text }]}>Analytics</Text>
+          </Pressable>
         </>
       )}
-      {/* THE PR TIMELINE — when the records fell, latest first, as
-          ruled rows: date left · air · the figure right, ink (the
-          rationed red stays on the streak). */}
-      {prTimeline.length > 0 ? (
-        <View style={styles.block}>
-          <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
-            THE PR TIMELINE
-          </Text>
-          <View testID="pr-timeline">
-            {prTimeline.map((pr, i) => (
-              <RegisterLine
-                key={`${pr.at}-${pr.exerciseName}-${i}`}
-                label={`${new Date(pr.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${pr.exerciseName}`}
-                figure={`${formatWeight(pr.weight, unit)} × ${pr.reps}`}
-                accessibilityLabel={`${new Date(pr.at).toLocaleDateString()}: ${pr.exerciseName} new best, ${formatWeight(pr.weight, unit)} ${weightUnitLabel(unit)} for ${pr.reps}`}
-                testID={`pr-timeline-line-${i}`}
-              />
-            ))}
-          </View>
-        </View>
-      ) : null}
-
-      <Pressable
-        onPress={navigateToAnalytics}
-        accessibilityRole="button"
-        accessibilityLabel="View analytics"
-        style={({ pressed }) => [styles.analyticsLink, pressed ? { opacity: 0.6 } : null]}
-      >
-        <Text style={[styles.analyticsLinkText, { color: colors.text }]}>Analytics</Text>
-      </Pressable>
     </BoardShell>
   );
 }
