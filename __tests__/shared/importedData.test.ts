@@ -41,10 +41,31 @@ describe('imported catalog', () => {
     }
   });
 
+  it('no imported entry twins a core lift (the claimed-match law)', () => {
+    // A core lift's matched fedb figure is THE SAME MOVEMENT — its fedb
+    // entry is never imported (the Leg-Press-Calf-Raise phantom-twin
+    // lesson). Structurally: no imported entry shares a plate path with
+    // a core entry, because claimed figures exist only as core plates.
+    const importedSlugs = new Set(IMPORTED_EXERCISES.map((e) => e.slug));
+    const corePaths = new Set(
+      SYSTEM_EXERCISES.filter((e) => e.image != null && !importedSlugs.has(e.slug)).map(
+        (e) => e.image,
+      ),
+    );
+    const importedPlates = IMPORTED_EXERCISES.filter((e) => e.image != null);
+    for (const e of importedPlates) {
+      expect(corePaths.has(e.image!), `${e.name} twins a core lift's figure`).toBe(false);
+    }
+    // And the specific pair that exposed the bug.
+    expect(
+      IMPORTED_EXERCISES.some((e) => e.slug === 'calf-press-on-the-leg-press-machine'),
+    ).toBe(false);
+  });
+
   it('every declared plate resolves on disk (sampled)', () => {
     const withPlates = SYSTEM_EXERCISES.filter((e) => e.image != null);
     // 657 imported + 82 core-matched plates compose onto the catalog.
-    expect(withPlates.length).toBeGreaterThan(700);
+    expect(withPlates.length).toBeGreaterThan(650);
     const root = join(__dirname, '..', '..', 'public');
     for (const e of withPlates.slice(0, 40)) {
       const p = join(root, e.image!.replace(/^\//, ''));

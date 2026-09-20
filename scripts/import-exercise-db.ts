@@ -187,6 +187,41 @@ const assertLegalMuscle = (v: string) => {
 
 
 const files = readdirSync(EX_DIR).filter((f) => f.endsWith('.json')).sort();
+// The fedb index (by name) — built BEFORE the import loop: the core
+// matcher claims the fedb entries that ARE core movements (exact
+// plural-tolerant match or the reviewed alias table), and a claimed
+// entry is NEVER imported — the match and the entry are the same
+// movement (the Leg-Press-Calf-Raise lesson: name-equality alone let
+// phantom twins through).
+const byName = new Map<string, FedEntry>();
+for (const file of files) {
+  const e = JSON.parse(readFileSync(join(EX_DIR, file), 'utf8')) as FedEntry;
+  byName.set(e.name.toLowerCase(), e);
+}
+const normTokens = (n: string) =>
+  new Set(
+    n.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean)
+      .map((t) => t.replace(/s$/, '')),
+  );
+const sameTokens = (a: string, b: string) => {
+  const A = normTokens(a), B = normTokens(b);
+  if (A.size !== B.size) return false;
+  for (const t of A) if (!B.has(t)) return false;
+  return true;
+};
+const corePrettyNames = [...coreSrc.matchAll(/^    name: '([^']+)',$/gm)].map((m) => m[1]);
+const claimedFedbNames = new Set<string>();
+for (const pretty of corePrettyNames) {
+  const alias = CORE_PLATE_ALIASES[pretty];
+  if (alias && byName.has(alias.toLowerCase())) {
+    claimedFedbNames.add(alias.toLowerCase());
+    continue;
+  }
+  for (const [fedName] of byName) {
+    if (sameTokens(pretty, fedName)) { claimedFedbNames.add(fedName); break; }
+  }
+}
+
 const imported: string[] = [];
 const manifest: string[] = [];
 const stats = { total: files.length, kept: 0, categorySkip: 0, coreSkip: 0, musclesDropped: 0, noPlate: 0 };
@@ -200,7 +235,7 @@ for (const file of files) {
     continue;
   }
   const nameKey = e.name.toLowerCase();
-  if (coreNames.has(nameKey) || nameSeen.has(nameKey)) {
+  if (coreNames.has(nameKey) || nameSeen.has(nameKey) || claimedFedbNames.has(nameKey)) {
     stats.coreSkip += 1;
     continue;
   }
@@ -259,46 +294,21 @@ for (const file of files) {
   stats.kept += 1;
 }
 
-// ── Core plates: exact token-set matches (plural-tolerant) + the
-// reviewed aliases. The plate file reuses the imported figure when one
-// exists; otherwise the manifest gains the entry.
-const byName = new Map<string, FedEntry>();
-for (const file of files) {
-  const e = JSON.parse(readFileSync(join(EX_DIR, file), 'utf8')) as FedEntry;
-  byName.set(e.name.toLowerCase(), e);
-}
+// ── Core plates: the alias table + plural-tolerant matches computed
+// above (claimedFedbNames) — every core match gets its figure.
 const plateOf = (fedName: string): { image: string; source: string } | null => {
   const entry = byName.get(fedName.toLowerCase());
   const first = entry?.images?.[0];
   if (!entry || !first) return null;
-  // Reuse the imported plate when the target was imported (same figure,
-  // one file); else name the plate for the CORE slug.
-  const importedSlug = slugSeen.has(slugify(entry.name)) ? slugify(entry.name) : null;
-  const coreSlug = importedSlug ?? slugify(fedName);
+  // The core plate names the fedb figure's own slug (a claimed entry is
+  // never imported, so no reuse question remains).
   const rel = first.replace(/^\.\//, '');
-  manifest.push(`${coreSlug}\t${join(EX_DIR, rel)}`);
-  return { image: `/exercise-plates/${coreSlug}.jpg`, source: entry.name };
-};
-
-const normTokens = (n: string) =>
-  new Set(
-    n.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean)
-      .map((t) => t.replace(/s$/, '')),
-  );
-const sameTokens = (a: string, b: string) => {
-  const A = normTokens(a), B = normTokens(b);
-  if (A.size !== B.size) return false;
-  for (const t of A) if (!B.has(t)) return false;
-  return true;
+  manifest.push(`${slugify(fedName)}\t${join(EX_DIR, rel)}`);
+  return { image: `/exercise-plates/${slugify(fedName)}.jpg`, source: entry.name };
 };
 
 const corePlates: string[] = [];
 let corePlated = 0;
-// The core catalog's PRETTY names (the regex above the import loop
-// collected only the lowercased keys).
-const corePrettyNames = [...coreSrc.matchAll(/^    name: '([^']+)',$/gm)].map(
-  (m) => m[1],
-);
 for (const pretty of corePrettyNames) {
   let target: string | null = CORE_PLATE_ALIASES[pretty] ?? null;
   if (!target) {
