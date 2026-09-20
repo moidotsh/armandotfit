@@ -148,8 +148,15 @@ export default function ProgramScreen() {
               resolveSlots(viewedSplit, day.day, w as SessionWindow, overrides),
             ),
           );
-          const share = derivePlanMuscleShare(planSlots);
+          // EVERY muscle the rotation works — no cap: the top-five
+          // slice hid over half the body. The whole picture, sorted
+          // most-worked first.
+          const share = derivePlanMuscleShare(planSlots, 99);
           if (share.length === 0) return null;
+          // Bars scale to the LEADER (the top muscle fills the run) —
+          // shares cluster at 5-15%, so scaling to 100% collapsed
+          // everything to 1-2 blocks. The leader anchors the ruler.
+          const lead = share[0].share;
           return (
             <View style={styles.shareBlock} testID="program-share">
               <SectionWhisper rule={false}>THE WORK</SectionWhisper>
@@ -159,7 +166,7 @@ export default function ProgramScreen() {
                     {MUSCLE_DISPLAY_NAMES[row.muscle].toUpperCase()}
                   </Text>
                   <Text style={[styles.shareBar, { color: colors.text }]}>
-                    {'\u2588'.repeat(Math.max(1, Math.round((row.share / 100) * 20)))}
+                    {'\u2588'.repeat(Math.max(1, Math.round((row.share / lead) * 16)))}
                   </Text>
                   <Text style={[styles.sharePct, { color: colors.textMuted }]}>
                     {`${row.share}%`}
