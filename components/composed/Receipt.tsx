@@ -31,6 +31,11 @@ import { useSplitPreferenceStore, useWorkoutStore } from '../../stores';
 import { INTERVAL, PAGE_GUTTER, theme } from '../../constants';
 import { eraFor } from '../../shared/exercises';
 import {
+  CARDIO_STATIONS,
+  formatCardioDuration,
+  formatCardioDistance,
+} from '../../shared/exercises/cardio';
+import {
   toDisplayWeight,
   roundDisplayWeight,
   formatVolumeWeight,
@@ -139,6 +144,7 @@ export function Receipt({ id }: ReceiptProps) {
                 windowLabel,
                 `${session.exercises.length} lifts`,
                 `${totalSets} sets`,
+                session.cardio.length > 0 ? `${session.cardio.length} cardio` : null,
               ]
                 .filter(Boolean)
                 .join(' · ')}
@@ -188,6 +194,40 @@ export function Receipt({ id }: ReceiptProps) {
               ))}
             </View>
           ))}
+          {/* THE CARDIO — one ruled row per sitting: the duration as the
+              mono prefix, the station + its prescription as the label,
+              the console's outcomes right-aligned. Settled fact — ink,
+              never red. */}
+          {session.cardio.length > 0 ? (
+            <View style={styles.receiptBlock}>
+              <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
+                THE CARDIO
+              </Text>
+              {session.cardio.map((row, i) => {
+                const spec = CARDIO_STATIONS[row.station];
+                const prescription = [
+                  row.speedKmh != null ? `${row.speedKmh} km/h` : null,
+                  row.level != null ? (row.station === 'treadmill' ? `${row.level}%` : `level ${row.level}`) : null,
+                ].filter(Boolean).join(' · ');
+                const outcomes = [
+                  row.distanceM != null ? formatCardioDistance(row.distanceM) : null,
+                  row.kcal != null ? `${row.kcal} kcal` : null,
+                ].filter(Boolean).join(' · ');
+                return (
+                  <RegisterLine
+                    key={row.id}
+                    monoPrefix={formatCardioDuration(row.durationSec)}
+                    label={prescription ? `${spec.name} · ${prescription}` : spec.name}
+                    figure={outcomes || null}
+                    figureTone="muted"
+                    accessibilityLabel={`${spec.name}, ${formatCardioDuration(row.durationSec)}${prescription ? `, ${prescription}` : ''}${outcomes ? `, ${outcomes}` : ''}`}
+                    testID={`receipt-cardio-${i}`}
+                  />
+                );
+              })}
+            </View>
+          ) : null}
+
           {/* CONTINUE THE DAY — the wood-chops case: the day continues
               as a NEW block (same day-of-split, fresh stations), never
               a reopening of this settled one (history is immutable raw

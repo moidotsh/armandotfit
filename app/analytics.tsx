@@ -25,6 +25,7 @@ import { deriveMuscleShare, MUSCLE_GROUPS } from '../services';
 import { AnalyticsService } from '../services';
 import { addDays } from '../utils';
 import { BLOCK_GAP, INTERVAL, theme, PAGE_GUTTER } from '../constants';
+import { formatCardioMinutes } from '../shared/exercises/cardio';
 import type { DayActivity } from '../shared/types';
 
 type Range = 7 | 30 | 90;
@@ -67,6 +68,15 @@ export default function AnalyticsScreen() {
 
   const maxWorkouts = Math.max(1, ...weekly.map((w) => w.sessions));
   const sessionsInRange = weekly.reduce((sum, w) => sum + w.sessions, 0);
+  // THE ENGINE — cardio minutes in range, computed at read from the
+  // recent sessions' cardio rows (the details query — the day
+  // aggregates carry no sitting detail; pass C3, nothing stored).
+  const cardioSecInRange = useMemo(() => {
+    const cutoff = Date.now() - range * 86_400_000;
+    return (detailsQuery.data ?? [])
+      .filter((session) => new Date(session.startedAt).getTime() >= cutoff)
+      .reduce((n, session) => n + session.cardio.reduce((m, r) => m + r.durationSec, 0), 0);
+  }, [detailsQuery.data, range]);
 
   // Grid range: today + range days back (matches the repository's
   // `gte(date, today - daysBack)` filter so every row returned by the
@@ -167,6 +177,20 @@ export default function AnalyticsScreen() {
               })}
             </View>
           )}
+
+          {/* THE ENGINE — cardio minutes in the picked range, one
+              ruled row (muted figure: it is a fact, not a record). */}
+          {detailsQuery.isSuccess && cardioSecInRange > 0 ? (
+            <View style={styles.block}>
+              <RegisterLine
+                label={`cardio · last ${range} days`}
+                figure={formatCardioMinutes(cardioSecInRange)}
+                figureTone="muted"
+                accessibilityLabel={`Cardio, ${formatCardioMinutes(cardioSecInRange)} in the last ${range} days`}
+                testID="analytics-cardio"
+              />
+            </View>
+          ) : null}
 
           {/* THE BALANCE — one row: the most-neglected group and its
               share (computed at read; the full per-lift story lives

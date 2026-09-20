@@ -93,6 +93,53 @@ describe('workoutStore', () => {
     expect(dto!.exercises[0].exerciseName).toBe('Cable Wood Chop');
   });
 
+  it('cardio stations: commit carries values, laps derive meters, DTO flattens', () => {
+    useWorkoutStore.getState().startSession({ splitType: 'twoADay', day: 2, sessionMode: 'am' });
+
+    // A treadmill sitting: arm time + speed + incline + outcomes, commit.
+    const treadmill = useWorkoutStore.getState().addCardioToDraft('treadmill');
+    useWorkoutStore.getState().updateCardioArmed(treadmill, {
+      durationSec: 1800,
+      speedKmh: 9.5,
+      level: 2,
+      distanceM: 4800,
+      kcal: 320,
+    });
+    useWorkoutStore.getState().commitCardioRow(treadmill);
+
+    // The walk loop: laps derive the distance (one loop is 100 m).
+    const loop = useWorkoutStore.getState().addCardioToDraft('walk-loop');
+    useWorkoutStore.getState().updateCardioArmed(loop, { durationSec: 1500, laps: 12 });
+    useWorkoutStore.getState().commitCardioRow(loop);
+
+    const draft = useWorkoutStore.getState().draft!;
+    expect(draft.cardio).toHaveLength(2);
+    expect(draft.cardio[0].rows[0].distanceM).toBe(4800);
+    expect(draft.cardio[1].rows[0].distanceM).toBe(1200);
+
+    // Committed time without duration set: no row, no crash.
+    const bike = useWorkoutStore.getState().addCardioToDraft('bike');
+    useWorkoutStore.getState().updateCardioArmed(bike, { level: 8 });
+    useWorkoutStore.getState().commitCardioRow(bike);
+    expect(useWorkoutStore.getState().draft!.cardio[2].rows).toHaveLength(0);
+
+    // A mis-log gets its undo.
+    useWorkoutStore.getState().removeCardioRow(loop, draft.cardio[1].rows[0].localId);
+    expect(useWorkoutStore.getState().draft!.cardio[1].rows).toHaveLength(0);
+
+    const dto = useWorkoutStore.getState().toLogSessionDTO();
+    expect(dto!.cardio).toHaveLength(1);
+    expect(dto!.cardio![0]).toEqual({
+      station: 'treadmill',
+      durationSec: 1800,
+      level: 2,
+      speedKmh: 9.5,
+      distanceM: 4800,
+      kcal: 320,
+      note: null,
+    });
+  });
+
   it('swapDraftExercise swaps identity in place — position, Rx, and set rows survive; tags reset', () => {
     useWorkoutStore.getState().startSession({ splitType: 'twoADay', day: 2, sessionMode: 'pm' });
     useWorkoutStore.getState().hydrateFromSplit(

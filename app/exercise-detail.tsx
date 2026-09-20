@@ -34,6 +34,14 @@ import {
   type MuscleSlug,
 } from '../shared/exercises';
 import { INTERVAL, theme, PAGE_GUTTER } from '../constants';
+import {
+  cardioStationBySlug,
+  formatCardioDuration,
+  formatCardioDistance,
+  formatCardioDelta,
+  CARDIO_STATIONS,
+} from '../shared/exercises/cardio';
+import type { LoggedCardio } from '../shared/types';
 import { toDisplayWeight, roundDisplayWeight } from '../utils';
 import type { ExerciseKey } from '../shared/exercises';
 
@@ -46,6 +54,7 @@ export default function ExerciseDetailScreen() {
   const unit = useWeightUnit();
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
   const addExerciseToDraft = useWorkoutStore((s) => s.addExerciseToDraft);
+  const addCardioToDraft = useWorkoutStore((s) => s.addCardioToDraft);
 
   const exercise = query.data;
 
@@ -80,6 +89,21 @@ export default function ExerciseDetailScreen() {
     () => (exercise ? deriveTrajectory(historyQuery.data ?? [], exercise.name) : null),
     [historyQuery.data, exercise],
   );
+  // CARDIO (pass C3): the spec sheet's cardio branch — the station's
+  // sittings across recent history, newest first, with the duration Δ
+  // (the ladder's first customer: the chart is printed figures).
+  const stationKey = exercise ? cardioStationBySlug(exercise.slug) : null;
+  const cardioHistory: Array<LoggedCardio & { startedAt: string }> = useMemo(() => {
+    if (!stationKey) return [];
+    const out: Array<LoggedCardio & { startedAt: string }> = [];
+    for (const session of historyQuery.data ?? []) {
+      for (const row of session.cardio) {
+        if (row.station === stationKey) out.push({ ...row, startedAt: session.startedAt });
+      }
+    }
+    return out.slice(0, 10);
+  }, [historyQuery.data, stationKey]);
+
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set());
   const visiblePoints = useMemo(() => {
     if (!trajectory) return [];
@@ -117,7 +141,28 @@ export default function ExerciseDetailScreen() {
           {/* THE NUMBER TO BEAT — the last top set as a ruled row
               under its whisper. The FIGURE is the record (red); the
               LABEL is furniture — muted ink, never red
-              (interval-thesis §2: furniture never wears the red). */}
+              (interval-thesis §2: furniture never wears the red).
+              CARDIO branches: the last sitting's time is the number to
+              beat (ink, not red — a machine sitting is a fact, and the
+              red stays rationed to barbell records). */}
+          {stationKey && cardioHistory.length > 0 ? (
+            <View style={styles.lastBlock}>
+              <Text style={[styles.lastLabel, { color: colors.textMuted }]}>
+                THE TIME TO BEAT
+              </Text>
+              <RegisterLine
+                monoPrefix={formatCardioDuration(cardioHistory[0].durationSec)}
+                label={CARDIO_STATIONS[cardioHistory[0].station].name}
+                figure={new Date(cardioHistory[0].startedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                figureTone="muted"
+                testID="entry-cardio-last"
+              />
+              <Text style={[styles.typeLine, { color: colors.textMuted }]} numberOfLines={1}>
+                {typeLabel}
+              </Text>
+            </View>
+          ) : null}
+          {!stationKey ? (
           <View style={styles.lastBlock}>
             {lastTime ? (
               <>
@@ -141,6 +186,40 @@ export default function ExerciseDetailScreen() {
               </Text>
             )}
           </View>
+          ) : null}
+
+          {/* THE CARDIO TRAJECTORY — the ladder: every sitting a rung
+              (duration prefix · prescription label → outcomes figure),
+              the Δ duration as the second figure — ink when the time
+              went DOWN (the improvement), muted when it went up. Nothing
+              drawn; the trend is printed. */}
+          {stationKey && cardioHistory.length >= 1 ? (
+            <View style={styles.block}>
+              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+                {`THE LADDER · ${cardioHistory.length} SITTING${cardioHistory.length === 1 ? '' : 'S'}`}
+              </Text>
+              {cardioHistory.map((row, i) => {
+                const prev = cardioHistory[i + 1];
+                const delta = prev ? formatCardioDelta(row.durationSec, prev.durationSec) : null;
+                const improved = prev != null && row.durationSec < prev.durationSec;
+                const outcomes = [
+                  row.distanceM != null ? formatCardioDistance(row.distanceM) : null,
+                  row.kcal != null ? `${row.kcal} kcal` : null,
+                ].filter(Boolean).join(' · ');
+                return (
+                  <RegisterLine
+                    key={row.id}
+                    monoPrefix={formatCardioDuration(row.durationSec)}
+                    label={new Date(row.startedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    figure={delta ?? (outcomes || null)}
+                    muted={prev != null && !improved}
+                    accessibilityLabel={`${formatCardioDuration(row.durationSec)}${delta ? `, ${delta} versus last time` : ''}${outcomes ? `, ${outcomes}` : ''}`}
+                    testID={`entry-cardio-ladder-${i}`}
+                  />
+                );
+              })}
+            </View>
+          ) : null}
 
           {/* THE TRAJECTORY — the top set per session as register
               lines (newest first); variants merge by default and the
@@ -149,7 +228,7 @@ export default function ExerciseDetailScreen() {
               the block is absent only when there is nothing to show
               (zero sessions — the number-to-beat's absence already
               says it). */}
-          {trajectory && trajectory.points.length >= 1 ? (
+          {!stationKey && trajectory && trajectory.points.length >= 1 ? (
             <View style={styles.block}>
               <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
                 {`THE TRAJECTORY · ${trajectory.points.length} SESSION${trajectory.points.length === 1 ? '' : 'S'}`}
@@ -302,10 +381,18 @@ export default function ExerciseDetailScreen() {
           <MobileActionFooter>
             <MobilePrimaryButton
               onPress={() => {
-                addExerciseToDraft({
-                  exerciseName: exercise.name,
-                  exerciseSlug: exercise.slug as ExerciseKey | '',
-                });
+                // The adder dispatch: cardio stations join the draft as
+                // machine stations (the cardio dock's grammar), barbell
+                // lifts as exercise stations.
+                const cardioKey = cardioStationBySlug(exercise.slug);
+                if (cardioKey) {
+                  addCardioToDraft(cardioKey);
+                } else {
+                  addExerciseToDraft({
+                    exerciseName: exercise.name,
+                    exerciseSlug: exercise.slug as ExerciseKey | '',
+                  });
+                }
                 showToast('success', `Added ${exercise.name} to session`);
                 safeGoBack();
               }}

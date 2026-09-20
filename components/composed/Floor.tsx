@@ -57,6 +57,13 @@ import {
   PRESS_DIP
 } from '../../constants';
 import { TheLogger, type RestLine } from './TheLogger';
+import { TheCardioDock } from './TheCardioDock';
+import {
+  CARDIO_STATIONS,
+  formatCardioDuration,
+  formatCardioDistance,
+  type CardioStationKey,
+} from '../../shared/exercises/cardio';
 import { RegisterLine } from './RegisterLine';
 import { TagChips } from './TagChips';
 import { InkRail, SwapGlyph } from './InkRail';
@@ -135,6 +142,33 @@ export function Floor() {
     (s) => s.toggleDraftExerciseTag,
   );
   const swapDraftExercise = useWorkoutStore((s) => s.swapDraftExercise);
+  // CARDIO (pass C2): the machines' stations + their dock actions.
+  const cardioDrafts = useWorkoutStore((s) => s.draft?.cardio) ?? [];
+  const updateCardioArmed = useWorkoutStore((s) => s.updateCardioArmed);
+  const commitCardioRow = useWorkoutStore((s) => s.commitCardioRow);
+  const removeCardioRow = useWorkoutStore((s) => s.removeCardioRow);
+  const removeCardioStation = useWorkoutStore((s) => s.removeCardioStation);
+
+  // ONE dock slot, two instruments: the logger (iron) or the cardio
+  // dock — the focus follows the last board tap, so ONE counter answers
+  // ONE question at a time (the thesis's law, spent on instrument
+  // choice). A cardio-only session opens focused on the machines.
+  const [instrument, setInstrument] = useState<'iron' | 'cardio'>(() => {
+    const d = useWorkoutStore.getState().draft;
+    return d && d.exercises.length === 0 && d.cardio.length > 0 ? 'cardio' : 'iron';
+  });
+  const [activeCardioId, setActiveCardioId] = useState<string | null>(null);
+  // The active machine defaults to the newest station (the adder's way
+  // in lands focused on what it just added).
+  const activeCardio =
+    cardioDrafts.find((c) => c.localId === activeCardioId) ??
+    cardioDrafts[cardioDrafts.length - 1] ??
+    null;
+  const cardioRowsTotal = cardioDrafts.reduce((n, c) => n + c.rows.length, 0);
+  const cardioSecTotal = cardioDrafts.reduce(
+    (n, c) => n + c.rows.reduce((m, r) => m + r.durationSec, 0),
+    0,
+  );
 
   const [stationIndex, setStationIndex] = useState(0);
   const [mapCollapsed, setMapCollapsed] = useState(false);
@@ -373,10 +407,11 @@ export function Floor() {
       setFinishOpen(false);
       return;
     }
-    const hasLoggedSets = dto.exercises.some((e) => e.sets.length > 0);
+    const hasLoggedSets =
+      dto.exercises.some((e) => e.sets.length > 0) || (dto.cardio?.length ?? 0) > 0;
     if (!hasLoggedSets) {
       setFinishOpen(false);
-      showToast('error', 'Log at least one set before saving.');
+      showToast('error', 'Log a set or a cardio sitting first.');
       return;
     }
     // Dead zone at FINISH: the completed session queues locally and
@@ -533,11 +568,35 @@ export function Floor() {
                     openingSettledRef.current = true;
                     userScrolledRef.current = true;
                     setStationIndex(i);
+                    setInstrument('iron');
                     scrollRef.current?.scrollTo({ y: mapHeightRef.current, animated: true });
                   }}
                   accessibilityLabel={`Station ${i + 1}, ${ex.exerciseName}, ${done} sets logged. Go to station`}
                   testID={`floor-map-row-${i}`}
                   figureTestID={`floor-map-figure-${i}`}
+                />
+              );
+            })}
+            {mapCollapsed ? null : cardioDrafts.map((c, i) => {
+              const isActive = instrument === 'cardio' && activeCardio?.localId === c.localId;
+              const total = c.rows.reduce((n, r) => n + r.durationSec, 0);
+              return (
+                <RegisterLine
+                  key={c.localId}
+                  label={CARDIO_STATIONS[c.station].name}
+                  figure={c.rows.length > 0 ? formatCardioDuration(total) : null}
+                  muted={!isActive}
+                  bold={isActive}
+                  onPress={() => {
+                    openingSettledRef.current = true;
+                    userScrolledRef.current = true;
+                    setActiveCardioId(c.localId);
+                    setInstrument('cardio');
+                    scrollRef.current?.scrollToEnd({ animated: true });
+                  }}
+                  accessibilityLabel={`Cardio, ${CARDIO_STATIONS[c.station].name}, ${c.rows.length} sittings. Focus the machine`}
+                  testID={`floor-map-cardio-${i}`}
+                  figureTestID={`floor-map-cardio-figure-${i}`}
                 />
               );
             })}
@@ -665,6 +724,70 @@ export function Floor() {
                 />
               ) : null}
 
+              {/* THE CARDIO SECTION — the machines' stations: name + the
+                  total-time figure, every committed sitting a ruled row
+                  (duration · the prescription → the outcomes), remove
+                  per row, remove per station. The DOCK rides the bottom
+                  plate when a machine is focused. */}
+              {cardioDrafts.map((c) => {
+                const spec = CARDIO_STATIONS[c.station];
+                const total = c.rows.reduce((n, r) => n + r.durationSec, 0);
+                return (
+                  <View key={c.localId} style={styles.cardioStation} testID={`cardio-station-${c.station}`}>
+                    <View style={styles.cardioHead}>
+                      <Text style={[styles.cardioName, { color: colors.text }]} numberOfLines={1}>
+                        {spec.name}
+                      </Text>
+                      <Text style={[styles.cardioTotal, { color: colors.textMuted }]}>
+                        {c.rows.length > 0 ? formatCardioDuration(total) : 'READY'}
+                      </Text>
+                      <Pressable
+                        onPress={() => removeCardioStation(c.localId)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Remove ${spec.name} from session`}
+                        style={({ pressed }) => [styles.removeCta, pressed ? { opacity: PRESS_DIP } : null]}
+                      >
+                        <Text style={[styles.furnitureWord, { color: colors.textMuted }]}>
+                          REMOVE
+                        </Text>
+                      </Pressable>
+                    </View>
+                    {c.rows.map((r, ri) => (
+                      <View key={r.localId} style={styles.ledgerLine}>
+                        <View style={styles.ledgerLineFlex}>
+                          <RegisterLine
+                            monoLabel
+                            label={`${String(ri + 1).padStart(2, '0')} · ${formatCardioDuration(r.durationSec)}`}
+                            figure={
+                              r.distanceM != null || r.kcal != null
+                                ? [
+                                    r.distanceM != null ? formatCardioDistance(r.distanceM) : null,
+                                    r.kcal != null ? `${r.kcal} kcal` : null,
+                                  ].filter(Boolean).join(' · ')
+                                : null
+                            }
+                            muted
+                            testID={`cardio-row-${c.station}-${ri}`}
+                          />
+                        </View>
+                        <Pressable
+                          onPress={() => removeCardioRow(c.localId, r.localId)}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Remove cardio sitting ${ri + 1}`}
+                          style={({ pressed }) => [
+                            styles.ledgerRemove,
+                            pressed ? { opacity: PRESS_DIP } : null,
+                          ]}
+                          testID={`cardio-row-remove-${c.station}-${ri}`}
+                        >
+                          <Text style={[styles.ledgerRemoveGlyph, { color: colors.textMuted }]}>×</Text>
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                );
+              })}
+
               {/* The adder — a FOOTNOTE, deliberately quiet: the way
                   forward is the NEXT panel above; adding mid-session
                   is the exception, not the path. Isolated by air so a
@@ -687,7 +810,7 @@ export function Floor() {
                 </Text>
               ) : null}
             </>
-          ) : (
+          ) : cardioDrafts.length === 0 ? (
             <View>
               <Text style={[styles.ledgerEmpty, { color: colors.textMuted }]}>
                 No exercises in this session.
@@ -704,13 +827,31 @@ export function Floor() {
                 </Text>
               </Pressable>
             </View>
-          )}
+          ) : null}
           </View>
         </ScrollView>
 
-        {/* THE LOGGER — THE ONE-FIELD INSTRUMENT, docked under the
-          screen's one 2px rule, never scrolling away. */}
-        {exercise ? (
+        {/* THE DOCK ZONE — ONE instrument under the screen's one 2px
+            rule, never scrolling away: the logger (iron) or the cardio
+            dock (the machines). The focus follows the last board tap —
+            one counter, one question at a time. */}
+        {instrument === 'cardio' && activeCardio ? (
+          <TheCardioDock
+            station={activeCardio.station}
+            armed={activeCardio.armed}
+            rowCount={activeCardio.rows.length}
+            onArmedChange={(patch) => updateCardioArmed(activeCardio.localId, patch)}
+            onLog={() => {
+              if (activeCardio.armed.durationSec == null) {
+                showToast('error', 'Set the time first');
+                return;
+              }
+              commitCardioRow(activeCardio.localId);
+              hapticImpactLight();
+            }}
+            testID="cardio-dock"
+          />
+        ) : exercise ? (
           <TheLogger
             setNumber={exercise.sets.length + 1}
             weight={armed.weight}
@@ -739,6 +880,15 @@ export function Floor() {
           <View style={styles.finishStats}>
             <Figure value={elapsed} label="elapsed" tone="ink" size="sm" style={styles.finishStat} />
             <Figure value={sessionSets} label={sessionSets === 1 ? 'set' : 'sets'} tone="ink" size="sm" style={styles.finishStat} />
+            {cardioRowsTotal > 0 ? (
+              <Figure
+                value={formatCardioDuration(cardioSecTotal)}
+                label="cardio"
+                tone="ink"
+                size="sm"
+                style={styles.finishStat}
+              />
+            ) : null}
             <Figure
               value={formatVolumeWeight(sessionKg, unit)}
               unit={weightUnitLabel(unit)}
@@ -759,11 +909,11 @@ export function Floor() {
           <MobilePrimaryButton
             onPress={handleSave}
             loading={isSaving}
-            disabled={sessionSets === 0}
+            disabled={sessionSets === 0 && cardioRowsTotal === 0}
             testID="stage-save"
           >
-            {sessionSets > 0
-              ? `SAVE SESSION · ${sessionSets} SET${sessionSets === 1 ? '' : 'S'}`
+            {sessionSets > 0 || cardioRowsTotal > 0
+              ? `SAVE SESSION · ${sessionSets > 0 ? `${sessionSets} SET${sessionSets === 1 ? '' : 'S'}` : `${Math.round(cardioSecTotal / 60)} MIN`}`
               : 'LOG A SET FIRST'}
           </MobilePrimaryButton>
           <View style={{ height: 8 }} />
@@ -955,6 +1105,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   finishStat: { flex: 1 },
+  // ── THE CARDIO SECTION (pass C2) ─────────────────────────────────
+  cardioStation: {
+    marginTop: BLOCK_GAP,
+  },
+  cardioHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 44,
+  },
+  cardioName: {
+    ...INTERVAL.row,
+    flex: 1,
+  },
+  cardioTotal: {
+    ...theme.typography.mobileFigure,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+  },
 });
 
 export default Floor;

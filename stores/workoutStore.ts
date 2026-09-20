@@ -275,7 +275,6 @@ export const useWorkoutStore = create<WorkoutState>()(
         const draft = get().draft;
         if (!draft) return '';
         const localId = newLocalId();
-        const spec = CARDIO_STATIONS[station];
         const next: DraftCardioStation = {
           localId,
           station,
@@ -293,7 +292,6 @@ export const useWorkoutStore = create<WorkoutState>()(
           draft: { ...draft, cardio: [...draft.cardio, next] },
           selectedExerciseLocalId: null,
         });
-        void spec;
         return localId;
       },
 
