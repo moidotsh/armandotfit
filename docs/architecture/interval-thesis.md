@@ -86,6 +86,30 @@
 > on the unlit board; the lb switch reformatting every figure without
 > breaking a rank. The press dip and the 404 keep their twelfth-pass
 > verdicts — no new evidence.
+>
+> **LANDING.** All six deltas landed as one-commit-each mends, each
+> gated (`lint:structure` + `tsc --noEmit`) before staging and pushed
+> separately: the trio's ink focus + the library's armed rule
+> (`be455cf8c`), the gate's widened aperture + the kit's tokens with
+> the `mark-exempt` excuse (`804a1dc60`, drift rebaselined alongside),
+> the boot handshake (`dad2f2ebb`), the loading posture
+> (`8b6ec36c2`), the empty verb (`5d09e527c`), the muted dash
+> (`0a269bb48`), and the pre-hydration closure the after-gallery
+> exposed — a disabled query (auth store still hydrating) reports
+> "not loading", so the analytics head, grid, empty note, and
+> progression's and home's empty branches all wait for a SUCCESSFUL
+> read now (`6af567384`, `e84ac7682`). The probe suite grew 19 state
+> assertions (`bun fit-walk.ts states`); every one was verified
+> FAILING against the before gallery (`.shots/sight/thirteenth-before/`)
+> before its fix landed — including the boot probe's MutationObserver
+> sampling the ground at the instant `data-boot-ready` flips, which
+> caught the light frame under a dark seed — and the full standing
+> suite (21 light + 21 dark + 5 SE heights + 19 states) walks green in
+> `.shots/sight/thirteenth/`. The form trio's ink focus ported to the
+> shell (arqavellum `c7d4464`, ring riding the shell's OWN shape
+> token — each dialect keeps its shapes family); the rest of the
+> deltas are consumer surfaces (the logger, the search statement, the
+> skeleton, the gate) and stay here.
 
 > **REVISION 2027-03 — THE TOUCH AMENDMENT (the twelfth pass; an
 > amendment, not a succession).** The second pass written with eyes,
