@@ -241,5 +241,9 @@ const styles = StyleSheet.create({
   slotRx: {
     ...theme.typography.mobileFigure,
     fontWeight: '600',
+    // The ruled row's figure post: fixed-width, flush right — the swap
+    // glyph between name and figure holds one x for every row.
+    minWidth: 88,
+    textAlign: 'right',
   },
 });
