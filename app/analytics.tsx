@@ -128,7 +128,7 @@ export default function AnalyticsScreen() {
             <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
               CALENDAR · TRAINED DAYS
             </Text>
-            {historyQuery.isLoading ? (
+            {!historyQuery.isSuccess ? (
               <LoadingSpinner />
             ) : (
               <RegisterGrid
@@ -142,7 +142,7 @@ export default function AnalyticsScreen() {
 
           {/* The weeks — ruled rows: date left · air · the session
               figure right; the record week's figure in red. */}
-          {historyQuery.isLoading ? null : weekly.length === 0 ? (
+          {!historyQuery.isSuccess ? null : weekly.length === 0 ? (
             <Text style={[styles.emptyText, { color: colors.textMuted }]}>
               No workouts in this range yet.
             </Text>
