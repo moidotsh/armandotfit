@@ -10,7 +10,7 @@
 // pattern — the instrument gets its line. No border box, no icon, no
 // chrome: the query is the headline.
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useAppTheme } from '../../context';
 import { theme } from '../../constants';
@@ -37,14 +37,20 @@ export function SearchStatement({
   testID,
 }: SearchStatementProps) {
   const { colors } = useAppTheme();
+  const [armed, setArmed] = useState(false);
 
   return (
     <View>
       {/* Fixed-height line: the placeholder sizes it while empty, the
-          absolute input keeps it once typing begins. */}
+          absolute input keeps it once typing begins. While the field
+          is armed the placeholder promotes to ink — the field reads
+          as the headline it is. */}
       <View style={styles.line}>
         {value.length === 0 ? (
-          <Text style={[STATEMENT_STYLE, styles.fill, { color: colors.textMuted }]} pointerEvents="none">
+          <Text
+            style={[STATEMENT_STYLE, styles.fill, { color: armed ? colors.text : colors.textMuted }]}
+            pointerEvents="none"
+          >
             {placeholder}
           </Text>
         ) : null}
@@ -60,12 +66,22 @@ export function SearchStatement({
           ]}
           autoCorrect={false}
           autoCapitalize="none"
+          onFocus={() => setArmed(true)}
+          onBlur={() => setArmed(false)}
           testID={testID}
           underlineColorAndroid="transparent"
         />
       </View>
-      {/* The instrument's line — the one rule this page spends. */}
-      <View style={[styles.rule, { backgroundColor: colors.mobilePremium.hairlineBorder }]} />
+      {/* The instrument's line — at rest the page's spent rule (1px,
+          hairline); under focus the ARMED rule (2px ink), the logger's
+          law applied to the search field. */}
+      <View
+        style={[
+          styles.rule,
+          { backgroundColor: armed ? colors.text : colors.mobilePremium.hairlineBorder },
+          armed ? styles.ruleArmed : null,
+        ]}
+      />
     </View>
   );
 }
@@ -93,6 +109,9 @@ const styles = StyleSheet.create({
   rule: {
     height: 1,
     marginTop: 6,
+  },
+  ruleArmed: {
+    height: 2,
   },
 });
 

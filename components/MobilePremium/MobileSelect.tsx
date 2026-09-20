@@ -84,9 +84,9 @@ export function MobileSelect({
 }: MobileSelectProps) {
   const [open, setOpen] = useState(false);
   const { colors } = useAppTheme();
-  const accent = accentColor ?? colors.brand;
+  const accent = accentColor ?? colors.text;
   const pressedStyle = usePressedStyle();
-  const { ringStyle, glowStyle } = useFocusRing({ color: accent, focused: open });
+  const { ringStyle } = useFocusRing({ color: accent, focused: open, duration: 0, radius: theme.shapes.control });
 
   const selected = useMemo(() => options.find((o) => o.value === value), [options, value]);
 
@@ -115,7 +115,6 @@ export function MobileSelect({
               borderColor: triggerBorderColor,
               backgroundColor: triggerBg,
             },
-            glowStyle,
             pressed ? pressedStyle : null,
             disabled ? { opacity: 0.5 } : null,
           ]}

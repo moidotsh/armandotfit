@@ -126,11 +126,11 @@ export function DatePickerField({
   style,
 }: DatePickerFieldProps) {
   const { colors } = useAppTheme();
-  const accent = accentColor ?? colors.brand;
+  const accent = accentColor ?? colors.text;
   const [open, setOpen] = useState(false);
   const [draftValue, setDraftValue] = useState<string | null>(value);
   const pressedStyle = usePressedStyle();
-  const { ringStyle, glowStyle } = useFocusRing({ color: accent, focused: open });
+  const { ringStyle } = useFocusRing({ color: accent, focused: open, duration: 0, radius: theme.shapes.control });
   const hasError = !!errorText;
 
   const borderColor = open ? `${accent}66` : colors.glass.emptyInputBorder;
@@ -178,33 +178,31 @@ export function DatePickerField({
       ) : null}
 
       <View style={styles.triggerWrap}>
-        <View style={glowStyle}>
-          <Pressable
-            onPress={openSheet}
-            accessibilityRole="button"
-            accessibilityLabel={label ?? placeholder}
-            accessibilityValue={value ? { text: value } : undefined}
-            style={({ pressed }) => [
-              styles.trigger,
-              {
-                borderColor: hasError ? colors.status.error : borderColor,
-                backgroundColor: triggerBg,
-              },
-              pressed ? pressedStyle : null,
+        <Pressable
+          onPress={openSheet}
+          accessibilityRole="button"
+          accessibilityLabel={label ?? placeholder}
+          accessibilityValue={value ? { text: value } : undefined}
+          style={({ pressed }) => [
+            styles.trigger,
+            {
+              borderColor: hasError ? colors.status.error : borderColor,
+              backgroundColor: triggerBg,
+            },
+            pressed ? pressedStyle : null,
+          ]}
+        >
+          <Text
+            style={[
+              styles.triggerLabel,
+              { color: isPlaceholder ? colors.textColors.tertiary : colors.text },
             ]}
+            numberOfLines={1}
           >
-            <Text
-              style={[
-                styles.triggerLabel,
-                { color: isPlaceholder ? colors.textColors.tertiary : colors.text },
-              ]}
-              numberOfLines={1}
-            >
-              {triggerLabel}
-            </Text>
-            <ChevronDown size={20} color={open ? accent : colors.textColors.muted} />
-          </Pressable>
-        </View>
+            {triggerLabel}
+          </Text>
+          <ChevronDown size={20} color={open ? accent : colors.textColors.muted} />
+        </Pressable>
         {/* Focus ring overlay — matches MobileInput / MobileSelect rhythm. */}
         <View pointerEvents="none" style={ringStyle} />
       </View>

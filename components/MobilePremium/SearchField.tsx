@@ -41,7 +41,7 @@ export interface SearchFieldProps {
   onBlur?: () => void;
   /** Called on Enter / Go. */
   onSubmitEditing?: () => void;
-  /** Override the accent (defaults to the theme brand). */
+  /** Override the accent (defaults to the mode's ink — focus is an ink moment). */
   accentColor?: string;
   /** Screen-reader label. Default "Search". */
   accessibilityLabel?: string;
@@ -63,10 +63,10 @@ export function SearchField({
   style,
 }: SearchFieldProps) {
   const { colors } = useAppTheme();
-  const accent = accentColor ?? colors.brand;
+  const accent = accentColor ?? colors.text;
   const [isFocused, setIsFocused] = useState(false);
 
-  const { ringStyle } = useFocusRing({ color: accent, focused: isFocused });
+  const { ringStyle } = useFocusRing({ color: accent, focused: isFocused, duration: 0, radius: theme.shapes.control });
 
   const borderColor = useMemo(
     () => (isFocused ? `${accent}66` : colors.border),
