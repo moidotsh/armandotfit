@@ -140,11 +140,15 @@ export default function ExerciseDatabaseScreen() {
   return (
     <BoardShell surface="training" onBack={safeGoBack} noScroll testID="library-body">
       <View style={styles.body}>
-        {/* The instrument: the search statement + the zone chips. */}
+        {/* The instrument: the search statement + the zone chips. The
+            RAW text rides the store — trimming in onChangeText ate every
+            trailing space the instant it was typed (a controlled input
+            round-trips), making multi-word searches untypeable.
+            Matching trims at use (the `q` above). */}
         <View>
           <SearchStatement
             value={filter.search ?? ''}
-            onChangeText={(text: string) => setFilter({ search: text.trim() || undefined })}
+            onChangeText={(text: string) => setFilter({ search: text || undefined })}
             placeholder="Find a lift"
             accessibilityLabel="Search exercises"
             testID="exercise-search-field"
