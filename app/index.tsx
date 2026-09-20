@@ -231,7 +231,6 @@ export default function HomeScreen() {
           <EmptyState
             title="No sessions yet"
             message="Log the first one and the record starts here."
-            action={{ label: 'Start workout', onPress: navigateToSplitSelection }}
             testID="home-empty-state"
           />
         ) : (
