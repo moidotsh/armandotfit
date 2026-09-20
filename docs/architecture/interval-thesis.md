@@ -693,8 +693,10 @@ Question: "what was that?" Focal: tonnage as THE LIVE FIGURE'S Desk
 case — mono 72 in ink (a receipt is settled fact, not record — no
 red), unit riding at the whisper scale. Second: the fact whisper
 (date · D# · window · counts) as one mono line. Quiet:
-per-exercise ledgers as ruled rows + tags whisper, the note, delete
-(two-step, alert tone).
+per-exercise ledgers as ruled rows + tags whisper, the note, CONTINUE
+THE DAY (the wood-chops case: the day continues as a NEW block — same
+day-of-split, fresh stations, no split hydration; a settled session
+never reopens), delete (two-step, arms by ink — pass 14A).
 
 ### `/program` — THE TIMETABLE
 Question: "what's the program?" Focal: day 1's title (statement;
