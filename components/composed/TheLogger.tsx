@@ -154,6 +154,7 @@ function ExpressionField({
   editing,
   armed,
   demoted,
+  unset = false,
   boxStyle,
   onDraft,
   commitDraft,
@@ -170,6 +171,9 @@ function ExpressionField({
    * to the statement rank in muted ink (the rule still marks the
    * armed field). */
   demoted: boolean;
+  /** No value yet: the dash reads the muted ladder even while armed —
+   * ink is for figures, never for the absence of one. */
+  unset?: boolean;
   boxStyle: object;
   onDraft: (text: string) => void;
   commitDraft: () => void;
@@ -220,7 +224,7 @@ function ExpressionField({
         style={[
           demoted ? styles.figureDemoted : styles.figure,
           !armed && (demoted ? styles.figureUnarmedDemoted : styles.figureUnarmed),
-          { color: armed && !demoted ? colors.text : colors.textMuted },
+          { color: armed && !demoted && !unset ? colors.text : colors.textMuted },
         ]}
         numberOfLines={1}
       >
@@ -303,8 +307,8 @@ export function TheLogger({
     }
   };
 
-  const weightText = weight == null ? '···' : String(weight);
-  const repsText = reps == null ? '··' : String(Math.max(0, Math.round(reps)));
+  const weightText = weight == null ? '—' : String(weight);
+  const repsText = reps == null ? '—' : String(Math.max(0, Math.round(reps)));
 
   // THE LIVE QUESTION — while rest runs, the clock owns the counter
   // and the expression demotes (interval-thesis §7).
@@ -429,6 +433,7 @@ export function TheLogger({
           editing={editing === 'weight'}
           armed={field === 'weight' && editing === null}
           demoted={restRunning}
+          unset={weight == null}
           boxStyle={restRunning ? styles.weightBoxRest : styles.weightBox}
           onDraft={setDraftText}
           commitDraft={commitDraft}
@@ -455,6 +460,7 @@ export function TheLogger({
           editing={editing === 'reps'}
           armed={field === 'reps' && editing === null}
           demoted={restRunning}
+          unset={reps == null}
           boxStyle={restRunning ? styles.repsBoxRest : styles.repsBox}
           onDraft={setDraftText}
           commitDraft={commitDraft}
