@@ -1,5 +1,92 @@
 # THE INTERVAL — the live figure owns the counter
 
+> **REVISION 2027-03 — THE STATES AMENDMENT (the thirteenth pass; an
+> amendment, not a succession).** The third pass written with eyes,
+> and the first that hunted the cells no walk had ever photographed:
+> loading, true-empty, the alert variants in both modes, offline and
+> fetch-failure, stress data, the form kit's focus, the dark-only
+> moments, every Desk route at 1280, and the boot itself. The
+> verdict: the spine survives the states — the alert plate holds all
+> four variants in both modes, the receipt and the records survive
+> five-figure tonnage, 110-day streaks, and the lb switch at every
+> figure, the register grid survives 110 consecutive days against a
+> misaligned month, the straddle holds on every Desk route at 1280,
+> the curtain and the sheet read as one move mid-flight, and the chit
+> reads on the unlit board. What failed is the seam between the
+> states — surfaces nobody had designed because nobody had seen them.
+> The thesis still governs: every delta below is the thesis applied
+> where it had never been applied. Six deltas, each asserted:
+>
+> 1. **THE UNSET FIGURE NEVER IMPERSONATES A FACT.** Seen: a
+>    first-run logger printing `···` at the counter rank, in armed
+>    ink, under the 2px rule — three 72px dots standing where the
+>    load should be, on the flagship instrument, on the screens no
+>    prefill ever reaches (the first session, the added lift). An
+>    unset armed field reads the muted ladder: the rule stays, one
+>    dash stands at the figure's post, the unarmed demotion applies.
+>    Probe: with no prefill value the armed fields print the dash
+>    muted; no dot run ever rides the counter.
+> 2. **ONE FOCUS GRAMMAR ACROSS THE FORM KIT.** Seen: SearchField,
+>    MobileSelect, and DatePickerField still focusing in brand red —
+>    a red ring, a red-washed border, a red label, a halo glow on two
+>    of them, a 220ms fade — while MobileInput on the same page snaps
+>    ink. The touch amendment's law extends to the rest of the kit:
+>    the cue is the mode's ink, it snaps, the glow dies, the ring
+>    rides the host's shape. And the library's search — the statement
+>    itself — showed NO cue at all: focus promotes the page's spent
+>    rule to the armed 2px ink rule and the placeholder to ink.
+>    Probes: the kit fields' ring, border, and label ride ink with no
+>    glow and no fade; the focused search statement's rule reads 2px
+>    ink.
+> 3. **THE LOADING STATE ASSERTS NOTHING.** Seen: analytics printing
+>    `0 sessions · last 30 days` at the counter rank while the query
+>    span still spun — a figure asserting a fact before the facts
+>    arrive; progression rendering its tail analytics link under a
+>    bare spinner; the home skeleton wearing bordered plates the
+>    settled list never wears. The loading posture is silence and the
+>    skeleton: the count prints when the facts arrive, the tail link
+>    waits with the body, and the skeleton rows ride the ruled row.
+>    Probes: with the read throttled, no count figure prints, no tail
+>    link renders, and skeleton rows carry no box border.
+> 4. **THE EMPTY STATE SPEAKS THE VERB ONCE, IN CAPS.** Seen: home's
+>    true-empty carrying TWO verbs for one action — START above,
+>    "Start workout" below, the same route in two voices; and
+>    progression's empty verb printing sentence case — the last
+>    sentence-case verbs in the app, living on the surfaces no pass
+>    had walked. The duplicate dies on home (START is already the way
+>    forward); the survivor prints START WORKOUT. Probes: home's
+>    empty state renders one start verb; every empty-state verb label
+>    prints caps.
+> 5. **THE GATE SEES THE KIT THE APP RENDERS.** Seen: the radius
+>    gate's clean list naming ten files by hand — so OfflineBanner
+>    (rendered in the shell layout) kept its literal 8px plate, the
+>    curtain's stamp printed at fontSize 11 / tracking 2.4, and the
+>    trio's 11/14px corners all sat invisible to a law that scans.
+>    The clean list becomes the kit the app actually renders;
+>    literals ride tokens — shapes where a shape exists, the ramp
+>    where type prints, the atmosphere's orb exempted as the mark it
+>    is.
+> 6. **THE PLATE COVERS THE BOOT.** Seen: the handshake lifting the
+>    ink plate on React's first commit — before fonts landed (a serif
+>    masthead flash), before the persisted theme hydrated (a light
+>    flash in dark mode — the theme's first frame is always the
+>    default), before the auth guard bounced (home painting
+>    signed-out). The plate is the cover; it lifts when a presentable
+>    frame is under it: theme hydrated, fonts ready. Probe: a
+>    dark-seeded boot samples no light frame after the plate lifts;
+>    the lifted statement rides Space Grotesk.
+>
+> Held without change, now SEEN: the alert plate's four variants in
+> both modes (square, status hue as data, legible on both grounds);
+> the receipt under five-figure tonnage (19,200 kg / 42,329 lb at the
+> counter, the unit at the whisper) and lb decimals in the ledgers;
+> the records under a 110-day streak; the register grid under a
+> misaligned month; the straddle on every Desk route at 1280; the
+> curtain mid-fall and the sheet mid-slide as single moves; the chit
+> on the unlit board; the lb switch reformatting every figure without
+> breaking a rank. The press dip and the 404 keep their twelfth-pass
+> verdicts — no new evidence.
+
 > **REVISION 2027-03 — THE TOUCH AMENDMENT (the twelfth pass; an
 > amendment, not a succession).** The second pass written with eyes,
 > and the first that looked at what TOUCH does: the walk now covers
