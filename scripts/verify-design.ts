@@ -70,6 +70,26 @@ check(
   'tracking: statement −0.5',
 );
 check(theme.typography.mobileTitle.letterSpacing === 0, 'tracking: row 0');
+// ── THE EDITORIAL VOICE (pass 16) ─────────────────────────────────────
+// The statement rank + the verb label speak the SERIF at its one true
+// weight; rows keep the grotesk; figures keep the mono. Three faces,
+// three jobs — gated so the voice cannot silently drift back.
+if (theme.fonts.serif != null) {
+  for (const name of ['mobileTitleCondensed', 'mobileHero', 'mobileDisplay'] as const) {
+    check(
+      theme.typography[name].fontFamily === theme.fonts.serif,
+      `editorial voice: ${name} rides fonts.serif`,
+    );
+    check(
+      theme.typography[name].fontWeight === '400',
+      `editorial voice: ${name} weight 400 (the serif's one voice)`,
+    );
+  }
+  check(
+    theme.typography.mobileAction.fontFamily === theme.fonts.serif,
+    'editorial voice: the verb label rides fonts.serif',
+  );
+}
 check(
   theme.typography.mobileEyebrow.letterSpacing === 0.8,
   'tracking: furniture caps +0.8',

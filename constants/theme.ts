@@ -169,7 +169,7 @@ const METER_LIGHT = {
   step4: '#256B4A',
   step5: '#6D44B5',
   step6: '#7C858E',
-  rim: '#1B1916',
+  rim: '#251F18',
 } as const;
 
 const METER_DARK = {
@@ -179,7 +179,7 @@ const METER_DARK = {
   step4: '#4DB87E',
   step5: '#B18CF2',
   step6: '#A5ADB5',
-  rim: '#141210',
+  rim: '#141110',
 } as const;
 
 export const theme = {

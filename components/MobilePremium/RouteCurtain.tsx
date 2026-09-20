@@ -380,8 +380,11 @@ const styles = StyleSheet.create({
     // The condensed display position when one is declared (variable
     // faces carry the weight axis); the fallback platform sans needs
     // the weight spelled out.
-    fontFamily: theme.fonts.displayCondensed ?? theme.fonts.display,
-    fontWeight: theme.fonts.displayCondensed ?? theme.fonts.display ? '700' : '800',
+    // THE EDITORIAL PASS: the stamp is a TITLE — the statement rank
+    // speaks the serif at its one true weight (fallback: the display
+    // face for shell consumers that declare no serif).
+    fontFamily: theme.fonts.serif ?? theme.fonts.display,
+    fontWeight: '400',
     letterSpacing: 0,
     textTransform: 'uppercase',
   },
