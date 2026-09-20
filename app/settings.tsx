@@ -53,11 +53,17 @@ export default function SettingsScreen() {
   // cache so the toggle feels instant.
   const profileQuery = useProfile();
   const updateProfile = useUpdateProfile();
+  // The profile read gates its own measure: rest-days derive the next
+  // set FROM the cached list, so a toggle before the read lands would
+  // mutate from [] and clobber the stored preference. Until the read
+  // succeeds the measure stays silent (loading asserts nothing).
+  const profileReady = profileQuery.isSuccess;
   const restDays = profileQuery.data?.restDays ?? [];
 
   const handleToggleRestDay = useCallback(
     (id: string) => {
       const dow = Number(id);
+      if (!profileReady) return;
       if (!Number.isInteger(dow) || dow < 0 || dow > 6) return;
       const next = restDays.includes(dow)
         ? restDays.filter((d) => d !== dow)
@@ -68,7 +74,7 @@ export default function SettingsScreen() {
         },
       });
     },
-    [restDays, updateProfile],
+    [profileReady, restDays, updateProfile],
   );
 
   const restDayIds = restDays.map(String);
@@ -300,7 +306,7 @@ export default function SettingsScreen() {
                 key={d.id}
                 onPress={() => handleToggleRestDay(String(d.id))}
                 accessibilityRole="checkbox"
-                accessibilityState={{ checked: isRest }}
+                accessibilityState={{ checked: isRest, disabled: !profileReady }}
                 accessibilityLabel={`${d.label} rest day`}
                 style={({ pressed }) => [
                   styles.restDayTile,
@@ -346,9 +352,11 @@ export default function SettingsScreen() {
       ) : null}
 
       {/* The promotion audit — one information line (the rule's
-          numeric half, computed at read; the chit was decoration). */}
+          numeric half, computed at read; the chit was decoration).
+          Computed facts never truncate: a tag list that ellipsizes
+          lies about what was earned. */}
       <View style={styles.block}>
-        <Text style={[styles.promotionLine, { color: colors.textMuted }]} numberOfLines={1}>
+        <Text style={[styles.promotionLine, { color: colors.textMuted }]}>
           {earnedTags.length > 0
             ? `tag promotions earned: ${earnedTags.join(' · ')}`
             : 'tag promotions: none earned yet (10+ uses each)'}

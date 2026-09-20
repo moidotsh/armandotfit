@@ -144,18 +144,16 @@ export default function ExerciseDetailScreen() {
 
           {/* THE TRAJECTORY — the top set per session as register
               lines (newest first); variants merge by default and the
-              owner excludes/re-includes at will. */}
-          {trajectory && trajectory.points.length >= 2 ? (
+              owner excludes/re-includes at will. One logged session
+              renders its one rung — the count label says it honestly;
+              the block is absent only when there is nothing to show
+              (zero sessions — the number-to-beat's absence already
+              says it). */}
+          {trajectory && trajectory.points.length >= 1 ? (
             <View style={styles.block}>
-              {trajectory && trajectory.points.length >= 2 ? (
-                <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
-                  {`THE TRAJECTORY · ${trajectory.points.length} SESSIONS`}
-                </Text>
-              ) : (
-                <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
-                  THE TRAJECTORY
-                </Text>
-              )}
+              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+                {`THE TRAJECTORY · ${trajectory.points.length} SESSION${trajectory.points.length === 1 ? '' : 'S'}`}
+              </Text>
               {trajectory.groups.length > 1 ? (
                 <View style={styles.variantChips}>
                   <FilterChipGroup>

@@ -212,7 +212,10 @@ export default function ExerciseDatabaseScreen() {
           ) : null}
         </View>
 
-        {/* The catalog — the gym's floor plan. */}
+        {/* The catalog — the gym's floor plan. The read is local and
+            synchronous (the TS catalog is the sole display source), so
+            a zero count is always a TRUE miss — the empty state never
+            impersonates a load. */}
         {resultCount === 0 ? (
           <EmptyState
             compact
