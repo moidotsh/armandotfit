@@ -262,7 +262,12 @@ export default function ProgramScreen() {
           ])}
         </Text>
         {share.length > 0 ? (
-          <View style={styles.shareBlock} testID="program-share">
+          <View
+            style={[styles.shareBlock, { borderTopColor: colors.text }]}
+            testID="program-share"
+          >
+            {/* The page's ONE 2px rule (the home day register's echo):
+                the head ends, the instrument begins. */}
             <SectionWhisper rule={false}>THE WORK</SectionWhisper>
             {share.map((row) => (
               <View key={row.muscle} style={styles.shareRow}>
@@ -285,7 +290,13 @@ export default function ProgramScreen() {
           correction): the statement above is the EDITION's name, and
           the days read as its table of contents. */}
       {days.map((day, di) => (
-        <View key={day.day} style={di === 0 ? styles.dayFirstChapter : styles.day}>
+        <View
+          key={day.day}
+          style={[
+            di === 0 ? styles.dayFirstChapter : styles.daySeparated,
+            di > 0 ? { borderTopColor: colors.mobilePremium.hairlineBorder } : null,
+          ]}
+        >
           <View style={styles.dayHeadRow}>
             <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
               {day.title}
@@ -372,6 +383,15 @@ const styles = StyleSheet.create({
   },
   day: {
     ...INTERVAL.block,
+  },
+  // Days 2-4: the hairline landmark (the ≤3 budget, spent) — the
+  // chapter's paragraph mark; Day 1 is demarcated by THE WORK's 2px
+  // rule above it.
+  daySeparated: {
+    ...INTERVAL.block,
+    borderTopWidth: 1,
+    borderTopColor: undefined,
+    paddingTop: 12,
   },
   pageWhisper: {
     ...INTERVAL.whisper,
@@ -480,13 +500,15 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   shareBlock: {
-    marginTop: 10,
+    marginTop: 20,
+    borderTopWidth: 2,
+    paddingTop: 10,
   },
   shareRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    minHeight: 22,
+    minHeight: 20,
   },
   shareLabel: {
     ...theme.typography.mobileEyebrow,
