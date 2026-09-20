@@ -12,7 +12,9 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight } from '@tamagui/lucide-icons-2';
 import { useAppTheme } from '../../context';
-import { theme } from '../../constants';
+import { theme,
+  PRESS_DIP
+} from '../../constants';
 
 export interface NextStationProps {
   /** The next station's exercise name. */
@@ -36,7 +38,7 @@ export function NextStation({ name, onPress, bright = false, testID }: NextStati
       style={({ pressed }) => [
         styles.row,
         { borderTopColor: colors.mobilePremium.hairlineBorder },
-        pressed ? { opacity: 0.7 } : null,
+        pressed ? { opacity: PRESS_DIP } : null,
       ]}
       testID={testID}
     >

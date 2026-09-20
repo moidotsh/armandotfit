@@ -32,6 +32,7 @@ import {
   INTERVAL,
   ROW_GAP,
   PAGE_GUTTER,
+  PRESS_DIP
 } from '../constants';
 import {
   navigateToSettings,
@@ -112,7 +113,7 @@ export default function HomeScreen() {
         onPress={navigateToSettings}
         accessibilityRole="button"
         accessibilityLabel="Settings"
-        style={({ pressed }) => [styles.iconButton, pressed ? { opacity: 0.6 } : null]}
+        style={({ pressed }) => [styles.iconButton, pressed ? { opacity: PRESS_DIP } : null]}
         testID="home-settings"
       >
         <Settings size={20} color={colors.text} />
@@ -131,7 +132,7 @@ export default function HomeScreen() {
       accessibilityRole="button"
       accessibilityLabel={caption ? `${label} — ${caption}` : label}
       testID={testID}
-      style={({ pressed }) => [styles.jumpRow, pressed ? { opacity: 0.6 } : null]}
+      style={({ pressed }) => [styles.jumpRow, pressed ? { opacity: PRESS_DIP } : null]}
     >
       <Text style={[styles.jumpLabel, { color: colors.textSecondary }]}>{label}</Text>
       {/* The caption is the row's one FACT — the number that makes the

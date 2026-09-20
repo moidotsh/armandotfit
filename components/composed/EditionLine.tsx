@@ -9,7 +9,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { useAppTheme } from '../../context';
-import { theme } from '../../constants';
+import { theme,
+  PRESS_DIP
+} from '../../constants';
 import { sumVolume } from '../../services';
 import { useWeightUnit } from '../../hooks';
 import { formatVolumeWeight, weightUnitLabel } from '../../utils';
@@ -64,7 +66,7 @@ export function EditionLine({ session, onPress, lead = false }: EditionLineProps
       accessibilityRole="button"
       accessibilityLabel={`Session ${aria}`}
       testID={`recent-${session.id}`}
-      style={({ pressed }) => [styles.row, pressed ? { opacity: 0.6 } : null]}
+      style={({ pressed }) => [styles.row, pressed ? { opacity: PRESS_DIP } : null]}
     >
       <Text
         style={[styles.line, { color: lead ? colors.textSecondary : colors.textMuted }]}

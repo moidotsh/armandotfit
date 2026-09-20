@@ -9,7 +9,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
-import { theme, ROW_GAP } from '../../constants';
+import { theme, ROW_GAP,
+  PRESS_DIP
+} from '../../constants';
 import {
   MUSCLE_DISPLAY_NAMES,
   type MuscleSlug,
@@ -44,7 +46,7 @@ export function ExerciseListItem({ exercise, onPress }: ExerciseListItemProps) {
       onPress={() => onPress(exercise.slug)}
       accessibilityRole="button"
       accessibilityLabel={whisper ? `${exercise.name} — ${whisper}` : exercise.name}
-      style={({ pressed }) => [styles.row, pressed ? { opacity: 0.6 } : null]}
+      style={({ pressed }) => [styles.row, pressed ? { opacity: PRESS_DIP } : null]}
     >
       <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
         {exercise.name}

@@ -14,7 +14,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
-import { theme } from '../../constants';
+import { theme,
+  PRESS_DIP
+} from '../../constants';
 
 export interface RegisterLineProps {
   /** The entry's name — content, sentence case (Space Grotesk 18). */
@@ -106,7 +108,7 @@ export function RegisterLine({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       testID={testID}
-      style={({ pressed }) => [styles.tappableRow, pressed ? { opacity: 0.6 } : null]}
+      style={({ pressed }) => [styles.tappableRow, pressed ? { opacity: PRESS_DIP } : null]}
     >
       {body}
     </Pressable>

@@ -18,7 +18,9 @@ import { BoardShell } from '../components/composed';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
 import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile, usePwaPrompt, useRecentSessionDetails } from '../hooks';
-import { DAY_OF_WEEK_LABELS, BLOCK_GAP, INTERVAL, theme } from '../constants';
+import { DAY_OF_WEEK_LABELS, BLOCK_GAP, INTERVAL, theme,
+  PRESS_DIP
+} from '../constants';
 import { useToast } from '../context';
 import { useRestStore, useDeloadStore } from '../stores';
 import { logger } from '../utils/logger';
@@ -133,7 +135,7 @@ export default function SettingsScreen() {
                   {
                     backgroundColor: isActive ? colors.text : colors.glass.inputBackground,
                   },
-                  pressed ? { opacity: 0.6 } : null,
+                  pressed ? { opacity: PRESS_DIP } : null,
                 ]}
                 testID={`theme-tile-${pref}`}
               >
@@ -169,7 +171,7 @@ export default function SettingsScreen() {
                 backgroundColor: colors.backgroundAlt,
                 borderColor: colors.mobilePremium.hairlineBorderStrong,
               },
-              pressed ? { opacity: 0.6 } : null,
+              pressed ? { opacity: PRESS_DIP } : null,
             ]}
             testID="rest-default-dec"
           >
@@ -191,7 +193,7 @@ export default function SettingsScreen() {
                 backgroundColor: colors.backgroundAlt,
                 borderColor: colors.mobilePremium.hairlineBorderStrong,
               },
-              pressed ? { opacity: 0.6 } : null,
+              pressed ? { opacity: PRESS_DIP } : null,
             ]}
             testID="rest-default-inc"
           >
@@ -221,7 +223,7 @@ export default function SettingsScreen() {
                   {
                     backgroundColor: isActive ? colors.text : colors.glass.inputBackground,
                   },
-                  pressed ? { opacity: 0.6 } : null,
+                  pressed ? { opacity: PRESS_DIP } : null,
                 ]}
                 testID={`deload-tile-${v ? 'on' : 'off'}`}
               >
@@ -267,7 +269,7 @@ export default function SettingsScreen() {
                   {
                     backgroundColor: isActive ? colors.text : colors.glass.inputBackground,
                   },
-                  pressed ? { opacity: 0.6 } : null,
+                  pressed ? { opacity: PRESS_DIP } : null,
                 ]}
                 testID={`unit-tile-${u}`}
               >
@@ -304,7 +306,7 @@ export default function SettingsScreen() {
                   styles.restDayTile,
                   {
                     backgroundColor: isRest ? colors.text : colors.glass.inputBackground,
-                    opacity: pressed ? 0.6 : 1,
+                    opacity: pressed ? PRESS_DIP : 1,
                   },
                 ]}
                 testID={`rest-day-${d.id}`}
@@ -405,7 +407,7 @@ function ColophonRow({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={({ pressed }) => [styles.colophonRow, pressed ? { opacity: 0.6 } : null]}
+      style={({ pressed }) => [styles.colophonRow, pressed ? { opacity: PRESS_DIP } : null]}
     >
       {body}
     </Pressable>

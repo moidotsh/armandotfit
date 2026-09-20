@@ -7,7 +7,9 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MobileAlert } from '../MobilePremium';
 import { useAppTheme } from '../../context';
-import { theme } from '../../constants';
+import { theme,
+  PRESS_DIP
+} from '../../constants';
 
 export interface QueryErrorNoteProps {
   /** Provide to offer the retry affordance (refetch from the caller). */
@@ -32,7 +34,7 @@ export function QueryErrorNote({ onRetry, testID }: QueryErrorNoteProps) {
           hitSlop={8}
           style={({ pressed }) => [
             styles.retry,
-            pressed ? { opacity: 0.6 } : null,
+            pressed ? { opacity: PRESS_DIP } : null,
           ]}
         >
           <Text style={[styles.retryText, { color: colors.brandText }]}>

@@ -35,6 +35,7 @@ import {
   MOBILE_CONTENT_WIDTH_STYLE,
   PAGE_GUTTER,
   BLOCK_GAP,
+  PRESS_DIP
 } from '../../constants';
 import { SessionStrip } from './SessionStrip';
 
@@ -111,7 +112,7 @@ export function BoardShell({
               onPress={onBack}
               accessibilityRole="button"
               accessibilityLabel="Back"
-              style={({ pressed }) => [styles.backButton, pressed ? { opacity: 0.6 } : null]}
+              style={({ pressed }) => [styles.backButton, pressed ? { opacity: PRESS_DIP } : null]}
               testID="desk-back"
             >
               <ChevronLeft size={26} color={colors.text} />

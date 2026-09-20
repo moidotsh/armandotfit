@@ -48,6 +48,7 @@ import {
   PAGE_GUTTER,
   type SessionMode,
   type UpcomingWorkoutSlot,
+  PRESS_DIP
 } from '../constants';
 import {
   SYSTEM_EXERCISES_BY_SLUG,
@@ -209,7 +210,7 @@ export default function SplitSelectionScreen() {
                 style={({ pressed }) => [
                   styles.dayTile,
                   { backgroundColor: plateBg, borderRadius: theme.shapes.tile },
-                  pressed ? { opacity: 0.7 } : null,
+                  pressed ? { opacity: PRESS_DIP } : null,
                 ]}
                 testID={`day-tile-${slot.isoDate}`}
               >

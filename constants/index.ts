@@ -77,6 +77,8 @@ export {
   BLOCK_GAP,
   ROW_GAP,
   HALO,
+  PRESS_DIP,
+  PRESS_DIP_PLATE,
   REST_DEFAULT_SEC,
   REST_STEP_SEC,
 } from './interval';

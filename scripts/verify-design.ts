@@ -217,6 +217,14 @@ function isAuthoredLayer(relName: string): boolean {
     relName.startsWith('components/primitives/')
   );
 }
+// THE PRESS IS AUTHORED (pass 14A): the dip's depth is a constant
+// (PRESS_DIP / PRESS_DIP_PLATE in constants/interval.ts), exactly as
+// tracking and the ramp are — no numeric dip literal at any call site
+// in the authored layer (the kit's own press styles are the shell's).
+const PRESS_DIP_RES = [
+  /pressed\s*\?\s*\{\s*opacity:\s*\d*\.?\d+/g,
+  /opacity:\s*pressed\s*\?\s*\d*\.?\d+/g,
+];
 let scanned = 0;
 for (const rel of [...SCAN_DIRS, ...CLEAN_KIT_FILES]) {
   const full = join(REPO_ROOT, rel);
@@ -266,6 +274,14 @@ for (const rel of [...SCAN_DIRS, ...CLEAN_KIT_FILES]) {
           false,
           `the wire: ${relName} — colors.focus.* belongs to the chit and the curtain only`,
         );
+      }
+      for (const re of PRESS_DIP_RES) {
+        if (re.test(src)) {
+          check(
+            false,
+            `the press: ${relName} — the dip depth is authored (PRESS_DIP / PRESS_DIP_PLATE), never a literal`,
+          );
+        }
       }
     }
   }

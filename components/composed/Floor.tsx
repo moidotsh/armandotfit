@@ -55,6 +55,7 @@ import {
   MOBILE_CONTENT_WIDTH_STYLE,
   BLOCK_GAP,
   INTERVAL,
+  PRESS_DIP
 } from '../../constants';
 import { TheLogger, type RestLine } from './TheLogger';
 import { RegisterLine } from './RegisterLine';
@@ -426,7 +427,7 @@ export function Floor() {
             onPress={replaceWithHome}
             accessibilityRole="button"
             accessibilityLabel="Minimize session"
-            style={({ pressed }) => [styles.iconButton, pressed ? { opacity: 0.6 } : null]}
+            style={({ pressed }) => [styles.iconButton, pressed ? { opacity: PRESS_DIP } : null]}
             testID="stage-minimize"
           >
             <ChevronLeft size={24} color={colors.text} />
@@ -450,7 +451,7 @@ export function Floor() {
             accessibilityLabel={
               mapCollapsed || !atTop ? 'Show session board' : 'Collapse session board'
             }
-            style={({ pressed }) => [styles.iconButton, pressed ? { opacity: 0.6 } : null]}
+            style={({ pressed }) => [styles.iconButton, pressed ? { opacity: PRESS_DIP } : null]}
             testID="stage-map"
           >
             <Text style={[styles.headerWord, { color: colors.text }]}>
@@ -471,7 +472,7 @@ export function Floor() {
             accessibilityLabel="Finish session"
             style={({ pressed }) => [
               styles.finishButton,
-              pressed ? { opacity: 0.6 } : null,
+              pressed ? { opacity: PRESS_DIP } : null,
             ]}
             testID="stage-finish"
           >
@@ -579,7 +580,7 @@ export function Floor() {
                     }}
                     accessibilityRole="button"
                     accessibilityLabel={`Remove ${exercise.exerciseName} from session`}
-                    style={({ pressed }) => [styles.removeCta, pressed ? { opacity: 0.6 } : null]}
+                    style={({ pressed }) => [styles.removeCta, pressed ? { opacity: PRESS_DIP } : null]}
                   >
                     <Text style={[styles.furnitureWord, { color: colors.textMuted }]}>
                       REMOVE
@@ -599,7 +600,7 @@ export function Floor() {
                     ? `Edit tags — ${exercise.tags.join(', ')}`
                     : 'Add tags'
                 }
-                style={({ pressed }) => [styles.tagsToggle, pressed ? { opacity: 0.6 } : null]}
+                style={({ pressed }) => [styles.tagsToggle, pressed ? { opacity: PRESS_DIP } : null]}
               >
                 <Text style={[styles.tagsToggleText, { color: colors.textMuted }]} numberOfLines={1}>
                   {exercise.tags.length > 0 ? exercise.tags.join(' · ') : '+ TAGS'}
@@ -642,7 +643,7 @@ export function Floor() {
                         accessibilityLabel={`Remove set ${s.position}`}
                         style={({ pressed }) => [
                           styles.ledgerRemove,
-                          pressed ? { opacity: 0.6 } : null,
+                          pressed ? { opacity: PRESS_DIP } : null,
                         ]}
                         testID={`stage-set-remove-${s.position}`}
                       >
@@ -670,7 +671,7 @@ export function Floor() {
                 onPress={navigateToExerciseDatabase}
                 accessibilityRole="button"
                 accessibilityLabel="Add exercise from library"
-                style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
+                style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: PRESS_DIP } : null]}
                 testID="stage-add-exercise"
               >
                 <Text style={[styles.addExerciseWord, { color: colors.textMuted }]}>
@@ -693,7 +694,7 @@ export function Floor() {
                 onPress={navigateToExerciseDatabase}
                 accessibilityRole="button"
                 accessibilityLabel="Add exercise from library"
-                style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: 0.6 } : null]}
+                style={({ pressed }) => [styles.addExerciseCta, pressed ? { opacity: PRESS_DIP } : null]}
                 testID="stage-add-exercise"
               >
                 <Text style={[styles.addExerciseWord, { color: colors.textMuted }]}>

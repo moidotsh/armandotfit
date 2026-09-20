@@ -42,7 +42,10 @@ import {
   View,
 } from 'react-native';
 import { useAppTheme } from '../../context';
-import { theme, REST_STEP_SEC, ANIMATION } from '../../constants';
+import { theme, REST_STEP_SEC, ANIMATION,
+  PRESS_DIP,
+  PRESS_DIP_PLATE
+} from '../../constants';
 import { weightStep } from '../../utils';
 import type { WeightUnit } from '../../utils/weight';
 import { parseNumber } from './parseNumber';
@@ -132,7 +135,7 @@ function StepButton({
           backgroundColor: colors.cardAlt,
           borderColor: colors.mobilePremium.hairlineBorderStrong,
         },
-        pressed ? { opacity: 0.6 } : null,
+        pressed ? { opacity: PRESS_DIP } : null,
       ]}
       testID={testID}
     >
@@ -216,7 +219,7 @@ function ExpressionField({
       style={({ pressed }) => [
         boxStyle,
         styles.fieldHold,
-        pressed ? { opacity: 0.75 } : null,
+        pressed ? { opacity: PRESS_DIP } : null,
       ]}
       testID={testID}
     >
@@ -339,7 +342,7 @@ export function TheLogger({
           <Pressable
             onPress={() => onChangeWeight(Math.round((weight! + earnedStep) * 100) / 100)}
             accessibilityLabel={`Add ${earnedStep} — earned: last time hit the top of the rep range at this weight`}
-            style={({ pressed }) => [styles.earnedTap, pressed ? { opacity: 0.6 } : null]}
+            style={({ pressed }) => [styles.earnedTap, pressed ? { opacity: PRESS_DIP } : null]}
             testID={`${testID ?? 'the-logger'}-earned`}
           >
             <Text style={[styles.earnedWord, { color: colors.textSecondary }]}>
@@ -366,7 +369,7 @@ export function TheLogger({
               onPress={rest.onDismiss}
               accessibilityRole="button"
               accessibilityLabel={`Rest ${rest.readout}, finished — tap to clear`}
-              style={({ pressed }) => [styles.restReadoutTap, pressed ? { opacity: 0.6 } : null]}
+              style={({ pressed }) => [styles.restReadoutTap, pressed ? { opacity: PRESS_DIP } : null]}
               testID={`${tid}-rest-readout`}
             >
               <Text style={[styles.restWord, { color: colors.textMuted }]}>REST</Text>
@@ -404,7 +407,7 @@ export function TheLogger({
               onPress={rest.onDismiss}
               accessibilityRole="button"
               accessibilityLabel={`Rest ${rest.readout} running — tap to clear`}
-              style={({ pressed }) => [styles.clockTap, pressed ? { opacity: 0.6 } : null]}
+              style={({ pressed }) => [styles.clockTap, pressed ? { opacity: PRESS_DIP } : null]}
               testID={`${tid}-rest-readout`}
             >
               <Text
@@ -501,7 +504,7 @@ export function TheLogger({
         style={({ pressed }) => [
           styles.logButton,
           { backgroundColor: colors.buttonBackground },
-          pressed ? { opacity: 0.85 } : null,
+          pressed ? { opacity: PRESS_DIP_PLATE } : null,
         ]}
         testID={`${tid}-log`}
       >

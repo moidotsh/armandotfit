@@ -24,7 +24,9 @@ import {
 } from '../navigation';
 import { useDashboardSummary, usePersonalBests, useWeightUnit, useRecentSessionDetails } from '../hooks';
 import { SYSTEM_EXERCISES } from '../shared/exercises';
-import { INTERVAL, theme, PAGE_GUTTER } from '../constants';
+import { INTERVAL, theme, PAGE_GUTTER,
+  PRESS_DIP
+} from '../constants';
 import { derivePrTimeline } from '../services';
 import { toDisplayWeight, roundDisplayWeight, weightUnitLabel, formatWeight } from '../utils';
 
@@ -153,7 +155,7 @@ export default function ProgressionScreen() {
             onPress={navigateToAnalytics}
             accessibilityRole="button"
             accessibilityLabel="View analytics"
-            style={({ pressed }) => [styles.analyticsLink, pressed ? { opacity: 0.6 } : null]}
+            style={({ pressed }) => [styles.analyticsLink, pressed ? { opacity: PRESS_DIP } : null]}
           >
             <Text style={[styles.analyticsLinkText, { color: colors.text }]}>Analytics</Text>
           </Pressable>

@@ -9,7 +9,9 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useAppTheme } from '../../context';
-import { theme } from '../../constants';
+import { theme,
+  PRESS_DIP
+} from '../../constants';
 
 export interface TagChipsProps {
   /** Currently active tags on the logged exercise. */
@@ -68,7 +70,7 @@ export function TagChips({
                 {
                   backgroundColor: colors.cardAlt,
                   borderColor: colors.border,
-                  opacity: pressed ? 0.6 : 1,
+                  opacity: pressed ? PRESS_DIP : 1,
                 },
               ]}
             >
@@ -88,7 +90,7 @@ export function TagChips({
             accessibilityRole="button"
             accessibilityLabel={`Add tag ${tag}`}
             hitSlop={6}
-            style={({ pressed }) => [styles.wordCta, pressed ? { opacity: 0.6 } : null]}
+            style={({ pressed }) => [styles.wordCta, pressed ? { opacity: PRESS_DIP } : null]}
           >
             <Text style={[styles.wordText, { color: colors.textSecondary }]}>
               {tag}
@@ -101,7 +103,7 @@ export function TagChips({
             accessibilityRole="button"
             accessibilityLabel="Add custom tag"
             hitSlop={6}
-            style={({ pressed }) => [styles.wordCta, pressed ? { opacity: 0.6 } : null]}
+            style={({ pressed }) => [styles.wordCta, pressed ? { opacity: PRESS_DIP } : null]}
           >
             <Text style={[styles.wordText, { color: colors.brandText }]}>+ tag</Text>
           </Pressable>

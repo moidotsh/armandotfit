@@ -22,6 +22,16 @@ export const BLOCK_GAP = 32;
 export const ROW_GAP = 8;
 export const HALO = 24;
 
+// ── THE PRESS (thesis §6, S2) ───────────────────────────────────────────
+// The one sanctioned touch feedback, now AUTHORED (pass 14A): opacity
+// dips instantly in/out — no scale, no color shift, no second value
+// invented at a call site. Two depths, two jobs: the standard dip for
+// furniture and rows; the plate dip for filled ink plates (the verb,
+// the ticker), where the standard dip would strobe the heaviest mark
+// on the page.
+export const PRESS_DIP = 0.6;
+export const PRESS_DIP_PLATE = 0.85;
+
 // The style carriers every screen spreads (docs/architecture/
 // interval-thesis.md §3.2): one statement per screen (36 Space
 // Grotesk, sentence case, the content itself — never a page

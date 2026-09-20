@@ -22,7 +22,9 @@ import {
   type EquipmentSlug,
   type SystemExerciseData,
 } from '../../shared/exercises';
-import { theme, type MeterStep } from '../../constants';
+import { theme, type MeterStep,
+  PRESS_DIP
+} from '../../constants';
 
 export interface InkRailProps {
   currentSlug: string;
@@ -43,7 +45,7 @@ export function SwapGlyph({ onPress, label }: { onPress: () => void; label: stri
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Change ${label}`}
-      style={({ pressed }) => [styles.glyphBox, pressed ? { opacity: 0.6 } : null]}
+      style={({ pressed }) => [styles.glyphBox, pressed ? { opacity: PRESS_DIP } : null]}
     >
       <Text style={[styles.glyph, { color: colors.textMuted }]}>⇄</Text>
     </Pressable>
@@ -171,7 +173,7 @@ export function InkRail({
                 // The current pick reads as ink emphasis (quiet plate),
                 // not a brand wash — the bench has no strike moment.
                 item.isCurrent ? { backgroundColor: colors.cardAlt } : null,
-                pressed ? { opacity: 0.6 } : null,
+                pressed ? { opacity: PRESS_DIP } : null,
               ]}
             >
               <View

@@ -19,7 +19,10 @@ import { useAppTheme } from '../../context';
 import { useNowTick } from '../../hooks';
 import { useWorkoutStore } from '../../stores';
 import { replaceWithWorkoutDetail } from '../../navigation';
-import { theme } from '../../constants';
+import { theme,
+  PRESS_DIP,
+  PRESS_DIP_PLATE
+} from '../../constants';
 import { formatElapsed } from '../../services';
 
 export function SessionStrip() {
@@ -51,7 +54,7 @@ export function SessionStrip() {
         {
           borderTopColor: colors.mobilePremium.hairlineBorder,
           borderBottomColor: colors.mobilePremium.hairlineBorder,
-          opacity: pressed ? 0.85 : 1,
+          opacity: pressed ? PRESS_DIP_PLATE : 1,
         },
       ]}
     >

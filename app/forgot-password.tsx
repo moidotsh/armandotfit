@@ -22,7 +22,9 @@ import { ChevronLeft } from '@tamagui/lucide-icons-2';
 import { useAuth, useAppTheme } from '../context';
 import { replaceWithLogin, safeGoBack } from '../navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SCREEN_BODY_STYLE, INTERVAL, theme } from '../constants';
+import { SCREEN_BODY_STYLE, INTERVAL, theme,
+  PRESS_DIP
+} from '../constants';
 
 export default function ForgotPasswordScreen() {
   const { resetPassword } = useAuth();
@@ -53,7 +55,7 @@ export default function ForgotPasswordScreen() {
           onPress={safeGoBack}
           accessibilityRole="button"
           accessibilityLabel="Back"
-          style={({ pressed }) => [styles.backCta, pressed ? { opacity: 0.6 } : null]}
+          style={({ pressed }) => [styles.backCta, pressed ? { opacity: PRESS_DIP } : null]}
           testID="auth-back"
         >
           <ChevronLeft size={26} color={colors.text} />
