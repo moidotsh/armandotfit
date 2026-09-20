@@ -223,10 +223,10 @@ export default function HomeScreen() {
 
       {/* Recent sessions — one Martian line each; the latest leads. */}
       <View style={styles.block}>
-        {recentQuery.isLoading ? (
-          <WorkoutListSkeleton />
-        ) : recentQuery.isError ? (
+        {recentQuery.isError ? (
           <QueryErrorNote onRetry={() => void recentQuery.refetch()} testID="home-recent-error" />
+        ) : !recentQuery.isSuccess ? (
+          <WorkoutListSkeleton />
         ) : recent.length === 0 ? (
           <EmptyState
             title="No sessions yet"

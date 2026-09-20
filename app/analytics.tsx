@@ -86,9 +86,12 @@ export default function AnalyticsScreen() {
     >
       {/* THE STATEMENT — the count. The page's sentence is "you
           trained N of R days"; the number carries it. The loading
-          posture asserts nothing: the head prints when the facts
-          arrive, never a 0 impersonating a settled count. */}
-      {!historyQuery.isLoading ? (
+          posture asserts nothing: the head prints when the reads
+          SUCCEED — never during the pre-hydration window (the query
+          sits disabled until the auth store hydrates, and "not
+          loading" there is not "settled"), and never a 0 impersonating
+          a settled count. */}
+      {historyQuery.isSuccess ? (
         <BoardHead
           statement={String(sessionsInRange)}
           fact={`sessions · last ${range} days`}

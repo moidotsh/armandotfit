@@ -55,10 +55,14 @@ export default function ProgressionScreen() {
       testID="record-scroll"
       contentContainerStyle={styles.bodyContent}
     >
-      {summaryQuery.isLoading ? (
-        <LoadingSpinner />
-      ) : summaryQuery.isError ? (
+      {/* The loading posture asserts nothing — and "not loading" is
+          not "settled": the query sits disabled until the auth store
+          hydrates, so the empty state waits for a SUCCESSFUL read
+          before it claims there is nothing to progress. */}
+      {summaryQuery.isError ? (
         <QueryErrorNote onRetry={() => void summaryQuery.refetch()} testID="progression-error" />
+      ) : !summaryQuery.isSuccess ? (
+        <LoadingSpinner />
       ) : isEmpty ? (
         <EmptyState
           title="Nothing to progress yet"

@@ -32,6 +32,7 @@ export function useDashboardSummary() {
   return {
     data,
     isLoading: activity.isLoading,
+    isSuccess: activity.isSuccess,
     isError: activity.isError,
     error: activity.error,
     refetch: activity.refetch,
@@ -52,6 +53,7 @@ export function useAnalyticsHistory(daysBack = 30) {
   return {
     data,
     isLoading: activity.isLoading,
+    isSuccess: activity.isSuccess,
     isError: activity.isError,
     error: activity.error,
     refetch: activity.refetch,
