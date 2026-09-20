@@ -68,6 +68,31 @@ describe('workoutStore', () => {
     expect(dto!.exercises[0].sets).toEqual([{ reps: 8, weight: 180, note: null }]);
   });
 
+  it('continuation blocks: adHoc opens empty, a null day saves ad-hoc', () => {
+    // CONTINUE THE DAY on an ad-hoc receipt — the day continues as a
+    // NEW block with fresh stations (never split-hydrated) and no
+    // day-of-split asserted.
+    useWorkoutStore.getState().startSession({
+      splitType: 'twoADay',
+      day: null,
+      sessionMode: 'pm',
+      adHoc: true,
+    });
+    const draft = useWorkoutStore.getState().draft!;
+    expect(draft.adHoc).toBe(true);
+    expect(draft.exercises).toHaveLength(0);
+
+    const localId = useWorkoutStore.getState().addExerciseToDraft({
+      exerciseName: 'Cable Wood Chop',
+    });
+    useWorkoutStore.getState().addSetToDraft(localId, { reps: 15, weight: 20 });
+
+    const dto = useWorkoutStore.getState().toLogSessionDTO();
+    expect(dto).not.toBeNull();
+    expect(dto!.splitDay).toBeNull();
+    expect(dto!.exercises[0].exerciseName).toBe('Cable Wood Chop');
+  });
+
   it('swapDraftExercise swaps identity in place — position, Rx, and set rows survive; tags reset', () => {
     useWorkoutStore.getState().startSession({ splitType: 'twoADay', day: 2, sessionMode: 'pm' });
     useWorkoutStore.getState().hydrateFromSplit(

@@ -25,8 +25,9 @@ import { RegisterLine } from './RegisterLine';
 import { QueryErrorNote } from './QueryErrorNote';
 import { useToast, useAppTheme } from '../../context';
 import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags } from '../../hooks';
-import { safeGoBack } from '../../navigation';
+import { navigateToWorkoutDetail, safeGoBack } from '../../navigation';
 import { sumVolume } from '../../services';
+import { useSplitPreferenceStore, useWorkoutStore } from '../../stores';
 import { INTERVAL, PAGE_GUTTER, theme } from '../../constants';
 import { eraFor } from '../../shared/exercises';
 import {
@@ -74,6 +75,23 @@ export function Receipt({ id }: ReceiptProps) {
   const totalKg = session
     ? session.exercises.reduce((n, e) => n + sumVolume(e.sets), 0)
     : 0;
+
+  // CONTINUE THE DAY — a fresh block on the same day-of-split (the
+  // wood-chops case). The settled session never reopens; its day does.
+  const startSession = useWorkoutStore((s) => s.startSession);
+  const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
+  const splitType = useSplitPreferenceStore((s) => s.splitType);
+  const handleContinue = () => {
+    if (!session) return;
+    startSession({
+      splitType,
+      day: session.splitDay ?? null,
+      sessionMode: windowLabel === 'AM' ? 'am' : 'pm',
+      // Fresh stations — the split's four are already on this receipt.
+      adHoc: true,
+    });
+    navigateToWorkoutDetail();
+  };
 
   return (
     <BoardShell
@@ -170,6 +188,23 @@ export function Receipt({ id }: ReceiptProps) {
               ))}
             </View>
           ))}
+          {/* CONTINUE THE DAY — the wood-chops case: the day continues
+              as a NEW block (same day-of-split, fresh stations), never
+              a reopening of this settled one (history is immutable raw
+              fact — a receipt is settled). Hidden while a session runs:
+              the ticker already owns the way back to a live floor. */}
+          {!isSessionActive ? (
+            <View style={styles.receiptBlock}>
+              <MobileActionFooter>
+                <MobilePrimaryButton
+                  onPress={handleContinue}
+                  testID="receipt-continue"
+                >
+                  CONTINUE THE DAY
+                </MobilePrimaryButton>
+              </MobileActionFooter>
+            </View>
+          ) : null}
           <View style={styles.receiptBlock}>
             <MobileActionFooter>
               {/* The destructive tail arms by ink, never by a second

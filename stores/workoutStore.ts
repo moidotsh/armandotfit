@@ -72,8 +72,18 @@ export interface DraftSession {
   date: string;
   /** Client-side picker context — not persisted. */
   splitType: PreferredSplit;
-  /** Day-of-split 1..4 — persisted as sessions.split_day. */
-  day: number;
+  /**
+   * Day-of-split 1..4 — persisted as sessions.split_day. Null = the
+   * ad-hoc continuation of an ad-hoc day (the receipt's CONTINUE verb:
+   * the day continues as a NEW block; a settled session never reopens).
+   */
+  day: number | null;
+  /**
+   * True = the draft NEVER hydrates from the program (useFloorSession
+   * auto-fills empty drafts from the split; a continuation block opens
+   * with fresh stations instead — the wood-chops case).
+   */
+  adHoc: boolean;
   /** AM vs PM — planning-time context for twoADay; not persisted. */
   sessionMode: SessionMode;
   notes: string | null;
@@ -103,8 +113,10 @@ interface WorkoutState {
   startSession: (init: {
     date?: string;
     splitType: PreferredSplit;
-    day: number;
+    day: number | null;
     sessionMode?: SessionMode;
+    /** Open with fresh stations — no split hydration (continuations). */
+    adHoc?: boolean;
   }) => void;
   addExerciseToDraft: (exercise: {
     exerciseName: string;
@@ -177,12 +189,13 @@ export const useWorkoutStore = create<WorkoutState>()(
       sessionStartedAt: null,
       isSessionActive: false,
 
-      startSession: ({ date, splitType, day, sessionMode = 'am' }) => {
+      startSession: ({ date, splitType, day, sessionMode = 'am', adHoc = false }) => {
         const startedAt = new Date().toISOString();
         const draft: DraftSession = {
           date: date ?? startedAt,
           splitType,
           day,
+          adHoc,
           sessionMode,
           notes: null,
           exercises: [],

@@ -43,6 +43,13 @@ export function useFloorSession() {
     }
     if (hydratedRef.current) return;
     if (draft.exercises.length > 0) return;
+    // A continuation block (the receipt's CONTINUE verb) opens with
+    // fresh stations — no split hydration. A null day cannot resolve
+    // slots anyway (ad-hoc continuing ad-hoc).
+    if (draft.adHoc || draft.day == null) {
+      hydratedRef.current = true;
+      return;
+    }
     hydratedRef.current = true;
     const slots = resolveSlots(
       draft.splitType,

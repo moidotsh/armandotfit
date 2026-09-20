@@ -990,6 +990,25 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     defaultReps: [15, 20],
   },
   {
+    slug: 'cable-wood-chop',
+    modality: 'cable',
+    family: 'trunk-rotation',
+    name: 'Cable Wood Chop',
+    category: 'Abs',
+    exerciseType: 'cable',
+    difficultyLevel: 'intermediate',
+    description:
+      'High-to-low cable wood chop — loaded trunk rotation carrying the handle diagonally across the body, the obliques\u2019 signature lift.',
+    instructions:
+      'Stand side-on to a high pulley with a rope or handle in both hands. Pull down and across to the far hip, rotating through the ribs, then return under control.',
+    tips: 'Rotate from the ribs, not the arms; keep the hips quiet; the controlled return is half the work.',
+    primaryMuscles: [MuscleSlug.OBLIQUES],
+    secondaryMuscles: [MuscleSlug.ABS],
+    equipment: [EquipmentSlug.CABLE_ROPE],
+    defaultSets: 3,
+    defaultReps: [12, 15],
+  },
+  {
     slug: 'walking-lunge-dumbbell',
     modality: 'dumbbell',
     family: 'knee-dominant-unilateral',
