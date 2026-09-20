@@ -22,6 +22,7 @@ export * from './api-client';
 export * from './validation';
 export * from './uuid';
 export * from './haptics';
+export * from './facts';
 export * from './domMeasurement';
 export * from './debug';
 export * from './toastEventEmitter';

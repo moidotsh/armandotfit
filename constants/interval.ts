@@ -11,7 +11,7 @@
 // never animates, and the re-weight is a repaint (the shell's
 // curtain/sheet own their timings).
 
-import type { TextStyle } from 'react-native';
+import type { TextStyle, ViewStyle } from 'react-native';
 import { theme } from './theme';
 
 // ── The air law ─────────────────────────────────────────────────────────
@@ -42,13 +42,18 @@ export const PRESS_DIP_PLATE = 0.85;
 // `blockFirst` leads the page (no gap above the first word);
 // `statement` carries the halo below.
 export const INTERVAL = {
+  // Web prints textWrap where it knows it (statements and facts break
+  // where a typographer would break them — the atelier pass); the
+  // property is a cast because RN's TextStyle does not declare it.
   statement: {
     ...theme.typography.mobileTitleCondensed,
-  } as TextStyle,
+    textWrap: 'balance',
+  } as unknown as TextStyle,
   fact: {
     ...theme.typography.mobileLedger,
     marginTop: 4,
-  } as TextStyle,
+    textWrap: 'balance',
+  } as unknown as TextStyle,
   row: {
     ...theme.typography.mobileItemTitle,
   } as TextStyle,
@@ -95,6 +100,24 @@ export type MeterStep =
   | 'step4'
   | 'step5'
   | 'step6';
+
+// ── THE PAPER'S TOOTH (the atelier pass — the stock) ────────────────────
+// Premium minimal is never flat: it is STOCK. Two SVG-turbulence
+// grains at a whisper — dark tooth for the printed card, chalk tooth
+// for the unlit board — laid over the ground by BoardShell + the
+// Floor. The ground stops reading as a screen and starts reading as
+// paper; the ink plates (the verbs) wear the kit's own grain.
+export const PAPER_TOOTH_BACKGROUND =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='t'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23t)' opacity='0.025'/></svg>\")";
+export const BOARD_TOOTH_BACKGROUND =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='t'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23t)' opacity='0.05'/></svg>\")";
+/** The tooth layer for the active mode (RN's ViewStyle does not know
+ * backgroundImage; RN-web renders it — the kit's grain.ts cast). */
+export const paperToothStyle = (colorScheme: 'light' | 'dark'): ViewStyle =>
+  ({
+    backgroundImage:
+      colorScheme === 'dark' ? BOARD_TOOTH_BACKGROUND : PAPER_TOOTH_BACKGROUND,
+  }) as unknown as ViewStyle;
 
 // ── THE REST INSTRUMENT ─────────────────────────────────────────────────
 // The rest countdown's constants (thesis §7): default 90 s, steppers

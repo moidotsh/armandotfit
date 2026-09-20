@@ -318,7 +318,7 @@ export const theme = {
         navPanelShadow: 'none',
 
         // Faint vignette to settle the card into its edges (web).
-        atmosphereVignette: 'inset 0 0 160px 60px rgba(27, 25, 22, 0.04)',
+        atmosphereVignette: 'inset 0 0 210px 80px rgba(27, 25, 22, 0.055)',
 
         // Rail (progress) — fill travels across a 2px track.
         railTrack: 'rgba(27, 25, 22, 0.14)',
@@ -450,7 +450,7 @@ export const theme = {
         navScrimAlpha: 'cc',
         navPanelShadow: 'none',
 
-        atmosphereVignette: 'inset 0 0 160px 60px rgba(0, 0, 0, 0.32)',
+        atmosphereVignette: 'inset 0 0 210px 80px rgba(0, 0, 0, 0.38)',
 
         railTrack: 'rgba(237, 234, 228, 0.16)',
         railFillShadow: 'none',

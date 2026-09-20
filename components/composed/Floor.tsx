@@ -45,7 +45,7 @@ import {
   replaceWithHome,
 } from '../../navigation';
 import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, type TopSetFact } from '../../hooks';
-import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight, weightStep, hapticImpactLight } from '../../utils';
+import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight, weightStep, hapticImpactLight, joinFacts } from '../../utils';
 import { useWorkoutStore, useIsOnline, useDeloadStore } from '../../stores';
 import { sessionSaveQueue } from '../../services';
 import { TAG_VOCABULARY_SEED } from '../../shared/exercises';
@@ -54,7 +54,8 @@ import {
   MOBILE_CONTENT_WIDTH_STYLE,
   BLOCK_GAP,
   INTERVAL,
-  PRESS_DIP
+  PRESS_DIP,
+  paperToothStyle
 } from '../../constants';
 import { TheLogger, type RestLine } from './TheLogger';
 import { TheCardioDock } from './TheCardioDock';
@@ -76,7 +77,7 @@ interface Armed {
 }
 
 export function Floor() {
-  const { colors } = useAppTheme();
+  const { colors, colorScheme } = useAppTheme();
   const { showToast } = useToast();
 
   // THE WEIGHT UNIT — the display conversion (storage stays kg; the
@@ -445,6 +446,12 @@ export function Floor() {
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
       edges={['top', 'bottom']}
     >
+      {/* THE PAPER'S TOOTH — the Floor's stage ground wears the same
+          stock as every Desk page (the atelier pass). */}
+      <View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFillObject, paperToothStyle(colorScheme)]}
+      />
       {/* The announcement line — visually quiet (1×1, transparent),
           politely live for screen readers. */}
       <Text
@@ -664,7 +671,7 @@ export function Floor() {
                 style={({ pressed }) => [styles.tagsToggle, pressed ? { opacity: PRESS_DIP } : null]}
               >
                 <Text style={[styles.tagsToggleText, { color: colors.textMuted }]} numberOfLines={1}>
-                  {exercise.tags.length > 0 ? exercise.tags.join(' · ') : '+ TAGS'}
+                  {exercise.tags.length > 0 ? joinFacts(exercise.tags) : '+ TAGS'}
                 </Text>
               </Pressable>
               {tagsOpen ? (
@@ -760,10 +767,10 @@ export function Floor() {
                             label={`${String(ri + 1).padStart(2, '0')} · ${formatCardioDuration(r.durationSec)}`}
                             figure={
                               r.distanceM != null || r.kcal != null
-                                ? [
+                                ? joinFacts([
                                     r.distanceM != null ? formatCardioDistance(r.distanceM) : null,
                                     r.kcal != null ? `${r.kcal} kcal` : null,
-                                  ].filter(Boolean).join(' · ')
+                                  ])
                                 : null
                             }
                             muted

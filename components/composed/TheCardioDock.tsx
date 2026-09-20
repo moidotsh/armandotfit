@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import { useAppTheme } from '../../context';
 import { theme, PRESS_DIP, PRESS_DIP_PLATE } from '../../constants';
+import { inkSurface } from '../MobilePremium';
 import {
   CARDIO_STATIONS,
   formatCardioDuration,
@@ -305,7 +306,8 @@ export function TheCardioDock({
         }
         style={({ pressed }) => [
           styles.logButton,
-          { backgroundColor: colors.buttonBackground },
+          // The verb's ink plate wears the paper's tooth.
+          inkSurface(colors.buttonBackground),
           pressed ? { opacity: PRESS_DIP_PLATE } : null,
         ]}
         testID={`${tid}-log`}

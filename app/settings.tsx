@@ -24,6 +24,7 @@ import { DAY_OF_WEEK_LABELS, BLOCK_GAP, INTERVAL, theme,
 import { useToast } from '../context';
 import { useRestStore, useDeloadStore } from '../stores';
 import { logger } from '../utils/logger';
+import { joinFacts } from '../utils';
 import type { WeightUnit } from '../shared/types';
 
 const PREFERENCE_LABELS: Record<ColorSchemePreference, string> = {
@@ -358,7 +359,7 @@ export default function SettingsScreen() {
       <View style={styles.block}>
         <Text style={[styles.promotionLine, { color: colors.textMuted }]}>
           {earnedTags.length > 0
-            ? `tag promotions earned: ${earnedTags.join(' · ')}`
+            ? joinFacts(['tag promotions earned', joinFacts(earnedTags)])
             : 'tag promotions: none earned yet (10+ uses each)'}
         </Text>
       </View>

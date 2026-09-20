@@ -42,7 +42,7 @@ import {
   CARDIO_STATIONS,
 } from '../shared/exercises/cardio';
 import type { LoggedCardio } from '../shared/types';
-import { toDisplayWeight, roundDisplayWeight } from '../utils';
+import { toDisplayWeight, roundDisplayWeight, joinFacts } from '../utils';
 import type { ExerciseKey } from '../shared/exercises';
 
 export default function ExerciseDetailScreen() {
@@ -202,10 +202,10 @@ export default function ExerciseDetailScreen() {
                 const prev = cardioHistory[i + 1];
                 const delta = prev ? formatCardioDelta(row.durationSec, prev.durationSec) : null;
                 const improved = prev != null && row.durationSec < prev.durationSec;
-                const outcomes = [
+                const outcomes = joinFacts([
                   row.distanceM != null ? formatCardioDistance(row.distanceM) : null,
                   row.kcal != null ? `${row.kcal} kcal` : null,
-                ].filter(Boolean).join(' · ');
+                ]);
                 return (
                   <RegisterLine
                     key={row.id}
@@ -367,9 +367,7 @@ export default function ExerciseDetailScreen() {
           {exercise.equipment.length > 0 ? (
             <View style={styles.block}>
               <Text style={[styles.equipmentLine, { color: colors.textMuted }]} numberOfLines={1}>
-                {equipmentSlugs(exercise)
-                  .map((slug) => EQUIPMENT_DISPLAY_NAMES[slug])
-                  .join(' · ')}
+                {joinFacts(equipmentSlugs(exercise).map((slug) => EQUIPMENT_DISPLAY_NAMES[slug]))}
               </Text>
             </View>
           ) : null}

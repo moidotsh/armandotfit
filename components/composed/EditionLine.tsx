@@ -14,7 +14,7 @@ import { theme,
 } from '../../constants';
 import { sumVolume } from '../../services';
 import { useWeightUnit } from '../../hooks';
-import { formatVolumeWeight, weightUnitLabel } from '../../utils';
+import { formatVolumeWeight, weightUnitLabel, joinFacts } from '../../utils';
 import type { LoggedExerciseWithSets, TrainingSession } from '../../shared/types';
 
 export interface EditionLineProps {
@@ -52,7 +52,7 @@ export function EditionLine({ session, onPress, lead = false }: EditionLineProps
     tonnage > 0 ? `${formatVolumeWeight(tonnage, unit)} ${weightUnitLabel(unit)}` : null,
   ].filter(Boolean);
 
-  const line = parts.join(' · ');
+  const line = joinFacts(parts);
   const aria = [
     new Date(session.startedAt).toLocaleDateString(),
     session.splitDay != null ? `day ${session.splitDay}` : 'ad-hoc',

@@ -45,6 +45,7 @@ import {
   roundDisplayWeight,
   formatVolumeWeight,
   weightUnitLabel,
+  joinFacts,
 } from '../../utils';
 
 export interface ReceiptProps {
@@ -164,24 +165,21 @@ export function Receipt({ id }: ReceiptProps) {
               testID="receipt-tonnage"
             />
             <Text style={[styles.factLine, { color: colors.textMuted }]} numberOfLines={1}>
-              {[
+              {joinFacts([
                 new Date(session.startedAt).toLocaleDateString(undefined, {
                   weekday: 'short',
                   month: 'short',
                   day: 'numeric',
                 }),
                 // The era can be empty (a date before the first era) —
-                // empty parts never join (the printed `· ·` was a
-                // fact line lying about its segments).
+                // empty parts never join (joinFacts drops them).
                 eraFor(new Date(session.startedAt).toISOString().slice(0, 10)) || null,
                 session.splitDay != null ? `D${session.splitDay}` : 'ad-hoc',
                 windowLabel,
                 `${session.exercises.length} lifts`,
                 `${totalSets} sets`,
                 session.cardio.length > 0 ? `${session.cardio.length} cardio` : null,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
+              ])}
             </Text>
           </View>
 
@@ -208,13 +206,13 @@ export function Receipt({ id }: ReceiptProps) {
                 </Text>
                 {ex.tags.length > 0 ? (
                   <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
-                    {ex.tags.join(' · ')}
+                    {joinFacts(ex.tags)}
                   </Text>
                 ) : null}
               </View>
               {ex.tags.length === 0 && (lastTags.get(ex.exerciseName)?.length ?? 0) > 0 ? (
                 <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
-                  {`no tags · last time: ${lastTags.get(ex.exerciseName)!.join(' · ')}`}
+                  {joinFacts(['no tags', `last time: ${joinFacts(lastTags.get(ex.exerciseName)!)}`])}
                 </Text>
               ) : null}
               {ex.sets.map((s) => (
@@ -239,14 +237,14 @@ export function Receipt({ id }: ReceiptProps) {
               </Text>
               {session.cardio.map((row, i) => {
                 const spec = CARDIO_STATIONS[row.station];
-                const prescription = [
+                const prescription = joinFacts([
                   row.speedKmh != null ? `${row.speedKmh} km/h` : null,
                   row.level != null ? (row.station === 'treadmill' ? `${row.level}%` : `level ${row.level}`) : null,
-                ].filter(Boolean).join(' · ');
-                const outcomes = [
+                ]);
+                const outcomes = joinFacts([
                   row.distanceM != null ? formatCardioDistance(row.distanceM) : null,
                   row.kcal != null ? `${row.kcal} kcal` : null,
-                ].filter(Boolean).join(' · ');
+                ]);
                 return (
                   <RegisterLine
                     key={row.id}

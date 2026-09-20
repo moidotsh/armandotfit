@@ -73,6 +73,9 @@ export type { NavDrawerBrandPersistence, NavDrawerAnchor } from './layout';
 // is deleted — the air is the leader.
 export {
   INTERVAL,
+  PAPER_TOOTH_BACKGROUND,
+  BOARD_TOOTH_BACKGROUND,
+  paperToothStyle,
   PAGE_GUTTER,
   BLOCK_GAP,
   ROW_GAP,

@@ -35,7 +35,8 @@ import {
   MOBILE_CONTENT_WIDTH_STYLE,
   PAGE_GUTTER,
   BLOCK_GAP,
-  PRESS_DIP
+  PRESS_DIP,
+  paperToothStyle
 } from '../../constants';
 import { SessionStrip } from './SessionStrip';
 
@@ -85,7 +86,7 @@ export function BoardShell({
   stickyHeaderIndices,
   testID,
 }: BoardShellProps) {
-  const { colors } = useAppTheme();
+  const { colors, colorScheme } = useAppTheme();
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
 
   const handleScroll = useCallback(
@@ -101,6 +102,14 @@ export function BoardShell({
       edges={['top', 'bottom']}
     >
       <MobileAtmosphere surface={surface} />
+      {/* THE PAPER'S TOOTH (the atelier pass): one full-bleed grain
+          layer over the ground — the page stops reading as a screen
+          and starts reading as stock. Pointer-transparent; prints in
+          both modes at a whisper. */}
+      <View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFillObject, paperToothStyle(colorScheme)]}
+      />
       {/* Header + ticker ride the same mobile column as the body —
           nothing straddles the constraint on desktop. The back
           chevron renders whenever onBack is set, with or without a

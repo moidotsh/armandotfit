@@ -9,6 +9,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
+import { joinFacts } from '../../utils';
 import { theme, ROW_GAP,
   PRESS_DIP
 } from '../../constants';
@@ -39,7 +40,7 @@ export function ExerciseListItem({ exercise, onPress }: ExerciseListItemProps) {
       ? MUSCLE_DISPLAY_NAMES[exercise.primaryMuscles[0] as MuscleSlug] ?? null
       : null;
   const modality = exercise.modality ? MODALITY_LABEL[exercise.modality] : null;
-  const whisper = [muscle, modality].filter(Boolean).join(' · ');
+  const whisper = joinFacts([muscle, modality]);
 
   return (
     <Pressable

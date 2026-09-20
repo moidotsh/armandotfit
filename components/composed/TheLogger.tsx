@@ -41,11 +41,13 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { inkSurface } from '../MobilePremium';
 import { useAppTheme } from '../../context';
 import { theme, REST_STEP_SEC, ANIMATION,
   PRESS_DIP,
   PRESS_DIP_PLATE
 } from '../../constants';
+
 import { weightStep } from '../../utils';
 import type { WeightUnit } from '../../utils/weight';
 import { parseNumber } from './parseNumber';
@@ -503,7 +505,9 @@ export function TheLogger({
         accessibilityLabel={ready ? `Log set, ${weight} ${unit}, ${reps} reps` : 'Log set'}
         style={({ pressed }) => [
           styles.logButton,
-          { backgroundColor: colors.buttonBackground },
+          // The verb's ink plate wears the paper's tooth (the atelier
+          // pass): stock, not screen.
+          inkSurface(colors.buttonBackground),
           pressed ? { opacity: PRESS_DIP_PLATE } : null,
         ]}
         testID={`${tid}-log`}

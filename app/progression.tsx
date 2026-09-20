@@ -173,6 +173,6 @@ const styles = StyleSheet.create({
   },
   sectionWhisper: {
     ...INTERVAL.whisper,
-    marginBottom: 4,
+    marginBottom: 8,
   },
 });

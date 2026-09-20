@@ -12,6 +12,7 @@ import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MobileSheet } from '../MobilePremium';
 import { useAppTheme } from '../../context';
+import { joinFacts } from '../../utils';
 import { rankAlternatives } from '../../services';
 import {
   SYSTEM_EXERCISES_BY_SLUG,
@@ -61,10 +62,11 @@ function whyLine(candidate: SystemExerciseData, current: SystemExerciseData): st
   const sharedEquipment = equipmentSlugs(candidate)
     .filter((e) => currentEquipment.has(e))
     .map((e) => EQUIPMENT_DISPLAY_NAMES[e as EquipmentSlug]);
-  return [...sharedMuscles.slice(0, 2), ...sharedEquipment.slice(0, 1)]
-    .filter(Boolean)
-    .map((s) => s.toLowerCase())
-    .join(' · ');
+  return joinFacts(
+    [...sharedMuscles.slice(0, 2), ...sharedEquipment.slice(0, 1)]
+      .filter(Boolean)
+      .map((s) => s.toLowerCase()),
+  );
 }
 
 interface BenchRow {

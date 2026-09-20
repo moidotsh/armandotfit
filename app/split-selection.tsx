@@ -33,7 +33,7 @@ import { BoardShell, BoardHead, RegisterLine } from '../components/composed';
 import { useAppTheme } from '../context';
 import { navigateToWorkoutDetail, replaceWithWorkoutDetail, safeGoBack } from '../navigation';
 import { useProfile, useRecentWorkouts, useTopSetsByName, useWeightUnit } from '../hooks';
-import { toDisplayWeight, roundDisplayWeight } from '../utils';
+import { toDisplayWeight, roundDisplayWeight, joinFacts } from '../utils';
 import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots } from '../services';
 import {
@@ -174,7 +174,7 @@ export default function SplitSelectionScreen() {
   // in the line: the plan register below IS the count (four rows say
   // four), and the dropped segment keeps one wide-mono line inside
   // the column on SE (the 490px law + the no-ellipsis law together).
-  const fact = targets.length > 0 && !selectedSlot?.isRestDay ? targets.join(' · ') : null;
+  const fact = targets.length > 0 && !selectedSlot?.isRestDay ? joinFacts(targets) : null;
 
   return (
     <BoardShell
