@@ -1,19 +1,32 @@
 // app/program.tsx
-// THE TIMETABLE (docs/architecture/interval-thesis.md §8): "The
-// rotation, day by day." The FIRST day's title is the statement
-// (later chapters at subhead scale), each day is one air-separated
-// block, and slots are LINES: name + the Rx as a right-aligned mono
-// figure (here the Rx IS the content — this page answers "what's the
-// program"). Air separates the chapters; no panels, no rules. A
-// standing substitution reads in RED INK (the live edit); the
-// authored program in splits.ts is never edited. Plan-time Swap rides
-// the same bench as the Floor.
+//
+// THE PROGRAM — two surfaces behind one route (docs/architecture/
+// interval-thesis.md §8, restructured by the owner's direction):
+//
+//   /program                THE OVERVIEW — the live program states
+//                           itself (statement = its name), and each
+//                           EDITION reads as a CARD: the ground plus a
+//                           2px rule (the home day register's own
+//                           grammar — the panel tier stays dead), the
+//                           edition's stats as the fact line, its top
+//                           muscles as the whisper, LIVE in red ink on
+//                           the running edition (the live pulse).
+//                           Tap a card → the days.
+//   /program?edition=…      THE DAYS — the edition's rotation: every
+//                           day an EQUAL chapter (no elevated day 1 —
+//                           the owner's correction), THE WORK prints
+//                           the whole rotation's muscle share, slots
+//                           are ruled lines, plan-time Swap rides the
+//                           bench. Viewing an edition is not switching
+//                           programs — GO on the selector still owns
+//                           that.
 
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { MobilePrimaryButton, SegmentedControl } from '../components/MobilePremium';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { MobilePrimaryButton } from '../components/MobilePremium';
 import { BoardShell, InkRail, SectionWhisper, SwapGlyph } from '../components/composed';
-import { safeGoBack } from '../navigation';
+import { navigateToProgram, safeGoBack } from '../navigation';
 import { useAppTheme, useToast } from '../context';
 import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots, slotKey, derivePlanMuscleShare } from '../services';
@@ -25,7 +38,7 @@ import {
   getSlotsForDay,
   type SessionWindow,
 } from '../shared/exercises';
-import { INTERVAL, ROW_GAP, theme, PAGE_GUTTER } from '../constants';
+import { INTERVAL, ROW_GAP, theme, PAGE_GUTTER, PRESS_DIP } from '../constants';
 import { joinFacts } from '../utils';
 import { CURRENT_ERA } from '../shared/exercises';
 import type { PreferredSplit } from '../shared/types';
@@ -35,185 +48,228 @@ function rxLabel(sets: [number, number], reps: [number, number]): string {
   return `${s}×${reps[0]}–${reps[1]}`;
 }
 
+const EDITION_NAME: Record<PreferredSplit, string> = {
+  twoADay: 'Two-a-day',
+  oneADay: 'One-a-day',
+};
+
+const isEdition = (v: string | undefined): v is PreferredSplit =>
+  v === 'twoADay' || v === 'oneADay';
+
 export default function ProgramScreen() {
   const { colors } = useAppTheme();
   const { showToast } = useToast();
   const split = useSplitPreferenceStore((s) => s.splitType);
-  // THE EDITION VIEW: the page opens on the LIVE program (the
-  // remembered preference) and can flip to inspect the other edition —
-  // viewing is not switching; the preference changes on the selector's
-  // GO, nowhere else.
-  const [viewedSplit, setViewedSplit] = useState<PreferredSplit>(split);
+  const { edition } = useLocalSearchParams<{ edition?: string }>();
 
   const overrides = useProgramOverrideStore((s) => s.overrides);
   const [pickerFor, setPickerFor] = useState<string | null>(null);
   const setOverride = useProgramOverrideStore((s) => s.setOverride);
   const clearOverride = useProgramOverrideStore((s) => s.clearOverride);
-
-  const days = viewedSplit === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
   const overriddenCount = Object.keys(overrides).length;
-  const isTwoADay = viewedSplit === 'twoADay';
 
-  const renderSlot = (
-    day: number,
-    window: SessionWindow,
-    position: number,
-  ) => {
+  // ── THE OVERVIEW ────────────────────────────────────────────────────
+  if (!isEdition(edition)) {
+    const liveName = EDITION_NAME[split];
+    const statsOf = (which: PreferredSplit) => {
+      const days = which === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
+      const windows: SessionWindow[] = which === 'twoADay' ? ['am', 'pm'] : ['single'];
+      const slots = days.flatMap((day) =>
+        windows.flatMap((w) => resolveSlots(which, day.day, w, overrides)),
+      );
+      const sessions = days.length * windows.length;
+      const share = derivePlanMuscleShare(slots, 3);
+      return {
+        days: days.length,
+        lifts: slots.length,
+        sessions,
+        top: share
+          .map((r) => `${MUSCLE_DISPLAY_NAMES[r.muscle].toUpperCase()} ${r.share}%`)
+          .join(' \u2009·\u2009 '),
+      };
+    };
+    const liveStats = statsOf(split);
+
+    return (
+      <BoardShell
+        surface="analytics"
+        onBack={safeGoBack}
+        testID="program-overview"
+        contentContainerStyle={styles.bodyContent}
+      >
+        {/* The LIVE program states itself — the page's question is
+            "what am I running?" and the answer is the program's name. */}
+        <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
+          {joinFacts(['THE PROGRAM', CURRENT_ERA])}
+        </Text>
+        <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
+          {liveName}
+        </Text>
+        <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
+          {joinFacts([
+            `${liveStats.days} days`,
+            `${liveStats.lifts} lifts`,
+            `${liveStats.sessions} sessions/week`,
+          ])}
+        </Text>
+
+        {/* THE EDITION CARDS — the ground plus the screen's 2px rule
+            (the home day register's grammar); tap to read the days. */}
+        {(['twoADay', 'oneADay'] as const).map((which, i) => {
+          const st = statsOf(which);
+          const isLive = which === split;
+          return (
+            <Pressable
+              key={which}
+              onPress={() => navigateToProgram(which)}
+              accessibilityRole="button"
+              accessibilityLabel={`${EDITION_NAME[which]} program — ${st.days} days, ${st.lifts} lifts. View the days`}
+              style={({ pressed }) => [
+                styles.card,
+                { borderTopColor: colors.text },
+                i > 0 ? styles.cardNotFirst : null,
+                pressed ? { opacity: PRESS_DIP } : null,
+              ]}
+              testID={`program-card-${which}`}
+            >
+              <View style={styles.cardHead}>
+                <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>
+                  {EDITION_NAME[which]}
+                </Text>
+                {isLive ? (
+                  <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
+                ) : null}
+              </View>
+              <Text style={[styles.cardFact, { color: colors.textMuted }]} numberOfLines={1}>
+                {joinFacts([
+                  `${st.days} days`,
+                  which === 'twoADay' ? 'AM + PM' : 'one session',
+                  `${st.lifts} lifts`,
+                  `${st.sessions} sessions/week`,
+                ])}
+              </Text>
+              {st.top ? (
+                <Text style={[styles.cardTop, { color: colors.textSecondary }]} numberOfLines={1}>
+                  {st.top}
+                </Text>
+              ) : null}
+            </Pressable>
+          );
+        })}
+      </BoardShell>
+    );
+  }
+
+  // ── THE DAYS (the edition detail) ───────────────────────────────────
+  const viewedSplit: PreferredSplit = edition;
+  const days = viewedSplit === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
+  const isTwoADay = viewedSplit === 'twoADay';
+  const windows: SessionWindow[] = isTwoADay ? ['am', 'pm'] : ['single'];
+
+  const dayLifts = (day: number) =>
+    windows.reduce((n, w) => n + resolveSlots(viewedSplit, day, w, overrides).length, 0);
+
+  const renderSlot = (day: number, window: SessionWindow, position: number) => {
     const slots = resolveSlots(viewedSplit, day, window, overrides);
     const slot = slots[position - 1];
     if (!slot) return null;
-    const key = slotKey(split, day, window, position);
+    const key = slotKey(viewedSplit, day, window, position);
     const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
     const name = entry?.name ?? slot.exercise;
     const isOverridden = key in overrides;
 
     // A standing substitution reads in the RED RX only (thesis §8 — the
-    // live edit): one red node per override. The name stays ink — a
-    // name+Rx pair both in red spent two marks on one edit and, at
-    // three substitutions, wallpapered the ration the sight amendment
-    // set (red text nodes ≤3 per screen).
+    // live edit): one red node per override; the name stays ink.
     return (
       <View key={key} style={styles.slotRow}>
-        <Text
-          style={[styles.slotName, { color: colors.text }]}
-          numberOfLines={1}
-        >
+        <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
           {name}
         </Text>
         <SwapGlyph onPress={() => setPickerFor(key)} label={name} />
-        <Text
-          style={[styles.slotRx, { color: isOverridden ? colors.brandText : colors.text }]}
-        >
+        <Text style={[styles.slotRx, { color: isOverridden ? colors.brandText : colors.text }]}>
           {rxLabel(slot.sets, slot.reps)}
         </Text>
       </View>
     );
   };
 
-  // Per-day lift count across its windows — computed from the split
-  // data at read time; nothing stored.
-  const dayLifts = (day: number) => {
-    const windows: SessionWindow[] = isTwoADay ? ['am', 'pm'] : ['single'];
-    let lifts = 0;
-    for (const w of windows) {
-      lifts += resolveSlots(viewedSplit, day, w, overrides).length;
-    }
-    return lifts;
-  };
+  const planSlots = days.flatMap((day) =>
+    windows.flatMap((w) => resolveSlots(viewedSplit, day.day, w, overrides)),
+  );
+  // EVERY muscle the rotation works — no cap; bars scale to the LEADER
+  // (shares cluster at 5-15%, so a 100% ruler collapses everything).
+  const share = derivePlanMuscleShare(planSlots, 99);
+  const lead = share[0]?.share ?? 1;
 
   return (
     <BoardShell
       surface="analytics"
       onBack={safeGoBack}
-      testID="program-scroll"
+      testID="program-days"
       contentContainerStyle={styles.bodyContent}
     >
-      {/* THE PAGE HEAD — the first chapter's title is the page's
-          statement (the thesis's rule); the edition view rides under
-          its fact; THE WORK prints the WHOLE ROTATION's muscle share
-          (every day, every window — the entirety of the program, not a
-          single session's slice). */}
       <View style={styles.dayFirst}>
         <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
-          {`THE ROTATION · ${days.length} DAYS · ${CURRENT_ERA}`}
+          {joinFacts(['THE ROTATION', `${days.length} DAYS`, CURRENT_ERA])}
         </Text>
-        <Text style={[styles.dayTitleLead, { color: colors.text }]} numberOfLines={1}>
-          {days[0].title}
+        <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
+          {EDITION_NAME[viewedSplit]}
         </Text>
-        <Text
-          style={[styles.dayFact, { color: colors.textMuted }]}
-          numberOfLines={1}
-        >
-          {`${isTwoADay ? 'AM + PM · ' : ''}${dayLifts(days[0].day)} lifts`}
+        <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
+          {joinFacts([
+            `${days.length} days`,
+            `${planSlots.length} lifts`,
+            `${days.length * windows.length} sessions/week`,
+          ])}
         </Text>
-        <View style={styles.editionToggle}>
-          {/* THE EDITION VIEW — inspect either plan; viewing is not
-              switching (the preference changes on GO). */}
-          <SegmentedControl<PreferredSplit>
-            variant="selection"
-            chromeless
-            segments={[
-              { value: 'twoADay', label: 'two-a-day' },
-              { value: 'oneADay', label: 'one-a-day' },
-            ]}
-            value={viewedSplit}
-            onChange={setViewedSplit}
-            accessibilityLabel="Plan edition view"
-            testID="program-edition"
-          />
-        </View>
-        {(() => {
-          const planSlots = days.flatMap((day) =>
-            (isTwoADay ? ['am', 'pm'] : ['single']).flatMap((w) =>
-              resolveSlots(viewedSplit, day.day, w as SessionWindow, overrides),
-            ),
-          );
-          // EVERY muscle the rotation works — no cap: the top-five
-          // slice hid over half the body. The whole picture, sorted
-          // most-worked first.
-          const share = derivePlanMuscleShare(planSlots, 99);
-          if (share.length === 0) return null;
-          // Bars scale to the LEADER (the top muscle fills the run) —
-          // shares cluster at 5-15%, so scaling to 100% collapsed
-          // everything to 1-2 blocks. The leader anchors the ruler.
-          const lead = share[0].share;
-          return (
-            <View style={styles.shareBlock} testID="program-share">
-              <SectionWhisper rule={false}>THE WORK</SectionWhisper>
-              {share.map((row) => (
-                <View key={row.muscle} style={styles.shareRow}>
-                  <Text style={[styles.shareLabel, { color: colors.textSecondary }]} numberOfLines={1}>
-                    {MUSCLE_DISPLAY_NAMES[row.muscle].toUpperCase()}
-                  </Text>
-                  <Text style={[styles.shareBar, { color: colors.text }]}>
-                    {'\u2588'.repeat(Math.max(1, Math.round((row.share / lead) * 16)))}
-                  </Text>
-                  <Text style={[styles.sharePct, { color: colors.textMuted }]}>
-                    {`${row.share}%`}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          );
-        })()}
-      </View>
-
-      {days.map((day, di) => {
-        const windows: SessionWindow[] = isTwoADay ? ['am', 'pm'] : ['single'];
-        const dayFact = `${isTwoADay ? 'AM + PM · ' : ''}${dayLifts(day.day)} lifts`;
-        return (
-          <View key={day.day} style={di === 0 ? styles.dayFirstChapter : styles.day}>
-            {/* Day head: the FIRST chapter's title already served as
-                the page statement above (it renders headless here);
-                the rest are subheads with their fact line. */}
-            {di === 0 ? null : (
-              <>
-                <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
-                  {day.title}
+        {share.length > 0 ? (
+          <View style={styles.shareBlock} testID="program-share">
+            <SectionWhisper rule={false}>THE WORK</SectionWhisper>
+            {share.map((row) => (
+              <View key={row.muscle} style={styles.shareRow}>
+                <Text style={[styles.shareLabel, { color: colors.textSecondary }]} numberOfLines={1}>
+                  {MUSCLE_DISPLAY_NAMES[row.muscle].toUpperCase()}
                 </Text>
-                <Text
-                  style={[styles.dayFact, { color: colors.textMuted }]}
-                  numberOfLines={1}
-                >
-                  {dayFact}
+                <Text style={[styles.shareBar, { color: colors.text }]}>
+                  {'\u2588'.repeat(Math.max(1, Math.round((row.share / lead) * 16)))}
                 </Text>
-              </>
-            )}
-            {windows.map((window) => (
-              <View key={window} style={styles.windowBlock}>
-                {isTwoADay ? (
-                  <Text style={[styles.windowLabel, { color: colors.textMuted }]}>
-                    {window.toUpperCase()}
-                  </Text>
-                ) : null}
-                {resolveSlots(viewedSplit, day.day, window, overrides).map((_, i) =>
-                  renderSlot(day.day, window, i + 1),
-                )}
+                <Text style={[styles.sharePct, { color: colors.textMuted }]}>
+                  {`${row.share}%`}
+                </Text>
               </View>
             ))}
           </View>
-        );
-      })}
+        ) : null}
+      </View>
+
+      {/* EVERY DAY AN EQUAL CHAPTER — no elevated day 1 (the owner's
+          correction): the statement above is the EDITION's name, and
+          the days read as its table of contents. */}
+      {days.map((day, di) => (
+        <View key={day.day} style={di === 0 ? styles.dayFirstChapter : styles.day}>
+          <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
+            {day.title}
+          </Text>
+          <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
+            {joinFacts([
+              isTwoADay ? 'AM + PM' : null,
+              `${dayLifts(day.day)} lifts`,
+            ])}
+          </Text>
+          {windows.map((window) => (
+            <View key={window} style={styles.windowBlock}>
+              {isTwoADay ? (
+                <Text style={[styles.windowLabel, { color: colors.textMuted }]}>
+                  {window.toUpperCase()}
+                </Text>
+              ) : null}
+              {resolveSlots(viewedSplit, day.day, window, overrides).map((_, i) =>
+                renderSlot(day.day, window, i + 1),
+              )}
+            </View>
+          ))}
+        </View>
+      ))}
 
       {overriddenCount > 0 ? (
         <MobilePrimaryButton
@@ -272,39 +328,66 @@ const styles = StyleSheet.create({
   dayFirst: {
     ...INTERVAL.blockFirst,
   },
-  // The first chapter follows the page head (which carries its title).
+  // The first chapter follows the page head (which carries the edition).
   dayFirstChapter: {
     marginTop: 20,
   },
   day: {
     ...INTERVAL.block,
   },
-  // The page-identity whisper, spoken at rest where the column holds
-  // it.
   pageWhisper: {
     ...INTERVAL.whisper,
     marginBottom: 6,
   },
-  dayTitleLead: {
+  statement: {
     ...INTERVAL.statement,
   },
   dayTitle: {
     ...theme.typography.mobileTitle,
   },
-  // The statement's halo: the fact line waits outside the moat.
   dayFact: {
     ...INTERVAL.fact,
     marginBottom: 8,
+  },
+  // ── THE EDITION CARDS — the ground plus the screen's 2px rule (the
+  // home day register's grammar; the panel tier stays dead). Tappable
+  // wholes with the press dip.
+  card: {
+    borderTopWidth: 2,
+    paddingTop: 10,
+    paddingBottom: 4,
+    minHeight: 96,
+    justifyContent: 'center',
+  },
+  cardNotFirst: {
+    marginTop: 24,
+  },
+  cardHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  cardTitle: {
+    ...theme.typography.mobileItemTitle,
+    fontWeight: '700',
+    flex: 1,
+  },
+  liveWord: {
+    ...theme.typography.mobileEyebrow,
+  },
+  cardFact: {
+    ...INTERVAL.fact,
+    marginTop: 2,
+  },
+  cardTop: {
+    ...theme.typography.mobileLedger,
+    marginTop: 4,
   },
   windowBlock: {
     marginTop: ROW_GAP / 2,
   },
   windowLabel: {
     ...theme.typography.mobileEyebrow,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  editionToggle: {
     marginTop: 8,
     marginBottom: 4,
   },
@@ -334,8 +417,6 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
     fontVariant: ['tabular-nums'],
   },
-  // The timetable's slot line — name, the swap furniture, and the Rx
-  // as a right-aligned mono figure. Air separates the chapters.
   slotRow: {
     minHeight: 48,
     flexDirection: 'row',
@@ -349,8 +430,6 @@ const styles = StyleSheet.create({
   slotRx: {
     ...theme.typography.mobileFigure,
     fontWeight: '600',
-    // The ruled row's figure post: fixed-width, flush right — the swap
-    // glyph between name and figure holds one x for every row.
     minWidth: 88,
     textAlign: 'right',
   },

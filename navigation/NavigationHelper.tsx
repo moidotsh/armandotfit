@@ -134,9 +134,9 @@ export function navigateToProgression() {
   push('/progression');
 }
 
-/** Open My Program — the split display with plan-time swaps. */
-export function navigateToProgram() {
-  push('/program');
+/** Open My Program — the overview (no edition) or the edition's days. */
+export function navigateToProgram(edition?: 'twoADay' | 'oneADay') {
+  push(edition ? `/program?edition=${edition}` : '/program');
 }
 
 /** Open the analytics screen (charts + history). */
