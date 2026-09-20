@@ -7,7 +7,7 @@
 // read time; nothing stored.
 
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../context';
 import { theme,
   PRESS_DIP
@@ -45,14 +45,16 @@ export function EditionLine({ session, onPress, lead = false }: EditionLineProps
   });
   const tonnage = sumVolume(session.exercises?.flatMap((e) => e.sets) ?? []);
 
-  const parts = [
+  // THE ARCHIVE ROW SPLITS (the atelier pass): the identity parts
+  // read left, the tonnage claims its own right-aligned post — the
+  // figure is the fact that matters, and a one-string line truncates
+  // the tonnage first (the figure-never-truncates law, reached here).
+  const label = joinFacts([
     date,
     session.splitDay != null ? `D${session.splitDay}` : null,
     windowLabel,
-    tonnage > 0 ? `${formatVolumeWeight(tonnage, unit)} ${weightUnitLabel(unit)}` : null,
-  ].filter(Boolean);
-
-  const line = joinFacts(parts);
+  ]);
+  const figure = tonnage > 0 ? formatVolumeWeight(tonnage, unit) : null;
   const aria = [
     new Date(session.startedAt).toLocaleDateString(),
     session.splitDay != null ? `day ${session.splitDay}` : 'ad-hoc',
@@ -68,12 +70,21 @@ export function EditionLine({ session, onPress, lead = false }: EditionLineProps
       testID={`recent-${session.id}`}
       style={({ pressed }) => [styles.row, pressed ? { opacity: PRESS_DIP } : null]}
     >
-      <Text
-        style={[styles.line, { color: lead ? colors.textSecondary : colors.textMuted }]}
-        numberOfLines={1}
-      >
-        {line}
-      </Text>
+      <View style={styles.rowLine}>
+        <Text
+          style={[styles.line, { color: lead ? colors.textSecondary : colors.textMuted }]}
+          numberOfLines={1}
+        >
+          {label}
+        </Text>
+        {figure != null ? (
+          <Text
+            style={[styles.line, styles.figure, { color: lead ? colors.textSecondary : colors.textMuted }]}
+          >
+            {figure}
+          </Text>
+        ) : null}
+      </View>
     </Pressable>
   );
 }
@@ -89,6 +100,18 @@ const styles = StyleSheet.create({
   // plan and the verb.
   line: {
     ...theme.typography.mobileLedger,
+  },
+  rowLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  // The figure never truncates (the sight amendment): the label yields
+  // the tug-of-war, the tonnage claims its full intrinsic width.
+  figure: {
+    flexGrow: 0,
+    flexShrink: 0,
   },
 });
 

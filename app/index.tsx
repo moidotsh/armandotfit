@@ -20,6 +20,7 @@ import {
   BoardShell,
   BoardHead,
   EditionLine,
+  SectionWhisper,
   WorkoutListSkeleton,
   QueryErrorNote,
   RegisterLine,
@@ -47,10 +48,11 @@ import {
   getDayTitle,
   SYSTEM_EXERCISES,
   SYSTEM_EXERCISES_BY_SLUG,
+  MUSCLE_DISPLAY_NAMES,
 } from '../shared/exercises';
 import { useSplitPreferenceStore, useWorkoutStore, useDeloadStore } from '../stores';
 import { useDashboardSummary, useRecentSessionDetails, useTopSetsByName, useWeightUnit } from '../hooks';
-import { toDisplayWeight, roundDisplayWeight } from '../utils';
+import { toDisplayWeight, roundDisplayWeight, joinFacts } from '../utils';
 
 const RECENT_COUNT = 3;
 
@@ -85,6 +87,19 @@ export default function HomeScreen() {
     [preferredSplit, suggestedDay, suggestedWindow],
   );
   const dayTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;
+
+  // THE DAY'S TARGETS (the atelier pass): the distinct primary muscle
+  // groups across the suggested slots — the same derivation as the
+  // selector's fact line. The front page says what the day is AND what
+  // it trains; the statement names the day, the fact line carries its
+  // brief.
+  const targetGroups = useMemo(() => {
+    const names = suggestedSlots
+      .map((slot) => SYSTEM_EXERCISES_BY_SLUG[slot.exercise]?.primaryMuscles[0])
+      .filter(Boolean)
+      .map((m) => MUSCLE_DISPLAY_NAMES[m!]);
+    return [...new Set(names)];
+  }, [suggestedSlots]);
 
   // The register rows' figures — the last TOP set per exercise name
   // (the shared derivation; the same rule that arms the Floor), in
@@ -153,7 +168,14 @@ export default function HomeScreen() {
       <BoardHead
         statement={dayTitle}
         statementTestID="home-day-title"
-        whisper={`${suggestedWindow === 'am' ? 'MORNING' : 'EVENING'} · DAY ${suggestedDay}${daysSinceLast != null && daysSinceLast > 0 ? ` · ${daysSinceLast}D BACK` : ''}${deload ? ' · DELOAD' : ''}`}
+        whisper={joinFacts([
+          new Date().toLocaleDateString(undefined, { weekday: 'long' }).toUpperCase(),
+          suggestedWindow === 'am' ? 'MORNING' : 'EVENING',
+          `DAY ${suggestedDay}`,
+          daysSinceLast != null && daysSinceLast > 0 ? `${daysSinceLast}D BACK` : null,
+          deload ? 'DELOAD' : null,
+        ])}
+        fact={targetGroups.length > 0 ? joinFacts(targetGroups) : null}
       />
 
       {/* The long-gap honesty line — computed at read, one whisper. */}
@@ -222,8 +244,13 @@ export default function HomeScreen() {
         )}
       </View>
 
-      {/* Recent sessions — one Martian line each; the latest leads. */}
+      {/* Recent sessions — one Martian line each; the latest leads.
+          The landmark hairline marks where TODAY ends and the archive
+          begins (the atelier pass's one paragraph mark on the front
+          page — within the hairline budget beside the register's 2px
+          rule). */}
       <View style={styles.block}>
+        {recent.length > 0 ? <SectionWhisper>RECENT WORK</SectionWhisper> : null}
         {recentQuery.isError ? (
           <QueryErrorNote onRetry={() => void recentQuery.refetch()} testID="home-recent-error" />
         ) : !recentQuery.isSuccess ? (
