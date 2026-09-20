@@ -54,11 +54,9 @@ const EDITION_NAME: Record<PreferredSplit, string> = {
   oneADay: 'One-a-day',
 };
 
-/** The overview's statement: the live program as a sentence. */
-const editionSentence = (which: PreferredSplit, days: number): string =>
-  which === 'twoADay'
-    ? `${days} days, twice a day.`
-    : `${days} days, one sitting.`;
+/** The overview's statement: the PAGE's answer, not one plan's —
+ * the rotation is N days, offered two ways (the editions below). */
+const editionSentence = (days: number): string => `${days} days, two ways.`;
 
 const isEdition = (v: string | undefined): v is PreferredSplit =>
   v === 'twoADay' || v === 'oneADay';
@@ -77,7 +75,8 @@ export default function ProgramScreen() {
 
   // ── THE OVERVIEW ────────────────────────────────────────────────────
   if (!isEdition(edition)) {
-    const liveName = EDITION_NAME[split];
+    // The rotation's length — both editions share the same four days.
+    const liveDays = (split === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS).length;
     const statsOf = (which: PreferredSplit) => {
       const days = which === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
       const windows: SessionWindow[] = which === 'twoADay' ? ['am', 'pm'] : ['single'];
@@ -87,8 +86,6 @@ export default function ProgramScreen() {
       const sessions = days.length * windows.length;
       return { days: days.length, lifts: slots.length, sessions };
     };
-    const liveStats = statsOf(split);
-
     return (
       <BoardShell
         surface="analytics"
@@ -101,15 +98,11 @@ export default function ProgramScreen() {
         <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
           {joinFacts(['THE PROGRAM', CURRENT_ERA])}
         </Text>
+        {/* The statement speaks for the WHOLE page — both editions —
+            and stands alone in its halo: the cards below carry every
+            stat (the old fact line repeated the live card's). */}
         <Text style={[styles.statement, { color: colors.text }]} numberOfLines={2}>
-          {editionSentence(split, liveStats.days)}
-        </Text>
-        <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
-          {joinFacts([
-            `${liveStats.days} days`,
-            `${liveStats.lifts} lifts`,
-            `${liveStats.sessions} sessions/week`,
-          ])}
+          {editionSentence(liveDays)}
         </Text>
 
         {/* THE EDITION CARDS — the ground plus the screen's 2px rule
