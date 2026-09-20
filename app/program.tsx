@@ -261,29 +261,6 @@ export default function ProgramScreen() {
             `${days.length * windows.length} sessions/week`,
           ])}
         </Text>
-        {share.length > 0 ? (
-          <View
-            style={[styles.shareBlock, { borderTopColor: colors.text }]}
-            testID="program-share"
-          >
-            {/* The page's ONE 2px rule (the home day register's echo):
-                the head ends, the instrument begins. */}
-            <SectionWhisper rule={false}>THE WORK</SectionWhisper>
-            {share.map((row) => (
-              <View key={row.muscle} style={styles.shareRow}>
-                <Text style={[styles.shareLabel, { color: colors.textSecondary }]} numberOfLines={1}>
-                  {MUSCLE_DISPLAY_NAMES[row.muscle].toUpperCase()}
-                </Text>
-                <Text style={[styles.shareBar, { color: colors.text }]}>
-                  {'\u2588'.repeat(Math.max(1, Math.round((row.share / lead) * 16)))}
-                </Text>
-                <Text style={[styles.sharePct, { color: colors.textMuted }]}>
-                  {`${row.share}%`}
-                </Text>
-              </View>
-            ))}
-          </View>
-        ) : null}
       </View>
 
       {/* EVERY DAY AN EQUAL CHAPTER — no elevated day 1 (the owner's
@@ -319,6 +296,32 @@ export default function ProgramScreen() {
           ))}
         </View>
       ))}
+
+        {share.length > 0 ? (
+          <View
+            style={[styles.shareBlock, { borderTopColor: colors.text }]}
+            testID="program-share"
+          >
+            {/* THE WORK CLOSES THE PAGE — the days are the content
+                and lead; the share is the summary the page ends on
+                (the 2px rule is the page's one: the closer's
+                landmark, the home day register's echo). */}
+            <SectionWhisper rule={false}>THE WORK</SectionWhisper>
+            {share.map((row) => (
+              <View key={row.muscle} style={styles.shareRow}>
+                <Text style={[styles.shareLabel, { color: colors.textSecondary }]} numberOfLines={1}>
+                  {MUSCLE_DISPLAY_NAMES[row.muscle].toUpperCase()}
+                </Text>
+                <Text style={[styles.shareBar, { color: colors.text }]}>
+                  {'\u2588'.repeat(Math.max(1, Math.round((row.share / lead) * 16)))}
+                </Text>
+                <Text style={[styles.sharePct, { color: colors.textMuted }]}>
+                  {`${row.share}%`}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
       {overriddenCount > 0 ? (
         <MobilePrimaryButton
@@ -379,7 +382,7 @@ const styles = StyleSheet.create({
   },
   // The first chapter follows the page head (which carries the edition).
   dayFirstChapter: {
-    marginTop: 20,
+    ...INTERVAL.block,
   },
   day: {
     ...INTERVAL.block,
@@ -500,7 +503,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   shareBlock: {
-    marginTop: 20,
+    marginTop: 36,
     borderTopWidth: 2,
     paddingTop: 10,
   },
