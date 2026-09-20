@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { SYSTEM_EXERCISES } from '../../shared/exercises/data';
+import { SYSTEM_EXERCISES, MUSCLE_DISPLAY_NAMES } from '../../shared/exercises/data';
 import { IMPORTED_EXERCISES } from '../../shared/exercises/importedData';
 
 describe('imported catalog', () => {
@@ -27,6 +27,17 @@ describe('imported catalog', () => {
     expect(IMPORTED_EXERCISES.length).toBeGreaterThan(500);
     for (const e of IMPORTED_EXERCISES.slice(0, 40)) {
       expect(e.instructions.length).toBeGreaterThan(20);
+    }
+  });
+
+  it('every imported muscle is a LEGAL slug VALUE (the key/value law)', () => {
+    // The measure rows and THE BALANCE index muscles by slug VALUE
+    // ('abs', 'upper-back') — an emitted KEY ('ABS') renders nothing
+    // and counts nowhere. This test kills that bug class at CI.
+    for (const e of IMPORTED_EXERCISES) {
+      for (const m of [...e.primaryMuscles, ...e.secondaryMuscles]) {
+        expect(MUSCLE_DISPLAY_NAMES[m as keyof typeof MUSCLE_DISPLAY_NAMES], `illegal muscle slug ${m} on ${e.name}`).toBeDefined();
+      }
     }
   });
 

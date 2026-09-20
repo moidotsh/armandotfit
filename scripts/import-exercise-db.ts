@@ -59,22 +59,26 @@ const TYPE_OF: Record<string, 'free_weight' | 'cable' | 'machine' | 'calisthenic
 
 // Vernacular → our coarse slugs. 'shoulders' → side-delts (the generic
 // delt; any delt rolls into the shoulders GROUP for THE BALANCE).
+// Values, NOT keys: every consumer (MUSCLE_DISPLAY_NAMES, THE
+// BALANCE's GROUP_OF_MUSCLE) indexes muscles by the slug VALUE
+// ('abs', 'upper-back') — emitting keys rendered nothing.
 const MUSCLE_OF: Record<string, string> = {
-  abdominals: 'ABS',
-  biceps: 'BICEPS',
-  calves: 'CALVES',
-  chest: 'CHEST',
-  forearms: 'FOREARMS',
-  glutes: 'GLUTES',
-  hamstrings: 'HAMSTRINGS',
-  lats: 'LATS',
-  'lower back': 'LOWER_BACK',
-  'middle back': 'UPPER_BACK',
-  quadriceps: 'QUADS',
-  shoulders: 'SIDE_DELTS',
-  traps: 'TRAPS',
-  triceps: 'TRICEPS',
+  abdominals: 'abs',
+  biceps: 'biceps',
+  calves: 'calves',
+  chest: 'chest',
+  forearms: 'forearms',
+  glutes: 'glutes',
+  hamstrings: 'hamstrings',
+  lats: 'lats',
+  'lower back': 'lower-back',
+  'middle back': 'upper-back',
+  quadriceps: 'quads',
+  shoulders: 'side-delts',
+  traps: 'traps',
+  triceps: 'triceps',
 };
+
 
 // ── CORE PLATES (the hand-reviewed alias table) ─────────────────────────
 // Core-catalog lifts matched to their fedb figures BY NAME — every pair
@@ -168,6 +172,19 @@ const coreSrc = readFileSync('shared/exercises/data.ts', 'utf8');
 const coreNames = new Set(
   [...coreSrc.matchAll(/^    name: '([^']+)',$/gm)].map((m) => m[1].toLowerCase()),
 );
+// The legal slug VALUE set, extracted from data.ts's MuscleSlug block —
+// the importer hard-fails if a mapped muscle isn't legal (the key/value
+// mixup class of bug dies here).
+const muscleBlock = coreSrc.match(/export const MuscleSlug = \{([\s\S]*?)\} as const;/)?.[1] ?? '';
+const legalMuscles = new Set(
+  [...muscleBlock.matchAll(/: '([a-z-]+)'/g)].map((m) => m[1]),
+);
+if (legalMuscles.size < 20) throw new Error('could not extract the MuscleSlug value set from data.ts');
+const assertLegalMuscle = (v: string) => {
+  if (!legalMuscles.has(v)) throw new Error(`illegal muscle slug emitted: ${v}`);
+  return v;
+};
+
 
 const files = readdirSync(EX_DIR).filter((f) => f.endsWith('.json')).sort();
 const imported: string[] = [];
@@ -191,8 +208,8 @@ for (const file of files) {
 
   const modality = MODALITY_OF[e.equipment ?? 'other'] ?? 'floor';
   const exerciseType = TYPE_OF[e.equipment ?? 'other'] ?? 'calisthenic';
-  const prim = (e.primaryMuscles ?? []).map((m) => MUSCLE_OF[m]).filter(Boolean) as string[];
-  const sec = (e.secondaryMuscles ?? []).map((m) => MUSCLE_OF[m]).filter(Boolean) as string[];
+  const prim = ((e.primaryMuscles ?? []).map((m) => MUSCLE_OF[m]).filter(Boolean) as string[]).map(assertLegalMuscle);
+  const sec = ((e.secondaryMuscles ?? []).map((m) => MUSCLE_OF[m]).filter(Boolean) as string[]).map(assertLegalMuscle);
   stats.musclesDropped +=
     (e.primaryMuscles?.length ?? 0) - prim.length + (e.secondaryMuscles?.length ?? 0) - sec.length;
 
