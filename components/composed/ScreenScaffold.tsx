@@ -1,4 +1,13 @@
 // components/composed/ScreenScaffold.tsx
+//
+// ⚠ NON-CANONICAL SCAFFOLD — do not compose for new screens. This is
+// the shell's legacy skeleton (synced for parity): it speaks the OLD
+// vocabulary — 16px gutters, a 640px column, `background` instead of
+// `backgroundDeep`, and NO ticker slot, so a screen composing it opts
+// out of the air law (PAGE_GUTTER 20) and the live session's one-tap
+// return. THE INTERVAL's canonical scaffold is BoardShell. The one
+// sanctioned holdout is +not-found (the centered dead-end read).
+//
 // The one screen skeleton: atmosphere + a header slot + the policy-
 // compliant scrolling body + a centered content column. Screens compose
 // this instead of re-stating the same wrappers — the column width,

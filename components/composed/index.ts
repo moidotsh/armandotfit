@@ -12,7 +12,6 @@ export { ExerciseListItem, type ExerciseListItemProps } from './ExerciseListItem
 export { EditionLine, type EditionLineProps } from './EditionLine';
 export { SearchStatement, type SearchStatementProps } from './SearchStatement';
 export { NextStation, type NextStationProps } from './NextStation';
-export { TrainingConsistencyGrid, type TrainingConsistencyGridProps } from './TrainingConsistencyGrid';
 export { WorkoutListSkeleton } from './WorkoutListSkeleton';
 export { Floor } from './Floor';
 export { Receipt, type ReceiptProps } from './Receipt';

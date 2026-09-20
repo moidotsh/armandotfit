@@ -29,7 +29,6 @@ const MODALITY_LABEL: Record<NonNullable<SystemExerciseData['modality']>, string
 export interface ExerciseListItemProps {
   exercise: SystemExerciseData;
   onPress: (slug: string) => void;
-  isLast?: boolean;
 }
 
 export function ExerciseListItem({ exercise, onPress }: ExerciseListItemProps) {

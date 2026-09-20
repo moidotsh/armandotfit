@@ -135,7 +135,7 @@ export function BoardShell({
           contentContainerStyle={contentContainerStyle ?? styles.bodyContent}
           showsVerticalScrollIndicator={showsVerticalScrollIndicator}
           onScroll={handleScroll}
-          scrollEventThrottle={16}
+          scrollEventThrottle={onScroll ? 16 : undefined}
           stickyHeaderIndices={stickyHeaderIndices}
         >
           {children}
