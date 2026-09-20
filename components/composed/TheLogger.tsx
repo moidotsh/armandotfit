@@ -135,11 +135,11 @@ function StepButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       style={({ pressed }) => [
+        // THE BORDERLESS STEPPER (the atelier pass): the +/− glyphs
+        // stand free of their little plates — the panel tier's last
+        // hiding place, retired at micro scale. The 44px target and
+        // the press dip hold; the air carries the rest.
         styles.stepper,
-        {
-          backgroundColor: colors.cardAlt,
-          borderColor: colors.mobilePremium.hairlineBorderStrong,
-        },
         pressed ? { opacity: PRESS_DIP } : null,
       ]}
       testID={testID}
@@ -694,8 +694,6 @@ const styles = StyleSheet.create({
   stepper: {
     width: 44,
     height: 44,
-    borderRadius: theme.shapes.control,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },

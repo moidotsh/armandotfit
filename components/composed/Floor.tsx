@@ -510,7 +510,9 @@ export function Floor() {
             testID="stage-map"
           >
             <Text style={[styles.headerWord, { color: colors.text }]}>
-              MAP
+              {/* The chip's word is its action (the atelier pass): MAP
+                  offers the board; HIDE folds it away. */}
+              {mapCollapsed || !atTop ? 'MAP' : 'HIDE'}
             </Text>
           </Pressable>
           <View style={styles.stageHeaderCenter}>
