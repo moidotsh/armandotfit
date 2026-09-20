@@ -76,6 +76,25 @@ interface LoggedCardioRow {
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// Schema-skew guard (the cardio rollout window)
+// ──────────────────────────────────────────────────────────────────────
+
+const DETAIL_SELECT_WITH_CARDIO =
+  '*, logged_exercises(*, exercise:exercises(name), logged_sets(*)), logged_cardio(*)';
+const DETAIL_SELECT_PLAIN =
+  '*, logged_exercises(*, exercise:exercises(name), logged_sets(*))';
+
+/** PostgREST 400s an embedded select over a relation the schema cache
+ *  doesn't know — the deploy window where the client ships the cardio
+ *  read before the migration is applied on the project. Detect that one
+ *  skew (never a real query error) so the read can degrade instead of
+ *  failing the whole sessions query. */
+function isMissingCardioTable(e: unknown): boolean {
+  const msg = e instanceof Error ? e.message : String(e ?? '');
+  return msg.includes('logged_cardio');
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // Repository
 // ──────────────────────────────────────────────────────────────────────
 
@@ -136,17 +155,27 @@ export class WorkoutRepository
     limit = 50,
   ): Promise<RepositoryResult<SessionWithDetails[]>> {
     try {
-      const { data: rows, error } = await supabase
-        .from(WorkoutRepository.SESSIONS)
-        .select('*, logged_exercises(*, exercise:exercises(name), logged_sets(*)), logged_cardio(*)')
-        .eq('user_id', userId)
-        .order('started_at', { ascending: false })
-        .limit(limit);
-      if (error) throw error;
-      return ok((rows as unknown as Array<SessionRow & {
+      type DetailRows = Array<SessionRow & {
         logged_exercises: Array<LoggedExerciseRow & { logged_sets: LoggedSetRow[] }>;
-        logged_cardio: LoggedCardioRow[] | null;
-      }>).map(toSessionWithDetails));
+        logged_cardio?: LoggedCardioRow[] | null;
+      }>;
+      const run = (select: string) =>
+        supabase
+          .from(WorkoutRepository.SESSIONS)
+          .select(select)
+          .eq('user_id', userId)
+          .order('started_at', { ascending: false })
+          .limit(limit);
+      let { data: rows, error } = await run(DETAIL_SELECT_WITH_CARDIO);
+      if (error && isMissingCardioTable(error)) {
+        // Schema-skew window (the cardio migration is not applied on
+        // this project yet): retry without the arm — cardio reads
+        // empty until the table exists; the session history must not
+        // fail over a relation it can live without.
+        ({ data: rows, error } = await run(DETAIL_SELECT_PLAIN));
+      }
+      if (error) throw error;
+      return ok((rows as unknown as DetailRows).map(toSessionWithDetails));
     } catch (e) {
       return this.handleError('findRecentWithDetails', e);
     }
@@ -157,18 +186,25 @@ export class WorkoutRepository
     id: string,
   ): Promise<RepositoryResult<SessionWithDetails | null>> {
     try {
-      const { data, error } = await supabase
-        .from(WorkoutRepository.SESSIONS)
-        .select('*, logged_exercises(*, exercise:exercises(name), logged_sets(*)), logged_cardio(*)')
-        .eq('id', id)
-        .maybeSingle();
+      const run = (select: string) =>
+        supabase
+          .from(WorkoutRepository.SESSIONS)
+          .select(select)
+          .eq('id', id)
+          .maybeSingle();
+      let { data, error } = await run(DETAIL_SELECT_WITH_CARDIO);
+      if (error && isMissingCardioTable(error)) {
+        // The skew window (see findRecentWithDetails) — degrade, never
+        // strand the receipt.
+        ({ data, error } = await run(DETAIL_SELECT_PLAIN));
+      }
       if (error) throw error;
       if (!data) return ok(null);
       return ok(
         toSessionWithDetails(
           data as unknown as SessionRow & {
             logged_exercises: Array<LoggedExerciseRow & { logged_sets: LoggedSetRow[] }>;
-            logged_cardio: LoggedCardioRow[] | null;
+            logged_cardio?: LoggedCardioRow[] | null;
           },
         ),
       );
@@ -260,6 +296,9 @@ export class WorkoutRepository
         for (const c of data.cardio ?? []) {
           const { data: cardioRow, error: cardioErr } = await supabase
             .from(WorkoutRepository.LOGGED_CARDIO)
+            // The skew window reads clearly at the write too: the
+            // session is rolled back (the catch below) and the owner
+            // is told which migration to apply, not "Unknown error".
             .insert({
               session_id: session.id,
               station: c.station,
@@ -272,7 +311,13 @@ export class WorkoutRepository
             })
             .select('*')
             .single();
-          if (cardioErr) throw cardioErr;
+          if (cardioErr) {
+            if (isMissingCardioTable(cardioErr)) {
+              cardioErr.message =
+                'Cardio is not live on this project yet — apply migration 20270326000000_logged_cardio.sql, then log the sitting again.';
+            }
+            throw cardioErr;
+          }
           builtCardio.push(toCardio(cardioRow as LoggedCardioRow));
         }
 
