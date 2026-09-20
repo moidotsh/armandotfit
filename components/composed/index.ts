@@ -17,6 +17,7 @@ export { WorkoutListSkeleton } from './WorkoutListSkeleton';
 export { Floor } from './Floor';
 export { Receipt, type ReceiptProps } from './Receipt';
 export { BoardHead, type BoardHeadProps } from './BoardHead';
+export { SectionWhisper, type SectionWhisperProps } from './SectionWhisper';
 export { QueryErrorNote, type QueryErrorNoteProps } from './QueryErrorNote';
 
 // Shell composed layer (synced from arqavellum)

@@ -14,7 +14,7 @@ import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { BoardShell, BoardHead, NextStation, QueryErrorNote, RegisterLine } from '../components/composed';
+import { BoardShell, BoardHead, NextStation, QueryErrorNote, RegisterLine , SectionWhisper } from '../components/composed';
 import { useAppTheme } from '../context';
 import {
   navigateToExerciseDetail,
@@ -98,9 +98,9 @@ export default function ProgressionScreen() {
               above. */}
           {pbs.length > 0 ? (
             <View style={styles.block}>
-              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+              <SectionWhisper>
                 THE BESTS
-              </Text>
+              </SectionWhisper>
               <View>
                 {pbs.map((pb) => {
                   // Identity joins by NAME (data.ts) — resolve the
@@ -128,9 +128,9 @@ export default function ProgressionScreen() {
               — no ruled row asserts a record before the reads settle. */}
           {prTimeline.length > 0 ? (
             <View style={styles.block}>
-              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+              <SectionWhisper>
                 THE PR TIMELINE
-              </Text>
+              </SectionWhisper>
               <View testID="pr-timeline">
                 {prTimeline.map((pr, i) => (
                   <RegisterLine
@@ -170,9 +170,5 @@ const styles = StyleSheet.create({
   },
   totals: {
     ...INTERVAL.figure,
-  },
-  sectionWhisper: {
-    ...INTERVAL.whisper,
-    marginBottom: 8,
   },
 });

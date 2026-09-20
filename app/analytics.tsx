@@ -17,7 +17,7 @@ import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SegmentedControl } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { BoardShell, BoardHead, QueryErrorNote, RegisterLine } from '../components/composed';
+import { BoardShell, BoardHead, QueryErrorNote, RegisterLine , SectionWhisper } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory, useRecentSessionDetails } from '../hooks';
@@ -135,9 +135,9 @@ export default function AnalyticsScreen() {
                 character per day (the session count, '·' for days
                 off, TODAY in red), seven columns, density as ink
                 weight. Tabular by construction. */}
-            <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+            <SectionWhisper>
               CALENDAR · TRAINED DAYS
-            </Text>
+            </SectionWhisper>
             {!historyQuery.isSuccess ? (
               <LoadingSpinner />
             ) : (
@@ -197,9 +197,9 @@ export default function AnalyticsScreen() {
               on each spec sheet). */}
           {lowestGroup ? (
             <View style={styles.block}>
-              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+              <SectionWhisper>
                 THE BALANCE
-              </Text>
+              </SectionWhisper>
               <RegisterLine
                 label={`${lowestGroup.group} carries the least work`}
                 figure={`${Math.round(lowestGroup.share)}%`}
@@ -306,10 +306,6 @@ const styles = StyleSheet.create({
     ...INTERVAL.block,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: BLOCK_GAP },
-  sectionWhisper: {
-    ...INTERVAL.whisper,
-    marginBottom: 8,
-  },
   // THE REGISTER GRID — seven mono columns; density is ink weight.
   gridWrap: {
     alignSelf: 'flex-start',

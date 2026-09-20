@@ -22,6 +22,7 @@ import { LoadingSpinner } from '../primitives';
 import { BoardShell } from './BoardShell';
 import { Figure } from '../MobilePremium';
 import { RegisterLine } from './RegisterLine';
+import { SectionWhisper } from './SectionWhisper';
 import { QueryErrorNote } from './QueryErrorNote';
 import { useToast, useAppTheme } from '../../context';
 import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags } from '../../hooks';
@@ -232,9 +233,7 @@ export function Receipt({ id }: ReceiptProps) {
               never red. */}
           {session.cardio.length > 0 ? (
             <View style={styles.receiptBlock}>
-              <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
-                THE CARDIO
-              </Text>
+              <SectionWhisper>THE CARDIO</SectionWhisper>
               {session.cardio.map((row, i) => {
                 const spec = CARDIO_STATIONS[row.station];
                 const prescription = joinFacts([

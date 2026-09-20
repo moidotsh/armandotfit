@@ -47,7 +47,10 @@ export function BoardHead({
 }: BoardHeadProps) {
   const { colors } = useAppTheme();
   return (
-    <View>
+    // THE FIGURE PLATE (the atelier pass): a figure-statement — the
+    // streak, the tonnage, the count — is the page's one figure and
+    // gets the plate's air: extra breath below before the page starts.
+    <View style={variant === 'figure' ? styles.figurePlate : null}>
       {whisper ? (
         <Text
           style={[
@@ -86,6 +89,10 @@ const styles = StyleSheet.create({
   whisper: {
     ...theme.typography.mobileEyebrow,
     marginBottom: 6,
+  },
+  // The figure plate's extra breath (see the render comment).
+  figurePlate: {
+    marginBottom: 12,
   },
   statement: {
     ...INTERVAL.statement,

@@ -19,7 +19,7 @@ import {
   MobilePrimaryButton,
   MobileActionFooter,
 } from '../components/MobilePremium';
-import { BoardShell, RegisterLine } from '../components/composed';
+import { BoardShell, RegisterLine , SectionWhisper } from '../components/composed';
 import { FilterChip, FilterChipGroup } from '../components/MobilePremium';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
@@ -195,9 +195,9 @@ export default function ExerciseDetailScreen() {
               drawn; the trend is printed. */}
           {stationKey && cardioHistory.length >= 1 ? (
             <View style={styles.block}>
-              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+              <SectionWhisper>
                 {`THE LADDER · ${cardioHistory.length} SITTING${cardioHistory.length === 1 ? '' : 'S'}`}
-              </Text>
+              </SectionWhisper>
               {cardioHistory.map((row, i) => {
                 const prev = cardioHistory[i + 1];
                 const delta = prev ? formatCardioDelta(row.durationSec, prev.durationSec) : null;
@@ -230,9 +230,9 @@ export default function ExerciseDetailScreen() {
               says it). */}
           {!stationKey && trajectory && trajectory.points.length >= 1 ? (
             <View style={styles.block}>
-              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+              <SectionWhisper>
                 {`THE TRAJECTORY · ${trajectory.points.length} SESSION${trajectory.points.length === 1 ? '' : 'S'}`}
-              </Text>
+              </SectionWhisper>
               {trajectory.groups.length > 1 ? (
                 <View style={styles.variantChips}>
                   <FilterChipGroup>
@@ -302,9 +302,9 @@ export default function ExerciseDetailScreen() {
               week's figure carries the red. */}
           {weeklyVolume.length >= 2 ? (
             <View style={styles.block}>
-              <Text style={[styles.sectionWhisper, { color: colors.textMuted }]}>
+              <SectionWhisper>
                 {`THE WORK · WEEKLY · ${unit}`}
-              </Text>
+              </SectionWhisper>
               <View testID="entry-volume">
                 {weeklyVolume.map((w) => {
                   const maxV = Math.max(...weeklyVolume.map((x) => x.volume));
@@ -454,10 +454,6 @@ const styles = StyleSheet.create({
   },
   equipmentLine: {
     ...theme.typography.mobileLedger,
-  },
-  sectionWhisper: {
-    ...INTERVAL.whisper,
-    marginBottom: 8,
   },
   variantChips: {
     marginBottom: 12,
