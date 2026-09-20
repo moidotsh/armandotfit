@@ -4,7 +4,7 @@
 // trips: the exercises table stores only coarse identities, and every
 // display attribute lives client-side. Filter + resolve synchronously.
 
-import { SYSTEM_EXERCISES, SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
+import { SYSTEM_EXERCISES, SYSTEM_EXERCISES_BY_SLUG, MUSCLE_DISPLAY_NAMES } from '../../shared/exercises';
 import type { SystemExerciseData } from '../../shared/exercises';
 import type { CatalogFilter } from '../../stores/exerciseStore';
 
@@ -13,15 +13,28 @@ interface LocalQueryResult {
   isLoading: false;
 }
 
+/** The entry's muscle vocabulary, lowercased: slug values + display
+ * words ('calves', 'upper back') — the muscle-group search's corpus. */
+function muscleCorpus(e: SystemExerciseData): string[] {
+  return [...e.primaryMuscles, ...e.secondaryMuscles].flatMap((m) => [
+    m.toLowerCase(),
+    (MUSCLE_DISPLAY_NAMES[m] ?? '').toLowerCase(),
+  ]);
+}
+
 /** Filtered catalog list. Local + synchronous; shape matches useQuery. */
 export function useExercises(filter?: CatalogFilter): LocalQueryResult {
   let data = SYSTEM_EXERCISES;
   if (filter?.search) {
-    const q = filter.search.toLowerCase();
+    const q = filter.search.trim().toLowerCase();
     data = data.filter(
       (e) =>
         e.name.toLowerCase().includes(q) ||
-        e.category.toLowerCase().includes(q),
+        e.category.toLowerCase().includes(q) ||
+        // MUSCLE-GROUP SEARCH: 'calves' finds the calf lifts, 'chest'
+        // the presses — plural display names absorb singular queries
+        // ('calf' ⊂ 'calves', 'quad' ⊂ 'quads').
+        (q.length >= 2 && muscleCorpus(e).some((m) => m.includes(q))),
     );
   }
   if (filter?.category) {
