@@ -56,7 +56,8 @@ export type ExerciseKey =
   | 'glute-bridge'
   | 'glute-kickback'
   | 'thigh-abductor'
-  | 'thigh-adductor';
+  | 'thigh-adductor'
+  | 'plie-dumbbell-squat';
 
 /** AM vs PM session — planning-time context for twoADay splits. */
 export type SessionWindow = 'am' | 'pm' | 'single';
@@ -340,7 +341,7 @@ export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
     title: 'Workout Day 1',
     am: [
       { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'thigh-adductor', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
       { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
       { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
     ],
@@ -389,7 +390,7 @@ export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
     am: [
       { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
       { exercise: 'glute-bridge', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'thigh-adductor', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
       { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
     ],
     pm: [
@@ -410,7 +411,7 @@ export const FEMALE_ONE_A_DAY_SPLITS: OneADayDay[] = [
     title: 'Full Body Day 1',
     session: [
       { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'thigh-adductor', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
       { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
       { exercise: 'incline-barbell-press', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
       { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [10, 12] },
@@ -450,7 +451,7 @@ export const FEMALE_ONE_A_DAY_SPLITS: OneADayDay[] = [
     session: [
       { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
       { exercise: 'glute-bridge', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'thigh-adductor', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
       { exercise: 'cable-row', suggestedTags: ['seated', 'v-grip', 'neutral'], sets: [3, 3], reps: [8, 10] },
       { exercise: 'cable-curl', suggestedTags: ['rope', 'neutral'], sets: [3, 3], reps: [10, 12] },
       { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
