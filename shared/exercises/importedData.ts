@@ -8,7 +8,7 @@
 // table lives in the importer); plates resample to
 // public/exercise-plates/<slug>.jpg.
 //
-// Entry count: 602. Regenerated: 2026-09-20.
+// Entry count: 602. Regenerated: 2026-09-21.
 
 export interface ImportedExercise {
   slug: string;
@@ -1561,6 +1561,23 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-reverse-crunch.jpg',
+  },
+  {
+    slug: 'cable-rope-overhead-triceps-extension',
+    modality: 'cable',
+    name: 'Cable Rope Overhead Triceps Extension',
+    category: 'Library',
+    exerciseType: 'cable',
+    difficultyLevel: 'beginner',
+    description: 'An isolation lift for the primary movers named below.',
+    instructions: 'Attach a rope to the bottom pulley of the pulley machine. Grasping the rope with both hands, extend your arms with your hands directly above your head using a neutral grip (palms facing each other). Your elbows should be in close to your head and the arms should be perpendicular to the floor with the knuckles aimed at the ceiling. This will be your starting position. Slowly lower the rope behind your head as you hold the upper arms stationary. Inhale as you perform this movement and pause when your triceps are fully stretched. Return to the starting position by flexing your triceps as you breathe out. Repeat for the recommended amount of repetitions.',
+    tips: '',
+    primaryMuscles: ['triceps'],
+    secondaryMuscles: [],
+    equipment: [],
+    defaultSets: 3,
+    defaultReps: [8, 12],
+    image: '/exercise-plates/cable-rope-overhead-triceps-extension.jpg',
   },
   {
     slug: 'cable-rope-rear-delt-rows',
@@ -9599,23 +9616,6 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/tricep-dumbbell-kickback.jpg',
-  },
-  {
-    slug: 'triceps-overhead-extension-with-rope',
-    modality: 'cable',
-    name: 'Triceps Overhead Extension with Rope',
-    category: 'Library',
-    exerciseType: 'cable',
-    difficultyLevel: 'beginner',
-    description: 'An isolation lift for the primary movers named below.',
-    instructions: 'Attach a rope to a low pulley. After selecting an appropriate weight, grasp the rope with both hands and face away from the cable. Position your hands behind your head with your elbows point straight up. Your elbows should start out flexed, and you can stagger your stance and lean gently away from the machine to create greater stability. This will be your starting position. To perform the movement, extend through the elbow while keeping the upper arm in position, raising your hands above your head. Squeeze your triceps at the top of the movement, and slowly lower the weight back to the start position.',
-    tips: '',
-    primaryMuscles: ['triceps'],
-    secondaryMuscles: [],
-    equipment: [],
-    defaultSets: 3,
-    defaultReps: [8, 12],
-    image: '/exercise-plates/triceps-overhead-extension-with-rope.jpg',
   },
   {
     slug: 'triceps-pushdown-rope-attachment',

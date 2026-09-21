@@ -13,7 +13,7 @@ export const CORE_PLATES: Record<string, string> = {
   'incline-dumbbell-fly': '/exercise-plates/incline-dumbbell-flyes.jpg', // <- Incline Dumbbell Flyes
   'machine-chest-fly': '/exercise-plates/butterfly.jpg', // <- Butterfly
   'machine-incline-press': '/exercise-plates/leverage-incline-chest-press.jpg', // <- Leverage Incline Chest Press
-  'cable-overhead-tricep-extension': '/exercise-plates/cable-rope-overhead-triceps-extension.jpg', // <- Cable Rope Overhead Triceps Extension
+  'cable-overhead-tricep-extension': '/exercise-plates/triceps-overhead-extension-with-rope.jpg', // <- Triceps Overhead Extension with Rope
   'machine-dip': '/exercise-plates/dip-machine.jpg', // <- Dip Machine
   'dumbbell-curl': '/exercise-plates/dumbbell-bicep-curl.jpg', // <- Dumbbell Bicep Curl
   'cable-curl': '/exercise-plates/standing-biceps-cable-curl.jpg', // <- Standing Biceps Cable Curl

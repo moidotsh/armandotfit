@@ -91,7 +91,7 @@ const CORE_PLATE_ALIASES: Record<string, string> = {
   'Incline Dumbbell Fly': 'Incline Dumbbell Flyes',
   'Machine Chest Fly': 'Butterfly',
   'Machine Incline Press': 'Leverage Incline Chest Press',
-  'Cable Overhead Tricep Extension': 'Cable Rope Overhead Triceps Extension',
+  'Cable Overhead Tricep Extension': 'Triceps Overhead Extension with Rope',
   'Dumbbell Curl': 'Dumbbell Bicep Curl',
   'Cable Curl': 'Standing Biceps Cable Curl',
   'Cable Lateral Raise': 'Cable Seated Lateral Raise',
