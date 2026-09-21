@@ -23,10 +23,11 @@ import {
 import { BoardShell, ExerciseListItem, SearchStatement } from '../components/composed';
 import { useAppTheme, useToast } from '../context';
 import { navigateToExerciseDetail, safeGoBack } from '../navigation';
-import { useExercises, useRecentSessionDetails } from '../hooks';
+import { useExercises, useRecentSessionDetails, useTopSetsByName, useWeightUnit } from '../hooks';
 import { SYSTEM_EXERCISES as FULL_CATALOG } from '../shared/exercises';
 import { useExerciseStore, useWorkoutStore } from '../stores';
 import { SYSTEM_EXERCISES, ZONES, type SystemExerciseData } from '../shared/exercises';
+import { toDisplayWeight, roundDisplayWeight } from '../utils';
 import { INTERVAL, BLOCK_GAP, ROW_GAP, PAGE_GUTTER, theme } from '../constants';
 import type { MeterStep } from '../constants';
 
@@ -106,6 +107,11 @@ export default function ExerciseDatabaseScreen() {
     }
     return m;
   }, [tagIndexQuery.data]);
+  // YOUR NUMBERS — the library annotates itself: the last top-set
+  // weight per name (the shared derivation), display units. Untouched
+  // lifts stay clean (null figure).
+  const topSets = useTopSetsByName();
+  const unit = useWeightUnit();
 
   // The Recent section only leads the UNFILTERED browse — the moment the
   // user searches or filters, the list answers the query alone.
@@ -246,7 +252,15 @@ export default function ExerciseDatabaseScreen() {
             maxToRenderPerBatch={10}
             windowSize={3}
             renderItem={({ item }) => (
-              <ExerciseListItem exercise={item} onPress={navigateToExerciseDetail} />
+              <ExerciseListItem
+                exercise={item}
+                onPress={navigateToExerciseDetail}
+                figure={(() => {
+                  const kg = topSets.map.get(item.name.toLowerCase())?.weight ?? null;
+                  if (kg == null || kg <= 0) return null;
+                  return String(roundDisplayWeight(toDisplayWeight(kg, unit)));
+                })()}
+              />
             )}
             renderSectionHeader={({ section }) => {
               // THE ZONE LINE — the head carries its zone's hue tick

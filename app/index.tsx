@@ -14,7 +14,7 @@
 
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Dumbbell, Settings } from '@tamagui/lucide-icons-2';
+import { ChevronRight, Dumbbell, Settings } from '@tamagui/lucide-icons-2';
 import { MobilePrimaryButton, EmptyState } from '../components/MobilePremium';
 import {
   BoardShell,
@@ -151,12 +151,15 @@ export default function HomeScreen() {
     >
       <Text style={[styles.jumpLabel, { color: colors.textSecondary }]}>{label}</Text>
       {/* The caption is the row's one FACT — the number that makes the
-          destination worth its tap. Content, not chrome. */}
+          destination worth its tap. Content, not chrome. The chevron
+          closes it: one way-forward grammar app-wide (the progression
+          tail, the NextStation row, and these jumps speak it together). */}
       {caption ? (
         <Text style={[styles.jumpCaption, { color: colors.textMuted }]} numberOfLines={1}>
           {caption}
         </Text>
       ) : null}
+      <ChevronRight size={20} color={colors.textMuted} />
     </Pressable>
   );
 

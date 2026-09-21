@@ -116,6 +116,7 @@ export default function ProgressionScreen() {
                   return (
                     <RegisterLine
                       key={pb.exerciseName}
+                      monoPrefix={new Date(pb.bestAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                       label={pb.exerciseName}
                       figure={`${pb.bestWeight} × ${pb.bestReps}`}
                       onPress={slug ? () => navigateToExerciseDetail(slug) : undefined}

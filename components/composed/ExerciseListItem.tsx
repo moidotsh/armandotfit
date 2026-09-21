@@ -31,9 +31,16 @@ const MODALITY_LABEL: Record<NonNullable<SystemExerciseData['modality']>, string
 export interface ExerciseListItemProps {
   exercise: SystemExerciseData;
   onPress: (slug: string) => void;
+  /**
+   * YOUR NUMBER — the last top-set weight for this lift, display
+   * units, as a right-aligned mono figure. Null (the default) for
+   * lifts you've never touched: the library annotates itself, and
+   * untouched rows stay clean.
+   */
+  figure?: string | null;
 }
 
-export function ExerciseListItem({ exercise, onPress }: ExerciseListItemProps) {
+export function ExerciseListItem({ exercise, onPress, figure = null }: ExerciseListItemProps) {
   const { colors } = useAppTheme();
   const muscle =
     exercise.primaryMuscles.length > 0
@@ -49,12 +56,19 @@ export function ExerciseListItem({ exercise, onPress }: ExerciseListItemProps) {
       accessibilityLabel={whisper ? `${exercise.name} — ${whisper}` : exercise.name}
       style={({ pressed }) => [styles.row, pressed ? { opacity: PRESS_DIP } : null]}
     >
-      <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
-        {exercise.name}
-      </Text>
-      {whisper ? (
-        <Text style={[styles.whisper, { color: colors.textMuted }]} numberOfLines={1}>
-          {whisper}
+      <View style={styles.nameHold}>
+        <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
+          {exercise.name}
+        </Text>
+        {whisper ? (
+          <Text style={[styles.whisper, { color: colors.textMuted }]} numberOfLines={1}>
+            {whisper}
+          </Text>
+        ) : null}
+      </View>
+      {figure != null ? (
+        <Text style={[styles.figure, { color: colors.textSecondary }]} numberOfLines={1}>
+          {figure}
         </Text>
       ) : null}
     </Pressable>
@@ -70,6 +84,16 @@ const styles = StyleSheet.create({
     // Air separates rows inside a section (the trailing half-gap is
     // absorbed by the section's own bottom padding).
     marginBottom: ROW_GAP / 2,
+  },
+  nameHold: {
+    flex: 1,
+  },
+  // YOUR NUMBER — the right-aligned mono figure (the register row's
+  // own grammar); it never truncates (flexShrink 0, the sight law).
+  figure: {
+    ...theme.typography.mobileFigure,
+    fontVariant: ['tabular-nums'],
+    flexShrink: 0,
   },
   name: {
     ...theme.typography.mobileItemTitle,

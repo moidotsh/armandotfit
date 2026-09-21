@@ -282,7 +282,7 @@ export default function SplitSelectionScreen() {
             from the library.
           </Text>
         ) : (
-          <View style={[styles.previewRegister, { borderTopColor: colors.border }]} testID="funnel-preview-panel">
+          <View style={[styles.previewRegister, { borderTopColor: colors.text }]} testID="funnel-preview-panel">
             {previewSlots.map((slot, i) => {
               const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
               const name = entry?.name ?? slot.exercise;
@@ -332,7 +332,9 @@ const styles = StyleSheet.create({
   // here the tile measure is the second voice, the preview is the
   // third).
   previewRegister: {
-    borderTopWidth: 1,
+    // Home's day-register grammar: the plan register wears the
+    // screen's 2px espresso rule (one language, stated twice).
+    borderTopWidth: 2,
     paddingTop: 4,
   },
   dayRow: {
