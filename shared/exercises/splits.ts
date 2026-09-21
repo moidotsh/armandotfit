@@ -51,8 +51,8 @@ export type ExerciseKey =
   | 'romanian-deadlift'
   | 'dumbbell-romanian-deadlift'
   | 'leg-extension'
-  | 'seated-calf-raise'
-  | 'lying-leg-curl'
+  | 'seated-calf-raise-machine'
+  | 'lying-leg-curl-machine'
   | 'glute-bridge'
   | 'glute-kickback'
   | 'thigh-abductor'
@@ -271,14 +271,14 @@ export type ProgramEdition = 'upper' | 'lower';
 // ──────────────────────────────────────────────────────────────────────
 
 export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
-{
+  {
     day: 1,
     title: 'Workout Day 1',
     am: [
       { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
       { exercise: 'back-extension', suggestedTags: ['glute-bias'], sets: [2, 3], reps: [10, 12] },
-      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
     ],
     pm: [
       { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
@@ -292,9 +292,9 @@ export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
     title: 'Workout Day 2',
     am: [
       { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
       { exercise: 'thigh-abductor', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'glute-bridge', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'seated-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'seated-calf-raise-machine', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
     ],
     pm: [
       { exercise: 'lat-pulldown', suggestedTags: ['underhand', 'lat-bar'], sets: [2, 2], reps: [8, 10] },
@@ -308,13 +308,13 @@ export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
     title: 'Workout Day 3',
     am: [
       { exercise: 'bulgarian-split-squat', suggestedTags: ['dumbbell', 'per-leg'], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'lying-leg-curl', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'thigh-abductor', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'lying-leg-curl-machine', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'straight-arm-pulldown', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
     ],
     pm: [
       { exercise: 'incline-dumbbell-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
-      { exercise: 'straight-arm-pulldown', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'cable-curl', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [10, 12] },
       { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
       { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [2, 2], reps: [15, 20] },
     ],
@@ -324,7 +324,7 @@ export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
     title: 'Workout Day 4',
     am: [
       { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'glute-bridge', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'incline-dumbbell-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
       { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
       { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
     ],
@@ -337,7 +337,7 @@ export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
   },
 ];
 
-// One-a-day compression — 7 lifts per day, 28 total.
+// One-a-day compressionion — 7 lifts per day, 28 total.
 // Omissions vs AM+PM: standing-machine-calf-raise (D1), seated-calf-raise
 // (D2), incline-dumbbell-fly (D3), leg-press-calf-raise (D4).
 export const FEMALE_ONE_A_DAY_SPLITS: OneADayDay[] = [
@@ -346,13 +346,12 @@ export const FEMALE_ONE_A_DAY_SPLITS: OneADayDay[] = [
     title: 'Full Body Day 1',
     session: [
       { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
       { exercise: 'back-extension', suggestedTags: ['glute-bias'], sets: [2, 3], reps: [10, 12] },
-      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
       { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
       { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [10, 12] },
-      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [2, 2], reps: [15, 20] },
       { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [2, 2], reps: [15, 20] },
     ],
   },
   {
@@ -361,11 +360,11 @@ export const FEMALE_ONE_A_DAY_SPLITS: OneADayDay[] = [
     session: [
       { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
       { exercise: 'thigh-abductor', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'glute-bridge', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'seated-calf-raise-machine', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
       { exercise: 'lat-pulldown', suggestedTags: ['underhand', 'lat-bar'], sets: [2, 2], reps: [8, 10] },
       { exercise: 'dumbbell-curl', suggestedTags: ['seated', 'incline'], sets: [2, 2], reps: [8, 10] },
       { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
-      { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
     ],
   },
   {
@@ -373,12 +372,12 @@ export const FEMALE_ONE_A_DAY_SPLITS: OneADayDay[] = [
     title: 'Full Body Day 3',
     session: [
       { exercise: 'bulgarian-split-squat', suggestedTags: ['dumbbell', 'per-leg'], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'lying-leg-curl', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'thigh-abductor', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'lying-leg-curl-machine', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
       { exercise: 'straight-arm-pulldown', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'incline-dumbbell-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'cable-curl', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [10, 12] },
       { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [2, 2], reps: [15, 20] },
-      { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
-      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
     ],
   },
   {
@@ -386,12 +385,12 @@ export const FEMALE_ONE_A_DAY_SPLITS: OneADayDay[] = [
     title: 'Full Body Day 4',
     session: [
       { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'glute-bridge', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
       { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'incline-dumbbell-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
       { exercise: 'cable-row', suggestedTags: ['seated', 'v-grip', 'neutral'], sets: [2, 2], reps: [8, 10] },
       { exercise: 'cable-curl', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [10, 12] },
       { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
-      { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
     ],
   },
 ];

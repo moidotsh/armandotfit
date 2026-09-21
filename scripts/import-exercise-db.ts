@@ -64,6 +64,7 @@ const TYPE_OF: Record<string, 'free_weight' | 'cable' | 'machine' | 'calisthenic
 // ('abs', 'upper-back') — emitting keys rendered nothing.
 const MUSCLE_OF: Record<string, string> = {
   abdominals: 'abs',
+  abductors: 'glutes',
   biceps: 'biceps',
   calves: 'calves',
   chest: 'chest',
