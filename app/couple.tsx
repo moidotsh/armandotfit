@@ -12,7 +12,6 @@ import { useLocalSearchParams } from 'expo-router';
 import { BoardShell } from '../components/composed';
 import { useAppTheme } from '../context';
 import { INTERVAL, ROW_GAP, HALO, BLOCK_GAP, theme, PAGE_GUTTER, PRESS_DIP } from '../constants';
-import { useSplitPreferenceStore } from '../stores';
 import {
   TWO_A_DAY_SPLITS,
   FEMALE_TWO_A_DAY_SPLITS,
@@ -56,12 +55,18 @@ const muscleShare = (
     .sort((a, b) => b.pct - a.pct);
 };
 
+/** Shared-position count for a day across both windows. */
+const countShared = (
+  maleSlots: { exercise: string }[],
+  femaleSlots: { exercise: string }[],
+): number =>
+  maleSlots.filter((m, i) => femaleSlots[i]?.exercise === m.exercise).length;
+
 export default function CoupleScreen() {
   const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ mode?: string }>();
   const [mode, setMode] = useState<Mode>(isMode(params.mode) ? params.mode : 'twoADay');
   const [sortBy, setSortBy] = useState<'male' | 'female'>('male');
-  const programEdition = useSplitPreferenceStore((s) => s.edition);
 
   const days = useMemo(() => {
     if (mode === 'oneADay') {
@@ -81,6 +86,29 @@ export default function CoupleScreen() {
       malePm: m.pm,
       femalePm: FEMALE_TWO_A_DAY_SPLITS[i]?.pm ?? [],
     }));
+  }, [mode]);
+
+  // THE SHARED COUNT — the page's headline number.
+  const sharedStats = useMemo(() => {
+    if (mode === 'oneADay') {
+      let shared = 0;
+      let total = 0;
+      for (let i = 0; i < ONE_A_DAY_SPLITS.length; i++) {
+        const m = ONE_A_DAY_SPLITS[i].session;
+        const f = FEMALE_ONE_A_DAY_SPLITS[i]?.session ?? [];
+        shared += countShared(m, f);
+        total += Math.max(m.length, f.length);
+      }
+      return { shared, total, pct: Math.round((shared / total) * 100) };
+    }
+    let shared = 0;
+    for (let i = 0; i < TWO_A_DAY_SPLITS.length; i++) {
+      const m = TWO_A_DAY_SPLITS[i];
+      const f = FEMALE_TWO_A_DAY_SPLITS[i];
+      shared +=
+        countShared(m.am, f.am ?? []) + countShared(m.pm, f.pm ?? []);
+    }
+    return { shared, total: 32, pct: Math.round((shared / 32) * 100) };
   }, [mode]);
 
   const styles = useMemo(
@@ -161,7 +189,6 @@ export default function CoupleScreen() {
           ...INTERVAL.row,
           color: colors.text,
         } as const,
-        exerciseNameMuted: { color: colors.textMuted },
         rx: {
           ...INTERVAL.figure,
           color: colors.textMuted,
@@ -255,13 +282,7 @@ export default function CoupleScreen() {
         >
           {femaleSlug ? (
             <>
-              <Text
-                style={[
-                  styles.exerciseName,
-                  programEdition === 'lower' ? null : styles.exerciseNameMuted,
-                ]}
-                numberOfLines={2}
-              >
+              <Text style={styles.exerciseName} numberOfLines={2}>
                 {displayName(femaleSlug)}
               </Text>
               {femaleRx && femaleReps ? (
@@ -284,6 +305,10 @@ export default function CoupleScreen() {
     >
       <>
         <Text style={styles.statement}>Two lifters, one rotation.</Text>
+        <Text style={styles.whisper}>
+          {sharedStats.shared} of {sharedStats.total} lifts together ·{' '}
+          {sharedStats.pct}%
+        </Text>
 
         {/* THE MODE TOGGLE — two-a-day vs one-a-day */}
         <View style={styles.modeRow}>
@@ -310,7 +335,7 @@ export default function CoupleScreen() {
                     isActive ? styles.modeTileLabelActive : null,
                   ]}
                 >
-                  {m === 'twoADay' ? 'AM / PM' : 'ONE A DAY'}
+                  {m === 'twoADay' ? 'AM / PM · 64 LIFTS' : 'ONE A DAY · 28 LIFTS'}
                 </Text>
               </Pressable>
             );
@@ -330,6 +355,10 @@ export default function CoupleScreen() {
             return (
               <View key={`d${d.day}`}>
                 <Text style={styles.dayHead}>{d.title}</Text>
+                <Text style={styles.whisper}>
+                  {countShared(d.male, d.female)} of{' '}
+                  {Math.max(d.male.length, d.female.length)} together
+                </Text>
                 <View style={styles.headerRow}>
                   <Text style={[styles.headerCell, { paddingRight: ROW_GAP / 2 }]}>
                     Male
@@ -363,6 +392,11 @@ export default function CoupleScreen() {
           return (
             <View key={`d${d.day}`}>
               <Text style={styles.dayHead}>{d.title}</Text>
+              <Text style={styles.whisper}>
+                {countShared(d.male, d.female) +
+                  countShared(d.malePm, d.femalePm)}{' '}
+                of 8 together
+              </Text>
 
               <Text style={styles.windowWhisper}>AM</Text>
               <View style={styles.headerRow}>
