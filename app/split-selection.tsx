@@ -109,6 +109,8 @@ export default function SplitSelectionScreen() {
     () => getUpcomingWorkoutSlots(7, restDays, walkStartDay),
     [restDays, walkStartDay],
   );
+  // Today's ISO date — the rail's living position.
+  const todayIso = new Date().toISOString().slice(0, 10);
 
   // The board rows' prefills — the shared top-set derivation.
 
@@ -193,13 +195,24 @@ export default function SplitSelectionScreen() {
           {slots.map((slot) => {
             const isSelected = selectedSlot?.isoDate === slot.isoDate;
             const isRest = slot.isRestDay;
+            // TODAY — the living position: the rail walks seven REAL
+            // dates, and today is where you actually stand. Red marks
+            // the live position (the grid's today, the ticker's pulse —
+            // the same job); never on a selected plate (inversion wins).
+            const isToday = slot.isoDate === todayIso;
             const dowLabel = DAY_OF_WEEK_LABELS[slot.dayOfWeek].label.slice(0, 2).toUpperCase();
             const numeral = isRest ? 'R' : String(slot.splitDay).padStart(2, '0');
             // Inversion palette: the plate is the text color, the
             // content is the board — one swap, both modes.
             const plateBg = isSelected ? colors.text : isRest ? colors.glass.inputBackground : colors.card;
             const markColor = isSelected ? colors.background : colors.textMuted;
-            const numeralColor = isSelected ? colors.background : isRest ? colors.textMuted : colors.text;
+            const numeralColor = isSelected
+              ? colors.background
+              : isRest
+                ? colors.textMuted
+                : isToday
+                  ? colors.brandText
+                  : colors.text;
             return (
               <Pressable
                 key={slot.isoDate}

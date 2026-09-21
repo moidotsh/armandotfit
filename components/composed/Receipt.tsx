@@ -216,15 +216,29 @@ export function Receipt({ id }: ReceiptProps) {
                   {joinFacts(['no tags', `last time: ${joinFacts(lastTags.get(ex.exerciseName)!)}`])}
                 </Text>
               ) : null}
-              {ex.sets.map((s) => (
-                <RegisterLine
-                  key={s.id}
-                  monoLabel
-                  label={String(s.position)}
-                  figure={`${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} × ${s.reps}`}
-                  testID={`receipt-set-${ex.id}-${s.position}`}
-                />
-              ))}
+              {/* The session's best set wears the record red — the
+                  sanctioned job (the receipt's ONLY red mark per
+                  exercise; the tonnage stays ink: settled fact). */}
+              {(() => {
+                const bestWeight = Math.max(
+                  ...ex.sets.map((s) => toDisplayWeight(s.weight ?? 0, unit)),
+                  0,
+                );
+                return ex.sets.map((s) => (
+                  <RegisterLine
+                    key={s.id}
+                    monoLabel
+                    label={String(s.position)}
+                    figure={`${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} × ${s.reps}`}
+                    figureTone={
+                      toDisplayWeight(s.weight ?? 0, unit) === bestWeight && bestWeight > 0
+                        ? 'record'
+                        : 'ink'
+                    }
+                    testID={`receipt-set-${ex.id}-${s.position}`}
+                  />
+                ));
+              })()}
             </View>
           ))}
           {/* THE CARDIO — one ruled row per sitting: the duration as the

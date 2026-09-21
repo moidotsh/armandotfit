@@ -260,6 +260,16 @@ function RegisterGrid({
 
   return (
     <View style={styles.gridWrap} testID={testID} accessibilityLabel="Training consistency register">
+      {/* THE WEEKDAY RAIL — the calendar's column keys, printed caps
+          at the whisper rank: seven cells that align with the grid
+          below (nothing drawn; the alignment IS the key). */}
+      <View style={styles.gridRow}>
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+          <Text key={i} style={[styles.gridCell, styles.gridRailChar, { color: colors.textMuted }]}>
+            {d}
+          </Text>
+        ))}
+      </View>
       {rows.map((row, ri) => (
         <View key={ri} style={styles.gridRow}>
           {row.map((cell) =>
@@ -322,6 +332,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   gridChar: {
+    ...theme.typography.mobileEyebrow,
+    letterSpacing: 0,
+  },
+  // The weekday rail — quieter than the data cells (furniture).
+  gridRailChar: {
     ...theme.typography.mobileEyebrow,
     letterSpacing: 0,
   },
