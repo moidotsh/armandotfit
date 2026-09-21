@@ -13,7 +13,7 @@
 // active, ADD TO SESSION is the page's one verb.
 
 import React, { useMemo, useState } from 'react';
-import { Image, StyleSheet, Text, View, type ImageStyle } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View, type ImageStyle } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import {
   MobilePrimaryButton,
@@ -33,7 +33,7 @@ import {
   equipmentSlugs,
   type MuscleSlug,
 } from '../shared/exercises';
-import { INTERVAL, theme, PAGE_GUTTER } from '../constants';
+import { INTERVAL, theme, PAGE_GUTTER, PRESS_DIP } from '../constants';
 import {
   cardioStationBySlug,
   formatCardioDuration,
@@ -105,6 +105,7 @@ export default function ExerciseDetailScreen() {
   }, [historyQuery.data, stationKey]);
 
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set());
+  const [plateFrame, setPlateFrame] = useState(0);
   const visiblePoints = useMemo(() => {
     if (!trajectory) return [];
     return trajectory.points.filter((p) => !excluded.has(p.signature));
@@ -145,15 +146,37 @@ export default function ExerciseDetailScreen() {
               grid: one figure per entry, static, the instructions
               carry the meaning. */}
           {exercise.image ? (
-            <View style={[styles.plate, { borderTopColor: colors.mobilePremium.hairlineBorder, borderBottomColor: colors.mobilePremium.hairlineBorder }]}>
+            <Pressable
+              onPress={() => (exercise.imageB ? setPlateFrame((f) => (f === 0 ? 1 : 0)) : undefined)}
+              accessibilityRole="imagebutton"
+              accessibilityLabel={
+                exercise.imageB
+                  ? `Plate: ${exercise.name} — ${plateFrame === 0 ? 'concentric' : 'eccentric'} frame; tap to flip`
+                  : `Plate: ${exercise.name}`
+              }
+              style={({ pressed }) => [
+                styles.plate,
+                {
+                  borderTopColor: colors.mobilePremium.hairlineBorder,
+                  borderBottomColor: colors.mobilePremium.hairlineBorder,
+                },
+                pressed ? { opacity: PRESS_DIP } : null,
+              ]}
+              testID="entry-plate"
+            >
               <Image
-                source={{ uri: exercise.image }}
+                source={{ uri: plateFrame === 1 && exercise.imageB ? exercise.imageB : exercise.image }}
                 style={styles.plateImage}
-                accessibilityLabel={`Plate: ${exercise.name}`}
-                testID="entry-plate"
+                accessibilityElementsHidden
+                testID="entry-plate-image"
                 resizeMode="contain"
               />
-            </View>
+              {exercise.imageB ? (
+                <Text style={[styles.plateWord, { color: colors.textMuted }]}>
+                  {plateFrame === 0 ? '1 · 2' : '2 · 2'}
+                </Text>
+              ) : null}
+            </Pressable>
           ) : null}
 
           {/* THE NUMBER TO BEAT — the last top set as a ruled row
@@ -441,6 +464,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingVertical: 12,
     marginTop: 12,
+  },
+  plateWord: {
+    ...theme.typography.mobileEyebrow,
+    marginTop: 4,
+    textAlign: 'center',
   },
   plateImage: {
     width: '100%',

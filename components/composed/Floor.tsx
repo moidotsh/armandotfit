@@ -185,6 +185,7 @@ export function Floor() {
   // station changes.
   const [formOpen, setFormOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
+  const [plateFrame, setPlateFrame] = useState(0);
   const [armedByExercise, setArmedByExercise] = useState<
     Record<string, Armed>
   >({});
@@ -293,6 +294,7 @@ export function Floor() {
     formStationRef.current = formStationKey;
     setFormOpen(false);
     setReadingOpen(false);
+    setPlateFrame(0);
   }
 
   // The program's own ask for this station: the SET count and the LOW
@@ -747,23 +749,37 @@ export function Floor() {
                             how-to IS asking for the picture). One tap
                             in, one tap out. */}
                         {entry.image ? (
-                          <View
-                            style={[
+                          <Pressable
+                            onPress={() => (entry.imageB ? setPlateFrame((f) => (f === 0 ? 1 : 0)) : undefined)}
+                            accessibilityRole="imagebutton"
+                            accessibilityLabel={
+                              entry.imageB
+                                ? `Plate: ${exercise.exerciseName} — ${plateFrame === 0 ? 'concentric' : 'eccentric'} frame; tap to flip`
+                                : `Plate: ${exercise.exerciseName}`
+                            }
+                            style={({ pressed }) => [
                               styles.formPlate,
                               {
                                 borderTopColor: colors.mobilePremium.hairlineBorder,
                                 borderBottomColor: colors.mobilePremium.hairlineBorder,
                               },
+                              pressed ? { opacity: PRESS_DIP } : null,
                             ]}
+                            testID="form-plate"
                           >
                             <Image
-                              source={{ uri: entry.image }}
+                              source={{ uri: plateFrame === 1 && entry.imageB ? entry.imageB : entry.image }}
                               style={styles.formPlateFull}
-                              accessibilityLabel={`Plate: ${exercise.exerciseName}`}
-                              testID="form-plate"
+                              accessibilityElementsHidden
+                              testID="form-plate-image"
                               resizeMode="cover"
                             />
-                          </View>
+                            {entry.imageB ? (
+                              <Text style={[styles.formPlateWord, { color: colors.textMuted }]}>
+                                {plateFrame === 0 ? '1 · 2' : '2 · 2'}
+                              </Text>
+                            ) : null}
+                          </Pressable>
                         ) : null}
                         {entry.instructions ? (
                           <View>
@@ -1217,6 +1233,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingVertical: 8,
     marginBottom: 8,
+  },
+  formPlateWord: {
+    ...theme.typography.mobileEyebrow,
+    marginTop: 4,
+    textAlign: 'center',
   },
   // The plate inside the HOW-TO: the full 220 figure, monochrome.
   formPlateFull: {

@@ -29,6 +29,7 @@ export interface ImportedExercise {
   defaultSets: number;
   defaultReps: [number, number];
   image?: string;
+  imageB?: string;
 }
 
 export const IMPORTED_EXERCISES: ImportedExercise[] = [
@@ -48,6 +49,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/3-4-sit-up.jpg',
+    imageB: '/exercise-plates/3-4-sit-up-b.jpg',
   },
   {
     slug: 'ab-roller',
@@ -65,6 +67,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/ab-roller.jpg',
+    imageB: '/exercise-plates/ab-roller-b.jpg',
   },
   {
     slug: 'advanced-kettlebell-windmill',
@@ -82,6 +85,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/advanced-kettlebell-windmill.jpg',
+    imageB: '/exercise-plates/advanced-kettlebell-windmill-b.jpg',
   },
   {
     slug: 'air-bike',
@@ -99,6 +103,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/air-bike.jpg',
+    imageB: '/exercise-plates/air-bike-b.jpg',
   },
   {
     slug: 'alternate-hammer-curl',
@@ -116,6 +121,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/alternate-hammer-curl.jpg',
+    imageB: '/exercise-plates/alternate-hammer-curl-b.jpg',
   },
   {
     slug: 'alternate-heel-touchers',
@@ -133,6 +139,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/alternate-heel-touchers.jpg',
+    imageB: '/exercise-plates/alternate-heel-touchers-b.jpg',
   },
   {
     slug: 'alternate-incline-dumbbell-curl',
@@ -150,6 +157,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/alternate-incline-dumbbell-curl.jpg',
+    imageB: '/exercise-plates/alternate-incline-dumbbell-curl-b.jpg',
   },
   {
     slug: 'alternating-cable-shoulder-press',
@@ -167,6 +175,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/alternating-cable-shoulder-press.jpg',
+    imageB: '/exercise-plates/alternating-cable-shoulder-press-b.jpg',
   },
   {
     slug: 'alternating-deltoid-raise',
@@ -184,6 +193,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/alternating-deltoid-raise.jpg',
+    imageB: '/exercise-plates/alternating-deltoid-raise-b.jpg',
   },
   {
     slug: 'alternating-floor-press',
@@ -201,6 +211,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/alternating-floor-press.jpg',
+    imageB: '/exercise-plates/alternating-floor-press-b.jpg',
   },
   {
     slug: 'alternating-hang-clean',
@@ -218,6 +229,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/alternating-hang-clean.jpg',
+    imageB: '/exercise-plates/alternating-hang-clean-b.jpg',
   },
   {
     slug: 'alternating-kettlebell-press',
@@ -235,6 +247,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/alternating-kettlebell-press.jpg',
+    imageB: '/exercise-plates/alternating-kettlebell-press-b.jpg',
   },
   {
     slug: 'alternating-kettlebell-row',
@@ -252,6 +265,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/alternating-kettlebell-row.jpg',
+    imageB: '/exercise-plates/alternating-kettlebell-row-b.jpg',
   },
   {
     slug: 'alternating-renegade-row',
@@ -269,6 +283,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/alternating-renegade-row.jpg',
+    imageB: '/exercise-plates/alternating-renegade-row-b.jpg',
   },
   {
     slug: 'anti-gravity-press',
@@ -286,6 +301,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/anti-gravity-press.jpg',
+    imageB: '/exercise-plates/anti-gravity-press-b.jpg',
   },
   {
     slug: 'around-the-worlds',
@@ -303,6 +319,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/around-the-worlds.jpg',
+    imageB: '/exercise-plates/around-the-worlds-b.jpg',
   },
   {
     slug: 'atlas-stone-trainer',
@@ -320,6 +337,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/atlas-stone-trainer.jpg',
+    imageB: '/exercise-plates/atlas-stone-trainer-b.jpg',
   },
   {
     slug: 'atlas-stones',
@@ -337,6 +355,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/atlas-stones.jpg',
+    imageB: '/exercise-plates/atlas-stones-b.jpg',
   },
   {
     slug: 'axle-deadlift',
@@ -354,6 +373,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/axle-deadlift.jpg',
+    imageB: '/exercise-plates/axle-deadlift-b.jpg',
   },
   {
     slug: 'back-flyes-with-bands',
@@ -371,6 +391,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/back-flyes-with-bands.jpg',
+    imageB: '/exercise-plates/back-flyes-with-bands-b.jpg',
   },
   {
     slug: 'backward-drag',
@@ -388,6 +409,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/backward-drag.jpg',
+    imageB: '/exercise-plates/backward-drag-b.jpg',
   },
   {
     slug: 'balance-board',
@@ -405,6 +427,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/balance-board.jpg',
+    imageB: '/exercise-plates/balance-board-b.jpg',
   },
   {
     slug: 'ball-leg-curl',
@@ -422,6 +445,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/ball-leg-curl.jpg',
+    imageB: '/exercise-plates/ball-leg-curl-b.jpg',
   },
   {
     slug: 'band-assisted-pull-up',
@@ -439,6 +463,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/band-assisted-pull-up.jpg',
+    imageB: '/exercise-plates/band-assisted-pull-up-b.jpg',
   },
   {
     slug: 'band-good-morning',
@@ -456,6 +481,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/band-good-morning.jpg',
+    imageB: '/exercise-plates/band-good-morning-b.jpg',
   },
   {
     slug: 'band-good-morning-pull-through',
@@ -473,6 +499,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/band-good-morning-pull-through.jpg',
+    imageB: '/exercise-plates/band-good-morning-pull-through-b.jpg',
   },
   {
     slug: 'band-hip-adductions',
@@ -490,6 +517,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/band-hip-adductions.jpg',
+    imageB: '/exercise-plates/band-hip-adductions-b.jpg',
   },
   {
     slug: 'band-pull-apart',
@@ -507,6 +535,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/band-pull-apart.jpg',
+    imageB: '/exercise-plates/band-pull-apart-b.jpg',
   },
   {
     slug: 'band-skull-crusher',
@@ -524,6 +553,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/band-skull-crusher.jpg',
+    imageB: '/exercise-plates/band-skull-crusher-b.jpg',
   },
   {
     slug: 'barbell-ab-rollout',
@@ -541,6 +571,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-ab-rollout.jpg',
+    imageB: '/exercise-plates/barbell-ab-rollout-b.jpg',
   },
   {
     slug: 'barbell-ab-rollout-on-knees',
@@ -558,6 +589,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-ab-rollout-on-knees.jpg',
+    imageB: '/exercise-plates/barbell-ab-rollout-on-knees-b.jpg',
   },
   {
     slug: 'barbell-curls-lying-against-an-incline',
@@ -575,6 +607,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-curls-lying-against-an-incline.jpg',
+    imageB: '/exercise-plates/barbell-curls-lying-against-an-incline-b.jpg',
   },
   {
     slug: 'barbell-full-squat',
@@ -592,6 +625,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-full-squat.jpg',
+    imageB: '/exercise-plates/barbell-full-squat-b.jpg',
   },
   {
     slug: 'barbell-guillotine-bench-press',
@@ -609,6 +643,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-guillotine-bench-press.jpg',
+    imageB: '/exercise-plates/barbell-guillotine-bench-press-b.jpg',
   },
   {
     slug: 'barbell-hack-squat',
@@ -626,6 +661,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-hack-squat.jpg',
+    imageB: '/exercise-plates/barbell-hack-squat-b.jpg',
   },
   {
     slug: 'barbell-incline-shoulder-raise',
@@ -643,6 +679,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-incline-shoulder-raise.jpg',
+    imageB: '/exercise-plates/barbell-incline-shoulder-raise-b.jpg',
   },
   {
     slug: 'barbell-lunge',
@@ -660,6 +697,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-lunge.jpg',
+    imageB: '/exercise-plates/barbell-lunge-b.jpg',
   },
   {
     slug: 'barbell-rear-delt-row',
@@ -677,6 +715,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-rear-delt-row.jpg',
+    imageB: '/exercise-plates/barbell-rear-delt-row-b.jpg',
   },
   {
     slug: 'barbell-rollout-from-bench',
@@ -694,6 +733,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-rollout-from-bench.jpg',
+    imageB: '/exercise-plates/barbell-rollout-from-bench-b.jpg',
   },
   {
     slug: 'barbell-seated-calf-raise',
@@ -711,6 +751,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-seated-calf-raise.jpg',
+    imageB: '/exercise-plates/barbell-seated-calf-raise-b.jpg',
   },
   {
     slug: 'barbell-shoulder-press',
@@ -728,6 +769,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-shoulder-press.jpg',
+    imageB: '/exercise-plates/barbell-shoulder-press-b.jpg',
   },
   {
     slug: 'barbell-shrug-behind-the-back',
@@ -745,6 +787,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-shrug-behind-the-back.jpg',
+    imageB: '/exercise-plates/barbell-shrug-behind-the-back-b.jpg',
   },
   {
     slug: 'barbell-side-bend',
@@ -762,6 +805,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-side-bend.jpg',
+    imageB: '/exercise-plates/barbell-side-bend-b.jpg',
   },
   {
     slug: 'barbell-side-split-squat',
@@ -779,6 +823,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-side-split-squat.jpg',
+    imageB: '/exercise-plates/barbell-side-split-squat-b.jpg',
   },
   {
     slug: 'barbell-squat-to-a-bench',
@@ -796,6 +841,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-squat-to-a-bench.jpg',
+    imageB: '/exercise-plates/barbell-squat-to-a-bench-b.jpg',
   },
   {
     slug: 'barbell-step-ups',
@@ -813,6 +859,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/barbell-step-ups.jpg',
+    imageB: '/exercise-plates/barbell-step-ups-b.jpg',
   },
   {
     slug: 'battling-ropes',
@@ -830,6 +877,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/battling-ropes.jpg',
+    imageB: '/exercise-plates/battling-ropes-b.jpg',
   },
   {
     slug: 'bear-crawl-sled-drags',
@@ -847,6 +895,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bear-crawl-sled-drags.jpg',
+    imageB: '/exercise-plates/bear-crawl-sled-drags-b.jpg',
   },
   {
     slug: 'bench-press-powerlifting',
@@ -864,6 +913,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bench-press-powerlifting.jpg',
+    imageB: '/exercise-plates/bench-press-powerlifting-b.jpg',
   },
   {
     slug: 'bench-press-with-bands',
@@ -881,6 +931,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bench-press-with-bands.jpg',
+    imageB: '/exercise-plates/bench-press-with-bands-b.jpg',
   },
   {
     slug: 'bench-press-with-chains',
@@ -898,6 +949,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bench-press-with-chains.jpg',
+    imageB: '/exercise-plates/bench-press-with-chains-b.jpg',
   },
   {
     slug: 'bent-arm-dumbbell-pullover',
@@ -915,6 +967,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bent-arm-dumbbell-pullover.jpg',
+    imageB: '/exercise-plates/bent-arm-dumbbell-pullover-b.jpg',
   },
   {
     slug: 'bent-knee-hip-raise',
@@ -932,6 +985,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bent-knee-hip-raise.jpg',
+    imageB: '/exercise-plates/bent-knee-hip-raise-b.jpg',
   },
   {
     slug: 'bent-over-dumbbell-rear-delt-raise-with-head-on-bench',
@@ -949,6 +1003,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bent-over-dumbbell-rear-delt-raise-with-head-on-bench.jpg',
+    imageB: '/exercise-plates/bent-over-dumbbell-rear-delt-raise-with-head-on-bench-b.jpg',
   },
   {
     slug: 'bent-over-low-pulley-side-lateral',
@@ -966,6 +1021,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bent-over-low-pulley-side-lateral.jpg',
+    imageB: '/exercise-plates/bent-over-low-pulley-side-lateral-b.jpg',
   },
   {
     slug: 'bent-over-one-arm-long-bar-row',
@@ -983,6 +1039,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bent-over-one-arm-long-bar-row.jpg',
+    imageB: '/exercise-plates/bent-over-one-arm-long-bar-row-b.jpg',
   },
   {
     slug: 'bent-over-two-arm-long-bar-row',
@@ -1000,6 +1057,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bent-over-two-arm-long-bar-row.jpg',
+    imageB: '/exercise-plates/bent-over-two-arm-long-bar-row-b.jpg',
   },
   {
     slug: 'bent-over-two-dumbbell-row',
@@ -1017,6 +1075,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bent-over-two-dumbbell-row.jpg',
+    imageB: '/exercise-plates/bent-over-two-dumbbell-row-b.jpg',
   },
   {
     slug: 'bent-over-two-dumbbell-row-with-palms-in',
@@ -1034,6 +1093,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bent-over-two-dumbbell-row-with-palms-in.jpg',
+    imageB: '/exercise-plates/bent-over-two-dumbbell-row-with-palms-in-b.jpg',
   },
   {
     slug: 'bent-press',
@@ -1051,6 +1111,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bent-press.jpg',
+    imageB: '/exercise-plates/bent-press-b.jpg',
   },
   {
     slug: 'board-press',
@@ -1068,6 +1129,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/board-press.jpg',
+    imageB: '/exercise-plates/board-press-b.jpg',
   },
   {
     slug: 'body-up',
@@ -1085,6 +1147,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/body-up.jpg',
+    imageB: '/exercise-plates/body-up-b.jpg',
   },
   {
     slug: 'body-tricep-press',
@@ -1102,6 +1165,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/body-tricep-press.jpg',
+    imageB: '/exercise-plates/body-tricep-press-b.jpg',
   },
   {
     slug: 'bodyweight-flyes',
@@ -1119,6 +1183,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bodyweight-flyes.jpg',
+    imageB: '/exercise-plates/bodyweight-flyes-b.jpg',
   },
   {
     slug: 'bodyweight-mid-row',
@@ -1136,6 +1201,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bodyweight-mid-row.jpg',
+    imageB: '/exercise-plates/bodyweight-mid-row-b.jpg',
   },
   {
     slug: 'bodyweight-walking-lunge',
@@ -1153,6 +1219,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bodyweight-walking-lunge.jpg',
+    imageB: '/exercise-plates/bodyweight-walking-lunge-b.jpg',
   },
   {
     slug: 'bosu-ball-cable-crunch-with-side-bends',
@@ -1170,6 +1237,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bosu-ball-cable-crunch-with-side-bends.jpg',
+    imageB: '/exercise-plates/bosu-ball-cable-crunch-with-side-bends-b.jpg',
   },
   {
     slug: 'bottoms-up-clean-from-the-hang-position',
@@ -1187,6 +1255,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bottoms-up-clean-from-the-hang-position.jpg',
+    imageB: '/exercise-plates/bottoms-up-clean-from-the-hang-position-b.jpg',
   },
   {
     slug: 'bottoms-up',
@@ -1204,6 +1273,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bottoms-up.jpg',
+    imageB: '/exercise-plates/bottoms-up-b.jpg',
   },
   {
     slug: 'box-squat',
@@ -1221,6 +1291,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/box-squat.jpg',
+    imageB: '/exercise-plates/box-squat-b.jpg',
   },
   {
     slug: 'box-squat-with-bands',
@@ -1238,6 +1309,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/box-squat-with-bands.jpg',
+    imageB: '/exercise-plates/box-squat-with-bands-b.jpg',
   },
   {
     slug: 'box-squat-with-chains',
@@ -1255,6 +1327,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/box-squat-with-chains.jpg',
+    imageB: '/exercise-plates/box-squat-with-chains-b.jpg',
   },
   {
     slug: 'bradford-rocky-presses',
@@ -1272,6 +1345,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/bradford-rocky-presses.jpg',
+    imageB: '/exercise-plates/bradford-rocky-presses-b.jpg',
   },
   {
     slug: 'butt-ups',
@@ -1289,6 +1363,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/butt-ups.jpg',
+    imageB: '/exercise-plates/butt-ups-b.jpg',
   },
   {
     slug: 'butt-lift-bridge',
@@ -1306,6 +1381,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/butt-lift-bridge.jpg',
+    imageB: '/exercise-plates/butt-lift-bridge-b.jpg',
   },
   {
     slug: 'cable-chest-press',
@@ -1323,6 +1399,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-chest-press.jpg',
+    imageB: '/exercise-plates/cable-chest-press-b.jpg',
   },
   {
     slug: 'cable-crossover',
@@ -1340,6 +1417,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-crossover.jpg',
+    imageB: '/exercise-plates/cable-crossover-b.jpg',
   },
   {
     slug: 'cable-deadlifts',
@@ -1357,6 +1435,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-deadlifts.jpg',
+    imageB: '/exercise-plates/cable-deadlifts-b.jpg',
   },
   {
     slug: 'cable-hammer-curls-rope-attachment',
@@ -1374,6 +1453,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-hammer-curls-rope-attachment.jpg',
+    imageB: '/exercise-plates/cable-hammer-curls-rope-attachment-b.jpg',
   },
   {
     slug: 'cable-hip-adduction',
@@ -1391,6 +1471,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-hip-adduction.jpg',
+    imageB: '/exercise-plates/cable-hip-adduction-b.jpg',
   },
   {
     slug: 'cable-incline-pushdown',
@@ -1408,6 +1489,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-incline-pushdown.jpg',
+    imageB: '/exercise-plates/cable-incline-pushdown-b.jpg',
   },
   {
     slug: 'cable-incline-triceps-extension',
@@ -1425,6 +1507,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-incline-triceps-extension.jpg',
+    imageB: '/exercise-plates/cable-incline-triceps-extension-b.jpg',
   },
   {
     slug: 'cable-internal-rotation',
@@ -1442,6 +1525,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-internal-rotation.jpg',
+    imageB: '/exercise-plates/cable-internal-rotation-b.jpg',
   },
   {
     slug: 'cable-iron-cross',
@@ -1459,6 +1543,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-iron-cross.jpg',
+    imageB: '/exercise-plates/cable-iron-cross-b.jpg',
   },
   {
     slug: 'cable-judo-flip',
@@ -1476,6 +1561,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-judo-flip.jpg',
+    imageB: '/exercise-plates/cable-judo-flip-b.jpg',
   },
   {
     slug: 'cable-lying-triceps-extension',
@@ -1493,6 +1579,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-lying-triceps-extension.jpg',
+    imageB: '/exercise-plates/cable-lying-triceps-extension-b.jpg',
   },
   {
     slug: 'cable-one-arm-tricep-extension',
@@ -1510,6 +1597,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-one-arm-tricep-extension.jpg',
+    imageB: '/exercise-plates/cable-one-arm-tricep-extension-b.jpg',
   },
   {
     slug: 'cable-preacher-curl',
@@ -1527,6 +1615,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-preacher-curl.jpg',
+    imageB: '/exercise-plates/cable-preacher-curl-b.jpg',
   },
   {
     slug: 'cable-rear-delt-fly',
@@ -1544,6 +1633,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-rear-delt-fly.jpg',
+    imageB: '/exercise-plates/cable-rear-delt-fly-b.jpg',
   },
   {
     slug: 'cable-reverse-crunch',
@@ -1561,6 +1651,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-reverse-crunch.jpg',
+    imageB: '/exercise-plates/cable-reverse-crunch-b.jpg',
   },
   {
     slug: 'cable-rope-overhead-triceps-extension',
@@ -1578,6 +1669,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-rope-overhead-triceps-extension.jpg',
+    imageB: '/exercise-plates/cable-rope-overhead-triceps-extension-b.jpg',
   },
   {
     slug: 'cable-rope-rear-delt-rows',
@@ -1595,6 +1687,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-rope-rear-delt-rows.jpg',
+    imageB: '/exercise-plates/cable-rope-rear-delt-rows-b.jpg',
   },
   {
     slug: 'cable-russian-twists',
@@ -1612,6 +1705,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-russian-twists.jpg',
+    imageB: '/exercise-plates/cable-russian-twists-b.jpg',
   },
   {
     slug: 'cable-seated-crunch',
@@ -1629,6 +1723,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-seated-crunch.jpg',
+    imageB: '/exercise-plates/cable-seated-crunch-b.jpg',
   },
   {
     slug: 'cable-shoulder-press',
@@ -1646,6 +1741,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-shoulder-press.jpg',
+    imageB: '/exercise-plates/cable-shoulder-press-b.jpg',
   },
   {
     slug: 'cable-shrugs',
@@ -1663,6 +1759,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-shrugs.jpg',
+    imageB: '/exercise-plates/cable-shrugs-b.jpg',
   },
   {
     slug: 'cable-wrist-curl',
@@ -1680,6 +1777,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cable-wrist-curl.jpg',
+    imageB: '/exercise-plates/cable-wrist-curl-b.jpg',
   },
   {
     slug: 'calf-machine-shoulder-shrug',
@@ -1697,6 +1795,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/calf-machine-shoulder-shrug.jpg',
+    imageB: '/exercise-plates/calf-machine-shoulder-shrug-b.jpg',
   },
   {
     slug: 'calf-press',
@@ -1714,6 +1813,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/calf-press.jpg',
+    imageB: '/exercise-plates/calf-press-b.jpg',
   },
   {
     slug: 'calf-raise-on-a-dumbbell',
@@ -1731,6 +1831,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/calf-raise-on-a-dumbbell.jpg',
+    imageB: '/exercise-plates/calf-raise-on-a-dumbbell-b.jpg',
   },
   {
     slug: 'calf-raises-with-bands',
@@ -1748,6 +1849,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/calf-raises-with-bands.jpg',
+    imageB: '/exercise-plates/calf-raises-with-bands-b.jpg',
   },
   {
     slug: 'car-deadlift',
@@ -1765,6 +1867,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/car-deadlift.jpg',
+    imageB: '/exercise-plates/car-deadlift-b.jpg',
   },
   {
     slug: 'car-drivers',
@@ -1782,6 +1885,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/car-drivers.jpg',
+    imageB: '/exercise-plates/car-drivers-b.jpg',
   },
   {
     slug: 'chain-handle-extension',
@@ -1799,6 +1903,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/chain-handle-extension.jpg',
+    imageB: '/exercise-plates/chain-handle-extension-b.jpg',
   },
   {
     slug: 'chain-press',
@@ -1816,6 +1921,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/chain-press.jpg',
+    imageB: '/exercise-plates/chain-press-b.jpg',
   },
   {
     slug: 'chair-squat',
@@ -1833,6 +1939,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/chair-squat.jpg',
+    imageB: '/exercise-plates/chair-squat-b.jpg',
   },
   {
     slug: 'circus-bell',
@@ -1850,6 +1957,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/circus-bell.jpg',
+    imageB: '/exercise-plates/circus-bell-b.jpg',
   },
   {
     slug: 'clean',
@@ -1867,6 +1975,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/clean.jpg',
+    imageB: '/exercise-plates/clean-b.jpg',
   },
   {
     slug: 'clean-deadlift',
@@ -1884,6 +1993,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/clean-deadlift.jpg',
+    imageB: '/exercise-plates/clean-deadlift-b.jpg',
   },
   {
     slug: 'clean-pull',
@@ -1901,6 +2011,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/clean-pull.jpg',
+    imageB: '/exercise-plates/clean-pull-b.jpg',
   },
   {
     slug: 'clean-shrug',
@@ -1918,6 +2029,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/clean-shrug.jpg',
+    imageB: '/exercise-plates/clean-shrug-b.jpg',
   },
   {
     slug: 'clean-and-jerk',
@@ -1935,6 +2047,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/clean-and-jerk.jpg',
+    imageB: '/exercise-plates/clean-and-jerk-b.jpg',
   },
   {
     slug: 'clean-and-press',
@@ -1952,6 +2065,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/clean-and-press.jpg',
+    imageB: '/exercise-plates/clean-and-press-b.jpg',
   },
   {
     slug: 'clean-from-blocks',
@@ -1969,6 +2083,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/clean-from-blocks.jpg',
+    imageB: '/exercise-plates/clean-from-blocks-b.jpg',
   },
   {
     slug: 'clock-push-up',
@@ -1986,6 +2101,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/clock-push-up.jpg',
+    imageB: '/exercise-plates/clock-push-up-b.jpg',
   },
   {
     slug: 'close-grip-dumbbell-press',
@@ -2003,6 +2119,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/close-grip-dumbbell-press.jpg',
+    imageB: '/exercise-plates/close-grip-dumbbell-press-b.jpg',
   },
   {
     slug: 'close-grip-ez-bar-curl-with-band',
@@ -2020,6 +2137,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/close-grip-ez-bar-curl-with-band.jpg',
+    imageB: '/exercise-plates/close-grip-ez-bar-curl-with-band-b.jpg',
   },
   {
     slug: 'close-grip-ez-bar-press',
@@ -2037,6 +2155,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/close-grip-ez-bar-press.jpg',
+    imageB: '/exercise-plates/close-grip-ez-bar-press-b.jpg',
   },
   {
     slug: 'close-grip-ez-bar-curl',
@@ -2054,6 +2173,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/close-grip-ez-bar-curl.jpg',
+    imageB: '/exercise-plates/close-grip-ez-bar-curl-b.jpg',
   },
   {
     slug: 'close-grip-front-lat-pulldown',
@@ -2071,6 +2191,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/close-grip-front-lat-pulldown.jpg',
+    imageB: '/exercise-plates/close-grip-front-lat-pulldown-b.jpg',
   },
   {
     slug: 'close-grip-push-up-off-of-a-dumbbell',
@@ -2088,6 +2209,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/close-grip-push-up-off-of-a-dumbbell.jpg',
+    imageB: '/exercise-plates/close-grip-push-up-off-of-a-dumbbell-b.jpg',
   },
   {
     slug: 'close-grip-standing-barbell-curl',
@@ -2105,6 +2227,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/close-grip-standing-barbell-curl.jpg',
+    imageB: '/exercise-plates/close-grip-standing-barbell-curl-b.jpg',
   },
   {
     slug: 'cocoons',
@@ -2122,6 +2245,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cocoons.jpg',
+    imageB: '/exercise-plates/cocoons-b.jpg',
   },
   {
     slug: 'conan-s-wheel',
@@ -2139,6 +2263,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/conan-s-wheel.jpg',
+    imageB: '/exercise-plates/conan-s-wheel-b.jpg',
   },
   {
     slug: 'cross-body-crunch',
@@ -2156,6 +2281,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cross-body-crunch.jpg',
+    imageB: '/exercise-plates/cross-body-crunch-b.jpg',
   },
   {
     slug: 'cross-body-hammer-curl',
@@ -2173,6 +2299,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cross-body-hammer-curl.jpg',
+    imageB: '/exercise-plates/cross-body-hammer-curl-b.jpg',
   },
   {
     slug: 'cross-over-with-bands',
@@ -2190,6 +2317,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cross-over-with-bands.jpg',
+    imageB: '/exercise-plates/cross-over-with-bands-b.jpg',
   },
   {
     slug: 'crucifix',
@@ -2207,6 +2335,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/crucifix.jpg',
+    imageB: '/exercise-plates/crucifix-b.jpg',
   },
   {
     slug: 'crunch-hands-overhead',
@@ -2224,6 +2353,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/crunch-hands-overhead.jpg',
+    imageB: '/exercise-plates/crunch-hands-overhead-b.jpg',
   },
   {
     slug: 'crunch-legs-on-exercise-ball',
@@ -2241,6 +2371,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/crunch-legs-on-exercise-ball.jpg',
+    imageB: '/exercise-plates/crunch-legs-on-exercise-ball-b.jpg',
   },
   {
     slug: 'cuban-press',
@@ -2258,6 +2389,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/cuban-press.jpg',
+    imageB: '/exercise-plates/cuban-press-b.jpg',
   },
   {
     slug: 'dead-bug',
@@ -2275,6 +2407,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dead-bug.jpg',
+    imageB: '/exercise-plates/dead-bug-b.jpg',
   },
   {
     slug: 'deadlift-with-bands',
@@ -2292,6 +2425,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/deadlift-with-bands.jpg',
+    imageB: '/exercise-plates/deadlift-with-bands-b.jpg',
   },
   {
     slug: 'deadlift-with-chains',
@@ -2309,6 +2443,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/deadlift-with-chains.jpg',
+    imageB: '/exercise-plates/deadlift-with-chains-b.jpg',
   },
   {
     slug: 'decline-barbell-bench-press',
@@ -2326,6 +2461,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/decline-barbell-bench-press.jpg',
+    imageB: '/exercise-plates/decline-barbell-bench-press-b.jpg',
   },
   {
     slug: 'decline-close-grip-bench-to-skull-crusher',
@@ -2343,6 +2479,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/decline-close-grip-bench-to-skull-crusher.jpg',
+    imageB: '/exercise-plates/decline-close-grip-bench-to-skull-crusher-b.jpg',
   },
   {
     slug: 'decline-crunch',
@@ -2360,6 +2497,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/decline-crunch.jpg',
+    imageB: '/exercise-plates/decline-crunch-b.jpg',
   },
   {
     slug: 'decline-dumbbell-bench-press',
@@ -2377,6 +2515,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/decline-dumbbell-bench-press.jpg',
+    imageB: '/exercise-plates/decline-dumbbell-bench-press-b.jpg',
   },
   {
     slug: 'decline-dumbbell-flyes',
@@ -2394,6 +2533,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/decline-dumbbell-flyes.jpg',
+    imageB: '/exercise-plates/decline-dumbbell-flyes-b.jpg',
   },
   {
     slug: 'decline-dumbbell-triceps-extension',
@@ -2411,6 +2551,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/decline-dumbbell-triceps-extension.jpg',
+    imageB: '/exercise-plates/decline-dumbbell-triceps-extension-b.jpg',
   },
   {
     slug: 'decline-ez-bar-triceps-extension',
@@ -2428,6 +2569,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/decline-ez-bar-triceps-extension.jpg',
+    imageB: '/exercise-plates/decline-ez-bar-triceps-extension-b.jpg',
   },
   {
     slug: 'decline-oblique-crunch',
@@ -2445,6 +2587,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/decline-oblique-crunch.jpg',
+    imageB: '/exercise-plates/decline-oblique-crunch-b.jpg',
   },
   {
     slug: 'decline-push-up',
@@ -2462,6 +2605,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/decline-push-up.jpg',
+    imageB: '/exercise-plates/decline-push-up-b.jpg',
   },
   {
     slug: 'decline-reverse-crunch',
@@ -2479,6 +2623,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/decline-reverse-crunch.jpg',
+    imageB: '/exercise-plates/decline-reverse-crunch-b.jpg',
   },
   {
     slug: 'decline-smith-press',
@@ -2496,6 +2641,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/decline-smith-press.jpg',
+    imageB: '/exercise-plates/decline-smith-press-b.jpg',
   },
   {
     slug: 'deficit-deadlift',
@@ -2513,6 +2659,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/deficit-deadlift.jpg',
+    imageB: '/exercise-plates/deficit-deadlift-b.jpg',
   },
   {
     slug: 'dips-chest-version',
@@ -2530,6 +2677,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dips-chest-version.jpg',
+    imageB: '/exercise-plates/dips-chest-version-b.jpg',
   },
   {
     slug: 'dips-triceps-version',
@@ -2547,6 +2695,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dips-triceps-version.jpg',
+    imageB: '/exercise-plates/dips-triceps-version-b.jpg',
   },
   {
     slug: 'donkey-calf-raises',
@@ -2564,6 +2713,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/donkey-calf-raises.jpg',
+    imageB: '/exercise-plates/donkey-calf-raises-b.jpg',
   },
   {
     slug: 'double-kettlebell-alternating-hang-clean',
@@ -2581,6 +2731,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/double-kettlebell-alternating-hang-clean.jpg',
+    imageB: '/exercise-plates/double-kettlebell-alternating-hang-clean-b.jpg',
   },
   {
     slug: 'double-kettlebell-jerk',
@@ -2598,6 +2749,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/double-kettlebell-jerk.jpg',
+    imageB: '/exercise-plates/double-kettlebell-jerk-b.jpg',
   },
   {
     slug: 'double-kettlebell-push-press',
@@ -2615,6 +2767,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/double-kettlebell-push-press.jpg',
+    imageB: '/exercise-plates/double-kettlebell-push-press-b.jpg',
   },
   {
     slug: 'double-kettlebell-snatch',
@@ -2632,6 +2785,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/double-kettlebell-snatch.jpg',
+    imageB: '/exercise-plates/double-kettlebell-snatch-b.jpg',
   },
   {
     slug: 'double-kettlebell-windmill',
@@ -2649,6 +2803,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/double-kettlebell-windmill.jpg',
+    imageB: '/exercise-plates/double-kettlebell-windmill-b.jpg',
   },
   {
     slug: 'downward-facing-balance',
@@ -2666,6 +2821,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/downward-facing-balance.jpg',
+    imageB: '/exercise-plates/downward-facing-balance-b.jpg',
   },
   {
     slug: 'drag-curl',
@@ -2683,6 +2839,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/drag-curl.jpg',
+    imageB: '/exercise-plates/drag-curl-b.jpg',
   },
   {
     slug: 'dumbbell-alternate-bicep-curl',
@@ -2700,6 +2857,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-alternate-bicep-curl.jpg',
+    imageB: '/exercise-plates/dumbbell-alternate-bicep-curl-b.jpg',
   },
   {
     slug: 'dumbbell-bench-press-with-neutral-grip',
@@ -2717,6 +2875,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-bench-press-with-neutral-grip.jpg',
+    imageB: '/exercise-plates/dumbbell-bench-press-with-neutral-grip-b.jpg',
   },
   {
     slug: 'dumbbell-clean',
@@ -2734,6 +2893,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-clean.jpg',
+    imageB: '/exercise-plates/dumbbell-clean-b.jpg',
   },
   {
     slug: 'dumbbell-floor-press',
@@ -2751,6 +2911,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-floor-press.jpg',
+    imageB: '/exercise-plates/dumbbell-floor-press-b.jpg',
   },
   {
     slug: 'dumbbell-flyes',
@@ -2768,6 +2929,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-flyes.jpg',
+    imageB: '/exercise-plates/dumbbell-flyes-b.jpg',
   },
   {
     slug: 'dumbbell-incline-shoulder-raise',
@@ -2785,6 +2947,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-incline-shoulder-raise.jpg',
+    imageB: '/exercise-plates/dumbbell-incline-shoulder-raise-b.jpg',
   },
   {
     slug: 'dumbbell-lunges',
@@ -2802,6 +2965,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-lunges.jpg',
+    imageB: '/exercise-plates/dumbbell-lunges-b.jpg',
   },
   {
     slug: 'dumbbell-lying-one-arm-rear-lateral-raise',
@@ -2819,6 +2983,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-lying-one-arm-rear-lateral-raise.jpg',
+    imageB: '/exercise-plates/dumbbell-lying-one-arm-rear-lateral-raise-b.jpg',
   },
   {
     slug: 'dumbbell-lying-pronation',
@@ -2836,6 +3001,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-lying-pronation.jpg',
+    imageB: '/exercise-plates/dumbbell-lying-pronation-b.jpg',
   },
   {
     slug: 'dumbbell-lying-rear-lateral-raise',
@@ -2853,6 +3019,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-lying-rear-lateral-raise.jpg',
+    imageB: '/exercise-plates/dumbbell-lying-rear-lateral-raise-b.jpg',
   },
   {
     slug: 'dumbbell-lying-supination',
@@ -2870,6 +3037,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-lying-supination.jpg',
+    imageB: '/exercise-plates/dumbbell-lying-supination-b.jpg',
   },
   {
     slug: 'dumbbell-one-arm-shoulder-press',
@@ -2887,6 +3055,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-one-arm-shoulder-press.jpg',
+    imageB: '/exercise-plates/dumbbell-one-arm-shoulder-press-b.jpg',
   },
   {
     slug: 'dumbbell-one-arm-triceps-extension',
@@ -2904,6 +3073,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-one-arm-triceps-extension.jpg',
+    imageB: '/exercise-plates/dumbbell-one-arm-triceps-extension-b.jpg',
   },
   {
     slug: 'dumbbell-one-arm-upright-row',
@@ -2921,6 +3091,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-one-arm-upright-row.jpg',
+    imageB: '/exercise-plates/dumbbell-one-arm-upright-row-b.jpg',
   },
   {
     slug: 'dumbbell-prone-incline-curl',
@@ -2938,6 +3109,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-prone-incline-curl.jpg',
+    imageB: '/exercise-plates/dumbbell-prone-incline-curl-b.jpg',
   },
   {
     slug: 'dumbbell-raise',
@@ -2955,6 +3127,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-raise.jpg',
+    imageB: '/exercise-plates/dumbbell-raise-b.jpg',
   },
   {
     slug: 'dumbbell-rear-lunge',
@@ -2972,6 +3145,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-rear-lunge.jpg',
+    imageB: '/exercise-plates/dumbbell-rear-lunge-b.jpg',
   },
   {
     slug: 'dumbbell-scaption',
@@ -2989,6 +3163,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-scaption.jpg',
+    imageB: '/exercise-plates/dumbbell-scaption-b.jpg',
   },
   {
     slug: 'dumbbell-seated-one-leg-calf-raise',
@@ -3006,6 +3181,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-seated-one-leg-calf-raise.jpg',
+    imageB: '/exercise-plates/dumbbell-seated-one-leg-calf-raise-b.jpg',
   },
   {
     slug: 'dumbbell-side-bend',
@@ -3023,6 +3199,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-side-bend.jpg',
+    imageB: '/exercise-plates/dumbbell-side-bend-b.jpg',
   },
   {
     slug: 'dumbbell-squat',
@@ -3040,6 +3217,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-squat.jpg',
+    imageB: '/exercise-plates/dumbbell-squat-b.jpg',
   },
   {
     slug: 'dumbbell-squat-to-a-bench',
@@ -3057,6 +3235,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-squat-to-a-bench.jpg',
+    imageB: '/exercise-plates/dumbbell-squat-to-a-bench-b.jpg',
   },
   {
     slug: 'dumbbell-step-ups',
@@ -3074,6 +3253,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-step-ups.jpg',
+    imageB: '/exercise-plates/dumbbell-step-ups-b.jpg',
   },
   {
     slug: 'dumbbell-tricep-extension-pronated-grip',
@@ -3091,6 +3271,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/dumbbell-tricep-extension-pronated-grip.jpg',
+    imageB: '/exercise-plates/dumbbell-tricep-extension-pronated-grip-b.jpg',
   },
   {
     slug: 'ez-bar-skullcrusher',
@@ -3108,6 +3289,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/ez-bar-skullcrusher.jpg',
+    imageB: '/exercise-plates/ez-bar-skullcrusher-b.jpg',
   },
   {
     slug: 'elbow-to-knee',
@@ -3125,6 +3307,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/elbow-to-knee.jpg',
+    imageB: '/exercise-plates/elbow-to-knee-b.jpg',
   },
   {
     slug: 'elevated-back-lunge',
@@ -3142,6 +3325,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/elevated-back-lunge.jpg',
+    imageB: '/exercise-plates/elevated-back-lunge-b.jpg',
   },
   {
     slug: 'elevated-cable-rows',
@@ -3159,6 +3343,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/elevated-cable-rows.jpg',
+    imageB: '/exercise-plates/elevated-cable-rows-b.jpg',
   },
   {
     slug: 'exercise-ball-crunch',
@@ -3176,6 +3361,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/exercise-ball-crunch.jpg',
+    imageB: '/exercise-plates/exercise-ball-crunch-b.jpg',
   },
   {
     slug: 'exercise-ball-pull-in',
@@ -3193,6 +3379,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/exercise-ball-pull-in.jpg',
+    imageB: '/exercise-plates/exercise-ball-pull-in-b.jpg',
   },
   {
     slug: 'extended-range-one-arm-kettlebell-floor-press',
@@ -3210,6 +3397,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/extended-range-one-arm-kettlebell-floor-press.jpg',
+    imageB: '/exercise-plates/extended-range-one-arm-kettlebell-floor-press-b.jpg',
   },
   {
     slug: 'external-rotation',
@@ -3227,6 +3415,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/external-rotation.jpg',
+    imageB: '/exercise-plates/external-rotation-b.jpg',
   },
   {
     slug: 'external-rotation-with-band',
@@ -3244,6 +3433,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/external-rotation-with-band.jpg',
+    imageB: '/exercise-plates/external-rotation-with-band-b.jpg',
   },
   {
     slug: 'external-rotation-with-cable',
@@ -3261,6 +3451,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/external-rotation-with-cable.jpg',
+    imageB: '/exercise-plates/external-rotation-with-cable-b.jpg',
   },
   {
     slug: 'farmer-s-walk',
@@ -3278,6 +3469,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/farmer-s-walk.jpg',
+    imageB: '/exercise-plates/farmer-s-walk-b.jpg',
   },
   {
     slug: 'finger-curls',
@@ -3295,6 +3487,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/finger-curls.jpg',
+    imageB: '/exercise-plates/finger-curls-b.jpg',
   },
   {
     slug: 'flat-bench-leg-pull-in',
@@ -3312,6 +3505,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/flat-bench-leg-pull-in.jpg',
+    imageB: '/exercise-plates/flat-bench-leg-pull-in-b.jpg',
   },
   {
     slug: 'flexor-incline-dumbbell-curls',
@@ -3329,6 +3523,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/flexor-incline-dumbbell-curls.jpg',
+    imageB: '/exercise-plates/flexor-incline-dumbbell-curls-b.jpg',
   },
   {
     slug: 'floor-glute-ham-raise',
@@ -3346,6 +3541,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/floor-glute-ham-raise.jpg',
+    imageB: '/exercise-plates/floor-glute-ham-raise-b.jpg',
   },
   {
     slug: 'floor-press',
@@ -3363,6 +3559,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/floor-press.jpg',
+    imageB: '/exercise-plates/floor-press-b.jpg',
   },
   {
     slug: 'floor-press-with-chains',
@@ -3380,6 +3577,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/floor-press-with-chains.jpg',
+    imageB: '/exercise-plates/floor-press-with-chains-b.jpg',
   },
   {
     slug: 'flutter-kicks',
@@ -3397,6 +3595,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/flutter-kicks.jpg',
+    imageB: '/exercise-plates/flutter-kicks-b.jpg',
   },
   {
     slug: 'forward-drag-with-press',
@@ -3414,6 +3613,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/forward-drag-with-press.jpg',
+    imageB: '/exercise-plates/forward-drag-with-press-b.jpg',
   },
   {
     slug: 'frankenstein-squat',
@@ -3431,6 +3631,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/frankenstein-squat.jpg',
+    imageB: '/exercise-plates/frankenstein-squat-b.jpg',
   },
   {
     slug: 'freehand-jump-squat',
@@ -3448,6 +3649,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/freehand-jump-squat.jpg',
+    imageB: '/exercise-plates/freehand-jump-squat-b.jpg',
   },
   {
     slug: 'frog-sit-ups',
@@ -3465,6 +3667,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/frog-sit-ups.jpg',
+    imageB: '/exercise-plates/frog-sit-ups-b.jpg',
   },
   {
     slug: 'front-barbell-squat-to-a-bench',
@@ -3482,6 +3685,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/front-barbell-squat-to-a-bench.jpg',
+    imageB: '/exercise-plates/front-barbell-squat-to-a-bench-b.jpg',
   },
   {
     slug: 'front-cable-raise',
@@ -3499,6 +3703,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/front-cable-raise.jpg',
+    imageB: '/exercise-plates/front-cable-raise-b.jpg',
   },
   {
     slug: 'front-dumbbell-raise',
@@ -3516,6 +3721,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/front-dumbbell-raise.jpg',
+    imageB: '/exercise-plates/front-dumbbell-raise-b.jpg',
   },
   {
     slug: 'front-incline-dumbbell-raise',
@@ -3533,6 +3739,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/front-incline-dumbbell-raise.jpg',
+    imageB: '/exercise-plates/front-incline-dumbbell-raise-b.jpg',
   },
   {
     slug: 'front-plate-raise',
@@ -3550,6 +3757,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/front-plate-raise.jpg',
+    imageB: '/exercise-plates/front-plate-raise-b.jpg',
   },
   {
     slug: 'front-raise-and-pullover',
@@ -3567,6 +3775,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/front-raise-and-pullover.jpg',
+    imageB: '/exercise-plates/front-raise-and-pullover-b.jpg',
   },
   {
     slug: 'front-squat-clean-grip',
@@ -3584,6 +3793,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/front-squat-clean-grip.jpg',
+    imageB: '/exercise-plates/front-squat-clean-grip-b.jpg',
   },
   {
     slug: 'front-squats-with-two-kettlebells',
@@ -3601,6 +3811,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/front-squats-with-two-kettlebells.jpg',
+    imageB: '/exercise-plates/front-squats-with-two-kettlebells-b.jpg',
   },
   {
     slug: 'front-two-dumbbell-raise',
@@ -3618,6 +3829,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/front-two-dumbbell-raise.jpg',
+    imageB: '/exercise-plates/front-two-dumbbell-raise-b.jpg',
   },
   {
     slug: 'full-range-of-motion-lat-pulldown',
@@ -3635,6 +3847,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/full-range-of-motion-lat-pulldown.jpg',
+    imageB: '/exercise-plates/full-range-of-motion-lat-pulldown-b.jpg',
   },
   {
     slug: 'gironda-sternum-chins',
@@ -3652,6 +3865,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/gironda-sternum-chins.jpg',
+    imageB: '/exercise-plates/gironda-sternum-chins-b.jpg',
   },
   {
     slug: 'glute-ham-raise',
@@ -3669,6 +3883,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/glute-ham-raise.jpg',
+    imageB: '/exercise-plates/glute-ham-raise-b.jpg',
   },
   {
     slug: 'glute-kickback',
@@ -3686,6 +3901,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/glute-kickback.jpg',
+    imageB: '/exercise-plates/glute-kickback-b.jpg',
   },
   {
     slug: 'good-morning',
@@ -3703,6 +3919,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/good-morning.jpg',
+    imageB: '/exercise-plates/good-morning-b.jpg',
   },
   {
     slug: 'good-morning-off-pins',
@@ -3720,6 +3937,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/good-morning-off-pins.jpg',
+    imageB: '/exercise-plates/good-morning-off-pins-b.jpg',
   },
   {
     slug: 'gorilla-chin-crunch',
@@ -3737,6 +3955,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/gorilla-chin-crunch.jpg',
+    imageB: '/exercise-plates/gorilla-chin-crunch-b.jpg',
   },
   {
     slug: 'hammer-grip-incline-db-bench-press',
@@ -3754,6 +3973,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/hammer-grip-incline-db-bench-press.jpg',
+    imageB: '/exercise-plates/hammer-grip-incline-db-bench-press-b.jpg',
   },
   {
     slug: 'handstand-push-ups',
@@ -3771,6 +3991,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/handstand-push-ups.jpg',
+    imageB: '/exercise-plates/handstand-push-ups-b.jpg',
   },
   {
     slug: 'hang-clean',
@@ -3788,6 +4009,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/hang-clean.jpg',
+    imageB: '/exercise-plates/hang-clean-b.jpg',
   },
   {
     slug: 'hang-clean-below-the-knees',
@@ -3805,6 +4027,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/hang-clean-below-the-knees.jpg',
+    imageB: '/exercise-plates/hang-clean-below-the-knees-b.jpg',
   },
   {
     slug: 'hang-snatch',
@@ -3822,6 +4045,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/hang-snatch.jpg',
+    imageB: '/exercise-plates/hang-snatch-b.jpg',
   },
   {
     slug: 'hang-snatch-below-knees',
@@ -3839,6 +4063,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/hang-snatch-below-knees.jpg',
+    imageB: '/exercise-plates/hang-snatch-below-knees-b.jpg',
   },
   {
     slug: 'hanging-bar-good-morning',
@@ -3856,6 +4081,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/hanging-bar-good-morning.jpg',
+    imageB: '/exercise-plates/hanging-bar-good-morning-b.jpg',
   },
   {
     slug: 'hanging-pike',
@@ -3873,6 +4099,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/hanging-pike.jpg',
+    imageB: '/exercise-plates/hanging-pike-b.jpg',
   },
   {
     slug: 'heaving-snatch-balance',
@@ -3890,6 +4117,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/heaving-snatch-balance.jpg',
+    imageB: '/exercise-plates/heaving-snatch-balance-b.jpg',
   },
   {
     slug: 'high-cable-curls',
@@ -3907,6 +4135,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/high-cable-curls.jpg',
+    imageB: '/exercise-plates/high-cable-curls-b.jpg',
   },
   {
     slug: 'hip-extension-with-bands',
@@ -3924,6 +4153,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/hip-extension-with-bands.jpg',
+    imageB: '/exercise-plates/hip-extension-with-bands-b.jpg',
   },
   {
     slug: 'hip-flexion-with-band',
@@ -3941,6 +4171,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/hip-flexion-with-band.jpg',
+    imageB: '/exercise-plates/hip-flexion-with-band-b.jpg',
   },
   {
     slug: 'hip-lift-with-band',
@@ -3958,6 +4189,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/hip-lift-with-band.jpg',
+    imageB: '/exercise-plates/hip-lift-with-band-b.jpg',
   },
   {
     slug: 'hyperextensions-with-no-hyperextension-bench',
@@ -3975,6 +4207,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/hyperextensions-with-no-hyperextension-bench.jpg',
+    imageB: '/exercise-plates/hyperextensions-with-no-hyperextension-bench-b.jpg',
   },
   {
     slug: 'incline-barbell-triceps-extension',
@@ -3992,6 +4225,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-barbell-triceps-extension.jpg',
+    imageB: '/exercise-plates/incline-barbell-triceps-extension-b.jpg',
   },
   {
     slug: 'incline-bench-pull',
@@ -4009,6 +4243,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-bench-pull.jpg',
+    imageB: '/exercise-plates/incline-bench-pull-b.jpg',
   },
   {
     slug: 'incline-cable-chest-press',
@@ -4026,6 +4261,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-cable-chest-press.jpg',
+    imageB: '/exercise-plates/incline-cable-chest-press-b.jpg',
   },
   {
     slug: 'incline-cable-flye',
@@ -4043,6 +4279,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-cable-flye.jpg',
+    imageB: '/exercise-plates/incline-cable-flye-b.jpg',
   },
   {
     slug: 'incline-dumbbell-bench-with-palms-facing-in',
@@ -4060,6 +4297,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-dumbbell-bench-with-palms-facing-in.jpg',
+    imageB: '/exercise-plates/incline-dumbbell-bench-with-palms-facing-in-b.jpg',
   },
   {
     slug: 'incline-dumbbell-curl',
@@ -4077,6 +4315,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-dumbbell-curl.jpg',
+    imageB: '/exercise-plates/incline-dumbbell-curl-b.jpg',
   },
   {
     slug: 'incline-dumbbell-flyes-with-a-twist',
@@ -4094,6 +4333,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-dumbbell-flyes-with-a-twist.jpg',
+    imageB: '/exercise-plates/incline-dumbbell-flyes-with-a-twist-b.jpg',
   },
   {
     slug: 'incline-hammer-curls',
@@ -4111,6 +4351,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-hammer-curls.jpg',
+    imageB: '/exercise-plates/incline-hammer-curls-b.jpg',
   },
   {
     slug: 'incline-inner-biceps-curl',
@@ -4128,6 +4369,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-inner-biceps-curl.jpg',
+    imageB: '/exercise-plates/incline-inner-biceps-curl-b.jpg',
   },
   {
     slug: 'incline-push-up',
@@ -4145,6 +4387,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-push-up.jpg',
+    imageB: '/exercise-plates/incline-push-up-b.jpg',
   },
   {
     slug: 'incline-push-up-close-grip',
@@ -4162,6 +4405,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-push-up-close-grip.jpg',
+    imageB: '/exercise-plates/incline-push-up-close-grip-b.jpg',
   },
   {
     slug: 'incline-push-up-medium',
@@ -4179,6 +4423,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-push-up-medium.jpg',
+    imageB: '/exercise-plates/incline-push-up-medium-b.jpg',
   },
   {
     slug: 'incline-push-up-reverse-grip',
@@ -4196,6 +4441,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-push-up-reverse-grip.jpg',
+    imageB: '/exercise-plates/incline-push-up-reverse-grip-b.jpg',
   },
   {
     slug: 'incline-push-up-wide',
@@ -4213,6 +4459,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/incline-push-up-wide.jpg',
+    imageB: '/exercise-plates/incline-push-up-wide-b.jpg',
   },
   {
     slug: 'internal-rotation-with-band',
@@ -4230,6 +4477,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/internal-rotation-with-band.jpg',
+    imageB: '/exercise-plates/internal-rotation-with-band-b.jpg',
   },
   {
     slug: 'inverted-row-with-straps',
@@ -4247,6 +4495,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/inverted-row-with-straps.jpg',
+    imageB: '/exercise-plates/inverted-row-with-straps-b.jpg',
   },
   {
     slug: 'iron-cross',
@@ -4264,6 +4513,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/iron-cross.jpg',
+    imageB: '/exercise-plates/iron-cross-b.jpg',
   },
   {
     slug: 'isometric-neck-exercise-front-and-back',
@@ -4281,6 +4531,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/isometric-neck-exercise-front-and-back.jpg',
+    imageB: '/exercise-plates/isometric-neck-exercise-front-and-back-b.jpg',
   },
   {
     slug: 'isometric-neck-exercise-sides',
@@ -4298,6 +4549,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/isometric-neck-exercise-sides.jpg',
+    imageB: '/exercise-plates/isometric-neck-exercise-sides-b.jpg',
   },
   {
     slug: 'isometric-wipers',
@@ -4315,6 +4567,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/isometric-wipers.jpg',
+    imageB: '/exercise-plates/isometric-wipers-b.jpg',
   },
   {
     slug: 'jm-press',
@@ -4332,6 +4585,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/jm-press.jpg',
+    imageB: '/exercise-plates/jm-press-b.jpg',
   },
   {
     slug: 'jackknife-sit-up',
@@ -4349,6 +4603,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/jackknife-sit-up.jpg',
+    imageB: '/exercise-plates/jackknife-sit-up-b.jpg',
   },
   {
     slug: 'janda-sit-up',
@@ -4366,6 +4621,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/janda-sit-up.jpg',
+    imageB: '/exercise-plates/janda-sit-up-b.jpg',
   },
   {
     slug: 'jefferson-squats',
@@ -4383,6 +4639,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/jefferson-squats.jpg',
+    imageB: '/exercise-plates/jefferson-squats-b.jpg',
   },
   {
     slug: 'jerk-balance',
@@ -4400,6 +4657,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/jerk-balance.jpg',
+    imageB: '/exercise-plates/jerk-balance-b.jpg',
   },
   {
     slug: 'jerk-dip-squat',
@@ -4417,6 +4675,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/jerk-dip-squat.jpg',
+    imageB: '/exercise-plates/jerk-dip-squat-b.jpg',
   },
   {
     slug: 'keg-load',
@@ -4434,6 +4693,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/keg-load.jpg',
+    imageB: '/exercise-plates/keg-load-b.jpg',
   },
   {
     slug: 'kettlebell-arnold-press',
@@ -4451,6 +4711,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-arnold-press.jpg',
+    imageB: '/exercise-plates/kettlebell-arnold-press-b.jpg',
   },
   {
     slug: 'kettlebell-dead-clean',
@@ -4468,6 +4729,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-dead-clean.jpg',
+    imageB: '/exercise-plates/kettlebell-dead-clean-b.jpg',
   },
   {
     slug: 'kettlebell-figure-8',
@@ -4485,6 +4747,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-figure-8.jpg',
+    imageB: '/exercise-plates/kettlebell-figure-8-b.jpg',
   },
   {
     slug: 'kettlebell-halo',
@@ -4534,6 +4797,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-hang-clean.jpg',
+    imageB: '/exercise-plates/kettlebell-hang-clean-b.jpg',
   },
   {
     slug: 'kettlebell-one-legged-deadlift',
@@ -4551,6 +4815,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-one-legged-deadlift.jpg',
+    imageB: '/exercise-plates/kettlebell-one-legged-deadlift-b.jpg',
   },
   {
     slug: 'kettlebell-overhead-triceps-extension',
@@ -4584,6 +4849,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-pass-between-the-legs.jpg',
+    imageB: '/exercise-plates/kettlebell-pass-between-the-legs-b.jpg',
   },
   {
     slug: 'kettlebell-pirate-ships',
@@ -4601,6 +4867,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-pirate-ships.jpg',
+    imageB: '/exercise-plates/kettlebell-pirate-ships-b.jpg',
   },
   {
     slug: 'kettlebell-pistol-squat',
@@ -4618,6 +4885,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-pistol-squat.jpg',
+    imageB: '/exercise-plates/kettlebell-pistol-squat-b.jpg',
   },
   {
     slug: 'kettlebell-seated-press',
@@ -4635,6 +4903,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-seated-press.jpg',
+    imageB: '/exercise-plates/kettlebell-seated-press-b.jpg',
   },
   {
     slug: 'kettlebell-seesaw-press',
@@ -4652,6 +4921,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-seesaw-press.jpg',
+    imageB: '/exercise-plates/kettlebell-seesaw-press-b.jpg',
   },
   {
     slug: 'kettlebell-sumo-high-pull',
@@ -4669,6 +4939,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-sumo-high-pull.jpg',
+    imageB: '/exercise-plates/kettlebell-sumo-high-pull-b.jpg',
   },
   {
     slug: 'kettlebell-thruster',
@@ -4686,6 +4957,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-thruster.jpg',
+    imageB: '/exercise-plates/kettlebell-thruster-b.jpg',
   },
   {
     slug: 'kettlebell-turkish-get-up-lunge-style',
@@ -4703,6 +4975,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-turkish-get-up-lunge-style.jpg',
+    imageB: '/exercise-plates/kettlebell-turkish-get-up-lunge-style-b.jpg',
   },
   {
     slug: 'kettlebell-turkish-get-up-squat-style',
@@ -4720,6 +4993,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-turkish-get-up-squat-style.jpg',
+    imageB: '/exercise-plates/kettlebell-turkish-get-up-squat-style-b.jpg',
   },
   {
     slug: 'kettlebell-windmill',
@@ -4737,6 +5011,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kettlebell-windmill.jpg',
+    imageB: '/exercise-plates/kettlebell-windmill-b.jpg',
   },
   {
     slug: 'kipping-muscle-up',
@@ -4754,6 +5029,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kipping-muscle-up.jpg',
+    imageB: '/exercise-plates/kipping-muscle-up-b.jpg',
   },
   {
     slug: 'knee-hip-raise-on-parallel-bars',
@@ -4771,6 +5047,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/knee-hip-raise-on-parallel-bars.jpg',
+    imageB: '/exercise-plates/knee-hip-raise-on-parallel-bars-b.jpg',
   },
   {
     slug: 'kneeling-cable-crunch-with-alternating-oblique-twists',
@@ -4788,6 +5065,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kneeling-cable-crunch-with-alternating-oblique-twists.jpg',
+    imageB: '/exercise-plates/kneeling-cable-crunch-with-alternating-oblique-twists-b.jpg',
   },
   {
     slug: 'kneeling-cable-triceps-extension',
@@ -4805,6 +5083,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kneeling-cable-triceps-extension.jpg',
+    imageB: '/exercise-plates/kneeling-cable-triceps-extension-b.jpg',
   },
   {
     slug: 'kneeling-high-pulley-row',
@@ -4822,6 +5101,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kneeling-high-pulley-row.jpg',
+    imageB: '/exercise-plates/kneeling-high-pulley-row-b.jpg',
   },
   {
     slug: 'kneeling-jump-squat',
@@ -4839,6 +5119,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kneeling-jump-squat.jpg',
+    imageB: '/exercise-plates/kneeling-jump-squat-b.jpg',
   },
   {
     slug: 'kneeling-single-arm-high-pulley-row',
@@ -4856,6 +5137,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kneeling-single-arm-high-pulley-row.jpg',
+    imageB: '/exercise-plates/kneeling-single-arm-high-pulley-row-b.jpg',
   },
   {
     slug: 'kneeling-squat',
@@ -4873,6 +5155,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/kneeling-squat.jpg',
+    imageB: '/exercise-plates/kneeling-squat-b.jpg',
   },
   {
     slug: 'landmine-180-s',
@@ -4890,6 +5173,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/landmine-180-s.jpg',
+    imageB: '/exercise-plates/landmine-180-s-b.jpg',
   },
   {
     slug: 'landmine-linear-jammer',
@@ -4907,6 +5191,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/landmine-linear-jammer.jpg',
+    imageB: '/exercise-plates/landmine-linear-jammer-b.jpg',
   },
   {
     slug: 'lateral-raise-with-bands',
@@ -4924,6 +5209,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lateral-raise-with-bands.jpg',
+    imageB: '/exercise-plates/lateral-raise-with-bands-b.jpg',
   },
   {
     slug: 'leg-over-floor-press',
@@ -4941,6 +5227,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/leg-over-floor-press.jpg',
+    imageB: '/exercise-plates/leg-over-floor-press-b.jpg',
   },
   {
     slug: 'leg-lift',
@@ -4958,6 +5245,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/leg-lift.jpg',
+    imageB: '/exercise-plates/leg-lift-b.jpg',
   },
   {
     slug: 'leg-pull-in',
@@ -4975,6 +5263,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/leg-pull-in.jpg',
+    imageB: '/exercise-plates/leg-pull-in-b.jpg',
   },
   {
     slug: 'leverage-deadlift',
@@ -4992,6 +5281,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/leverage-deadlift.jpg',
+    imageB: '/exercise-plates/leverage-deadlift-b.jpg',
   },
   {
     slug: 'leverage-decline-chest-press',
@@ -5009,6 +5299,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/leverage-decline-chest-press.jpg',
+    imageB: '/exercise-plates/leverage-decline-chest-press-b.jpg',
   },
   {
     slug: 'leverage-high-row',
@@ -5026,6 +5317,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/leverage-high-row.jpg',
+    imageB: '/exercise-plates/leverage-high-row-b.jpg',
   },
   {
     slug: 'leverage-shoulder-press',
@@ -5043,6 +5335,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/leverage-shoulder-press.jpg',
+    imageB: '/exercise-plates/leverage-shoulder-press-b.jpg',
   },
   {
     slug: 'log-lift',
@@ -5060,6 +5353,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/log-lift.jpg',
+    imageB: '/exercise-plates/log-lift-b.jpg',
   },
   {
     slug: 'london-bridges',
@@ -5077,6 +5371,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/london-bridges.jpg',
+    imageB: '/exercise-plates/london-bridges-b.jpg',
   },
   {
     slug: 'low-cable-crossover',
@@ -5094,6 +5389,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/low-cable-crossover.jpg',
+    imageB: '/exercise-plates/low-cable-crossover-b.jpg',
   },
   {
     slug: 'low-cable-triceps-extension',
@@ -5111,6 +5407,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/low-cable-triceps-extension.jpg',
+    imageB: '/exercise-plates/low-cable-triceps-extension-b.jpg',
   },
   {
     slug: 'low-pulley-row-to-neck',
@@ -5128,6 +5425,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/low-pulley-row-to-neck.jpg',
+    imageB: '/exercise-plates/low-pulley-row-to-neck-b.jpg',
   },
   {
     slug: 'lunge-pass-through',
@@ -5145,6 +5443,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lunge-pass-through.jpg',
+    imageB: '/exercise-plates/lunge-pass-through-b.jpg',
   },
   {
     slug: 'lunge-sprint',
@@ -5162,6 +5461,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lunge-sprint.jpg',
+    imageB: '/exercise-plates/lunge-sprint-b.jpg',
   },
   {
     slug: 'lying-cable-curl',
@@ -5179,6 +5479,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-cable-curl.jpg',
+    imageB: '/exercise-plates/lying-cable-curl-b.jpg',
   },
   {
     slug: 'lying-cambered-barbell-row',
@@ -5196,6 +5497,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-cambered-barbell-row.jpg',
+    imageB: '/exercise-plates/lying-cambered-barbell-row-b.jpg',
   },
   {
     slug: 'lying-close-grip-bar-curl-on-high-pulley',
@@ -5213,6 +5515,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-close-grip-bar-curl-on-high-pulley.jpg',
+    imageB: '/exercise-plates/lying-close-grip-bar-curl-on-high-pulley-b.jpg',
   },
   {
     slug: 'lying-close-grip-barbell-triceps-extension-behind-the-head',
@@ -5230,6 +5533,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-close-grip-barbell-triceps-extension-behind-the-head.jpg',
+    imageB: '/exercise-plates/lying-close-grip-barbell-triceps-extension-behind-the-head-b.jpg',
   },
   {
     slug: 'lying-close-grip-barbell-triceps-press-to-chin',
@@ -5247,6 +5551,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-close-grip-barbell-triceps-press-to-chin.jpg',
+    imageB: '/exercise-plates/lying-close-grip-barbell-triceps-press-to-chin-b.jpg',
   },
   {
     slug: 'lying-dumbbell-tricep-extension',
@@ -5264,6 +5569,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-dumbbell-tricep-extension.jpg',
+    imageB: '/exercise-plates/lying-dumbbell-tricep-extension-b.jpg',
   },
   {
     slug: 'lying-face-down-plate-neck-resistance',
@@ -5281,6 +5587,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-face-down-plate-neck-resistance.jpg',
+    imageB: '/exercise-plates/lying-face-down-plate-neck-resistance-b.jpg',
   },
   {
     slug: 'lying-face-up-plate-neck-resistance',
@@ -5298,6 +5605,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-face-up-plate-neck-resistance.jpg',
+    imageB: '/exercise-plates/lying-face-up-plate-neck-resistance-b.jpg',
   },
   {
     slug: 'lying-high-bench-barbell-curl',
@@ -5315,6 +5623,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-high-bench-barbell-curl.jpg',
+    imageB: '/exercise-plates/lying-high-bench-barbell-curl-b.jpg',
   },
   {
     slug: 'lying-machine-squat',
@@ -5332,6 +5641,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-machine-squat.jpg',
+    imageB: '/exercise-plates/lying-machine-squat-b.jpg',
   },
   {
     slug: 'lying-one-arm-lateral-raise',
@@ -5349,6 +5659,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-one-arm-lateral-raise.jpg',
+    imageB: '/exercise-plates/lying-one-arm-lateral-raise-b.jpg',
   },
   {
     slug: 'lying-rear-delt-raise',
@@ -5366,6 +5677,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-rear-delt-raise.jpg',
+    imageB: '/exercise-plates/lying-rear-delt-raise-b.jpg',
   },
   {
     slug: 'lying-supine-dumbbell-curl',
@@ -5383,6 +5695,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-supine-dumbbell-curl.jpg',
+    imageB: '/exercise-plates/lying-supine-dumbbell-curl-b.jpg',
   },
   {
     slug: 'lying-t-bar-row',
@@ -5400,6 +5713,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/lying-t-bar-row.jpg',
+    imageB: '/exercise-plates/lying-t-bar-row-b.jpg',
   },
   {
     slug: 'machine-bench-press',
@@ -5417,6 +5731,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/machine-bench-press.jpg',
+    imageB: '/exercise-plates/machine-bench-press-b.jpg',
   },
   {
     slug: 'machine-bicep-curl',
@@ -5434,6 +5749,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/machine-bicep-curl.jpg',
+    imageB: '/exercise-plates/machine-bicep-curl-b.jpg',
   },
   {
     slug: 'machine-shoulder-military-press',
@@ -5451,6 +5767,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/machine-shoulder-military-press.jpg',
+    imageB: '/exercise-plates/machine-shoulder-military-press-b.jpg',
   },
   {
     slug: 'middle-back-shrug',
@@ -5468,6 +5785,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/middle-back-shrug.jpg',
+    imageB: '/exercise-plates/middle-back-shrug-b.jpg',
   },
   {
     slug: 'mixed-grip-chin',
@@ -5485,6 +5803,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/mixed-grip-chin.jpg',
+    imageB: '/exercise-plates/mixed-grip-chin-b.jpg',
   },
   {
     slug: 'monster-walk',
@@ -5502,6 +5821,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/monster-walk.jpg',
+    imageB: '/exercise-plates/monster-walk-b.jpg',
   },
   {
     slug: 'muscle-snatch',
@@ -5519,6 +5839,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/muscle-snatch.jpg',
+    imageB: '/exercise-plates/muscle-snatch-b.jpg',
   },
   {
     slug: 'muscle-up',
@@ -5536,6 +5857,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/muscle-up.jpg',
+    imageB: '/exercise-plates/muscle-up-b.jpg',
   },
   {
     slug: 'narrow-stance-hack-squats',
@@ -5553,6 +5875,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/narrow-stance-hack-squats.jpg',
+    imageB: '/exercise-plates/narrow-stance-hack-squats-b.jpg',
   },
   {
     slug: 'narrow-stance-leg-press',
@@ -5570,6 +5893,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/narrow-stance-leg-press.jpg',
+    imageB: '/exercise-plates/narrow-stance-leg-press-b.jpg',
   },
   {
     slug: 'narrow-stance-squats',
@@ -5587,6 +5911,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/narrow-stance-squats.jpg',
+    imageB: '/exercise-plates/narrow-stance-squats-b.jpg',
   },
   {
     slug: 'natural-glute-ham-raise',
@@ -5604,6 +5929,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/natural-glute-ham-raise.jpg',
+    imageB: '/exercise-plates/natural-glute-ham-raise-b.jpg',
   },
   {
     slug: 'neck-press',
@@ -5621,6 +5947,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/neck-press.jpg',
+    imageB: '/exercise-plates/neck-press-b.jpg',
   },
   {
     slug: 'oblique-crunches',
@@ -5638,6 +5965,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/oblique-crunches.jpg',
+    imageB: '/exercise-plates/oblique-crunches-b.jpg',
   },
   {
     slug: 'oblique-crunches-on-the-floor',
@@ -5655,6 +5983,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/oblique-crunches-on-the-floor.jpg',
+    imageB: '/exercise-plates/oblique-crunches-on-the-floor-b.jpg',
   },
   {
     slug: 'olympic-squat',
@@ -5672,6 +6001,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/olympic-squat.jpg',
+    imageB: '/exercise-plates/olympic-squat-b.jpg',
   },
   {
     slug: 'one-arm-flat-bench-dumbbell-flye',
@@ -5689,6 +6019,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-flat-bench-dumbbell-flye.jpg',
+    imageB: '/exercise-plates/one-arm-flat-bench-dumbbell-flye-b.jpg',
   },
   {
     slug: 'one-arm-high-pulley-cable-side-bends',
@@ -5706,6 +6037,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-high-pulley-cable-side-bends.jpg',
+    imageB: '/exercise-plates/one-arm-high-pulley-cable-side-bends-b.jpg',
   },
   {
     slug: 'one-arm-incline-lateral-raise',
@@ -5723,6 +6055,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-incline-lateral-raise.jpg',
+    imageB: '/exercise-plates/one-arm-incline-lateral-raise-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-clean',
@@ -5740,6 +6073,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-clean.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-clean-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-clean-and-jerk',
@@ -5757,6 +6091,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-clean-and-jerk.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-clean-and-jerk-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-floor-press',
@@ -5774,6 +6109,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-floor-press.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-floor-press-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-jerk',
@@ -5791,6 +6127,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-jerk.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-jerk-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-military-press-to-the-side',
@@ -5808,6 +6145,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-military-press-to-the-side.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-military-press-to-the-side-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-para-press',
@@ -5825,6 +6163,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-para-press.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-para-press-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-push-press',
@@ -5842,6 +6181,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-push-press.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-push-press-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-row',
@@ -5859,6 +6199,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-row.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-row-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-snatch',
@@ -5876,6 +6217,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-snatch.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-snatch-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-split-jerk',
@@ -5893,6 +6235,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-split-jerk.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-split-jerk-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-split-snatch',
@@ -5910,6 +6253,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-split-snatch.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-split-snatch-b.jpg',
   },
   {
     slug: 'one-arm-kettlebell-swings',
@@ -5927,6 +6271,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-kettlebell-swings.jpg',
+    imageB: '/exercise-plates/one-arm-kettlebell-swings-b.jpg',
   },
   {
     slug: 'one-arm-long-bar-row',
@@ -5944,6 +6289,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-long-bar-row.jpg',
+    imageB: '/exercise-plates/one-arm-long-bar-row-b.jpg',
   },
   {
     slug: 'one-arm-medicine-ball-slam',
@@ -5961,6 +6307,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-medicine-ball-slam.jpg',
+    imageB: '/exercise-plates/one-arm-medicine-ball-slam-b.jpg',
   },
   {
     slug: 'one-arm-open-palm-kettlebell-clean',
@@ -5978,6 +6325,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-open-palm-kettlebell-clean.jpg',
+    imageB: '/exercise-plates/one-arm-open-palm-kettlebell-clean-b.jpg',
   },
   {
     slug: 'one-arm-overhead-kettlebell-squats',
@@ -5995,6 +6343,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-overhead-kettlebell-squats.jpg',
+    imageB: '/exercise-plates/one-arm-overhead-kettlebell-squats-b.jpg',
   },
   {
     slug: 'one-arm-side-deadlift',
@@ -6012,6 +6361,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-side-deadlift.jpg',
+    imageB: '/exercise-plates/one-arm-side-deadlift-b.jpg',
   },
   {
     slug: 'one-arm-side-laterals',
@@ -6029,6 +6379,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-side-laterals.jpg',
+    imageB: '/exercise-plates/one-arm-side-laterals-b.jpg',
   },
   {
     slug: 'one-legged-cable-kickback',
@@ -6046,6 +6397,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-legged-cable-kickback.jpg',
+    imageB: '/exercise-plates/one-legged-cable-kickback-b.jpg',
   },
   {
     slug: 'one-arm-chin-up',
@@ -6063,6 +6415,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-chin-up.jpg',
+    imageB: '/exercise-plates/one-arm-chin-up-b.jpg',
   },
   {
     slug: 'one-arm-dumbbell-bench-press',
@@ -6080,6 +6433,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-dumbbell-bench-press.jpg',
+    imageB: '/exercise-plates/one-arm-dumbbell-bench-press-b.jpg',
   },
   {
     slug: 'one-arm-dumbbell-preacher-curl',
@@ -6097,6 +6451,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-dumbbell-preacher-curl.jpg',
+    imageB: '/exercise-plates/one-arm-dumbbell-preacher-curl-b.jpg',
   },
   {
     slug: 'one-arm-floor-press',
@@ -6114,6 +6469,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-floor-press.jpg',
+    imageB: '/exercise-plates/one-arm-floor-press-b.jpg',
   },
   {
     slug: 'one-arm-lat-pulldown',
@@ -6131,6 +6487,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-lat-pulldown.jpg',
+    imageB: '/exercise-plates/one-arm-lat-pulldown-b.jpg',
   },
   {
     slug: 'one-arm-pronated-dumbbell-triceps-extension',
@@ -6148,6 +6505,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-pronated-dumbbell-triceps-extension.jpg',
+    imageB: '/exercise-plates/one-arm-pronated-dumbbell-triceps-extension-b.jpg',
   },
   {
     slug: 'one-arm-supinated-dumbbell-triceps-extension',
@@ -6165,6 +6523,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/one-arm-supinated-dumbbell-triceps-extension.jpg',
+    imageB: '/exercise-plates/one-arm-supinated-dumbbell-triceps-extension-b.jpg',
   },
   {
     slug: 'open-palm-kettlebell-clean',
@@ -6182,6 +6541,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/open-palm-kettlebell-clean.jpg',
+    imageB: '/exercise-plates/open-palm-kettlebell-clean-b.jpg',
   },
   {
     slug: 'otis-up',
@@ -6199,6 +6559,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/otis-up.jpg',
+    imageB: '/exercise-plates/otis-up-b.jpg',
   },
   {
     slug: 'overhead-cable-curl',
@@ -6216,6 +6577,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/overhead-cable-curl.jpg',
+    imageB: '/exercise-plates/overhead-cable-curl-b.jpg',
   },
   {
     slug: 'overhead-squat',
@@ -6233,6 +6595,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/overhead-squat.jpg',
+    imageB: '/exercise-plates/overhead-squat-b.jpg',
   },
   {
     slug: 'pallof-press',
@@ -6250,6 +6613,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/pallof-press.jpg',
+    imageB: '/exercise-plates/pallof-press-b.jpg',
   },
   {
     slug: 'pallof-press-with-rotation',
@@ -6267,6 +6631,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/pallof-press-with-rotation.jpg',
+    imageB: '/exercise-plates/pallof-press-with-rotation-b.jpg',
   },
   {
     slug: 'palms-down-dumbbell-wrist-curl-over-a-bench',
@@ -6284,6 +6649,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/palms-down-dumbbell-wrist-curl-over-a-bench.jpg',
+    imageB: '/exercise-plates/palms-down-dumbbell-wrist-curl-over-a-bench-b.jpg',
   },
   {
     slug: 'palms-down-wrist-curl-over-a-bench',
@@ -6301,6 +6667,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/palms-down-wrist-curl-over-a-bench.jpg',
+    imageB: '/exercise-plates/palms-down-wrist-curl-over-a-bench-b.jpg',
   },
   {
     slug: 'palms-up-barbell-wrist-curl-over-a-bench',
@@ -6318,6 +6685,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/palms-up-barbell-wrist-curl-over-a-bench.jpg',
+    imageB: '/exercise-plates/palms-up-barbell-wrist-curl-over-a-bench-b.jpg',
   },
   {
     slug: 'palms-up-dumbbell-wrist-curl-over-a-bench',
@@ -6335,6 +6703,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/palms-up-dumbbell-wrist-curl-over-a-bench.jpg',
+    imageB: '/exercise-plates/palms-up-dumbbell-wrist-curl-over-a-bench-b.jpg',
   },
   {
     slug: 'parallel-bar-dip',
@@ -6352,6 +6721,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/parallel-bar-dip.jpg',
+    imageB: '/exercise-plates/parallel-bar-dip-b.jpg',
   },
   {
     slug: 'physioball-hip-bridge',
@@ -6369,6 +6739,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/physioball-hip-bridge.jpg',
+    imageB: '/exercise-plates/physioball-hip-bridge-b.jpg',
   },
   {
     slug: 'pin-presses',
@@ -6386,6 +6757,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/pin-presses.jpg',
+    imageB: '/exercise-plates/pin-presses-b.jpg',
   },
   {
     slug: 'plank',
@@ -6403,6 +6775,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/plank.jpg',
+    imageB: '/exercise-plates/plank-b.jpg',
   },
   {
     slug: 'plate-pinch',
@@ -6420,6 +6793,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/plate-pinch.jpg',
+    imageB: '/exercise-plates/plate-pinch-b.jpg',
   },
   {
     slug: 'plate-twist',
@@ -6437,6 +6811,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/plate-twist.jpg',
+    imageB: '/exercise-plates/plate-twist-b.jpg',
   },
   {
     slug: 'platform-hamstring-slides',
@@ -6454,6 +6829,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/platform-hamstring-slides.jpg',
+    imageB: '/exercise-plates/platform-hamstring-slides-b.jpg',
   },
   {
     slug: 'plie-dumbbell-squat',
@@ -6471,6 +6847,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/plie-dumbbell-squat.jpg',
+    imageB: '/exercise-plates/plie-dumbbell-squat-b.jpg',
   },
   {
     slug: 'plyo-kettlebell-pushups',
@@ -6488,6 +6865,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/plyo-kettlebell-pushups.jpg',
+    imageB: '/exercise-plates/plyo-kettlebell-pushups-b.jpg',
   },
   {
     slug: 'power-clean',
@@ -6505,6 +6883,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/power-clean.jpg',
+    imageB: '/exercise-plates/power-clean-b.jpg',
   },
   {
     slug: 'power-clean-from-blocks',
@@ -6522,6 +6901,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/power-clean-from-blocks.jpg',
+    imageB: '/exercise-plates/power-clean-from-blocks-b.jpg',
   },
   {
     slug: 'power-jerk',
@@ -6539,6 +6919,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/power-jerk.jpg',
+    imageB: '/exercise-plates/power-jerk-b.jpg',
   },
   {
     slug: 'power-partials',
@@ -6556,6 +6937,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/power-partials.jpg',
+    imageB: '/exercise-plates/power-partials-b.jpg',
   },
   {
     slug: 'power-snatch',
@@ -6573,6 +6955,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/power-snatch.jpg',
+    imageB: '/exercise-plates/power-snatch-b.jpg',
   },
   {
     slug: 'power-snatch-from-blocks',
@@ -6590,6 +6973,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/power-snatch-from-blocks.jpg',
+    imageB: '/exercise-plates/power-snatch-from-blocks-b.jpg',
   },
   {
     slug: 'power-stairs',
@@ -6607,6 +6991,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/power-stairs.jpg',
+    imageB: '/exercise-plates/power-stairs-b.jpg',
   },
   {
     slug: 'preacher-curl',
@@ -6624,6 +7009,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/preacher-curl.jpg',
+    imageB: '/exercise-plates/preacher-curl-b.jpg',
   },
   {
     slug: 'preacher-hammer-dumbbell-curl',
@@ -6641,6 +7027,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/preacher-hammer-dumbbell-curl.jpg',
+    imageB: '/exercise-plates/preacher-hammer-dumbbell-curl-b.jpg',
   },
   {
     slug: 'press-sit-up',
@@ -6658,6 +7045,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/press-sit-up.jpg',
+    imageB: '/exercise-plates/press-sit-up-b.jpg',
   },
   {
     slug: 'prone-manual-hamstring',
@@ -6675,6 +7063,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/prone-manual-hamstring.jpg',
+    imageB: '/exercise-plates/prone-manual-hamstring-b.jpg',
   },
   {
     slug: 'pull-through',
@@ -6692,6 +7081,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/pull-through.jpg',
+    imageB: '/exercise-plates/pull-through-b.jpg',
   },
   {
     slug: 'push-up-wide',
@@ -6709,6 +7099,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/push-up-wide.jpg',
+    imageB: '/exercise-plates/push-up-wide-b.jpg',
   },
   {
     slug: 'push-ups-close-triceps-position',
@@ -6726,6 +7117,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/push-ups-close-triceps-position.jpg',
+    imageB: '/exercise-plates/push-ups-close-triceps-position-b.jpg',
   },
   {
     slug: 'push-ups-with-feet-elevated',
@@ -6743,6 +7135,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/push-ups-with-feet-elevated.jpg',
+    imageB: '/exercise-plates/push-ups-with-feet-elevated-b.jpg',
   },
   {
     slug: 'push-ups-with-feet-on-an-exercise-ball',
@@ -6760,6 +7153,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/push-ups-with-feet-on-an-exercise-ball.jpg',
+    imageB: '/exercise-plates/push-ups-with-feet-on-an-exercise-ball-b.jpg',
   },
   {
     slug: 'push-press',
@@ -6777,6 +7171,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/push-press.jpg',
+    imageB: '/exercise-plates/push-press-b.jpg',
   },
   {
     slug: 'push-press-behind-the-neck',
@@ -6794,6 +7189,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/push-press-behind-the-neck.jpg',
+    imageB: '/exercise-plates/push-press-behind-the-neck-b.jpg',
   },
   {
     slug: 'push-up-to-side-plank',
@@ -6811,6 +7207,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/push-up-to-side-plank.jpg',
+    imageB: '/exercise-plates/push-up-to-side-plank-b.jpg',
   },
   {
     slug: 'pushups',
@@ -6828,6 +7225,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/pushups.jpg',
+    imageB: '/exercise-plates/pushups-b.jpg',
   },
   {
     slug: 'pushups-close-and-wide-hand-positions',
@@ -6845,6 +7243,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/pushups-close-and-wide-hand-positions.jpg',
+    imageB: '/exercise-plates/pushups-close-and-wide-hand-positions-b.jpg',
   },
   {
     slug: 'rack-delivery',
@@ -6862,6 +7261,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/rack-delivery.jpg',
+    imageB: '/exercise-plates/rack-delivery-b.jpg',
   },
   {
     slug: 'rack-pull-with-bands',
@@ -6879,6 +7279,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/rack-pull-with-bands.jpg',
+    imageB: '/exercise-plates/rack-pull-with-bands-b.jpg',
   },
   {
     slug: 'rack-pulls',
@@ -6896,6 +7297,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/rack-pulls.jpg',
+    imageB: '/exercise-plates/rack-pulls-b.jpg',
   },
   {
     slug: 'reverse-band-bench-press',
@@ -6913,6 +7315,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-band-bench-press.jpg',
+    imageB: '/exercise-plates/reverse-band-bench-press-b.jpg',
   },
   {
     slug: 'reverse-band-box-squat',
@@ -6930,6 +7333,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-band-box-squat.jpg',
+    imageB: '/exercise-plates/reverse-band-box-squat-b.jpg',
   },
   {
     slug: 'reverse-band-deadlift',
@@ -6947,6 +7351,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-band-deadlift.jpg',
+    imageB: '/exercise-plates/reverse-band-deadlift-b.jpg',
   },
   {
     slug: 'reverse-band-power-squat',
@@ -6964,6 +7369,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-band-power-squat.jpg',
+    imageB: '/exercise-plates/reverse-band-power-squat-b.jpg',
   },
   {
     slug: 'reverse-band-sumo-deadlift',
@@ -6981,6 +7387,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-band-sumo-deadlift.jpg',
+    imageB: '/exercise-plates/reverse-band-sumo-deadlift-b.jpg',
   },
   {
     slug: 'reverse-barbell-curl',
@@ -6998,6 +7405,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-barbell-curl.jpg',
+    imageB: '/exercise-plates/reverse-barbell-curl-b.jpg',
   },
   {
     slug: 'reverse-barbell-preacher-curls',
@@ -7015,6 +7423,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-barbell-preacher-curls.jpg',
+    imageB: '/exercise-plates/reverse-barbell-preacher-curls-b.jpg',
   },
   {
     slug: 'reverse-cable-curl',
@@ -7032,6 +7441,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-cable-curl.jpg',
+    imageB: '/exercise-plates/reverse-cable-curl-b.jpg',
   },
   {
     slug: 'reverse-crunch',
@@ -7049,6 +7459,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-crunch.jpg',
+    imageB: '/exercise-plates/reverse-crunch-b.jpg',
   },
   {
     slug: 'reverse-flyes-with-external-rotation',
@@ -7066,6 +7477,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-flyes-with-external-rotation.jpg',
+    imageB: '/exercise-plates/reverse-flyes-with-external-rotation-b.jpg',
   },
   {
     slug: 'reverse-grip-bent-over-rows',
@@ -7083,6 +7495,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-grip-bent-over-rows.jpg',
+    imageB: '/exercise-plates/reverse-grip-bent-over-rows-b.jpg',
   },
   {
     slug: 'reverse-grip-triceps-pushdown',
@@ -7100,6 +7513,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-grip-triceps-pushdown.jpg',
+    imageB: '/exercise-plates/reverse-grip-triceps-pushdown-b.jpg',
   },
   {
     slug: 'reverse-hyperextension',
@@ -7117,6 +7531,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-hyperextension.jpg',
+    imageB: '/exercise-plates/reverse-hyperextension-b.jpg',
   },
   {
     slug: 'reverse-machine-flyes',
@@ -7134,6 +7549,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-machine-flyes.jpg',
+    imageB: '/exercise-plates/reverse-machine-flyes-b.jpg',
   },
   {
     slug: 'reverse-plate-curls',
@@ -7151,6 +7567,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-plate-curls.jpg',
+    imageB: '/exercise-plates/reverse-plate-curls-b.jpg',
   },
   {
     slug: 'reverse-triceps-bench-press',
@@ -7168,6 +7585,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/reverse-triceps-bench-press.jpg',
+    imageB: '/exercise-plates/reverse-triceps-bench-press-b.jpg',
   },
   {
     slug: 'rickshaw-carry',
@@ -7185,6 +7603,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/rickshaw-carry.jpg',
+    imageB: '/exercise-plates/rickshaw-carry-b.jpg',
   },
   {
     slug: 'rickshaw-deadlift',
@@ -7202,6 +7621,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/rickshaw-deadlift.jpg',
+    imageB: '/exercise-plates/rickshaw-deadlift-b.jpg',
   },
   {
     slug: 'ring-dips',
@@ -7219,6 +7639,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/ring-dips.jpg',
+    imageB: '/exercise-plates/ring-dips-b.jpg',
   },
   {
     slug: 'rocking-standing-calf-raise',
@@ -7236,6 +7657,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/rocking-standing-calf-raise.jpg',
+    imageB: '/exercise-plates/rocking-standing-calf-raise-b.jpg',
   },
   {
     slug: 'rocky-pull-ups-pulldowns',
@@ -7253,6 +7675,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/rocky-pull-ups-pulldowns.jpg',
+    imageB: '/exercise-plates/rocky-pull-ups-pulldowns-b.jpg',
   },
   {
     slug: 'romanian-deadlift-from-deficit',
@@ -7270,6 +7693,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/romanian-deadlift-from-deficit.jpg',
+    imageB: '/exercise-plates/romanian-deadlift-from-deficit-b.jpg',
   },
   {
     slug: 'rope-climb',
@@ -7287,6 +7711,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/rope-climb.jpg',
+    imageB: '/exercise-plates/rope-climb-b.jpg',
   },
   {
     slug: 'rope-crunch',
@@ -7304,6 +7729,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/rope-crunch.jpg',
+    imageB: '/exercise-plates/rope-crunch-b.jpg',
   },
   {
     slug: 'rope-straight-arm-pulldown',
@@ -7321,6 +7747,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/rope-straight-arm-pulldown.jpg',
+    imageB: '/exercise-plates/rope-straight-arm-pulldown-b.jpg',
   },
   {
     slug: 'russian-twist',
@@ -7338,6 +7765,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/russian-twist.jpg',
+    imageB: '/exercise-plates/russian-twist-b.jpg',
   },
   {
     slug: 'sandbag-load',
@@ -7355,6 +7783,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/sandbag-load.jpg',
+    imageB: '/exercise-plates/sandbag-load-b.jpg',
   },
   {
     slug: 'scapular-pull-up',
@@ -7372,6 +7801,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/scapular-pull-up.jpg',
+    imageB: '/exercise-plates/scapular-pull-up-b.jpg',
   },
   {
     slug: 'seated-band-hamstring-curl',
@@ -7389,6 +7819,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-band-hamstring-curl.jpg',
+    imageB: '/exercise-plates/seated-band-hamstring-curl-b.jpg',
   },
   {
     slug: 'seated-barbell-military-press',
@@ -7406,6 +7837,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-barbell-military-press.jpg',
+    imageB: '/exercise-plates/seated-barbell-military-press-b.jpg',
   },
   {
     slug: 'seated-barbell-twist',
@@ -7423,6 +7855,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-barbell-twist.jpg',
+    imageB: '/exercise-plates/seated-barbell-twist-b.jpg',
   },
   {
     slug: 'seated-bent-over-one-arm-dumbbell-triceps-extension',
@@ -7440,6 +7873,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-bent-over-one-arm-dumbbell-triceps-extension.jpg',
+    imageB: '/exercise-plates/seated-bent-over-one-arm-dumbbell-triceps-extension-b.jpg',
   },
   {
     slug: 'seated-bent-over-rear-delt-raise',
@@ -7457,6 +7891,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-bent-over-rear-delt-raise.jpg',
+    imageB: '/exercise-plates/seated-bent-over-rear-delt-raise-b.jpg',
   },
   {
     slug: 'seated-bent-over-two-arm-dumbbell-triceps-extension',
@@ -7474,6 +7909,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-bent-over-two-arm-dumbbell-triceps-extension.jpg',
+    imageB: '/exercise-plates/seated-bent-over-two-arm-dumbbell-triceps-extension-b.jpg',
   },
   {
     slug: 'seated-cable-shoulder-press',
@@ -7491,6 +7927,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-cable-shoulder-press.jpg',
+    imageB: '/exercise-plates/seated-cable-shoulder-press-b.jpg',
   },
   {
     slug: 'seated-close-grip-concentration-barbell-curl',
@@ -7508,6 +7945,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-close-grip-concentration-barbell-curl.jpg',
+    imageB: '/exercise-plates/seated-close-grip-concentration-barbell-curl-b.jpg',
   },
   {
     slug: 'seated-dumbbell-curl',
@@ -7525,6 +7963,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-dumbbell-curl.jpg',
+    imageB: '/exercise-plates/seated-dumbbell-curl-b.jpg',
   },
   {
     slug: 'seated-dumbbell-inner-biceps-curl',
@@ -7542,6 +7981,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-dumbbell-inner-biceps-curl.jpg',
+    imageB: '/exercise-plates/seated-dumbbell-inner-biceps-curl-b.jpg',
   },
   {
     slug: 'seated-dumbbell-palms-down-wrist-curl',
@@ -7559,6 +7999,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-dumbbell-palms-down-wrist-curl.jpg',
+    imageB: '/exercise-plates/seated-dumbbell-palms-down-wrist-curl-b.jpg',
   },
   {
     slug: 'seated-dumbbell-palms-up-wrist-curl',
@@ -7576,6 +8017,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-dumbbell-palms-up-wrist-curl.jpg',
+    imageB: '/exercise-plates/seated-dumbbell-palms-up-wrist-curl-b.jpg',
   },
   {
     slug: 'seated-dumbbell-press',
@@ -7593,6 +8035,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-dumbbell-press.jpg',
+    imageB: '/exercise-plates/seated-dumbbell-press-b.jpg',
   },
   {
     slug: 'seated-flat-bench-leg-pull-in',
@@ -7610,6 +8053,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-flat-bench-leg-pull-in.jpg',
+    imageB: '/exercise-plates/seated-flat-bench-leg-pull-in-b.jpg',
   },
   {
     slug: 'seated-good-mornings',
@@ -7627,6 +8071,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-good-mornings.jpg',
+    imageB: '/exercise-plates/seated-good-mornings-b.jpg',
   },
   {
     slug: 'seated-head-harness-neck-resistance',
@@ -7644,6 +8089,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-head-harness-neck-resistance.jpg',
+    imageB: '/exercise-plates/seated-head-harness-neck-resistance-b.jpg',
   },
   {
     slug: 'seated-leg-tucks',
@@ -7661,6 +8107,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-leg-tucks.jpg',
+    imageB: '/exercise-plates/seated-leg-tucks-b.jpg',
   },
   {
     slug: 'seated-one-arm-dumbbell-palms-down-wrist-curl',
@@ -7678,6 +8125,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-one-arm-dumbbell-palms-down-wrist-curl.jpg',
+    imageB: '/exercise-plates/seated-one-arm-dumbbell-palms-down-wrist-curl-b.jpg',
   },
   {
     slug: 'seated-one-arm-dumbbell-palms-up-wrist-curl',
@@ -7695,6 +8143,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-one-arm-dumbbell-palms-up-wrist-curl.jpg',
+    imageB: '/exercise-plates/seated-one-arm-dumbbell-palms-up-wrist-curl-b.jpg',
   },
   {
     slug: 'seated-one-arm-cable-pulley-rows',
@@ -7712,6 +8161,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-one-arm-cable-pulley-rows.jpg',
+    imageB: '/exercise-plates/seated-one-arm-cable-pulley-rows-b.jpg',
   },
   {
     slug: 'seated-palm-up-barbell-wrist-curl',
@@ -7729,6 +8179,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-palm-up-barbell-wrist-curl.jpg',
+    imageB: '/exercise-plates/seated-palm-up-barbell-wrist-curl-b.jpg',
   },
   {
     slug: 'seated-palms-down-barbell-wrist-curl',
@@ -7746,6 +8197,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-palms-down-barbell-wrist-curl.jpg',
+    imageB: '/exercise-plates/seated-palms-down-barbell-wrist-curl-b.jpg',
   },
   {
     slug: 'seated-side-lateral-raise',
@@ -7763,6 +8215,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-side-lateral-raise.jpg',
+    imageB: '/exercise-plates/seated-side-lateral-raise-b.jpg',
   },
   {
     slug: 'seated-triceps-press',
@@ -7780,6 +8233,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-triceps-press.jpg',
+    imageB: '/exercise-plates/seated-triceps-press-b.jpg',
   },
   {
     slug: 'seated-two-arm-palms-up-low-pulley-wrist-curl',
@@ -7797,6 +8251,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/seated-two-arm-palms-up-low-pulley-wrist-curl.jpg',
+    imageB: '/exercise-plates/seated-two-arm-palms-up-low-pulley-wrist-curl-b.jpg',
   },
   {
     slug: 'see-saw-press-alternating-side-press',
@@ -7814,6 +8269,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/see-saw-press-alternating-side-press.jpg',
+    imageB: '/exercise-plates/see-saw-press-alternating-side-press-b.jpg',
   },
   {
     slug: 'shotgun-row',
@@ -7831,6 +8287,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/shotgun-row.jpg',
+    imageB: '/exercise-plates/shotgun-row-b.jpg',
   },
   {
     slug: 'shoulder-press-with-bands',
@@ -7848,6 +8305,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/shoulder-press-with-bands.jpg',
+    imageB: '/exercise-plates/shoulder-press-with-bands-b.jpg',
   },
   {
     slug: 'side-bridge',
@@ -7865,6 +8323,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/side-bridge.jpg',
+    imageB: '/exercise-plates/side-bridge-b.jpg',
   },
   {
     slug: 'side-jackknife',
@@ -7882,6 +8341,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/side-jackknife.jpg',
+    imageB: '/exercise-plates/side-jackknife-b.jpg',
   },
   {
     slug: 'side-laterals-to-front-raise',
@@ -7899,6 +8359,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/side-laterals-to-front-raise.jpg',
+    imageB: '/exercise-plates/side-laterals-to-front-raise-b.jpg',
   },
   {
     slug: 'side-to-side-chins',
@@ -7916,6 +8377,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/side-to-side-chins.jpg',
+    imageB: '/exercise-plates/side-to-side-chins-b.jpg',
   },
   {
     slug: 'single-arm-cable-crossover',
@@ -7933,6 +8395,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/single-arm-cable-crossover.jpg',
+    imageB: '/exercise-plates/single-arm-cable-crossover-b.jpg',
   },
   {
     slug: 'single-arm-linear-jammer',
@@ -7950,6 +8413,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/single-arm-linear-jammer.jpg',
+    imageB: '/exercise-plates/single-arm-linear-jammer-b.jpg',
   },
   {
     slug: 'single-arm-push-up',
@@ -7967,6 +8431,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/single-arm-push-up.jpg',
+    imageB: '/exercise-plates/single-arm-push-up-b.jpg',
   },
   {
     slug: 'single-leg-high-box-squat',
@@ -7984,6 +8449,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/single-leg-high-box-squat.jpg',
+    imageB: '/exercise-plates/single-leg-high-box-squat-b.jpg',
   },
   {
     slug: 'single-leg-leg-extension',
@@ -8001,6 +8467,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/single-leg-leg-extension.jpg',
+    imageB: '/exercise-plates/single-leg-leg-extension-b.jpg',
   },
   {
     slug: 'single-dumbbell-raise',
@@ -8018,6 +8485,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/single-dumbbell-raise.jpg',
+    imageB: '/exercise-plates/single-dumbbell-raise-b.jpg',
   },
   {
     slug: 'single-leg-glute-bridge',
@@ -8035,6 +8503,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/single-leg-glute-bridge.jpg',
+    imageB: '/exercise-plates/single-leg-glute-bridge-b.jpg',
   },
   {
     slug: 'sit-up',
@@ -8052,6 +8521,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/sit-up.jpg',
+    imageB: '/exercise-plates/sit-up-b.jpg',
   },
   {
     slug: 'sled-drag-harness',
@@ -8069,6 +8539,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/sled-drag-harness.jpg',
+    imageB: '/exercise-plates/sled-drag-harness-b.jpg',
   },
   {
     slug: 'sled-overhead-backward-walk',
@@ -8086,6 +8557,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/sled-overhead-backward-walk.jpg',
+    imageB: '/exercise-plates/sled-overhead-backward-walk-b.jpg',
   },
   {
     slug: 'sled-overhead-triceps-extension',
@@ -8103,6 +8575,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/sled-overhead-triceps-extension.jpg',
+    imageB: '/exercise-plates/sled-overhead-triceps-extension-b.jpg',
   },
   {
     slug: 'sled-push',
@@ -8120,6 +8593,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/sled-push.jpg',
+    imageB: '/exercise-plates/sled-push-b.jpg',
   },
   {
     slug: 'sled-reverse-flye',
@@ -8137,6 +8611,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/sled-reverse-flye.jpg',
+    imageB: '/exercise-plates/sled-reverse-flye-b.jpg',
   },
   {
     slug: 'sled-row',
@@ -8154,6 +8629,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/sled-row.jpg',
+    imageB: '/exercise-plates/sled-row-b.jpg',
   },
   {
     slug: 'smith-incline-shoulder-raise',
@@ -8171,6 +8647,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-incline-shoulder-raise.jpg',
+    imageB: '/exercise-plates/smith-incline-shoulder-raise-b.jpg',
   },
   {
     slug: 'smith-machine-behind-the-back-shrug',
@@ -8188,6 +8665,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-behind-the-back-shrug.jpg',
+    imageB: '/exercise-plates/smith-machine-behind-the-back-shrug-b.jpg',
   },
   {
     slug: 'smith-machine-bench-press',
@@ -8205,6 +8683,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-bench-press.jpg',
+    imageB: '/exercise-plates/smith-machine-bench-press-b.jpg',
   },
   {
     slug: 'smith-machine-bent-over-row',
@@ -8222,6 +8701,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-bent-over-row.jpg',
+    imageB: '/exercise-plates/smith-machine-bent-over-row-b.jpg',
   },
   {
     slug: 'smith-machine-close-grip-bench-press',
@@ -8239,6 +8719,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-close-grip-bench-press.jpg',
+    imageB: '/exercise-plates/smith-machine-close-grip-bench-press-b.jpg',
   },
   {
     slug: 'smith-machine-decline-press',
@@ -8256,6 +8737,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-decline-press.jpg',
+    imageB: '/exercise-plates/smith-machine-decline-press-b.jpg',
   },
   {
     slug: 'smith-machine-hang-power-clean',
@@ -8273,6 +8755,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-hang-power-clean.jpg',
+    imageB: '/exercise-plates/smith-machine-hang-power-clean-b.jpg',
   },
   {
     slug: 'smith-machine-hip-raise',
@@ -8290,6 +8773,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-hip-raise.jpg',
+    imageB: '/exercise-plates/smith-machine-hip-raise-b.jpg',
   },
   {
     slug: 'smith-machine-incline-bench-press',
@@ -8307,6 +8791,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-incline-bench-press.jpg',
+    imageB: '/exercise-plates/smith-machine-incline-bench-press-b.jpg',
   },
   {
     slug: 'smith-machine-leg-press',
@@ -8324,6 +8809,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-leg-press.jpg',
+    imageB: '/exercise-plates/smith-machine-leg-press-b.jpg',
   },
   {
     slug: 'smith-machine-one-arm-upright-row',
@@ -8341,6 +8827,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-one-arm-upright-row.jpg',
+    imageB: '/exercise-plates/smith-machine-one-arm-upright-row-b.jpg',
   },
   {
     slug: 'smith-machine-overhead-shoulder-press',
@@ -8358,6 +8845,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-overhead-shoulder-press.jpg',
+    imageB: '/exercise-plates/smith-machine-overhead-shoulder-press-b.jpg',
   },
   {
     slug: 'smith-machine-pistol-squat',
@@ -8375,6 +8863,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-pistol-squat.jpg',
+    imageB: '/exercise-plates/smith-machine-pistol-squat-b.jpg',
   },
   {
     slug: 'smith-machine-reverse-calf-raises',
@@ -8392,6 +8881,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-reverse-calf-raises.jpg',
+    imageB: '/exercise-plates/smith-machine-reverse-calf-raises-b.jpg',
   },
   {
     slug: 'smith-machine-squat',
@@ -8409,6 +8899,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-squat.jpg',
+    imageB: '/exercise-plates/smith-machine-squat-b.jpg',
   },
   {
     slug: 'smith-machine-stiff-legged-deadlift',
@@ -8426,6 +8917,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-stiff-legged-deadlift.jpg',
+    imageB: '/exercise-plates/smith-machine-stiff-legged-deadlift-b.jpg',
   },
   {
     slug: 'smith-machine-upright-row',
@@ -8443,6 +8935,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-machine-upright-row.jpg',
+    imageB: '/exercise-plates/smith-machine-upright-row-b.jpg',
   },
   {
     slug: 'smith-single-leg-split-squat',
@@ -8460,6 +8953,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/smith-single-leg-split-squat.jpg',
+    imageB: '/exercise-plates/smith-single-leg-split-squat-b.jpg',
   },
   {
     slug: 'snatch',
@@ -8477,6 +8971,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/snatch.jpg',
+    imageB: '/exercise-plates/snatch-b.jpg',
   },
   {
     slug: 'snatch-balance',
@@ -8494,6 +8989,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/snatch-balance.jpg',
+    imageB: '/exercise-plates/snatch-balance-b.jpg',
   },
   {
     slug: 'snatch-deadlift',
@@ -8511,6 +9007,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/snatch-deadlift.jpg',
+    imageB: '/exercise-plates/snatch-deadlift-b.jpg',
   },
   {
     slug: 'snatch-pull',
@@ -8528,6 +9025,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/snatch-pull.jpg',
+    imageB: '/exercise-plates/snatch-pull-b.jpg',
   },
   {
     slug: 'snatch-shrug',
@@ -8545,6 +9043,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/snatch-shrug.jpg',
+    imageB: '/exercise-plates/snatch-shrug-b.jpg',
   },
   {
     slug: 'snatch-from-blocks',
@@ -8562,6 +9061,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/snatch-from-blocks.jpg',
+    imageB: '/exercise-plates/snatch-from-blocks-b.jpg',
   },
   {
     slug: 'speed-band-overhead-triceps',
@@ -8579,6 +9079,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/speed-band-overhead-triceps.jpg',
+    imageB: '/exercise-plates/speed-band-overhead-triceps-b.jpg',
   },
   {
     slug: 'speed-box-squat',
@@ -8596,6 +9097,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/speed-box-squat.jpg',
+    imageB: '/exercise-plates/speed-box-squat-b.jpg',
   },
   {
     slug: 'speed-squats',
@@ -8613,6 +9115,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/speed-squats.jpg',
+    imageB: '/exercise-plates/speed-squats-b.jpg',
   },
   {
     slug: 'spell-caster',
@@ -8630,6 +9133,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/spell-caster.jpg',
+    imageB: '/exercise-plates/spell-caster-b.jpg',
   },
   {
     slug: 'spider-crawl',
@@ -8647,6 +9151,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/spider-crawl.jpg',
+    imageB: '/exercise-plates/spider-crawl-b.jpg',
   },
   {
     slug: 'spider-curl',
@@ -8664,6 +9169,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/spider-curl.jpg',
+    imageB: '/exercise-plates/spider-curl-b.jpg',
   },
   {
     slug: 'split-clean',
@@ -8681,6 +9187,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/split-clean.jpg',
+    imageB: '/exercise-plates/split-clean-b.jpg',
   },
   {
     slug: 'split-jerk',
@@ -8698,6 +9205,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/split-jerk.jpg',
+    imageB: '/exercise-plates/split-jerk-b.jpg',
   },
   {
     slug: 'split-snatch',
@@ -8715,6 +9223,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/split-snatch.jpg',
+    imageB: '/exercise-plates/split-snatch-b.jpg',
   },
   {
     slug: 'split-squat-with-dumbbells',
@@ -8732,6 +9241,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/split-squat-with-dumbbells.jpg',
+    imageB: '/exercise-plates/split-squat-with-dumbbells-b.jpg',
   },
   {
     slug: 'squat-jerk',
@@ -8749,6 +9259,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/squat-jerk.jpg',
+    imageB: '/exercise-plates/squat-jerk-b.jpg',
   },
   {
     slug: 'squat-with-bands',
@@ -8766,6 +9277,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/squat-with-bands.jpg',
+    imageB: '/exercise-plates/squat-with-bands-b.jpg',
   },
   {
     slug: 'squat-with-chains',
@@ -8783,6 +9295,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/squat-with-chains.jpg',
+    imageB: '/exercise-plates/squat-with-chains-b.jpg',
   },
   {
     slug: 'squat-with-plate-movers',
@@ -8800,6 +9313,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/squat-with-plate-movers.jpg',
+    imageB: '/exercise-plates/squat-with-plate-movers-b.jpg',
   },
   {
     slug: 'squats-with-bands',
@@ -8817,6 +9331,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/squats-with-bands.jpg',
+    imageB: '/exercise-plates/squats-with-bands-b.jpg',
   },
   {
     slug: 'standing-alternating-dumbbell-press',
@@ -8834,6 +9349,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-alternating-dumbbell-press.jpg',
+    imageB: '/exercise-plates/standing-alternating-dumbbell-press-b.jpg',
   },
   {
     slug: 'standing-barbell-press-behind-neck',
@@ -8851,6 +9367,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-barbell-press-behind-neck.jpg',
+    imageB: '/exercise-plates/standing-barbell-press-behind-neck-b.jpg',
   },
   {
     slug: 'standing-bent-over-one-arm-dumbbell-triceps-extension',
@@ -8868,6 +9385,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-bent-over-one-arm-dumbbell-triceps-extension.jpg',
+    imageB: '/exercise-plates/standing-bent-over-one-arm-dumbbell-triceps-extension-b.jpg',
   },
   {
     slug: 'standing-bent-over-two-arm-dumbbell-triceps-extension',
@@ -8885,6 +9403,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-bent-over-two-arm-dumbbell-triceps-extension.jpg',
+    imageB: '/exercise-plates/standing-bent-over-two-arm-dumbbell-triceps-extension-b.jpg',
   },
   {
     slug: 'standing-bradford-press',
@@ -8902,6 +9421,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-bradford-press.jpg',
+    imageB: '/exercise-plates/standing-bradford-press-b.jpg',
   },
   {
     slug: 'standing-cable-chest-press',
@@ -8919,6 +9439,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-cable-chest-press.jpg',
+    imageB: '/exercise-plates/standing-cable-chest-press-b.jpg',
   },
   {
     slug: 'standing-cable-lift',
@@ -8936,6 +9457,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-cable-lift.jpg',
+    imageB: '/exercise-plates/standing-cable-lift-b.jpg',
   },
   {
     slug: 'standing-cable-wood-chop',
@@ -8953,6 +9475,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-cable-wood-chop.jpg',
+    imageB: '/exercise-plates/standing-cable-wood-chop-b.jpg',
   },
   {
     slug: 'standing-calf-raises',
@@ -8970,6 +9493,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-calf-raises.jpg',
+    imageB: '/exercise-plates/standing-calf-raises-b.jpg',
   },
   {
     slug: 'standing-concentration-curl',
@@ -8987,6 +9511,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-concentration-curl.jpg',
+    imageB: '/exercise-plates/standing-concentration-curl-b.jpg',
   },
   {
     slug: 'standing-dumbbell-press',
@@ -9004,6 +9529,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-dumbbell-press.jpg',
+    imageB: '/exercise-plates/standing-dumbbell-press-b.jpg',
   },
   {
     slug: 'standing-dumbbell-reverse-curl',
@@ -9021,6 +9547,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-dumbbell-reverse-curl.jpg',
+    imageB: '/exercise-plates/standing-dumbbell-reverse-curl-b.jpg',
   },
   {
     slug: 'standing-dumbbell-straight-arm-front-delt-raise-above-head',
@@ -9038,6 +9565,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-dumbbell-straight-arm-front-delt-raise-above-head.jpg',
+    imageB: '/exercise-plates/standing-dumbbell-straight-arm-front-delt-raise-above-head-b.jpg',
   },
   {
     slug: 'standing-dumbbell-upright-row',
@@ -9055,6 +9583,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-dumbbell-upright-row.jpg',
+    imageB: '/exercise-plates/standing-dumbbell-upright-row-b.jpg',
   },
   {
     slug: 'standing-front-barbell-raise-over-head',
@@ -9072,6 +9601,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-front-barbell-raise-over-head.jpg',
+    imageB: '/exercise-plates/standing-front-barbell-raise-over-head-b.jpg',
   },
   {
     slug: 'standing-inner-biceps-curl',
@@ -9089,6 +9619,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-inner-biceps-curl.jpg',
+    imageB: '/exercise-plates/standing-inner-biceps-curl-b.jpg',
   },
   {
     slug: 'standing-leg-curl',
@@ -9106,6 +9637,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-leg-curl.jpg',
+    imageB: '/exercise-plates/standing-leg-curl-b.jpg',
   },
   {
     slug: 'standing-low-pulley-deltoid-raise',
@@ -9123,6 +9655,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-low-pulley-deltoid-raise.jpg',
+    imageB: '/exercise-plates/standing-low-pulley-deltoid-raise-b.jpg',
   },
   {
     slug: 'standing-low-pulley-one-arm-triceps-extension',
@@ -9140,6 +9673,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-low-pulley-one-arm-triceps-extension.jpg',
+    imageB: '/exercise-plates/standing-low-pulley-one-arm-triceps-extension-b.jpg',
   },
   {
     slug: 'standing-olympic-plate-hand-squeeze',
@@ -9157,6 +9691,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-olympic-plate-hand-squeeze.jpg',
+    imageB: '/exercise-plates/standing-olympic-plate-hand-squeeze-b.jpg',
   },
   {
     slug: 'standing-one-arm-cable-curl',
@@ -9174,6 +9709,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-one-arm-cable-curl.jpg',
+    imageB: '/exercise-plates/standing-one-arm-cable-curl-b.jpg',
   },
   {
     slug: 'standing-one-arm-dumbbell-curl-over-incline-bench',
@@ -9191,6 +9727,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-one-arm-dumbbell-curl-over-incline-bench.jpg',
+    imageB: '/exercise-plates/standing-one-arm-dumbbell-curl-over-incline-bench-b.jpg',
   },
   {
     slug: 'standing-one-arm-dumbbell-triceps-extension',
@@ -9208,6 +9745,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-one-arm-dumbbell-triceps-extension.jpg',
+    imageB: '/exercise-plates/standing-one-arm-dumbbell-triceps-extension-b.jpg',
   },
   {
     slug: 'standing-palm-in-one-arm-dumbbell-press',
@@ -9225,6 +9763,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-palm-in-one-arm-dumbbell-press.jpg',
+    imageB: '/exercise-plates/standing-palm-in-one-arm-dumbbell-press-b.jpg',
   },
   {
     slug: 'standing-palms-in-dumbbell-press',
@@ -9242,6 +9781,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-palms-in-dumbbell-press.jpg',
+    imageB: '/exercise-plates/standing-palms-in-dumbbell-press-b.jpg',
   },
   {
     slug: 'standing-palms-up-barbell-behind-the-back-wrist-curl',
@@ -9259,6 +9799,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-palms-up-barbell-behind-the-back-wrist-curl.jpg',
+    imageB: '/exercise-plates/standing-palms-up-barbell-behind-the-back-wrist-curl-b.jpg',
   },
   {
     slug: 'standing-rope-crunch',
@@ -9276,6 +9817,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-rope-crunch.jpg',
+    imageB: '/exercise-plates/standing-rope-crunch-b.jpg',
   },
   {
     slug: 'standing-towel-triceps-extension',
@@ -9293,6 +9835,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/standing-towel-triceps-extension.jpg',
+    imageB: '/exercise-plates/standing-towel-triceps-extension-b.jpg',
   },
   {
     slug: 'stiff-legged-barbell-deadlift',
@@ -9310,6 +9853,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/stiff-legged-barbell-deadlift.jpg',
+    imageB: '/exercise-plates/stiff-legged-barbell-deadlift-b.jpg',
   },
   {
     slug: 'stiff-leg-barbell-good-morning',
@@ -9327,6 +9871,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/stiff-leg-barbell-good-morning.jpg',
+    imageB: '/exercise-plates/stiff-leg-barbell-good-morning-b.jpg',
   },
   {
     slug: 'straight-bar-bench-mid-rows',
@@ -9344,6 +9889,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/straight-bar-bench-mid-rows.jpg',
+    imageB: '/exercise-plates/straight-bar-bench-mid-rows-b.jpg',
   },
   {
     slug: 'straight-raises-on-incline-bench',
@@ -9361,6 +9907,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/straight-raises-on-incline-bench.jpg',
+    imageB: '/exercise-plates/straight-raises-on-incline-bench-b.jpg',
   },
   {
     slug: 'sumo-deadlift',
@@ -9378,6 +9925,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/sumo-deadlift.jpg',
+    imageB: '/exercise-plates/sumo-deadlift-b.jpg',
   },
   {
     slug: 'sumo-deadlift-with-bands',
@@ -9395,6 +9943,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/sumo-deadlift-with-bands.jpg',
+    imageB: '/exercise-plates/sumo-deadlift-with-bands-b.jpg',
   },
   {
     slug: 'sumo-deadlift-with-chains',
@@ -9412,6 +9961,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/sumo-deadlift-with-chains.jpg',
+    imageB: '/exercise-plates/sumo-deadlift-with-chains-b.jpg',
   },
   {
     slug: 'suspended-fallout',
@@ -9429,6 +9979,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/suspended-fallout.jpg',
+    imageB: '/exercise-plates/suspended-fallout-b.jpg',
   },
   {
     slug: 'suspended-push-up',
@@ -9446,6 +9997,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/suspended-push-up.jpg',
+    imageB: '/exercise-plates/suspended-push-up-b.jpg',
   },
   {
     slug: 'suspended-reverse-crunch',
@@ -9463,6 +10015,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/suspended-reverse-crunch.jpg',
+    imageB: '/exercise-plates/suspended-reverse-crunch-b.jpg',
   },
   {
     slug: 'suspended-row',
@@ -9480,6 +10033,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/suspended-row.jpg',
+    imageB: '/exercise-plates/suspended-row-b.jpg',
   },
   {
     slug: 'suspended-split-squat',
@@ -9497,6 +10051,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/suspended-split-squat.jpg',
+    imageB: '/exercise-plates/suspended-split-squat-b.jpg',
   },
   {
     slug: 'svend-press',
@@ -9514,6 +10069,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/svend-press.jpg',
+    imageB: '/exercise-plates/svend-press-b.jpg',
   },
   {
     slug: 'tate-press',
@@ -9531,6 +10087,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/tate-press.jpg',
+    imageB: '/exercise-plates/tate-press-b.jpg',
   },
   {
     slug: 'thigh-abductor',
@@ -9548,6 +10105,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/thigh-abductor.jpg',
+    imageB: '/exercise-plates/thigh-abductor-b.jpg',
   },
   {
     slug: 'thigh-adductor',
@@ -9565,6 +10123,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/thigh-adductor.jpg',
+    imageB: '/exercise-plates/thigh-adductor-b.jpg',
   },
   {
     slug: 'tire-flip',
@@ -9582,6 +10141,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/tire-flip.jpg',
+    imageB: '/exercise-plates/tire-flip-b.jpg',
   },
   {
     slug: 'trap-bar-deadlift',
@@ -9599,6 +10159,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/trap-bar-deadlift.jpg',
+    imageB: '/exercise-plates/trap-bar-deadlift-b.jpg',
   },
   {
     slug: 'tricep-dumbbell-kickback',
@@ -9616,6 +10177,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/tricep-dumbbell-kickback.jpg',
+    imageB: '/exercise-plates/tricep-dumbbell-kickback-b.jpg',
   },
   {
     slug: 'triceps-pushdown-rope-attachment',
@@ -9633,6 +10195,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/triceps-pushdown-rope-attachment.jpg',
+    imageB: '/exercise-plates/triceps-pushdown-rope-attachment-b.jpg',
   },
   {
     slug: 'triceps-pushdown-v-bar-attachment',
@@ -9650,6 +10213,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/triceps-pushdown-v-bar-attachment.jpg',
+    imageB: '/exercise-plates/triceps-pushdown-v-bar-attachment-b.jpg',
   },
   {
     slug: 'tuck-crunch',
@@ -9667,6 +10231,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/tuck-crunch.jpg',
+    imageB: '/exercise-plates/tuck-crunch-b.jpg',
   },
   {
     slug: 'two-arm-dumbbell-preacher-curl',
@@ -9684,6 +10249,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/two-arm-dumbbell-preacher-curl.jpg',
+    imageB: '/exercise-plates/two-arm-dumbbell-preacher-curl-b.jpg',
   },
   {
     slug: 'two-arm-kettlebell-clean',
@@ -9701,6 +10267,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/two-arm-kettlebell-clean.jpg',
+    imageB: '/exercise-plates/two-arm-kettlebell-clean-b.jpg',
   },
   {
     slug: 'two-arm-kettlebell-jerk',
@@ -9718,6 +10285,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/two-arm-kettlebell-jerk.jpg',
+    imageB: '/exercise-plates/two-arm-kettlebell-jerk-b.jpg',
   },
   {
     slug: 'two-arm-kettlebell-military-press',
@@ -9735,6 +10303,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/two-arm-kettlebell-military-press.jpg',
+    imageB: '/exercise-plates/two-arm-kettlebell-military-press-b.jpg',
   },
   {
     slug: 'two-arm-kettlebell-row',
@@ -9752,6 +10321,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/two-arm-kettlebell-row.jpg',
+    imageB: '/exercise-plates/two-arm-kettlebell-row-b.jpg',
   },
   {
     slug: 'underhand-cable-pulldowns',
@@ -9769,6 +10339,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/underhand-cable-pulldowns.jpg',
+    imageB: '/exercise-plates/underhand-cable-pulldowns-b.jpg',
   },
   {
     slug: 'upright-barbell-row',
@@ -9786,6 +10357,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/upright-barbell-row.jpg',
+    imageB: '/exercise-plates/upright-barbell-row-b.jpg',
   },
   {
     slug: 'upright-cable-row',
@@ -9803,6 +10375,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/upright-cable-row.jpg',
+    imageB: '/exercise-plates/upright-cable-row-b.jpg',
   },
   {
     slug: 'upright-row-with-bands',
@@ -9820,6 +10393,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/upright-row-with-bands.jpg',
+    imageB: '/exercise-plates/upright-row-with-bands-b.jpg',
   },
   {
     slug: 'v-bar-pulldown',
@@ -9837,6 +10411,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/v-bar-pulldown.jpg',
+    imageB: '/exercise-plates/v-bar-pulldown-b.jpg',
   },
   {
     slug: 'v-bar-pullup',
@@ -9854,6 +10429,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/v-bar-pullup.jpg',
+    imageB: '/exercise-plates/v-bar-pullup-b.jpg',
   },
   {
     slug: 'weighted-ball-hyperextension',
@@ -9871,6 +10447,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/weighted-ball-hyperextension.jpg',
+    imageB: '/exercise-plates/weighted-ball-hyperextension-b.jpg',
   },
   {
     slug: 'weighted-ball-side-bend',
@@ -9888,6 +10465,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/weighted-ball-side-bend.jpg',
+    imageB: '/exercise-plates/weighted-ball-side-bend-b.jpg',
   },
   {
     slug: 'weighted-bench-dip',
@@ -9905,6 +10483,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/weighted-bench-dip.jpg',
+    imageB: '/exercise-plates/weighted-bench-dip-b.jpg',
   },
   {
     slug: 'weighted-crunches',
@@ -9922,6 +10501,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/weighted-crunches.jpg',
+    imageB: '/exercise-plates/weighted-crunches-b.jpg',
   },
   {
     slug: 'weighted-jump-squat',
@@ -9939,6 +10519,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/weighted-jump-squat.jpg',
+    imageB: '/exercise-plates/weighted-jump-squat-b.jpg',
   },
   {
     slug: 'weighted-pull-ups',
@@ -9956,6 +10537,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/weighted-pull-ups.jpg',
+    imageB: '/exercise-plates/weighted-pull-ups-b.jpg',
   },
   {
     slug: 'weighted-sissy-squat',
@@ -9973,6 +10555,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/weighted-sissy-squat.jpg',
+    imageB: '/exercise-plates/weighted-sissy-squat-b.jpg',
   },
   {
     slug: 'weighted-sit-ups-with-bands',
@@ -9990,6 +10573,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/weighted-sit-ups-with-bands.jpg',
+    imageB: '/exercise-plates/weighted-sit-ups-with-bands-b.jpg',
   },
   {
     slug: 'weighted-squat',
@@ -10007,6 +10591,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/weighted-squat.jpg',
+    imageB: '/exercise-plates/weighted-squat-b.jpg',
   },
   {
     slug: 'wide-grip-barbell-bench-press',
@@ -10024,6 +10609,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/wide-grip-barbell-bench-press.jpg',
+    imageB: '/exercise-plates/wide-grip-barbell-bench-press-b.jpg',
   },
   {
     slug: 'wide-grip-decline-barbell-bench-press',
@@ -10041,6 +10627,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/wide-grip-decline-barbell-bench-press.jpg',
+    imageB: '/exercise-plates/wide-grip-decline-barbell-bench-press-b.jpg',
   },
   {
     slug: 'wide-grip-decline-barbell-pullover',
@@ -10058,6 +10645,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/wide-grip-decline-barbell-pullover.jpg',
+    imageB: '/exercise-plates/wide-grip-decline-barbell-pullover-b.jpg',
   },
   {
     slug: 'wide-grip-pulldown-behind-the-neck',
@@ -10075,6 +10663,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/wide-grip-pulldown-behind-the-neck.jpg',
+    imageB: '/exercise-plates/wide-grip-pulldown-behind-the-neck-b.jpg',
   },
   {
     slug: 'wide-grip-rear-pull-up',
@@ -10092,6 +10681,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/wide-grip-rear-pull-up.jpg',
+    imageB: '/exercise-plates/wide-grip-rear-pull-up-b.jpg',
   },
   {
     slug: 'wide-grip-standing-barbell-curl',
@@ -10109,6 +10699,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/wide-grip-standing-barbell-curl.jpg',
+    imageB: '/exercise-plates/wide-grip-standing-barbell-curl-b.jpg',
   },
   {
     slug: 'wide-stance-barbell-squat',
@@ -10126,6 +10717,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/wide-stance-barbell-squat.jpg',
+    imageB: '/exercise-plates/wide-stance-barbell-squat-b.jpg',
   },
   {
     slug: 'wide-stance-stiff-legs',
@@ -10143,6 +10735,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/wide-stance-stiff-legs.jpg',
+    imageB: '/exercise-plates/wide-stance-stiff-legs-b.jpg',
   },
   {
     slug: 'wind-sprints',
@@ -10160,6 +10753,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/wind-sprints.jpg',
+    imageB: '/exercise-plates/wind-sprints-b.jpg',
   },
   {
     slug: 'wrist-roller',
@@ -10177,6 +10771,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/wrist-roller.jpg',
+    imageB: '/exercise-plates/wrist-roller-b.jpg',
   },
   {
     slug: 'wrist-rotations-with-straight-bar',
@@ -10194,6 +10789,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/wrist-rotations-with-straight-bar.jpg',
+    imageB: '/exercise-plates/wrist-rotations-with-straight-bar-b.jpg',
   },
   {
     slug: 'yoke-walk',
@@ -10211,6 +10807,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/yoke-walk.jpg',
+    imageB: '/exercise-plates/yoke-walk-b.jpg',
   },
   {
     slug: 'zercher-squats',
@@ -10228,6 +10825,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/zercher-squats.jpg',
+    imageB: '/exercise-plates/zercher-squats-b.jpg',
   },
   {
     slug: 'zottman-curl',
@@ -10245,6 +10843,7 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/zottman-curl.jpg',
+    imageB: '/exercise-plates/zottman-curl-b.jpg',
   },
   {
     slug: 'zottman-preacher-curl',
@@ -10262,5 +10861,6 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultSets: 3,
     defaultReps: [8, 12],
     image: '/exercise-plates/zottman-preacher-curl.jpg',
+    imageB: '/exercise-plates/zottman-preacher-curl-b.jpg',
   },
 ];

@@ -256,14 +256,23 @@ for (const file of files) {
   const description = `${e.mechanic === 'isolation' ? 'An isolation lift' : e.mechanic === 'compound' ? 'A compound lift' : 'A strength lift'} for the ${prim.length > 0 ? 'primary movers named below' : 'whole body'}.`;
   const level = e.level === 'expert' ? 'advanced' : (e.level ?? 'intermediate');
 
-  // THE PLATE — the first image, resampled by the manifest pass.
+  // THE PLATE PAIR — the concentric (start) frame + the eccentric
+  // (end) frame: the source ships two per lift (873 of 876). The
+  // second rides as <slug>-b.jpg; both resample via the manifest.
   let image: string | null = null;
+  let imageB: string | null = null;
   const firstImg = e.images?.[0];
   if (firstImg) {
     image = `/exercise-plates/${slug}.jpg`;
     // Their images[] are '<NameDir>/<n>.jpg' relative to exercises/.
     const rel = firstImg.replace(/^\.\//, '');
     manifest.push(`${slug}\t${join(EX_DIR, rel)}`);
+    const secondImg = e.images?.[1];
+    if (secondImg) {
+      imageB = `/exercise-plates/${slug}-b.jpg`;
+      const relB = secondImg.replace(/^\.\//, '');
+      manifest.push(`${slug}-b\t${join(EX_DIR, relB)}`);
+    }
   } else {
     stats.noPlate += 1;
   }
@@ -288,6 +297,7 @@ for (const file of files) {
       `    defaultSets: 3,`,
       `    defaultReps: [8, 12],`,
       ...(image ? [`    image: '${image}',`] : []),
+      ...(imageB ? [`    imageB: '${imageB}',`] : []),
       '  },',
     ].join('\n'),
   );
@@ -362,6 +372,7 @@ export interface ImportedExercise {
   defaultSets: number;
   defaultReps: [number, number];
   image?: string;
+  imageB?: string;
 }
 
 export const IMPORTED_EXERCISES: ImportedExercise[] = [

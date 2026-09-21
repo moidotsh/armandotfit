@@ -228,6 +228,12 @@ export interface SystemExerciseData {
    * figure (the instructions carry the meaning).
    */
   image?: string;
+  /**
+   * THE ECCENTRIC FRAME — the plate's second figure (the source ships
+   * pairs: concentric start + eccentric end). Optional; the plate
+   * flips between them on tap.
+   */
+  imageB?: string;
   /** Suggested sets (planning hint only). */
   defaultSets: number;
   /** Suggested rep range as [min, max]. */
