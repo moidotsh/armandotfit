@@ -278,10 +278,6 @@ export function TheLogger({
   testID,
 }: TheLoggerProps) {
 
-  // AVERAGE MODE — tap the TGT hint to enter; tap LOW/MID/HIGH on the
-  // range to set the average; one LOG writes every set at that number.
-  const [avgMode, setAvgMode] = useState(false);
-  const [avgReps, setAvgReps] = useState<number | null>(null);
   const { colors } = useAppTheme();
   const ready = weight != null && reps != null;
   const tid = testID ?? 'the-logger';
@@ -529,38 +525,13 @@ export function TheLogger({
         />
       </View>
 
-      {/* AVERAGE MODE — the range zones (only when the Rx provides a
-          range). Tapping the whisper toggles; tapping a zone sets the
-          average; the LOG verb writes every set at that number. */}
+      {/* THE GHOST LINE — the average log, always visible when the Rx
+          provides a range. A quiet row of tappable zones under the
+          steppers: tap the number you averaged and every set
+          registers — the notebook line, one tap, no mode to enter. */}
       {programmedReps && programmedReps[0] < programmedReps[1] && onLogAverage ? (
-        <Pressable
-          onPress={() => {
-            setAvgMode((v) => !v);
-            if (!avgMode) {
-              setAvgReps(null);
-            }
-          }}
-          accessibilityRole="button"
-          accessibilityLabel={avgMode ? 'Exit average mode' : 'Average mode — log every set at one rep count'}
-          style={({ pressed }) => [
-            styles.avgToggle,
-            pressed ? { opacity: PRESS_DIP } : null,
-          ]}
-          testID={`${tid}-avg-toggle`}
-        >
-          <Text
-            style={[
-              styles.avgToggleLabel,
-              { color: avgMode ? colors.text : colors.textMuted },
-            ]}
-          >
-            {avgMode ? 'AVERAGE · TAP A NUMBER' : 'AVERAGE MODE'}
-          </Text>
-        </Pressable>
-      ) : null}
-
-      {avgMode && programmedReps && programmedReps[0] < programmedReps[1] ? (
-        <View style={styles.avgRangeRow} testID={`${tid}-avg-range`}>
+        <View style={styles.ghostRow} testID={`${tid}-ghost`}>
+          <Text style={[styles.ghostLabel, { color: colors.textMuted }]}>avg</Text>
           {(() => {
             const [lo, hi] = programmedReps;
             const mid = Math.round((lo + hi) / 2);
@@ -569,52 +540,34 @@ export function TheLogger({
               { label: String(mid), value: mid, key: 'mid' },
               { label: String(hi), value: hi, key: 'hi' },
             ];
-            return zones.map((z) => {
-              const isActive = avgReps === z.value;
-              return (
-                <Pressable
-                  key={z.key}
-                  onPress={() => setAvgReps(z.value)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Set average to ${z.value} reps`}
-                  style={({ pressed }) => [
-                    styles.avgZone,
-                    isActive ? { borderBottomColor: colors.text, borderBottomWidth: 2 } : null,
-                    pressed ? { opacity: PRESS_DIP } : null,
-                  ]}
-                  testID={`${tid}-avg-${z.key}`}
-                >
-                  <Text
-                    style={[
-                      styles.avgZoneLabel,
-                      { color: isActive ? colors.text : colors.textMuted },
-                    ]}
-                  >
-                    {z.label}
-                  </Text>
-                </Pressable>
-              );
-            });
+            return zones.map((z) => (
+              <Pressable
+                key={z.key}
+                onPress={() => onLogAverage(z.value, programmedSets)}
+                accessibilityRole="button"
+                accessibilityLabel={`Log all ${programmedSets} sets at average ${z.value} reps`}
+                style={({ pressed }) => [
+                  styles.ghostZone,
+                  pressed ? { opacity: PRESS_DIP } : null,
+                ]}
+                testID={`${tid}-avg-${z.key}`}
+              >
+                <Text style={[styles.ghostZoneLabel, { color: colors.text }]}>
+                  {z.label}
+                </Text>
+              </Pressable>
+            ));
           })()}
+          <Text style={[styles.ghostTail, { color: colors.textMuted }]}>
+            ×{programmedSets > 0 ? programmedSets : ''}
+          </Text>
         </View>
       ) : null}
 
       <Pressable
-        onPress={() => {
-          if (avgMode && avgReps != null && programmedSets > 0 && onLogAverage) {
-            onLogAverage(avgReps, programmedSets);
-            setAvgMode(false);
-            setAvgReps(null);
-          } else {
-            onLog();
-          }
-        }}
+        onPress={onLog}
         accessibilityRole="button"
-        accessibilityLabel={
-          avgMode && avgReps != null && programmedSets > 0
-            ? `Log ${programmedSets} sets at ${avgReps} reps, ${weight} ${unit}`
-            : ready ? `Log set, ${weight} ${unit}, ${reps} reps` : 'Log set'
-        }
+        accessibilityLabel={ready ? `Log set, ${weight} ${unit}, ${reps} reps` : 'Log set'}
         style={({ pressed }) => [
           styles.logButton,
           // The verb's ink plate wears the paper's tooth (the atelier
@@ -624,11 +577,7 @@ export function TheLogger({
         ]}
         testID={`${tid}-log`}
       >
-        <Text style={[styles.logLabel, { color: colors.textOnBrand }]}>
-          {avgMode && avgReps != null && programmedSets > 0
-            ? `LOG ${programmedSets} SETS @ ${avgReps}`
-            : 'LOG SET'}
-        </Text>
+        <Text style={[styles.logLabel, { color: colors.textOnBrand }]}>LOG SET</Text>
       </Pressable>
     </View>
   );
@@ -811,33 +760,32 @@ const styles = StyleSheet.create({
     minWidth: 52,
     textAlign: 'center',
   },
-  // AVERAGE MODE — the toggle whisper and the range zones.
-  avgToggle: {
-    alignItems: 'center',
-    paddingVertical: 8,
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  avgToggleLabel: {
-    ...theme.typography.mobileEyebrow,
-    letterSpacing: 0.8,
-  },
-  avgRangeRow: {
+  // THE GHOST LINE — the average zones (quiet, always-ready).
+  ghostRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-    paddingBottom: 4,
-  },
-  avgZone: {
-    minWidth: 56,
     alignItems: 'center',
-    paddingVertical: 8,
-    minHeight: 44,
     justifyContent: 'center',
+    gap: 4,
+    paddingBottom: 4,
+    minHeight: 44,
   },
-  avgZoneLabel: {
+  ghostLabel: {
+    ...theme.typography.mobileEyebrow,
+    marginRight: 8,
+  },
+  ghostZone: {
+    minWidth: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+  },
+  ghostZoneLabel: {
     ...theme.typography.mobileFigure,
     fontWeight: '600',
+  },
+  ghostTail: {
+    ...theme.typography.mobileEyebrow,
+    marginLeft: 8,
   },
   logButton: {
     height: 56,
