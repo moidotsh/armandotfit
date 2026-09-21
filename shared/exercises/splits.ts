@@ -277,13 +277,13 @@ export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
     am: [
       { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
       { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'back-extension', suggestedTags: ['glute-bias'], sets: [2, 3], reps: [10, 12] },
       { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
     ],
     pm: [
       { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
       { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [10, 12] },
-      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
       { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [2, 2], reps: [15, 20] },
     ],
   },
@@ -314,7 +314,7 @@ export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
     ],
     pm: [
       { exercise: 'incline-dumbbell-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
-      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'straight-arm-pulldown', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
       { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
       { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [2, 2], reps: [15, 20] },
     ],
@@ -347,11 +347,12 @@ export const FEMALE_ONE_A_DAY_SPLITS: OneADayDay[] = [
     session: [
       { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
       { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'back-extension', suggestedTags: ['glute-bias'], sets: [2, 3], reps: [10, 12] },
       { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
       { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
       { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [10, 12] },
       { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [2, 2], reps: [15, 20] },
-      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
     ],
   },
   {
@@ -374,7 +375,7 @@ export const FEMALE_ONE_A_DAY_SPLITS: OneADayDay[] = [
       { exercise: 'bulgarian-split-squat', suggestedTags: ['dumbbell', 'per-leg'], sets: [3, 3], reps: [8, 10] },
       { exercise: 'lying-leg-curl', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
       { exercise: 'thigh-abductor', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'straight-arm-pulldown', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
       { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [2, 2], reps: [15, 20] },
       { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
       { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
