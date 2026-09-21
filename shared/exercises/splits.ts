@@ -110,7 +110,7 @@ export const TWO_A_DAY_SPLITS: TwoADayDay[] = [
       { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
     ],
     pm: [
-      { exercise: 'incline-barbell-press', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
+      { exercise: 'machine-incline-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
       { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [10, 12] },
       { exercise: 'shoulder-press', suggestedTags: ['machine'], sets: [2, 2], reps: [8, 10] },
       { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
@@ -180,7 +180,7 @@ export const ONE_A_DAY_SPLITS: OneADayDay[] = [
       { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
       { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
       { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
-      { exercise: 'incline-barbell-press', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
+      { exercise: 'machine-incline-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
       { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [10, 12] },
       { exercise: 'shoulder-press', suggestedTags: ['machine'], sets: [2, 2], reps: [8, 10] },
       { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
