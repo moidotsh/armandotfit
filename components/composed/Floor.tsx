@@ -995,6 +995,33 @@ export function Floor() {
             suggestArm={suggestArm}
             earnedStep={earnedStep}
             unit={unit}
+            programmedReps={
+              targetRepsLow != null && targetRepsHigh != null
+                ? [targetRepsLow, targetRepsHigh]
+                : null
+            }
+            programmedSets={targetSets}
+            onLogAverage={(reps, sets) => {
+              if (!exercise) return;
+              // The average log: N identical rows at the armed weight
+              // × the selected average (the notebook line, one tap).
+              for (let i = 0; i < sets; i++) {
+                addSetToDraft(exercise.localId, {
+                  weight: fromDisplayWeight(armed.weight ?? 0, unit),
+                  reps,
+                });
+              }
+              setArmedByExercise((prev) => ({
+                ...prev,
+                [exercise.localId]: { weight: armed.weight ?? 0, reps },
+              }));
+              hapticImpactLight();
+              restClock.startRest(undefined, exercise.exerciseName);
+              restPrevRef.current = { active: true, settled: false };
+              setAnnouncement(
+                `${sets} sets logged — ${armed.weight ?? 0} ${unit} × ${reps} average · rest started`,
+              );
+            }}
             onLog={handleLog}
             onChangeWeight={(weight) => setArmed({ ...armed, weight })}
             onChangeReps={(reps) => setArmed({ ...armed, reps })}
