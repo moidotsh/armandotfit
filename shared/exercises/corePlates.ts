@@ -42,7 +42,7 @@ export const CORE_PLATES: Record<string, string> = {
   'overhead-tricep-extension': '/exercise-plates/standing-dumbbell-triceps-extension.jpg', // <- Standing Dumbbell Triceps Extension
   'overhead-press': '/exercise-plates/standing-military-press.jpg', // <- Standing Military Press
   'lateral-raise': '/exercise-plates/side-lateral-raise.jpg', // <- Side Lateral Raise
-  'lying-leg-curl': '/exercise-plates/lying-leg-curls.jpg', // <- Lying Leg Curls
+  'lying-leg-curl-machine': '/exercise-plates/lying-leg-curls.jpg', // <- Lying Leg Curls
   'pull-up': '/exercise-plates/pullups.jpg', // <- Pullups
   'cable-crunch': '/exercise-plates/cable-crunch.jpg', // <- Cable Crunch
   'walking-lunge': '/exercise-plates/barbell-walking-lunge.jpg', // <- Barbell Walking Lunge

@@ -87,6 +87,12 @@ const MUSCLE_OF: Record<string, string> = {
 // matching produced wrist curls for dumbbell curls and was rejected).
 // Unlisted core lifts (Nordic Curl, Tibia Raise,
 // the cardio stations…) carry no plate — the instructions carry them.
+// Catalog-slug overrides for the plate/copy maps: entries whose catalog
+// slug differs from slugify(name) (the -machine suffixed identities).
+const CORE_PLATE_SLUG_KEYS: Record<string, string> = {
+  'Lying Leg Curl': 'lying-leg-curl-machine',
+};
+
 const CORE_PLATE_ALIASES: Record<string, string> = {
   'Bulgarian Split Squat': 'Elevated Back Lunge',
   'Incline Barbell Press': 'Barbell Incline Bench Press - Medium Grip',
@@ -350,11 +356,12 @@ for (const pretty of corePrettyNames) {
   const copy = ((copyEntry?.instructions ?? []).join(' ').replace(/\s+/g, ' ').trim()) || null;
   if (plate) {
     corePlated += 1;
-    corePlates.push(`  '${slugify(pretty)}': '${plate.image}', // <- ${plate.source}`);
+    const plateKey = CORE_PLATE_SLUG_KEYS[pretty] ?? slugify(pretty);
+    corePlates.push(`  '${plateKey}': '${plate.image}', // <- ${plate.source}`);
     if (plate.imageB) {
-      corePlatesB.push(`  '${slugify(pretty)}': '${plate.imageB}',`);
+      corePlatesB.push(`  '${CORE_PLATE_SLUG_KEYS[pretty] ?? slugify(pretty)}': '${plate.imageB}',`);
     }
-    if (copy && copy.length > 80) coreCopy.push(slugify(pretty) + '\u0000' + copy);
+    if (copy && copy.length > 80) coreCopy.push((CORE_PLATE_SLUG_KEYS[pretty] ?? slugify(pretty)) + '\u0000' + copy);
   }
 }
 

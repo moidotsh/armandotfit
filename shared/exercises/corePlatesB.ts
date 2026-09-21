@@ -38,7 +38,7 @@ export const CORE_PLATES_B: Record<string, string> = {
   'overhead-tricep-extension': '/exercise-plates/standing-dumbbell-triceps-extension-b.jpg',
   'overhead-press': '/exercise-plates/standing-military-press-b.jpg',
   'lateral-raise': '/exercise-plates/side-lateral-raise-b.jpg',
-  'lying-leg-curl': '/exercise-plates/lying-leg-curls-b.jpg',
+  'lying-leg-curl-machine': '/exercise-plates/lying-leg-curls-b.jpg',
   'pull-up': '/exercise-plates/pullups-b.jpg',
   'cable-crunch': '/exercise-plates/cable-crunch-b.jpg',
   'walking-lunge': '/exercise-plates/barbell-walking-lunge-b.jpg',
