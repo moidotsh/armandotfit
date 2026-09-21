@@ -2067,6 +2067,7 @@ const CORE_EXERCISES: SystemExerciseData[] = [
 // self-contained (string slugs) so no import cycle exists.
 import { IMPORTED_EXERCISES } from './importedData';
 import { CORE_PLATES } from './corePlates';
+import { CORE_PLATES_B } from './corePlatesB';
 import { CORE_COPY } from './coreCopy';
 
 export const SYSTEM_EXERCISES: SystemExerciseData[] = [
@@ -2078,6 +2079,7 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   ...CORE_EXERCISES.map((e) => ({
     ...e,
     image: e.image ?? CORE_PLATES[e.slug],
+    imageB: e.imageB ?? CORE_PLATES_B[e.slug],
     instructions: CORE_COPY[e.slug] ?? e.instructions,
   })),
   ...(IMPORTED_EXERCISES as unknown as SystemExerciseData[]),

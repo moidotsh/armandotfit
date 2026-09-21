@@ -306,7 +306,7 @@ for (const file of files) {
 
 // ── Core plates: the alias table + plural-tolerant matches computed
 // above (claimedFedbNames) — every core match gets its figure.
-const plateOf = (fedName: string): { image: string; source: string } | null => {
+const plateOf = (fedName: string): { image: string; imageB: string | null; source: string } | null => {
   const entry = byName.get(fedName.toLowerCase());
   const first = entry?.images?.[0];
   if (!entry || !first) return null;
@@ -314,10 +314,22 @@ const plateOf = (fedName: string): { image: string; source: string } | null => {
   // never imported, so no reuse question remains).
   const rel = first.replace(/^\.\//, '');
   manifest.push(`${slugify(fedName)}\t${join(EX_DIR, rel)}`);
-  return { image: `/exercise-plates/${slugify(fedName)}.jpg`, source: entry.name };
+  // The B frame (the eccentric half of the pair) rides for core
+  // plates too.
+  const second = entry.images?.[1];
+  if (second) {
+    const relB = second.replace(/^\.\//, '');
+    manifest.push(`${slugify(fedName)}-b\t${join(EX_DIR, relB)}`);
+  }
+  return {
+    image: `/exercise-plates/${slugify(fedName)}.jpg`,
+    imageB: second ? `/exercise-plates/${slugify(fedName)}-b.jpg` : null,
+    source: entry.name,
+  };
 };
 
 const corePlates: string[] = [];
+const corePlatesB: string[] = [];
 const coreCopy: Array<string> = [];
 let corePlated = 0;
 for (const pretty of corePrettyNames) {
@@ -337,6 +349,9 @@ for (const pretty of corePrettyNames) {
   if (plate) {
     corePlated += 1;
     corePlates.push(`  '${slugify(pretty)}': '${plate.image}', // <- ${plate.source}`);
+    if (plate.imageB) {
+      corePlatesB.push(`  '${slugify(pretty)}': '${plate.imageB}',`);
+    }
     if (copy && copy.length > 80) coreCopy.push(slugify(pretty) + '\u0000' + copy);
   }
 }
@@ -415,6 +430,16 @@ writeFileSync(
     const text = pair.slice(i + 1).replace(/'/g, "\\'");
     return "  '" + slug + "': '" + text + "',";
   }).join('\n') + '\n};\n',
+);
+writeFileSync(
+  'shared/exercises/corePlatesB.ts',
+  '// shared/exercises/corePlatesB.ts\n' +
+  '//\n' +
+  '// THE CORE PLATES, B FRAMES — the eccentric halves of the matched\n' +
+  '// pairs (generated alongside corePlates.ts; regenerate, never edit).\n' +
+  '// Entries plated: ' + corePlatesB.length + '.\n\n' +
+  'export const CORE_PLATES_B: Record<string, string> = {\n' +
+  corePlatesB.join('\n') + '\n};\n',
 );
 console.log('core plates:', corePlated, 'of', coreNames.size, '| copy enriched:', coreCopy.length);
 console.log('import stats:', JSON.stringify(stats));
