@@ -23,11 +23,13 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
+  type ImageStyle,
   type NativeSyntheticEvent,
   type NativeScrollEvent,
 } from 'react-native';
@@ -49,7 +51,7 @@ import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, type TopSe
 import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight, weightStep, hapticImpactLight, hapticImpactMedium, hapticNotificationSuccess, joinFacts } from '../../utils';
 import { useWorkoutStore, useIsOnline, useDeloadStore } from '../../stores';
 import { sessionSaveQueue } from '../../services';
-import { TAG_VOCABULARY_SEED } from '../../shared/exercises';
+import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED } from '../../shared/exercises';
 import {
   theme,
   MOBILE_CONTENT_WIDTH_STYLE,
@@ -178,6 +180,12 @@ export function Floor() {
   const [finishOpen, setFinishOpen] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [tagsOpen, setTagsOpen] = useState(false);
+  // THE FORM CHECK — the station's plate + cues; the reset lives in an
+  // effect below (after `exercise` exists), closing all three when the
+  // station changes.
+  const [formOpen, setFormOpen] = useState(false);
+  const [plateOpen, setPlateOpen] = useState(false);
+  const [readingOpen, setReadingOpen] = useState(false);
   const [armedByExercise, setArmedByExercise] = useState<
     Record<string, Armed>
   >({});
@@ -277,6 +285,17 @@ export function Floor() {
   const index = Math.min(stationIndex, Math.max(0, exercises.length - 1));
   const exercise = exercises[index] ?? null;
   const pickerExercise = draft?.exercises.find((e) => e.localId === pickerFor) ?? null;
+
+  // THE FORM CHECK RESET — close the plate/cues when the station
+  // changes (a mid-set reference never lingers into the next station).
+  const formStationKey = exercise?.localId ?? null;
+  const formStationRef = useRef<string | null>(formStationKey);
+  if (formStationRef.current !== formStationKey) {
+    formStationRef.current = formStationKey;
+    setFormOpen(false);
+    setPlateOpen(false);
+    setReadingOpen(false);
+  }
 
   // The program's own ask for this station: the SET count and the LOW
   // end of the rep range ("4×8-10" -> 4 sets, 8 reps) — the pips
@@ -699,6 +718,91 @@ export function Floor() {
                 />
               ) : null}
 
+              {/* THE FORM CHECK — the mid-workout reference: the
+                  station's plate (monochrome, collapsed strip, tap to
+                  open the full engraving) + its cues truncated at
+                  three lines with READ MORE. One furniture word opens
+                  the whole thing; it closes when the station changes
+                  (mid-set, the answer is one tap, never a scroll). */}
+              {(() => {
+                const entry = exercise.exerciseSlug
+                  ? SYSTEM_EXERCISES_BY_SLUG[exercise.exerciseSlug]
+                  : undefined;
+                if (!entry?.image && !entry?.instructions) return null;
+                return (
+                  <View testID={`form-check-${exercise.localId}`}>
+                    <Pressable
+                      onPress={() => setFormOpen((o) => !o)}
+                      accessibilityRole="button"
+                      accessibilityLabel={formOpen ? 'Hide form check' : 'Show form check — plate and cues'}
+                      style={({ pressed }) => [styles.formToggle, pressed ? { opacity: PRESS_DIP } : null]}
+                      testID="form-check-toggle"
+                    >
+                      <Text style={[styles.formToggleWord, { color: colors.textMuted }]}>
+                        {formOpen ? 'HIDE HOW-TO' : 'HOW-TO'}
+                      </Text>
+                    </Pressable>
+                    {formOpen ? (
+                      <View style={styles.formPanel}>
+                        {entry.image ? (
+                          <Pressable
+                            onPress={() => setPlateOpen((o) => !o)}
+                            accessibilityRole="imagebutton"
+                            accessibilityLabel={`Plate: ${exercise.exerciseName} — tap to ${plateOpen ? 'collapse' : 'expand'}`}
+                            style={({ pressed }) => [
+                              styles.formPlate,
+                              {
+                                borderTopColor: colors.mobilePremium.hairlineBorder,
+                                borderBottomColor: colors.mobilePremium.hairlineBorder,
+                              },
+                              pressed ? { opacity: PRESS_DIP } : null,
+                            ]}
+                            testID="form-plate-toggle"
+                          >
+                            <Image
+                              source={{ uri: entry.image }}
+                              style={plateOpen ? styles.formPlateFull : styles.formPlateStrip}
+                              accessibilityElementsHidden
+                              testID="form-plate"
+                              resizeMode="cover"
+                            />
+                            <Text style={[styles.formPlateWord, { color: colors.textMuted }]}>
+                              {plateOpen ? 'HIDE PLATE' : 'SHOW PLATE'}
+                            </Text>
+                          </Pressable>
+                        ) : null}
+                        {entry.instructions ? (
+                          <View>
+                            <Text
+                              style={[styles.formCues, { color: colors.text }]}
+                              numberOfLines={readingOpen ? undefined : 3}
+                            >
+                              {entry.instructions}
+                            </Text>
+                            {entry.instructions.length > 140 ? (
+                              <Pressable
+                                onPress={() => setReadingOpen((o) => !o)}
+                                accessibilityRole="button"
+                                accessibilityLabel={readingOpen ? 'Show less' : 'Read more'}
+                                style={({ pressed }) => [
+                                  styles.readMoreHold,
+                                  pressed ? { opacity: PRESS_DIP } : null,
+                                ]}
+                                testID="form-read-more"
+                              >
+                                <Text style={[styles.readMoreWord, { color: colors.brandText }]}>
+                                  {readingOpen ? 'READ LESS' : 'READ MORE'}
+                                </Text>
+                              </Pressable>
+                            ) : null}
+                          </View>
+                        ) : null}
+                      </View>
+                    ) : null}
+                  </View>
+                );
+              })()}
+
               {/* THE LEDGER — every logged set a ruled row: ordinal
                   left, `weight × reps` right, remove riding the far
                   edge. */}
@@ -1101,6 +1205,53 @@ const styles = StyleSheet.create({
   },
   tagsToggleText: {
     ...theme.typography.mobileLedger,
+  },
+  // ── THE FORM CHECK (mid-workout reference) ─────────────────────────
+  formToggle: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  formToggleWord: {
+    ...theme.typography.mobileEyebrow,
+  },
+  formPanel: {
+    marginTop: 2,
+    marginBottom: 6,
+  },
+  formPlate: {
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
+  // Collapsed: a 96px strip of the engraving (cover-cropped — the
+  // hint); expanded: the full 220 figure.
+  formPlateStrip: {
+    width: '100%',
+    height: 96,
+    filter: 'grayscale(1) sepia(0.22) contrast(1.04) brightness(1.03)',
+  } as unknown as ImageStyle,
+  formPlateFull: {
+    width: '100%',
+    height: 220,
+    filter: 'grayscale(1) sepia(0.22) contrast(1.04) brightness(1.03)',
+  } as unknown as ImageStyle,
+  formPlateWord: {
+    ...theme.typography.mobileEyebrow,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  // The cues — the body voice, truncated to three lines; READ MORE
+  // wears the link red (the sanctioned second job).
+  formCues: {
+    ...theme.typography.mobileBody,
+  },
+  readMoreHold: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  readMoreWord: {
+    ...theme.typography.mobileEyebrow,
   },
   ledgerEmpty: {
     ...theme.typography.mobileMeta,
