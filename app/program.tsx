@@ -27,7 +27,7 @@ import { ChevronRight } from '@tamagui/lucide-icons-2';
 import { useLocalSearchParams } from 'expo-router';
 import { MobilePrimaryButton } from '../components/MobilePremium';
 import { BoardShell, InkRail, SectionWhisper, SwapGlyph } from '../components/composed';
-import { navigateToProgram, safeGoBack } from '../navigation';
+import { navigateToExerciseDetail, navigateToProgram, safeGoBack } from '../navigation';
 import { useAppTheme, useToast } from '../context';
 import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots, slotKey, derivePlanMuscleShare } from '../services';
@@ -219,11 +219,24 @@ export default function ProgramScreen() {
 
     // A standing substitution reads in the RED RX only (thesis §8 — the
     // live edit): one red node per override; the name stays ink.
+    // TAP THE NAME to see the lift's spec sheet (the plate, the cues,
+    // the number to beat); the swap glyph stays the swap.
     return (
       <View key={key} style={styles.slotRow}>
-        <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
-          {name}
-        </Text>
+        <Pressable
+          onPress={entry ? () => navigateToExerciseDetail(entry.slug) : undefined}
+          accessibilityRole={entry ? 'button' : undefined}
+          accessibilityLabel={entry ? `${name} — view details` : name}
+          style={({ pressed }) => [
+            styles.slotNameHold,
+            pressed ? { opacity: PRESS_DIP } : null,
+          ]}
+          testID={`program-slot-${entry?.slug ?? key}`}
+        >
+          <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
+            {name}
+          </Text>
+        </Pressable>
         <SwapGlyph onPress={() => setPickerFor(key)} label={name} />
         <Text style={[styles.slotRx, { color: isOverridden ? colors.brandText : colors.text }]}>
           {rxLabel(slot.sets, slot.reps)}
@@ -529,6 +542,11 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileLedger,
     marginLeft: 'auto',
     fontVariant: ['tabular-nums'],
+  },
+  slotNameHold: {
+    flex: 1,
+    minHeight: 48,
+    justifyContent: 'center',
   },
   slotRow: {
     minHeight: 48,
