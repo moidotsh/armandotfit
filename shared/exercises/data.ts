@@ -2061,11 +2061,19 @@ const CORE_EXERCISES: SystemExerciseData[] = [
 // self-contained (string slugs) so no import cycle exists.
 import { IMPORTED_EXERCISES } from './importedData';
 import { CORE_PLATES } from './corePlates';
+import { CORE_COPY } from './coreCopy';
 
 export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // Core entries wear their matched plates (corePlates.ts — generated;
   // a core `image` field, if ever hand-set, wins over the match).
-  ...CORE_EXERCISES.map((e) => ({ ...e, image: e.image ?? CORE_PLATES[e.slug] })),
+  // Core entries wear their matched plates AND inherit the fedb
+  // counterpart's richer multi-step instructions for the reading block
+  // (the hand-authored one-liners stay as the description field).
+  ...CORE_EXERCISES.map((e) => ({
+    ...e,
+    image: e.image ?? CORE_PLATES[e.slug],
+    instructions: CORE_COPY[e.slug] ?? e.instructions,
+  })),
   ...(IMPORTED_EXERCISES as unknown as SystemExerciseData[]),
 ];
 

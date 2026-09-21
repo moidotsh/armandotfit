@@ -23,6 +23,7 @@ import { BoardShell } from './BoardShell';
 import { Figure } from '../MobilePremium';
 import { RegisterLine } from './RegisterLine';
 import { SectionWhisper } from './SectionWhisper';
+import { NextStation } from './NextStation';
 import { QueryErrorNote } from './QueryErrorNote';
 import { useToast, useAppTheme } from '../../context';
 import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags } from '../../hooks';
@@ -273,45 +274,41 @@ export function Receipt({ id }: ReceiptProps) {
             </View>
           ) : null}
 
-          {/* CONTINUE THE DAY — the day continues as a NEW block seeded
-              with this session's stations (fresh set rows — the settled
-              block's history stays on its receipt; history is immutable
-              raw fact, a receipt is settled). Hidden while a session
-              runs: the ticker already owns the way back to a live
-              floor. */}
+          {/* CONTINUE THE DAY — a WAY-FORWARD row, not the page's verb:
+              the receipt is a SETTLED artifact you read, then leave
+              (the chevron is the way out); continuing is the occasional
+              wood-chops case, so it speaks the app-wide way-forward
+              grammar (hairline, furniture word, chevron) — the same as
+              progression's tail. Hidden while a session runs. */}
           {!isSessionActive ? (
-            <View style={styles.receiptBlock}>
-              <MobileActionFooter>
-                <MobilePrimaryButton
-                  onPress={handleContinue}
-                  testID="receipt-continue"
-                >
-                  CONTINUE THE DAY
-                </MobilePrimaryButton>
-              </MobileActionFooter>
-            </View>
+            <NextStation
+              label="NEW BLOCK"
+              name="Continue the day"
+              onPress={handleContinue}
+              accessibilityLabel="Continue the day — start a new block seeded with this session"
+              testID="receipt-continue"
+            />
           ) : null}
-          <View style={styles.receiptBlock}>
-            <MobileActionFooter>
-              {/* The destructive tail arms by ink, never by a second
-                  red: unarmed is the quiet ghost whisper; the tap-again
-                  step IS the armed state and reads the full ink plate
-                  (ink is state — the verb stays ink in both steps). */}
-              <MobilePrimaryButton
-                variant={confirmDelete ? 'primary' : 'ghost'}
-                onPress={() => {
-                  if (!confirmDelete) {
-                    setConfirmDelete(true);
-                    return;
-                  }
-                  deleteSessionMutation.mutate(id);
-                }}
-                loading={deleteSessionMutation.isPending}
-                testID="workout-detail-delete"
-              >
-                {confirmDelete ? 'TAP AGAIN TO DELETE' : 'DELETE SESSION'}
-              </MobilePrimaryButton>
-            </MobileActionFooter>
+
+          {/* The destructive tail — a quiet left-aligned ghost (the
+              footer's full-width framing read as a third way out; the
+              delete is a rare, deliberate act, not a destination). */}
+          <View style={styles.deleteRow}>
+            <MobilePrimaryButton
+              variant={confirmDelete ? 'primary' : 'ghost'}
+              size="sm"
+              onPress={() => {
+                if (!confirmDelete) {
+                  setConfirmDelete(true);
+                  return;
+                }
+                deleteSessionMutation.mutate(id);
+              }}
+              loading={deleteSessionMutation.isPending}
+              testID="workout-detail-delete"
+            >
+              {confirmDelete ? 'TAP AGAIN TO DELETE' : 'DELETE SESSION'}
+            </MobilePrimaryButton>
           </View>
         </>
       )}
@@ -324,6 +321,12 @@ const styles = StyleSheet.create({
   bodyText: { ...theme.typography.mobileBody },
   receiptBlock: {
     ...INTERVAL.block,
+  },
+  // The destructive tail — left-aligned, compact (the sm ghost), a
+  // whisper among the settled rows.
+  deleteRow: {
+    marginTop: 28,
+    alignItems: 'flex-start',
   },
   pageWhisper: {
     ...INTERVAL.whisper,
