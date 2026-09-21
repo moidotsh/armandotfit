@@ -95,7 +95,7 @@ const CORE_PLATE_ALIASES: Record<string, string> = {
   'Dumbbell Curl': 'Dumbbell Bicep Curl',
   'Cable Curl': 'Standing Biceps Cable Curl',
   'Cable Lateral Raise': 'Cable Seated Lateral Raise',
-  'Shoulder Press': 'Standing Military Press',
+  'Shoulder Press': 'Machine Shoulder (Military) Press',
   'Dumbbell Overhead Press': 'Dumbbell Shoulder Press',
   'Back Extension': 'Hyperextensions (Back Extensions)',
   'Machine Back Extension': 'Hyperextensions (Back Extensions)',

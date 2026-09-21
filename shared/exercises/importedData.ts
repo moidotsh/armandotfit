@@ -8,7 +8,7 @@
 // table lives in the importer); plates resample to
 // public/exercise-plates/<slug>.jpg.
 //
-// Entry count: 602. Regenerated: 2026-09-21.
+// Entry count: 601. Regenerated: 2026-09-21.
 
 export interface ImportedExercise {
   slug: string;
@@ -5750,24 +5750,6 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultReps: [8, 12],
     image: '/exercise-plates/machine-bicep-curl.jpg',
     imageB: '/exercise-plates/machine-bicep-curl-b.jpg',
-  },
-  {
-    slug: 'machine-shoulder-military-press',
-    modality: 'machine',
-    name: 'Machine Shoulder (Military) Press',
-    category: 'Library',
-    exerciseType: 'machine',
-    difficultyLevel: 'beginner',
-    description: 'A compound lift for the primary movers named below.',
-    instructions: 'Sit down on the Shoulder Press Machine and select the weight. Grab the handles to your sides as you keep the elbows bent and in line with your torso. This will be your starting position. Now lift the handles as you exhale and you extend the arms fully. At the top of the position make sure that you hold the contraction for a second. Lower the handles slowly back to the starting position as you inhale. Repeat for the recommended amount of repetitions.',
-    tips: '',
-    primaryMuscles: ['side-delts'],
-    secondaryMuscles: ['triceps'],
-    equipment: [],
-    defaultSets: 3,
-    defaultReps: [8, 12],
-    image: '/exercise-plates/machine-shoulder-military-press.jpg',
-    imageB: '/exercise-plates/machine-shoulder-military-press-b.jpg',
   },
   {
     slug: 'middle-back-shrug',

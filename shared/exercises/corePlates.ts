@@ -19,7 +19,7 @@ export const CORE_PLATES: Record<string, string> = {
   'cable-curl': '/exercise-plates/standing-biceps-cable-curl.jpg', // <- Standing Biceps Cable Curl
   'cable-lateral-raise': '/exercise-plates/cable-seated-lateral-raise.jpg', // <- Cable Seated Lateral Raise
   'face-pull': '/exercise-plates/face-pull.jpg', // <- Face Pull
-  'shoulder-press': '/exercise-plates/standing-military-press.jpg', // <- Standing Military Press
+  'shoulder-press': '/exercise-plates/machine-shoulder-military-press.jpg', // <- Machine Shoulder (Military) Press
   'dumbbell-overhead-press': '/exercise-plates/dumbbell-shoulder-press.jpg', // <- Dumbbell Shoulder Press
   'back-extension': '/exercise-plates/hyperextensions-back-extensions.jpg', // <- Hyperextensions (Back Extensions)
   'cable-row': '/exercise-plates/seated-cable-rows.jpg', // <- Seated Cable Rows
