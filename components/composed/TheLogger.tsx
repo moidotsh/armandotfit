@@ -525,45 +525,6 @@ export function TheLogger({
         />
       </View>
 
-      {/* THE GHOST LINE — the average log, always visible when the Rx
-          provides a range. A quiet row of tappable zones under the
-          steppers: tap the number you averaged and every set
-          registers — the notebook line, one tap, no mode to enter. */}
-      {programmedReps && programmedReps[0] < programmedReps[1] && onLogAverage ? (
-        <View style={styles.ghostRow} testID={`${tid}-ghost`}>
-          <Text style={[styles.ghostLabel, { color: colors.textMuted }]}>avg</Text>
-          {(() => {
-            const [lo, hi] = programmedReps;
-            const mid = Math.round((lo + hi) / 2);
-            const zones: { label: string; value: number; key: string }[] = [
-              { label: String(lo), value: lo, key: 'lo' },
-              { label: String(mid), value: mid, key: 'mid' },
-              { label: String(hi), value: hi, key: 'hi' },
-            ];
-            return zones.map((z) => (
-              <Pressable
-                key={z.key}
-                onPress={() => onLogAverage(z.value, programmedSets)}
-                accessibilityRole="button"
-                accessibilityLabel={`Log all ${programmedSets} sets at average ${z.value} reps`}
-                style={({ pressed }) => [
-                  styles.ghostZone,
-                  pressed ? { opacity: PRESS_DIP } : null,
-                ]}
-                testID={`${tid}-avg-${z.key}`}
-              >
-                <Text style={[styles.ghostZoneLabel, { color: colors.text }]}>
-                  {z.label}
-                </Text>
-              </Pressable>
-            ));
-          })()}
-          <Text style={[styles.ghostTail, { color: colors.textMuted }]}>
-            ×{programmedSets > 0 ? programmedSets : ''}
-          </Text>
-        </View>
-      ) : null}
-
       <Pressable
         onPress={onLog}
         accessibilityRole="button"
@@ -759,33 +720,6 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileEyebrow,
     minWidth: 52,
     textAlign: 'center',
-  },
-  // THE GHOST LINE — the average zones (quiet, always-ready).
-  ghostRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    paddingBottom: 4,
-    minHeight: 44,
-  },
-  ghostLabel: {
-    ...theme.typography.mobileEyebrow,
-    marginRight: 8,
-  },
-  ghostZone: {
-    minWidth: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 6,
-  },
-  ghostZoneLabel: {
-    ...theme.typography.mobileFigure,
-    fontWeight: '600',
-  },
-  ghostTail: {
-    ...theme.typography.mobileEyebrow,
-    marginLeft: 8,
   },
   logButton: {
     height: 56,
