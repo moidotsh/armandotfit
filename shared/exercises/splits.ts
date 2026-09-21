@@ -224,6 +224,7 @@ export const ONE_A_DAY_SPLITS: OneADayDay[] = [
 export const TAG_VOCABULARY_SEED: string[] = [
   'rope',
   'straight-bar',
+  'ez-bar',
   'lat-bar',
   'v-grip',
   'handle',
