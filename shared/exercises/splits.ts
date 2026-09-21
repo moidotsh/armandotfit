@@ -271,72 +271,7 @@ export type ProgramEdition = 'upper' | 'lower';
 // ──────────────────────────────────────────────────────────────────────
 
 export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
-  {
-    day: 1,
-    title: 'Workout Day 1',
-    am: [
-      { exercise: 'barbell-back-squat', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
-      { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
-      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
-    ],
-    pm: [
-      { exercise: 'incline-barbell-press', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
-      { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [10, 12] },
-      { exercise: 'glute-kickback', suggestedTags: ['cable'], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
-    ],
-  },
-  {
-    day: 2,
-    title: 'Workout Day 2',
-    am: [
-      { exercise: 'romanian-deadlift', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
-      { exercise: 'leg-extension', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'seated-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
-      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
-    ],
-    pm: [
-      { exercise: 'lat-pulldown', suggestedTags: ['underhand', 'lat-bar'], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'glute-bridge', suggestedTags: ['barbell'], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'dumbbell-curl', suggestedTags: ['seated', 'incline'], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
-    ],
-  },
-  {
-    day: 3,
-    title: 'Workout Day 3',
-    am: [
-      { exercise: 'bulgarian-split-squat', suggestedTags: ['dumbbell', 'per-leg'], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'lying-leg-curl', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'back-extension', suggestedTags: [], sets: [2, 3], reps: [10, 12] },
-      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
-    ],
-    pm: [
-      { exercise: 'machine-incline-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'glute-kickback', suggestedTags: ['cable'], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'dumbbell-overhead-press', suggestedTags: [], sets: [2, 2], reps: [8, 10] },
-      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
-    ],
-  },
-  {
-    day: 4,
-    title: 'Workout Day 4',
-    am: [
-      { exercise: 'dumbbell-romanian-deadlift', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'glute-bridge', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
-      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
-    ],
-    pm: [
-      { exercise: 'cable-row', suggestedTags: ['seated', 'v-grip', 'neutral'], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'glute-kickback', suggestedTags: ['cable'], sets: [2, 3], reps: [12, 15] },
-      { exercise: 'cable-curl', suggestedTags: ['rope', 'neutral'], sets: [3, 3], reps: [10, 12] },
-      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
-    ],
-  },
-
-  {
+{
     day: 1,
     title: 'Workout Day 1',
     am: [
