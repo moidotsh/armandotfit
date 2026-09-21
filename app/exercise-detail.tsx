@@ -164,13 +164,35 @@ export default function ExerciseDetailScreen() {
               ]}
               testID="entry-plate"
             >
-              <Image
-                source={{ uri: plateFrame === 1 && exercise.imageB ? exercise.imageB : exercise.image }}
-                style={styles.plateImage}
-                accessibilityElementsHidden
-                testID="entry-plate-image"
-                resizeMode="contain"
-              />
+              {/* Both frames stay mounted — the B frame pre-loads
+                  (cached by the time you flip) and the exchange is a
+                  pure opacity crossfade: the still system's repaint. */}
+              <View style={styles.plateStack}>
+                <Image
+                  source={{ uri: exercise.image }}
+                  style={[
+                    styles.plateImage,
+                    styles.plateFrameA,
+                    { opacity: plateFrame === 0 ? 1 : 0 },
+                  ]}
+                  accessibilityElementsHidden
+                  testID="entry-plate-image-a"
+                  resizeMode="contain"
+                />
+                {exercise.imageB ? (
+                  <Image
+                    source={{ uri: exercise.imageB }}
+                    style={[
+                      styles.plateImage,
+                      styles.plateFrameB,
+                      { opacity: plateFrame === 1 ? 1 : 0 },
+                    ]}
+                    accessibilityElementsHidden
+                    testID="entry-plate-image-b"
+                    resizeMode="contain"
+                  />
+                ) : null}
+              </View>
               {exercise.imageB ? (
                 <Text style={[styles.plateWord, { color: colors.textMuted }]}>
                   {plateFrame === 0 ? '1 · 2' : '2 · 2'}
@@ -476,6 +498,25 @@ const styles = StyleSheet.create({
     // RN does not type `filter`; RN-web renders it — the monochrome
     // print treatment (the cast keeps the literal out of ImageStyle).
     filter: 'grayscale(1) sepia(0.22) contrast(1.04) brightness(1.03)',
+  } as unknown as ImageStyle,
+  // THE PLATE STACK — both frames share the frame; opacity exchanges.
+  plateStack: {
+    position: 'relative' as const,
+    height: 220,
+  },
+  plateFrameA: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    transition: 'opacity 180ms ease',
+  } as unknown as ImageStyle,
+  plateFrameB: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    transition: 'opacity 180ms ease',
   } as unknown as ImageStyle,
   // The number-to-beat block sits in the statement's halo.
   lastBlock: {
