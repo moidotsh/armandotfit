@@ -34,6 +34,8 @@ import { resolveSlots, slotKey, derivePlanMuscleShare } from '../services';
 import {
   TWO_A_DAY_SPLITS,
   ONE_A_DAY_SPLITS,
+  FEMALE_TWO_A_DAY_SPLITS,
+  FEMALE_ONE_A_DAY_SPLITS,
   SYSTEM_EXERCISES_BY_SLUG,
   MUSCLE_DISPLAY_NAMES,
   getSlotsForDay,
@@ -56,6 +58,11 @@ const EDITION_NAME: Record<PreferredSplit, string> = {
 
 /** The overview's statement: the PAGE's answer, not one plan's —
  * the rotation is N days, offered two ways (the editions below). */
+const splitsFor = (which: PreferredSplit, ed: string) =>
+  ed === 'lower'
+    ? which === 'oneADay' ? FEMALE_ONE_A_DAY_SPLITS : FEMALE_TWO_A_DAY_SPLITS
+    : which === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
+
 const editionSentence = (days: number): string => `${days} days, two ways.`;
 
 const isEdition = (v: string | undefined): v is PreferredSplit =>
@@ -65,6 +72,7 @@ export default function ProgramScreen() {
   const { colors } = useAppTheme();
   const { showToast } = useToast();
   const split = useSplitPreferenceStore((s) => s.splitType);
+  const programEdition = useSplitPreferenceStore((s) => s.edition);
   const { edition } = useLocalSearchParams<{ edition?: string }>();
 
   const overrides = useProgramOverrideStore((s) => s.overrides);
@@ -76,12 +84,12 @@ export default function ProgramScreen() {
   // ── THE OVERVIEW ────────────────────────────────────────────────────
   if (!isEdition(edition)) {
     // The rotation's length — both editions share the same four days.
-    const liveDays = (split === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS).length;
+    const liveDays = splitsFor(split, programEdition).length;
     const statsOf = (which: PreferredSplit) => {
-      const days = which === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
+      const days = splitsFor(which, programEdition);
       const windows: SessionWindow[] = which === 'twoADay' ? ['am', 'pm'] : ['single'];
       const slots = days.flatMap((day) =>
-        windows.flatMap((w) => resolveSlots(which, day.day, w, overrides)),
+        windows.flatMap((w) => resolveSlots(which, day.day, w, overrides, programEdition)),
       );
       const sessions = days.length * windows.length;
       return { days: days.length, lifts: slots.length, sessions };
@@ -115,10 +123,10 @@ export default function ProgramScreen() {
           // edition demotes — muted ink, hairline rule. The split
           // between the programs is hierarchy, not two identical
           // boxes.
-          const edDays = which === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
+          const edDays = splitsFor(which, programEdition);
           const edWindows: SessionWindow[] = which === 'twoADay' ? ['am', 'pm'] : ['single'];
           const edSlots = edDays.flatMap((d) =>
-            edWindows.flatMap((w) => resolveSlots(which, d.day, w, overrides)),
+            edWindows.flatMap((w) => resolveSlots(which, d.day, w, overrides, programEdition)),
           );
           const rows = derivePlanMuscleShare(edSlots, 4);
           const edLead = rows[0]?.share ?? 1;
@@ -201,15 +209,15 @@ export default function ProgramScreen() {
 
   // ── THE DAYS (the edition detail) ───────────────────────────────────
   const viewedSplit: PreferredSplit = edition;
-  const days = viewedSplit === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
+  const days = splitsFor(viewedSplit, programEdition);
   const isTwoADay = viewedSplit === 'twoADay';
   const windows: SessionWindow[] = isTwoADay ? ['am', 'pm'] : ['single'];
 
   const dayLifts = (day: number) =>
-    windows.reduce((n, w) => n + resolveSlots(viewedSplit, day, w, overrides).length, 0);
+    windows.reduce((n, w) => n + resolveSlots(viewedSplit, day, w, overrides, programEdition).length, 0);
 
   const renderSlot = (day: number, window: SessionWindow, position: number) => {
-    const slots = resolveSlots(viewedSplit, day, window, overrides);
+    const slots = resolveSlots(viewedSplit, day, window, overrides, programEdition);
     const slot = slots[position - 1];
     if (!slot) return null;
     const key = slotKey(viewedSplit, day, window, position);
@@ -246,7 +254,7 @@ export default function ProgramScreen() {
   };
 
   const planSlots = days.flatMap((day) =>
-    windows.flatMap((w) => resolveSlots(viewedSplit, day.day, w, overrides)),
+    windows.flatMap((w) => resolveSlots(viewedSplit, day.day, w, overrides, programEdition)),
   );
   // EVERY muscle the rotation works — no cap; bars scale to the LEADER
   // (shares cluster at 5-15%, so a 100% ruler collapses everything).
@@ -302,7 +310,7 @@ export default function ProgramScreen() {
                   {window.toUpperCase()}
                 </Text>
               ) : null}
-              {resolveSlots(viewedSplit, day.day, window, overrides).map((_, i) =>
+              {resolveSlots(viewedSplit, day.day, window, overrides, programEdition).map((_, i) =>
                 renderSlot(day.day, window, i + 1),
               )}
             </View>
