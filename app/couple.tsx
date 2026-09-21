@@ -137,10 +137,14 @@ export default function CoupleScreen() {
           flex: 1,
           color: colors.text,
         } as const,
-        workHeadCell: {
-          flex: 1,
-          justifyContent: 'center' as const,
+        workHeaderRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: ROW_GAP / 2,
+          borderBottomWidth: 2,
+          borderBottomColor: colors.text,
         },
+        workHeaderGutter: { width: 88 },
         workHeadLabel: {
           ...INTERVAL.whisper,
         } as const,
@@ -404,9 +408,10 @@ export default function CoupleScreen() {
         {/* THE WORK — both editions' muscle distribution, side by side */}
         <Text style={styles.dayHead}>The Work</Text>
         <Text style={styles.whisper}>Where the volume lands — tap a column to sort.</Text>
-        <View style={styles.headerRow}>
+        <View style={styles.workHeaderRow}>
+          <View style={styles.workHeaderGutter} />
           <Pressable
-            style={[styles.workHeadCell, { paddingRight: ROW_GAP / 2 }]}
+            style={styles.workCol}
             onPress={() => setSortBy('male')}
             accessibilityRole="button"
             accessibilityLabel="Sort by male percentage"
@@ -420,8 +425,9 @@ export default function CoupleScreen() {
               Male
             </Text>
           </Pressable>
+          <View style={styles.workColGap} />
           <Pressable
-            style={styles.workHeadCell}
+            style={styles.workCol}
             onPress={() => setSortBy('female')}
             accessibilityRole="button"
             accessibilityLabel="Sort by female percentage"

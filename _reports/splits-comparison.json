@@ -1,0 +1,3161 @@
+{
+  "splits": [
+    {
+      "contributor": "original",
+      "twoADay": [
+        {
+          "day": 1,
+          "title": "Workout Day 1",
+          "am": [
+            {
+              "exercise": "leg-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "leg-press-calf-raise",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "back-extension",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "leg-raise",
+              "suggestedTags": [
+                "captains-chair"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "incline-barbell-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                6,
+                8
+              ]
+            },
+            {
+              "exercise": "cable-overhead-tricep-extension",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "shoulder-press",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Workout Day 2",
+          "am": [
+            {
+              "exercise": "machine-shrug",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-chest-fly",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "tibia-raise",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "machine-leg-curl",
+              "suggestedTags": [
+                "seated"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "lat-pulldown",
+              "suggestedTags": [
+                "underhand",
+                "lat-bar"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-ab-crunch",
+              "suggestedTags": [
+                "eccentric"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "dumbbell-curl",
+              "suggestedTags": [
+                "seated",
+                "incline"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Workout Day 3",
+          "am": [
+            {
+              "exercise": "bulgarian-split-squat",
+              "suggestedTags": [
+                "dumbbell",
+                "per-leg"
+              ],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "standing-machine-calf-raise",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "straight-arm-pulldown",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "leg-raise",
+              "suggestedTags": [
+                "captains-chair"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "machine-incline-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-dip",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "dumbbell-overhead-press",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Workout Day 4",
+          "am": [
+            {
+              "exercise": "dumbbell-shrug",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "incline-dumbbell-fly",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "tibia-raise",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "machine-leg-curl",
+              "suggestedTags": [
+                "seated"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-ab-crunch",
+              "suggestedTags": [
+                "eccentric"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "cable-curl",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        }
+      ],
+      "oneADay": [
+        {
+          "day": 1,
+          "title": "Full Body Day 1",
+          "session": [
+            {
+              "exercise": "leg-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "leg-press-calf-raise",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "leg-raise",
+              "suggestedTags": [
+                "captains-chair"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "incline-barbell-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                6,
+                8
+              ]
+            },
+            {
+              "exercise": "cable-overhead-tricep-extension",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "shoulder-press",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Full Body Day 2",
+          "session": [
+            {
+              "exercise": "machine-shrug",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-chest-fly",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "tibia-raise",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "machine-leg-curl",
+              "suggestedTags": [
+                "seated"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "lat-pulldown",
+              "suggestedTags": [
+                "underhand",
+                "lat-bar"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "dumbbell-curl",
+              "suggestedTags": [
+                "seated",
+                "incline"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Full Body Day 3",
+          "session": [
+            {
+              "exercise": "bulgarian-split-squat",
+              "suggestedTags": [
+                "dumbbell",
+                "per-leg"
+              ],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "standing-machine-calf-raise",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "straight-arm-pulldown",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "machine-incline-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-dip",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "dumbbell-overhead-press",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Full Body Day 4",
+          "session": [
+            {
+              "exercise": "incline-dumbbell-fly",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "tibia-raise",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "machine-leg-curl",
+              "suggestedTags": [
+                "seated"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-ab-crunch",
+              "suggestedTags": [
+                "eccentric"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "cable-curl",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "contributor": "sonnet5-context",
+      "twoADay": [
+        {
+          "day": 1,
+          "title": "Workout Day 1",
+          "am": [
+            {
+              "exercise": "barbell-back-squat",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                6,
+                8
+              ]
+            },
+            {
+              "exercise": "leg-press-calf-raise",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "leg-extension",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "leg-raise",
+              "suggestedTags": [
+                "captains-chair"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "glute-bridge",
+              "suggestedTags": [
+                "barbell"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "machine-ab-crunch",
+              "suggestedTags": [
+                "eccentric"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Workout Day 2",
+          "am": [
+            {
+              "exercise": "romanian-deadlift",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                6,
+                8
+              ]
+            },
+            {
+              "exercise": "standing-machine-calf-raise",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "machine-leg-curl",
+              "suggestedTags": [
+                "seated"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "tibia-raise",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "lat-pulldown",
+              "suggestedTags": [
+                "underhand",
+                "lat-bar"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "straight-arm-pulldown",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "leg-extension",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Workout Day 3",
+          "am": [
+            {
+              "exercise": "bulgarian-split-squat",
+              "suggestedTags": [
+                "dumbbell",
+                "per-leg"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "leg-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "glute-bridge",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "leg-raise",
+              "suggestedTags": [
+                "captains-chair"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "leg-extension",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "machine-ab-crunch",
+              "suggestedTags": [
+                "eccentric"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Workout Day 4",
+          "am": [
+            {
+              "exercise": "dumbbell-romanian-deadlift",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "seated-calf-raise",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "machine-leg-curl",
+              "suggestedTags": [
+                "seated"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "tibia-raise",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "lat-pulldown",
+              "suggestedTags": [
+                "underhand",
+                "lat-bar"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "straight-arm-pulldown",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "glute-bridge",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            }
+          ]
+        }
+      ],
+      "oneADay": [],
+      "note": "Contributed as two-a-day only; no one-a-day compression provided."
+    },
+    {
+      "contributor": "gpt-5.6nocontext",
+      "twoADay": [
+        {
+          "day": 1,
+          "title": "Workout Day 1",
+          "am": [
+            {
+              "exercise": "machine-chest-fly",
+              "suggestedTags": [
+                "controlled"
+              ],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "leg-press",
+              "suggestedTags": [
+                "feet-high",
+                "glute-bias"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "leg-raise",
+              "suggestedTags": [
+                "captains-chair"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "barbell-hip-thrust",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "incline-barbell-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                6,
+                8
+              ]
+            },
+            {
+              "exercise": "shoulder-press",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "cable-overhead-tricep-extension",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Workout Day 2",
+          "am": [
+            {
+              "exercise": "machine-shrug",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-leg-curl",
+              "suggestedTags": [
+                "seated"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "tibia-raise",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "glute-kickback",
+              "suggestedTags": [
+                "cable"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                20
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "lat-pulldown",
+              "suggestedTags": [
+                "underhand",
+                "lat-bar"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "dumbbell-curl",
+              "suggestedTags": [
+                "seated",
+                "incline"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Workout Day 3",
+          "am": [
+            {
+              "exercise": "straight-arm-pulldown",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "bulgarian-split-squat",
+              "suggestedTags": [
+                "dumbbell",
+                "per-leg",
+                "glute-bias"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "standing-machine-calf-raise",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "back-extension",
+              "suggestedTags": [
+                "glute-bias"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "machine-incline-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-dip",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "dumbbell-overhead-press",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Workout Day 4",
+          "am": [
+            {
+              "exercise": "incline-dumbbell-fly",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "leg-extension",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "machine-ab-crunch",
+              "suggestedTags": [
+                "eccentric"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "glute-kickback",
+              "suggestedTags": [
+                "cable"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-curl",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "machine-shrug",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            }
+          ]
+        }
+      ],
+      "oneADay": [
+        {
+          "day": 1,
+          "title": "Full Body Day 1",
+          "session": [
+            {
+              "exercise": "machine-chest-fly",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "leg-press",
+              "suggestedTags": [
+                "feet-high"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "leg-raise",
+              "suggestedTags": [
+                "captains-chair"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "barbell-hip-thrust",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "incline-barbell-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                6,
+                8
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "cable-overhead-tricep-extension",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Full Body Day 2",
+          "session": [
+            {
+              "exercise": "machine-leg-curl",
+              "suggestedTags": [
+                "seated"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "tibia-raise",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "glute-kickback",
+              "suggestedTags": [
+                "cable"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                20
+              ]
+            },
+            {
+              "exercise": "lat-pulldown",
+              "suggestedTags": [
+                "underhand",
+                "lat-bar"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "dumbbell-curl",
+              "suggestedTags": [
+                "seated",
+                "incline"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Full Body Day 3",
+          "session": [
+            {
+              "exercise": "bulgarian-split-squat",
+              "suggestedTags": [
+                "dumbbell",
+                "per-leg",
+                "glute-bias"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "standing-machine-calf-raise",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "back-extension",
+              "suggestedTags": [
+                "glute-bias"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "machine-incline-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-dip",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "dumbbell-overhead-press",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Full Body Day 4",
+          "session": [
+            {
+              "exercise": "leg-extension",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "machine-ab-crunch",
+              "suggestedTags": [
+                "eccentric"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "glute-kickback",
+              "suggestedTags": [
+                "cable"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-curl",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "incline-dumbbell-fly",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "contributor": "sonnet5-nocontext",
+      "twoADay": [
+        {
+          "day": 1,
+          "title": "Workout Day 1",
+          "am": [
+            {
+              "exercise": "machine-chest-fly",
+              "suggestedTags": [
+                "controlled"
+              ],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "leg-press",
+              "suggestedTags": [
+                "feet-high",
+                "glute-bias"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "leg-raise",
+              "suggestedTags": [
+                "captains-chair"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "barbell-hip-thrust",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "incline-barbell-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                6,
+                8
+              ]
+            },
+            {
+              "exercise": "shoulder-press",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "cable-overhead-tricep-extension",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Workout Day 2",
+          "am": [
+            {
+              "exercise": "machine-shrug",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-leg-curl",
+              "suggestedTags": [
+                "seated"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "tibia-raise",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "glute-kickback",
+              "suggestedTags": [
+                "cable"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                20
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "lat-pulldown",
+              "suggestedTags": [
+                "underhand",
+                "lat-bar"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "dumbbell-curl",
+              "suggestedTags": [
+                "seated",
+                "incline"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Workout Day 3",
+          "am": [
+            {
+              "exercise": "straight-arm-pulldown",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "bulgarian-split-squat",
+              "suggestedTags": [
+                "dumbbell",
+                "per-leg",
+                "glute-bias"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "standing-machine-calf-raise",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "back-extension",
+              "suggestedTags": [
+                "glute-bias"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "machine-incline-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-dip",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "dumbbell-overhead-press",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Workout Day 4",
+          "am": [
+            {
+              "exercise": "incline-dumbbell-fly",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "leg-extension",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "machine-ab-crunch",
+              "suggestedTags": [
+                "eccentric"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "glute-kickback",
+              "suggestedTags": [
+                "cable"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            }
+          ],
+          "pm": [
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-curl",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "machine-shrug",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            }
+          ]
+        }
+      ],
+      "oneADay": [
+        {
+          "day": 1,
+          "title": "Full Body Day 1",
+          "session": [
+            {
+              "exercise": "machine-chest-fly",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "leg-press",
+              "suggestedTags": [
+                "feet-high"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "leg-raise",
+              "suggestedTags": [
+                "captains-chair"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "barbell-hip-thrust",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "incline-barbell-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                6,
+                8
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "cable-overhead-tricep-extension",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Full Body Day 2",
+          "session": [
+            {
+              "exercise": "machine-leg-curl",
+              "suggestedTags": [
+                "seated"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "tibia-raise",
+              "suggestedTags": [
+                "machine"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "glute-kickback",
+              "suggestedTags": [
+                "cable"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                20
+              ]
+            },
+            {
+              "exercise": "lat-pulldown",
+              "suggestedTags": [
+                "underhand",
+                "lat-bar"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "dumbbell-curl",
+              "suggestedTags": [
+                "seated",
+                "incline"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Full Body Day 3",
+          "session": [
+            {
+              "exercise": "bulgarian-split-squat",
+              "suggestedTags": [
+                "dumbbell",
+                "per-leg",
+                "glute-bias"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "standing-machine-calf-raise",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "back-extension",
+              "suggestedTags": [
+                "glute-bias"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "machine-incline-press",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "machine-dip",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "dumbbell-overhead-press",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-lateral-raise",
+              "suggestedTags": [
+                "egyptian",
+                "handle"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Full Body Day 4",
+          "session": [
+            {
+              "exercise": "leg-extension",
+              "suggestedTags": [],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "machine-ab-crunch",
+              "suggestedTags": [
+                "eccentric"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "glute-kickback",
+              "suggestedTags": [
+                "cable"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            },
+            {
+              "exercise": "cable-row",
+              "suggestedTags": [
+                "seated",
+                "v-grip",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                8,
+                10
+              ]
+            },
+            {
+              "exercise": "cable-curl",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                3,
+                3
+              ],
+              "reps": [
+                10,
+                12
+              ]
+            },
+            {
+              "exercise": "face-pull",
+              "suggestedTags": [
+                "rope",
+                "neutral"
+              ],
+              "sets": [
+                2,
+                3
+              ],
+              "reps": [
+                15,
+                20
+              ]
+            },
+            {
+              "exercise": "incline-dumbbell-fly",
+              "suggestedTags": [],
+              "sets": [
+                2,
+                2
+              ],
+              "reps": [
+                12,
+                15
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
