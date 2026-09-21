@@ -51,6 +51,7 @@ export enum NavigationPath {
   ANALYTICS = 'analytics',
   PROGRAM = 'program',
   SPLIT_SELECTION = 'split-selection',
+  COUPLE = 'couple',
 }
 
 /**
@@ -75,6 +76,7 @@ export const navigationHierarchy: Record<string, NavigationPath> = {
   [NavigationPath.PROGRESSION]: NavigationPath.HOME,
   [NavigationPath.ANALYTICS]: NavigationPath.HOME,
   [NavigationPath.PROGRAM]: NavigationPath.HOME,
+  [NavigationPath.COUPLE]: NavigationPath.HOME,
   [NavigationPath.SPLIT_SELECTION]: NavigationPath.HOME,
 };
 
@@ -135,6 +137,10 @@ export function navigateToProgression() {
 }
 
 /** Open My Program — the overview (no edition) or the edition's days. */
+export function navigateToCouple(mode?: 'twoADay' | 'oneADay') {
+  push(mode ? `/couple?mode=${mode}` : '/couple');
+}
+
 export function navigateToProgram(edition?: 'twoADay' | 'oneADay') {
   push(edition ? `/program?edition=${edition}` : '/program');
 }
