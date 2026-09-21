@@ -6,7 +6,7 @@
 // importer. Regenerate, never hand-edit. Plates reuse the imported
 // figure files where the target was imported.
 //
-// Core entries plated: 82 of 97.
+// Core entries plated: 83 of 97.
 
 export const CORE_PLATES: Record<string, string> = {
   'incline-barbell-press': '/exercise-plates/barbell-incline-bench-press-medium-grip.jpg', // <- Barbell Incline Bench Press - Medium Grip
@@ -28,6 +28,7 @@ export const CORE_PLATES: Record<string, string> = {
   'machine-shrug': '/exercise-plates/leverage-shrug.jpg', // <- Leverage Shrug
   'dumbbell-shrug': '/exercise-plates/dumbbell-shrug.jpg', // <- Dumbbell Shrug
   'leg-press': '/exercise-plates/leg-press.jpg', // <- Leg Press
+  'bulgarian-split-squat': '/exercise-plates/elevated-back-lunge.jpg', // <- Elevated Back Lunge
   'machine-leg-curl': '/exercise-plates/seated-leg-curl.jpg', // <- Seated Leg Curl
   'leg-press-calf-raise': '/exercise-plates/calf-press-on-the-leg-press-machine.jpg', // <- Calf Press On The Leg Press Machine
   'standing-machine-calf-raise': '/exercise-plates/smith-machine-calf-raise.jpg', // <- Smith Machine Calf Raise

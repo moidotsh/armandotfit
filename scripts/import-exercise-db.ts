@@ -85,9 +85,10 @@ const MUSCLE_OF: Record<string, string> = {
 // Core-catalog lifts matched to their fedb figures BY NAME — every pair
 // reviewed by hand (a wrong plate is worse than no plate; containment
 // matching produced wrist curls for dumbbell curls and was rejected).
-// Unlisted core lifts (Bulgarian Split Squat, Nordic Curl, Tibia Raise,
+// Unlisted core lifts (Nordic Curl, Tibia Raise,
 // the cardio stations…) carry no plate — the instructions carry them.
 const CORE_PLATE_ALIASES: Record<string, string> = {
+  'Bulgarian Split Squat': 'Elevated Back Lunge',
   'Incline Barbell Press': 'Barbell Incline Bench Press - Medium Grip',
   'Incline Dumbbell Fly': 'Incline Dumbbell Flyes',
   'Machine Chest Fly': 'Butterfly',

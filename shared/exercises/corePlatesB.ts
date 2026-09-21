@@ -2,7 +2,7 @@
 //
 // THE CORE PLATES, B FRAMES — the eccentric halves of the matched
 // pairs (generated alongside corePlates.ts; regenerate, never edit).
-// Entries plated: 82.
+// Entries plated: 83.
 
 export const CORE_PLATES_B: Record<string, string> = {
   'incline-barbell-press': '/exercise-plates/barbell-incline-bench-press-medium-grip-b.jpg',
@@ -24,6 +24,7 @@ export const CORE_PLATES_B: Record<string, string> = {
   'machine-shrug': '/exercise-plates/leverage-shrug-b.jpg',
   'dumbbell-shrug': '/exercise-plates/dumbbell-shrug-b.jpg',
   'leg-press': '/exercise-plates/leg-press-b.jpg',
+  'bulgarian-split-squat': '/exercise-plates/elevated-back-lunge-b.jpg',
   'machine-leg-curl': '/exercise-plates/seated-leg-curl-b.jpg',
   'leg-press-calf-raise': '/exercise-plates/calf-press-on-the-leg-press-machine-b.jpg',
   'standing-machine-calf-raise': '/exercise-plates/smith-machine-calf-raise-b.jpg',

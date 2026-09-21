@@ -8,7 +8,7 @@
 // table lives in the importer); plates resample to
 // public/exercise-plates/<slug>.jpg.
 //
-// Entry count: 601. Regenerated: 2026-09-21.
+// Entry count: 600. Regenerated: 2026-09-21.
 
 export interface ImportedExercise {
   slug: string;
@@ -3308,24 +3308,6 @@ export const IMPORTED_EXERCISES: ImportedExercise[] = [
     defaultReps: [8, 12],
     image: '/exercise-plates/elbow-to-knee.jpg',
     imageB: '/exercise-plates/elbow-to-knee-b.jpg',
-  },
-  {
-    slug: 'elevated-back-lunge',
-    modality: 'barbell',
-    name: 'Elevated Back Lunge',
-    category: 'Library',
-    exerciseType: 'free_weight',
-    difficultyLevel: 'intermediate',
-    description: 'A compound lift for the primary movers named below.',
-    instructions: 'Position a bar onto a rack at shoulder height loaded to an appropriate weight. Place a short, raised platform behind you. Rack the bar onto your upper back, keeping your back arched and tight. Step onto your raised platform with both feet. This will be your starting position. Begin by stepping backwards with one leg. Descend by flexing your hips and knees until your knee touches the floor. Pause, and extend through the hips and knees to rise up, returning all the way to the starting position before alternating.',
-    tips: '',
-    primaryMuscles: ['quads'],
-    secondaryMuscles: ['glutes', 'hamstrings'],
-    equipment: [],
-    defaultSets: 3,
-    defaultReps: [8, 12],
-    image: '/exercise-plates/elevated-back-lunge.jpg',
-    imageB: '/exercise-plates/elevated-back-lunge-b.jpg',
   },
   {
     slug: 'elevated-cable-rows',
