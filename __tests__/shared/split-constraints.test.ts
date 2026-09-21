@@ -199,6 +199,25 @@ describe('COUPLES — cross-edition alignment', () => {
     }
   });
 
+  it('SAME EXERCISE, SAME POSITION: any exercise in both editions on the same day+window sits at the same position', () => {
+    for (let d = 0; d < 4; d++) {
+      const male = TWO_A_DAY_SPLITS[d];
+      const female = FEMALE_TWO_A_DAY_SPLITS[d];
+      for (const w of ['am', 'pm'] as const) {
+        for (let i = 0; i < male[w].length; i++) {
+          const ex = male[w][i].exercise;
+          const femalePos = female[w].findIndex((s) => s.exercise === ex);
+          if (femalePos >= 0 && femalePos !== i) {
+            expect(
+              femalePos,
+              `Day ${d + 1} ${w.toUpperCase()}: '${ex}' is at male pos ${i + 1} but female pos ${femalePos + 1} — same exercise must share the position so the couple trains together`,
+            ).toBe(i);
+          }
+        }
+      }
+    }
+  });
+
   it('SHARED POSITIONS: at least 3 total positions (AM + PM combined) shared per day', () => {
     for (let d = 0; d < 4; d++) {
       const male = TWO_A_DAY_SPLITS[d];

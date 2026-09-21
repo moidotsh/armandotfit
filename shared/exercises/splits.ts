@@ -291,9 +291,9 @@ export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
     day: 2,
     title: 'Workout Day 2',
     am: [
-      { exercise: 'tibia-raise', suggestedTags: ['machine'], sets: [2, 3], reps: [15, 20] },
-      { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
       { exercise: 'thigh-abductor', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'tibia-raise', suggestedTags: ['machine'], sets: [2, 3], reps: [15, 20] },
       { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
     ],
     pm: [
@@ -308,9 +308,9 @@ export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
     title: 'Workout Day 3',
     am: [
       { exercise: 'bulgarian-split-squat', suggestedTags: ['dumbbell', 'per-leg'], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'lying-leg-curl-machine', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
-      { exercise: 'straight-arm-pulldown', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
       { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'straight-arm-pulldown', suggestedTags: ['rope', 'neutral'], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'lying-leg-curl-machine', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
     ],
     pm: [
       { exercise: 'machine-incline-press', suggestedTags: [], sets: [2, 2], reps: [10, 12] },
@@ -323,9 +323,9 @@ export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
     day: 4,
     title: 'Workout Day 4',
     am: [
-      { exercise: 'tibia-raise', suggestedTags: ['machine'], sets: [2, 3], reps: [15, 20] },
-      { exercise: 'incline-dumbbell-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
       { exercise: 'plie-dumbbell-squat', suggestedTags: ['kettlebell'], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'incline-dumbbell-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'tibia-raise', suggestedTags: ['machine'], sets: [2, 3], reps: [15, 20] },
       { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
     ],
     pm: [
