@@ -41,7 +41,7 @@ import { replaceWithHome, replaceWithLogin } from '../../navigation';
 const AUTH_SEGMENTS = new Set(['login', 'register', 'forgot-password']);
 // 'qr' is the printed-code redirect stub (invariant 13) — no data,
 // hands straight to home; an unsigned scanner must never see /login.
-const PUBLIC_SEGMENTS = new Set(['dev', 'qr']);
+const PUBLIC_SEGMENTS = new Set(['dev', 'qr', 'couple', 'exercise-detail']);
 
 // Set by the +not-found screen's mount effect; see the header note.
 let notFoundActive = false;

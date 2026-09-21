@@ -11,7 +11,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { BoardShell } from '../components/composed';
 import { useAppTheme } from '../context';
-import { INTERVAL, ROW_GAP, HALO, BLOCK_GAP, theme, PAGE_GUTTER, PRESS_DIP, paperToothStyle } from '../constants';
+import { INTERVAL, ROW_GAP, HALO, BLOCK_GAP, theme, PAGE_GUTTER, PRESS_DIP } from '../constants';
 import { useSplitPreferenceStore } from '../stores';
 import {
   TWO_A_DAY_SPLITS,
@@ -19,7 +19,7 @@ import {
   ONE_A_DAY_SPLITS,
   FEMALE_ONE_A_DAY_SPLITS,
 } from '../shared/exercises/splits';
-import { SYSTEM_EXERCISES_BY_SLUG } from '../shared/exercises/data';
+import { SYSTEM_EXERCISES_BY_SLUG, MUSCLE_DISPLAY_NAMES } from '../shared/exercises/data';
 import { navigateToExerciseDetail, safeGoBack } from '../navigation';
 
 type Mode = 'twoADay' | 'oneADay';
@@ -36,10 +36,31 @@ const rxLabel = (sets: [number, number], reps: [number, number]): string => {
   return `${s}×${r}`;
 };
 
+/** Primary set-credits per muscle — THE WORK's math, compact. */
+const muscleShare = (
+  slots: { exercise: string; sets: [number, number] }[],
+): { muscle: string; pct: number }[] => {
+  const tally = new Map<string, number>();
+  let total = 0;
+  for (const slot of slots) {
+    const e = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
+    if (!e) continue;
+    const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
+    for (const m of e.primaryMuscles) {
+      tally.set(m, (tally.get(m) ?? 0) + sets);
+      total += sets;
+    }
+  }
+  return [...tally.entries()]
+    .map(([muscle, sets]) => ({ muscle, pct: Math.round((sets / total) * 100) }))
+    .sort((a, b) => b.pct - a.pct);
+};
+
 export default function CoupleScreen() {
   const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ mode?: string }>();
   const [mode, setMode] = useState<Mode>(isMode(params.mode) ? params.mode : 'twoADay');
+  const [sortBy, setSortBy] = useState<'male' | 'female'>('male');
   const programEdition = useSplitPreferenceStore((s) => s.edition);
 
   const days = useMemo(() => {
@@ -65,7 +86,6 @@ export default function CoupleScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        ground: { flex: 1, backgroundColor: colors.background },
         scroll: { flex: 1 },
         scrollContent: { paddingHorizontal: PAGE_GUTTER, paddingBottom: HALO * 2 },
         statement: {
@@ -117,7 +137,15 @@ export default function CoupleScreen() {
           flex: 1,
           color: colors.text,
         } as const,
+        workHeadCell: {
+          flex: 1,
+          justifyContent: 'center' as const,
+        },
+        workHeadLabel: {
+          ...INTERVAL.whisper,
+        } as const,
         row: {
+          position: 'relative' as const,
           flexDirection: 'row',
           paddingVertical: ROW_GAP,
           borderBottomWidth: StyleSheet.hairlineWidth,
@@ -137,12 +165,43 @@ export default function CoupleScreen() {
         } as const,
         sharedMark: {
           position: 'absolute' as const,
-          top: ROW_GAP,
-          right: ROW_GAP / 4,
-          width: 6,
-          height: 6,
+          right: ROW_GAP,
+          top: '50%' as const,
+          marginTop: -4,
+          width: 8,
+          height: 8,
           backgroundColor: colors.brandText,
         },
+        // THE WORK — muscle share bars, side by side
+        workBarRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: ROW_GAP / 2,
+        },
+        workBarLabel: {
+          ...INTERVAL.whisper,
+          width: 88,
+          color: colors.text,
+        } as const,
+        workCol: {
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+        },
+        workColGap: { width: ROW_GAP * 2 },
+        workBarTrack: {
+          flex: 1,
+          height: 8,
+          backgroundColor: colors.mobilePremium.hairlineBorder,
+        },
+        workBarFill: { height: 8 },
+        workBarPct: {
+          ...INTERVAL.figure,
+          width: 40,
+          marginLeft: ROW_GAP / 2,
+          textAlign: 'right' as const,
+          color: colors.textMuted,
+        } as const,
       }),
     [colors],
   );
@@ -207,7 +266,9 @@ export default function CoupleScreen() {
             </>
           ) : null}
         </Pressable>
-        {shared ? <View style={styles.sharedMark} testID={`couple-shared-${key}`} /> : null}
+        {shared ? (
+          <View style={styles.sharedMark} testID={`couple-shared-${key}`} />
+        ) : null}
       </View>
     );
   };
@@ -217,7 +278,7 @@ export default function CoupleScreen() {
       onBack={safeGoBack}
       contentContainerStyle={{ paddingHorizontal: PAGE_GUTTER, paddingBottom: HALO * 2 }}
     >
-      <View style={[styles.ground, paperToothStyle('light')]} pointerEvents="box-none">
+      <>
         <Text style={styles.statement}>Two lifters, one rotation.</Text>
 
         {/* THE MODE TOGGLE — two-a-day vs one-a-day */}
@@ -299,7 +360,6 @@ export default function CoupleScreen() {
             <View key={`d${d.day}`}>
               <Text style={styles.dayHead}>{d.title}</Text>
 
-              {/* AM */}
               <Text style={styles.windowWhisper}>AM</Text>
               <View style={styles.headerRow}>
                 <Text style={[styles.headerCell, { paddingRight: ROW_GAP / 2 }]}>
@@ -319,7 +379,6 @@ export default function CoupleScreen() {
                 ),
               )}
 
-              {/* PM */}
               <Text style={styles.windowWhisper}>PM</Text>
               <View style={styles.headerRow}>
                 <Text style={[styles.headerCell, { paddingRight: ROW_GAP / 2 }]}>
@@ -342,7 +401,123 @@ export default function CoupleScreen() {
           );
         })}
 
-      </View>
+        {/* THE WORK — both editions' muscle distribution, side by side */}
+        <Text style={styles.dayHead}>The Work</Text>
+        <Text style={styles.whisper}>Where the volume lands — tap a column to sort.</Text>
+        <View style={styles.headerRow}>
+          <Pressable
+            style={[styles.workHeadCell, { paddingRight: ROW_GAP / 2 }]}
+            onPress={() => setSortBy('male')}
+            accessibilityRole="button"
+            accessibilityLabel="Sort by male percentage"
+          >
+            <Text
+              style={[
+                styles.workHeadLabel,
+                sortBy === 'male' ? { color: colors.text } : { color: colors.textMuted },
+              ]}
+            >
+              Male
+            </Text>
+          </Pressable>
+          <Pressable
+            style={styles.workHeadCell}
+            onPress={() => setSortBy('female')}
+            accessibilityRole="button"
+            accessibilityLabel="Sort by female percentage"
+          >
+            <Text
+              style={[
+                styles.workHeadLabel,
+                sortBy === 'female' ? { color: colors.text } : { color: colors.textMuted },
+              ]}
+            >
+              Female
+            </Text>
+          </Pressable>
+        </View>
+        {(() => {
+          const maleSlots =
+            mode === 'oneADay'
+              ? ONE_A_DAY_SPLITS.flatMap((d) => d.session)
+              : TWO_A_DAY_SPLITS.flatMap((d) => [...d.am, ...d.pm]);
+          const femaleSlots =
+            mode === 'oneADay'
+              ? FEMALE_ONE_A_DAY_SPLITS.flatMap((d) => d.session)
+              : FEMALE_TWO_A_DAY_SPLITS.flatMap((d) => [...d.am, ...d.pm]);
+          const maleShare = muscleShare(maleSlots);
+          const femaleShare = muscleShare(femaleSlots);
+          const maxPct = Math.max(
+            maleShare[0]?.pct ?? 1,
+            femaleShare[0]?.pct ?? 1,
+          );
+
+          const byMuscle = new Map<string, { male: number; female: number }>();
+          for (const s of maleShare) {
+            byMuscle.set(s.muscle, { male: s.pct, female: 0 });
+          }
+          for (const s of femaleShare) {
+            const cur = byMuscle.get(s.muscle);
+            byMuscle.set(s.muscle, { male: cur?.male ?? 0, female: s.pct });
+          }
+          const sorted = [...byMuscle.entries()].sort(
+            ([, a], [, b]) =>
+              (sortBy === 'male' ? b.male - a.male : b.female - a.female) ||
+              (sortBy === 'male' ? b.female - a.female : b.male - a.male),
+          );
+
+          return sorted.map(([muscle, pcts]) => {
+            const label =
+              MUSCLE_DISPLAY_NAMES[muscle as keyof typeof MUSCLE_DISPLAY_NAMES] ??
+              muscle;
+            return (
+              <View key={muscle} style={styles.workBarRow}>
+                <Text style={styles.workBarLabel} numberOfLines={1}>
+                  {label}
+                </Text>
+                <View style={styles.workCol}>
+                  <View style={styles.workBarTrack}>
+                    {pcts.male > 0 ? (
+                      <View
+                        style={[
+                          styles.workBarFill,
+                          {
+                            width: `${(pcts.male / maxPct) * 100}%`,
+                            backgroundColor: colors.text,
+                          },
+                        ]}
+                      />
+                    ) : null}
+                  </View>
+                  <Text style={styles.workBarPct}>
+                    {pcts.male > 0 ? `${pcts.male}%` : '—'}
+                  </Text>
+                </View>
+                <View style={styles.workColGap} />
+                <View style={styles.workCol}>
+                  <View style={styles.workBarTrack}>
+                    {pcts.female > 0 ? (
+                      <View
+                        style={[
+                          styles.workBarFill,
+                          {
+                            width: `${(pcts.female / maxPct) * 100}%`,
+                            backgroundColor: colors.text,
+                          },
+                        ]}
+                      />
+                    ) : null}
+                  </View>
+                  <Text style={styles.workBarPct}>
+                    {pcts.female > 0 ? `${pcts.female}%` : '—'}
+                  </Text>
+                </View>
+              </View>
+            );
+          });
+        })()}
+
+      </>
     </BoardShell>
   );
 }
