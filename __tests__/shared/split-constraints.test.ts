@@ -199,6 +199,26 @@ describe('COUPLES — cross-edition alignment', () => {
     }
   });
 
+  it('SAME MUSCLE, SAME EXERCISE: when both editions target an overlapping primary muscle at the same position, they must be doing the same exercise', () => {
+    for (let d = 0; d < 4; d++) {
+      const male = TWO_A_DAY_SPLITS[d];
+      const female = FEMALE_TWO_A_DAY_SPLITS[d];
+      for (const w of ['am', 'pm'] as const) {
+        for (let i = 0; i < Math.min(male[w].length, female[w].length); i++) {
+          const mEx = male[w][i].exercise;
+          const fEx = female[w][i].exercise;
+          if (mEx === fEx) continue; // already shared — fine
+          const mMuscles = new Set(primaryMuscles(mEx));
+          const overlap = primaryMuscles(fEx).filter((m) => mMuscles.has(m));
+          expect(
+            overlap,
+            `Day ${d + 1} ${w.toUpperCase()} pos ${i + 1}: male '${mEx}' [${[...mMuscles]}] and female '${fEx}' [${primaryMuscles(fEx)}] both target [${overlap}] — if they work the same muscle at the same slot, they should train together`,
+          ).toHaveLength(0);
+        }
+      }
+    }
+  });
+
   it('SAME EXERCISE, SAME POSITION: any exercise in both editions on the same day+window sits at the same position', () => {
     for (let d = 0; d < 4; d++) {
       const male = TWO_A_DAY_SPLITS[d];
