@@ -184,7 +184,6 @@ export function Floor() {
   // effect below (after `exercise` exists), closing all three when the
   // station changes.
   const [formOpen, setFormOpen] = useState(false);
-  const [plateOpen, setPlateOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
   const [armedByExercise, setArmedByExercise] = useState<
     Record<string, Armed>
@@ -293,7 +292,6 @@ export function Floor() {
   if (formStationRef.current !== formStationKey) {
     formStationRef.current = formStationKey;
     setFormOpen(false);
-    setPlateOpen(false);
     setReadingOpen(false);
   }
 
@@ -744,32 +742,28 @@ export function Floor() {
                     </Pressable>
                     {formOpen ? (
                       <View style={styles.formPanel}>
+                        {/* The plate — fully open inside the HOW-TO, no
+                            second toggle (the owner's call: opening the
+                            how-to IS asking for the picture). One tap
+                            in, one tap out. */}
                         {entry.image ? (
-                          <Pressable
-                            onPress={() => setPlateOpen((o) => !o)}
-                            accessibilityRole="imagebutton"
-                            accessibilityLabel={`Plate: ${exercise.exerciseName} — tap to ${plateOpen ? 'collapse' : 'expand'}`}
-                            style={({ pressed }) => [
+                          <View
+                            style={[
                               styles.formPlate,
                               {
                                 borderTopColor: colors.mobilePremium.hairlineBorder,
                                 borderBottomColor: colors.mobilePremium.hairlineBorder,
                               },
-                              pressed ? { opacity: PRESS_DIP } : null,
                             ]}
-                            testID="form-plate-toggle"
                           >
                             <Image
                               source={{ uri: entry.image }}
-                              style={plateOpen ? styles.formPlateFull : styles.formPlateStrip}
-                              accessibilityElementsHidden
+                              style={styles.formPlateFull}
+                              accessibilityLabel={`Plate: ${exercise.exerciseName}`}
                               testID="form-plate"
                               resizeMode="cover"
                             />
-                            <Text style={[styles.formPlateWord, { color: colors.textMuted }]}>
-                              {plateOpen ? 'HIDE PLATE' : 'SHOW PLATE'}
-                            </Text>
-                          </Pressable>
+                          </View>
                         ) : null}
                         {entry.instructions ? (
                           <View>
@@ -1224,23 +1218,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginBottom: 8,
   },
-  // Collapsed: a 96px strip of the engraving (cover-cropped — the
-  // hint); expanded: the full 220 figure.
-  formPlateStrip: {
-    width: '100%',
-    height: 96,
-    filter: 'grayscale(1) sepia(0.22) contrast(1.04) brightness(1.03)',
-  } as unknown as ImageStyle,
+  // The plate inside the HOW-TO: the full 220 figure, monochrome.
   formPlateFull: {
     width: '100%',
     height: 220,
     filter: 'grayscale(1) sepia(0.22) contrast(1.04) brightness(1.03)',
   } as unknown as ImageStyle,
-  formPlateWord: {
-    ...theme.typography.mobileEyebrow,
-    marginTop: 4,
-    textAlign: 'center',
-  },
   // The cues — the body voice, truncated to three lines; READ MORE
   // wears the link red (the sanctioned second job).
   formCues: {
