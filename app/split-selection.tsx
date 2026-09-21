@@ -82,7 +82,8 @@ export default function SplitSelectionScreen() {
   // Open pre-configured: the remembered split (persisted) + the
   // time-of-day window. Every session start re-writes the preference —
   // the last choice is the next default.
-  const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
+  const preferredSplit = useSplitPreferenceStore((s) => s.splitType)
+  const edition = useSplitPreferenceStore((s) => s.edition);;
   const preferredMode = useSplitPreferenceStore((s) => s.sessionMode);
   const setPreference = useSplitPreferenceStore((s) => s.setPreference);
   const programOverrides = useProgramOverrideStore((s) => s.overrides);
@@ -132,7 +133,7 @@ export default function SplitSelectionScreen() {
   const draftDay = selectedSlot?.splitDay ?? suggestedDay;
 
   // Preview the day's slots with standing substitutions applied.
-  const previewSlots = resolveSlots(split, draftDay, session, programOverrides);
+  const previewSlots = resolveSlots(split, draftDay, session, programOverrides, edition);
   // The preview register's figures — the shared top-set derivation in
   // display units (the same rule that arms the Floor); a bodyweight
   // lift carries no figure.

@@ -56,7 +56,9 @@ interface SplitPreferenceState {
   // SECTION: UI
   splitType: PreferredSplit;
   sessionMode: SessionMode;
-  setPreference: (pref: { splitType?: PreferredSplit; sessionMode?: SessionMode }) => void;
+  /** THE PROGRAM EDITION: 'upper' (the original) or 'lower' (the female equivalent). */
+  edition: 'upper' | 'lower';
+  setPreference: (pref: { splitType?: PreferredSplit; sessionMode?: SessionMode; edition?: 'upper' | 'lower' }) => void;
 }
 
 export const useSplitPreferenceStore = create<SplitPreferenceState>()(
@@ -77,6 +79,7 @@ export const useSplitPreferenceStore = create<SplitPreferenceState>()(
       // SECTION: UI
       splitType: 'twoADay',
       sessionMode: 'am',
+      edition: 'upper',
       setPreference: (pref) => set((state) => ({ ...state, ...pref })),
     }),
     {

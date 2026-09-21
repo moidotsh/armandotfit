@@ -34,8 +34,9 @@ export function resolveSlots(
   day: number,
   window: SessionWindow,
   overrides: Readonly<Record<string, { slug: string; name: string }>>,
+  edition: 'upper' | 'lower' = 'upper',
 ): ResolvedSlot[] {
-  return getSlotsForDay(split, day, window).map((slot, i) => {
+  return getSlotsForDay(split, day, window, edition).map((slot, i) => {
     const ov = overrides[slotKey(split, day, window, i + 1)];
     if (ov) {
       return {

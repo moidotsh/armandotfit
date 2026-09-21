@@ -45,7 +45,16 @@ export type ExerciseKey =
   | 'dumbbell-shrug'
   | 'incline-dumbbell-fly'
   | 'cable-row'
-  | 'cable-curl';
+  | 'cable-curl'
+  // Lower-focus edition identities
+  | 'barbell-back-squat'
+  | 'romanian-deadlift'
+  | 'dumbbell-romanian-deadlift'
+  | 'leg-extension'
+  | 'seated-calf-raise'
+  | 'lying-leg-curl'
+  | 'glute-bridge'
+  | 'glute-kickback';
 
 /** AM vs PM session — planning-time context for twoADay splits. */
 export type SessionWindow = 'am' | 'pm' | 'single';
@@ -243,6 +252,147 @@ export const TAG_VOCABULARY_SEED: string[] = [
 ];
 
 // ──────────────────────────────────────────────────────────────────────
+// Program editions — 'upper' (the original) and 'lower' (the female
+// equivalent). Both editions share the same 4-day async structure and
+// 17 of 32 slot positions, so a couple training together meets at the
+// same station 53% of the workout (the shared exercises rotate sets;
+// the solo exercises use different equipment in the same area).
+// ──────────────────────────────────────────────────────────────────────
+
+export type ProgramEdition = 'upper' | 'lower';
+
+// ──────────────────────────────────────────────────────────────────────
+// Lower-focus edition (female equivalent) — 4 days × AM + PM.
+// AM = lower body (the primary session); PM = mostly shared upper
+// body (the together session) + one glute accessory.
+// ──────────────────────────────────────────────────────────────────────
+
+export const FEMALE_TWO_A_DAY_SPLITS: TwoADayDay[] = [
+  {
+    day: 1,
+    title: 'Workout Day 1',
+    am: [
+      { exercise: 'barbell-back-squat', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
+      { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
+    ],
+    pm: [
+      { exercise: 'incline-barbell-press', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
+      { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'glute-kickback', suggestedTags: ['cable'], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 2,
+    title: 'Workout Day 2',
+    am: [
+      { exercise: 'romanian-deadlift', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
+      { exercise: 'leg-extension', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'seated-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+    ],
+    pm: [
+      { exercise: 'lat-pulldown', suggestedTags: ['underhand', 'lat-bar'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'glute-bridge', suggestedTags: ['barbell'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'dumbbell-curl', suggestedTags: ['seated', 'incline'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 3,
+    title: 'Workout Day 3',
+    am: [
+      { exercise: 'bulgarian-split-squat', suggestedTags: ['dumbbell', 'per-leg'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'lying-leg-curl', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'back-extension', suggestedTags: [], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
+    ],
+    pm: [
+      { exercise: 'machine-incline-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'glute-kickback', suggestedTags: ['cable'], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'dumbbell-overhead-press', suggestedTags: [], sets: [2, 2], reps: [8, 10] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 4,
+    title: 'Workout Day 4',
+    am: [
+      { exercise: 'dumbbell-romanian-deadlift', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'glute-bridge', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+    ],
+    pm: [
+      { exercise: 'cable-row', suggestedTags: ['seated', 'v-grip', 'neutral'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'glute-kickback', suggestedTags: ['cable'], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'cable-curl', suggestedTags: ['rope', 'neutral'], sets: [3, 3], reps: [10, 12] },
+      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
+    ],
+  },
+];
+
+// One-a-day compression — 7 lifts per day, 28 total.
+// Omissions vs AM+PM: standing-machine-calf-raise (D1), seated-calf-raise
+// (D2), back-extension (D3), leg-press-calf-raise (D4).
+export const FEMALE_ONE_A_DAY_SPLITS: OneADayDay[] = [
+  {
+    day: 1,
+    title: 'Full Body Day 1',
+    session: [
+      { exercise: 'barbell-back-squat', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
+      { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'incline-barbell-press', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
+      { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'glute-kickback', suggestedTags: ['cable'], sets: [2, 3], reps: [12, 15] },
+    ],
+  },
+  {
+    day: 2,
+    title: 'Full Body Day 2',
+    session: [
+      { exercise: 'romanian-deadlift', suggestedTags: [], sets: [3, 3], reps: [6, 8] },
+      { exercise: 'leg-extension', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'glute-bridge', suggestedTags: ['barbell'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'lat-pulldown', suggestedTags: ['underhand', 'lat-bar'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'dumbbell-curl', suggestedTags: ['seated', 'incline'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 3,
+    title: 'Full Body Day 3',
+    session: [
+      { exercise: 'bulgarian-split-squat', suggestedTags: ['dumbbell', 'per-leg'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'lying-leg-curl', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'machine-incline-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'dumbbell-overhead-press', suggestedTags: [], sets: [2, 2], reps: [8, 10] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'glute-kickback', suggestedTags: ['cable'], sets: [2, 3], reps: [12, 15] },
+    ],
+  },
+  {
+    day: 4,
+    title: 'Full Body Day 4',
+    session: [
+      { exercise: 'dumbbell-romanian-deadlift', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'glute-bridge', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'cable-row', suggestedTags: ['seated', 'v-grip', 'neutral'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'cable-curl', suggestedTags: ['rope', 'neutral'], sets: [3, 3], reps: [10, 12] },
+      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'glute-kickback', suggestedTags: ['cable'], sets: [2, 3], reps: [12, 15] },
+    ],
+  },
+];
+
+// ──────────────────────────────────────────────────────────────────────
 // Lookup helpers
 // ──────────────────────────────────────────────────────────────────────
 
@@ -251,12 +401,15 @@ export function getSlotsForDay(
   split: 'oneADay' | 'twoADay',
   day: number,
   window: SessionWindow = 'am',
+  edition: ProgramEdition = 'upper',
 ): SplitSlot[] {
   if (day < 1 || day > 4) return [];
   if (split === 'oneADay') {
-    return ONE_A_DAY_SPLITS.find((d) => d.day === day)?.session ?? [];
+    const source = edition === 'lower' ? FEMALE_ONE_A_DAY_SPLITS : ONE_A_DAY_SPLITS;
+    return source.find((d) => d.day === day)?.session ?? [];
   }
-  const entry = TWO_A_DAY_SPLITS.find((d) => d.day === day);
+  const source = edition === 'lower' ? FEMALE_TWO_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
+  const entry = source.find((d) => d.day === day);
   if (!entry) return [];
   return window === 'am' ? entry.am : entry.pm;
 }
@@ -271,12 +424,12 @@ export function getExercisesForDay(
 }
 
 /** Day title for headers ("Workout Day 1" / "Full Body Day 1"). */
-export function getDayTitle(split: 'oneADay' | 'twoADay', day: number): string {
+export function getDayTitle(split: 'oneADay' | 'twoADay', day: number, edition: ProgramEdition = 'upper'): string {
   if (day < 1 || day > 4) return '';
   if (split === 'oneADay') {
-    return ONE_A_DAY_SPLITS.find((d) => d.day === day)?.title ?? '';
+    return (edition === 'lower' ? FEMALE_ONE_A_DAY_SPLITS : ONE_A_DAY_SPLITS).find((d) => d.day === day)?.title ?? '';
   }
-  return TWO_A_DAY_SPLITS.find((d) => d.day === day)?.title ?? '';
+  return (edition === 'lower' ? FEMALE_TWO_A_DAY_SPLITS : TWO_A_DAY_SPLITS).find((d) => d.day === day)?.title ?? '';
 }
 
 // ── PROGRAM ERAS ─────────────────────────────────────────────────────

@@ -62,6 +62,7 @@ export default function HomeScreen() {
   const recentQuery = useRecentSessionDetails(5);
   const topSets = useTopSetsByName();
   const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
+  const edition = useSplitPreferenceStore((s) => s.edition);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
   const unit = useWeightUnit();
 
@@ -83,7 +84,7 @@ export default function HomeScreen() {
   const suggestedDay = recent.length > 0 ? suggestNextSplitDay(recent) : 1;
   const suggestedWindow = suggestSessionWindow();
   const suggestedSlots = useMemo(
-    () => getSlotsForDay(preferredSplit, suggestedDay, suggestedWindow),
+    () => getSlotsForDay(preferredSplit, suggestedDay, suggestedWindow, edition),
     [preferredSplit, suggestedDay, suggestedWindow],
   );
   const dayTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;

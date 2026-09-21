@@ -23,6 +23,7 @@ import { useWorkoutStore, useProgramOverrideStore } from '../stores';
 import { useLastUsedTags, useTopSetsByName } from './queries';
 import { useNowTick } from './useNowTick';
 import { resolveSlots } from '../services';
+import { useSplitPreferenceStore } from '../stores';
 import { sumVolume, formatElapsed } from '../services';
 
 export function useFloorSession() {
@@ -33,6 +34,7 @@ export function useFloorSession() {
   const hydrateFromSplit = useWorkoutStore((s) => s.hydrateFromSplit);
   const setDraftExerciseTags = useWorkoutStore((s) => s.setDraftExerciseTags);
   const programOverrides = useProgramOverrideStore((s) => s.overrides);
+  const edition = useSplitPreferenceStore((s) => s.edition);
 
   // Hydrate the draft from the program slots once per session.
   const hydratedRef = useRef(false);
@@ -56,6 +58,7 @@ export function useFloorSession() {
       draft.day,
       draft.sessionMode,
       programOverrides,
+      edition,
     );
     if (slots.length > 0) {
       hydrateFromSplit(slots);

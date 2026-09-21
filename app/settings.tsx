@@ -22,7 +22,7 @@ import { DAY_OF_WEEK_LABELS, BLOCK_GAP, INTERVAL, theme,
   PRESS_DIP
 } from '../constants';
 import { useToast } from '../context';
-import { useRestStore, useDeloadStore } from '../stores';
+import { useRestStore, useDeloadStore, useSplitPreferenceStore } from '../stores';
 import { logger } from '../utils/logger';
 import { joinFacts } from '../utils';
 import type { WeightUnit } from '../shared/types';
@@ -79,6 +79,12 @@ export default function SettingsScreen() {
   );
 
   const restDayIds = restDays.map(String);
+
+  // THE PROGRAM EDITION — which split the app trains: 'upper' (the
+  // original) or 'lower' (the female equivalent). Persisted UI
+  // preference; the Floor, home, and the selector all follow.
+  const programEdition = useSplitPreferenceStore((s) => s.edition);
+  const setSplitPreference = useSplitPreferenceStore((s) => s.setPreference);
 
   // THE WEIGHT UNIT — the display conversion preference (kg storage
   // throughout; utils/weight.ts owns the arithmetic).
@@ -241,6 +247,45 @@ export default function SettingsScreen() {
                   ]}
                 >
                   {v ? 'ON' : 'OFF'}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* THE PROGRAM EDITION — which split the app trains. Two-tile
+          inversion, the same grammar as the archetype measure. */}
+      <View style={styles.block}>
+        <Text style={[styles.whisper, { color: colors.textMuted }]}>
+          PROGRAM EDITION
+        </Text>
+        <View style={styles.unitRow}>
+          {(['upper', 'lower'] as const).map((ed) => {
+            const isActive = programEdition === ed;
+            return (
+              <Pressable
+                key={ed}
+                onPress={() => setSplitPreference({ edition: ed })}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isActive }}
+                accessibilityLabel={ed === 'upper' ? 'Upper focus program' : 'Lower focus program'}
+                style={({ pressed }) => [
+                  styles.unitTile,
+                  {
+                    backgroundColor: isActive ? colors.text : colors.glass.inputBackground,
+                  },
+                  pressed ? { opacity: PRESS_DIP } : null,
+                ]}
+                testID={`edition-tile-${ed}`}
+              >
+                <Text
+                  style={[
+                    styles.unitTileLabel,
+                    { color: isActive ? colors.background : colors.text },
+                  ]}
+                >
+                  {ed === 'upper' ? 'UPPER FOCUS' : 'LOWER FOCUS'}
                 </Text>
               </Pressable>
             );
