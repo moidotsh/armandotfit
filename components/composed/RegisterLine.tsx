@@ -21,6 +21,8 @@ import { theme,
 export interface RegisterLineProps {
   /** The entry's name — content, sentence case (Space Grotesk 18). */
   label: string;
+  /** A muted-text prefix inside the label (the tag acronym). */
+  labelMuted?: string;
   /**
    * A quantity leading the name (a date, an ordinal) — renders as its
    * own mono node so the date stops riding the word face; the name
@@ -49,6 +51,7 @@ export interface RegisterLineProps {
 
 export function RegisterLine({
   label,
+  labelMuted,
   monoPrefix = null,
   monoLabel = false,
   figure = null,
@@ -62,6 +65,7 @@ export function RegisterLine({
   figureTestID,
 }: RegisterLineProps) {
   const { colors } = useAppTheme();
+  const mutedLabelColor = colors.textMuted;
   // The ink ladder on a register: full ink for content (the default —
   // a register's entries ARE the content), muted for quiet/past rows.
   // Three inks on a screen, never more (thesis §5).
@@ -93,6 +97,9 @@ export function RegisterLine({
         ]}
         numberOfLines={1}
       >
+        {labelMuted ? (
+          <Text style={{ color: mutedLabelColor }}>{labelMuted} </Text>
+        ) : null}
         {label}
       </Text>
       {figure != null ? (

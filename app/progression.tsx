@@ -30,12 +30,47 @@ import { toDisplayWeight, roundDisplayWeight, weightUnitLabel, formatWeight, joi
 
 const PB_COUNT = 5;
 
+/** The exercise acronym — first letter of each word, uppercased. */
+function acronymFor(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0] ?? '')
+    .join('')
+    .toUpperCase();
+}
+
+/** The tag acronym — first letter of each hyphen-separated word. */
+function tagAcronym(tag: string): string {
+  return tag
+    .split('-')
+    .map((w) => w[0] ?? '')
+    .join('')
+    .toUpperCase();
+}
+
 export default function ProgressionScreen() {
   const { colors } = useAppTheme();
   const summaryQuery = useDashboardSummary();
   const pbQuery = usePersonalBests();
   const unit = useWeightUnit();
+  
   const historyQuery = useRecentSessionDetails(60);
+
+  // THE TAG MAP — exercise name → its most-recent tags (the acronym's
+  // muted prefix: CCLR = captains-chair + Leg Raise).
+  const tagMap = useMemo(() => {
+    const map = new Map<string, string[]>();
+    const history = historyQuery.data ?? [];
+    for (const session of history) {
+      for (const ex of session.exercises ?? []) {
+        if (ex.exerciseName && ex.tags?.length > 0) {
+          map.set(ex.exerciseName, ex.tags);
+        }
+      }
+    }
+    return map;
+  }, [historyQuery.data]);
+
   const prTimeline = useMemo(
     () => derivePrTimeline(historyQuery.data ?? [], 8),
     [historyQuery.data],
@@ -110,6 +145,10 @@ export default function ProgressionScreen() {
               </SectionWhisper>
               <View>
                 {pbs.map((pb) => {
+                  const exAcronym = acronymFor(pb.exerciseName);
+                  const lastTags = tagMap.get(pb.exerciseName) ?? [];
+                  const tagPart = lastTags.map(tagAcronym).join('');
+
                   // Identity joins by NAME (data.ts) — resolve the
                   // slug for the route at read time.
                   const slug = SYSTEM_EXERCISES.find((e) => e.name === pb.exerciseName)?.slug;
@@ -117,7 +156,8 @@ export default function ProgressionScreen() {
                     <RegisterLine
                       key={pb.exerciseName}
                       monoPrefix={new Date(pb.bestAt).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' })}
-                      label={pb.exerciseName}
+                      label={exAcronym}
+                      labelMuted={tagPart || undefined}
                       figure={`${pb.bestWeight} × ${pb.bestReps}`}
                       onPress={slug ? () => navigateToExerciseDetail(slug) : undefined}
                       accessibilityLabel={`${pb.exerciseName} — best ${pb.bestWeight} ${weightUnitLabel(unit)} for ${pb.bestReps}`}
@@ -140,16 +180,22 @@ export default function ProgressionScreen() {
                 THE PR TIMELINE
               </SectionWhisper>
               <View testID="pr-timeline">
-                {prTimeline.map((pr, i) => (
+                {prTimeline.map((pr, i) => {
+                  const exAcronym = acronymFor(pr.exerciseName);
+                  const lastTags = tagMap.get(pr.exerciseName) ?? [];
+                  const tagPart = lastTags.map(tagAcronym).join('');
+                  return (
                   <RegisterLine
                     key={`${pr.at}-${pr.exerciseName}-${i}`}
                     monoPrefix={new Date(pr.at).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' })}
-                    label={pr.exerciseName}
+                    label={exAcronym}
+                    labelMuted={tagPart || undefined}
                     figure={`${formatWeight(pr.weight, unit)} × ${pr.reps}`}
                     accessibilityLabel={`${new Date(pr.at).toLocaleDateString()}: ${pr.exerciseName} new best, ${formatWeight(pr.weight, unit)} ${weightUnitLabel(unit)} for ${pr.reps}`}
                     testID={`pr-timeline-line-${i}`}
                   />
-                ))}
+                  );
+                })}
               </View>
             </View>
           ) : null}
