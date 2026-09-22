@@ -255,9 +255,6 @@ export function Receipt({ id }: ReceiptProps) {
                     </View>
                   );
                 }
-                const effDisplay = roundDisplayWeight(
-                  toDisplayWeight(bwFactor * bodyweightKg, unit),
-                );
                 return (
                   <View style={styles.receiptExHead}>
                     <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
@@ -268,7 +265,7 @@ export function Receipt({ id }: ReceiptProps) {
                       numberOfLines={1}
                       testID={`receipt-bw-decl-${ex.id}`}
                     >
-                      let a = BW·{effDisplay}
+                      let a = BW×{bwFactor}
                     </Text>
                   </View>
                 );
