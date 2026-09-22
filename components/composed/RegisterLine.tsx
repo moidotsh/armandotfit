@@ -85,7 +85,7 @@ export function RegisterLine({
   const body = (
     <View style={styles.row}>
       {monoPrefix != null ? (
-        <Text style={[styles.labelMonoPrefix, { color: labelColor }]} numberOfLines={1}>
+        <Text style={[styles.labelMonoPrefix, { color: colors.textMuted }]} numberOfLines={1}>
           {monoPrefix}
         </Text>
       ) : null}
