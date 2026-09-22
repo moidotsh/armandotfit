@@ -52,6 +52,7 @@ import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel
 import { useWorkoutStore, useIsOnline, useDeloadStore } from '../../stores';
 import { sessionSaveQueue } from '../../services';
 import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED } from '../../shared/exercises';
+import { plateOffsetFor } from '../../shared/exercises/plateOffsets';
 import {
   theme,
   MOBILE_CONTENT_WIDTH_STYLE,
@@ -284,6 +285,7 @@ export function Floor() {
   const exercises = draft?.exercises ?? [];
   const index = Math.min(stationIndex, Math.max(0, exercises.length - 1));
   const exercise = exercises[index] ?? null;
+  const plateOffset = plateOffsetFor(exercise?.exerciseSlug ?? '');
   const pickerExercise = draft?.exercises.find((e) => e.localId === pickerFor) ?? null;
 
   // THE FORM CHECK RESET — close the plate/cues when the station
@@ -767,13 +769,37 @@ export function Floor() {
                             ]}
                             testID="form-plate"
                           >
-                            <Image
-                              source={{ uri: plateFrame === 1 && entry.imageB ? entry.imageB : entry.image }}
-                              style={styles.formPlateFull}
-                              accessibilityElementsHidden
-                              testID="form-plate-image"
-                              resizeMode="cover"
-                            />
+                            <View style={styles.formPlateStack}>
+                              <Image
+                                source={{ uri: entry.image }}
+                                style={[
+                                  styles.formPlateFull,
+                                  styles.formPlateFrameA,
+                                  { opacity: 1 },
+                                ]}
+                                accessibilityElementsHidden
+                                testID="form-plate-image-a"
+                                resizeMode="cover"
+                              />
+                              {entry.imageB ? (
+                                <Image
+                                  source={{ uri: entry.imageB }}
+                                  style={[
+                                    styles.formPlateFull,
+                                    styles.formPlateFrameB,
+                                    {
+                                      opacity: plateFrame === 1 ? 1 : 0,
+                                      transform: plateOffset
+                                        ? ([{ translateX: -plateOffset.dx, translateY: -plateOffset.dy }] as unknown as ImageStyle['transform'])
+                                        : undefined,
+                                    },
+                                  ]}
+                                  accessibilityElementsHidden
+                                  testID="form-plate-image-b"
+                                  resizeMode="cover"
+                                />
+                              ) : null}
+                            </View>
                             {entry.imageB ? (
                               <Text style={[styles.formPlateWord, { color: colors.textMuted }]}>
                                 {plateFrame === 0 ? '1 · 2' : '2 · 2'}
@@ -1272,6 +1298,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   // The plate inside the HOW-TO: the full 220 figure, monochrome.
+  formPlateStack: {
+    position: 'relative' as const,
+    height: 220,
+  },
+  formPlateFrameA: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    transition: 'opacity 180ms ease',
+  } as unknown as ImageStyle,
+  formPlateFrameB: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    transition: 'opacity 180ms ease',
+  } as unknown as ImageStyle,
   formPlateFull: {
     width: '100%',
     height: 220,

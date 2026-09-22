@@ -177,7 +177,7 @@ export default function ExerciseDetailScreen() {
                   style={[
                     styles.plateImage,
                     styles.plateFrameA,
-                    { opacity: plateFrame === 0 ? 1 : 0 },
+                    { opacity: 1 },
                   ]}
                   accessibilityElementsHidden
                   testID="entry-plate-image-a"
