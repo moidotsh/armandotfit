@@ -154,6 +154,7 @@ const styles = StyleSheet.create({
   label: {
     ...theme.typography.mobileItemTitle,
     flexShrink: 1,
+    flexGrow: 1,
   },
   // A label that is itself a quantity (an ordinal, a date) rides the
   // mono face — every quantity is mono (thesis §3.3).
@@ -161,6 +162,7 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileFigure,
     fontWeight: '500',
     flexShrink: 1,
+    flexGrow: 1,
   },
   // The quantity PREFIX (a date leading a name) — figure rank, mono
   // face, never shrunk out of its print.
