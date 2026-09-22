@@ -116,7 +116,7 @@ export default function ProgressionScreen() {
                   return (
                     <RegisterLine
                       key={pb.exerciseName}
-                      monoPrefix={new Date(pb.bestAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      monoPrefix={new Date(pb.bestAt).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' })}
                       label={pb.exerciseName}
                       figure={`${pb.bestWeight} × ${pb.bestReps}`}
                       onPress={slug ? () => navigateToExerciseDetail(slug) : undefined}
@@ -143,7 +143,7 @@ export default function ProgressionScreen() {
                 {prTimeline.map((pr, i) => (
                   <RegisterLine
                     key={`${pr.at}-${pr.exerciseName}-${i}`}
-                    monoPrefix={new Date(pr.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    monoPrefix={new Date(pr.at).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' })}
                     label={pr.exerciseName}
                     figure={`${formatWeight(pr.weight, unit)} × ${pr.reps}`}
                     accessibilityLabel={`${new Date(pr.at).toLocaleDateString()}: ${pr.exerciseName} new best, ${formatWeight(pr.weight, unit)} ${weightUnitLabel(unit)} for ${pr.reps}`}
