@@ -30,6 +30,8 @@ import {
   getPartner,
   connectPartner,
   disconnectPartner,
+  logWeight,
+  getWeightHistory,
 } from '../utils/supabase/repositories';
 import { logger } from '../utils/logger';
 import { joinFacts } from '../utils';
@@ -97,6 +99,32 @@ export default function SettingsScreen() {
   // THE WEIGHT UNIT — the display conversion preference (kg storage
   // throughout; utils/weight.ts owns the arithmetic).
   const weightUnit = profileQuery.data?.weightUnit ?? 'kg';
+
+  // BODY WEIGHT — the weigh-in log. One entry per weigh-in; the
+  // trend derives at read (latest vs. a week ago).
+  const [weightInput, setWeightInput] = useState('');
+  const [loggingWeight, setLoggingWeight] = useState(false);
+  const weightHistoryQuery = useQuery({
+    queryKey: queryKeys.bodyWeight.history(),
+    queryFn: async () => {
+      const r = await getWeightHistory(30);
+      if (!r.success) throw r.error;
+      return r.data;
+    },
+  });
+  const handleLogWeight = async () => {
+    const kg = parseFloat(weightInput);
+    if (!Number.isFinite(kg) || kg <= 0 || kg > 500 || loggingWeight) return;
+    setLoggingWeight(true);
+    const r = await logWeight(kg);
+    setLoggingWeight(false);
+    if (r.success) {
+      setWeightInput('');
+      queryClient.invalidateQueries({ queryKey: queryKeys.bodyWeight.all });
+    } else {
+      showToast('error', r.error?.message ?? 'Failed to log weight');
+    }
+  };
 
   // THE TRAINING PARTNER — the couples link. Enter each other's
   // partner code in Settings; the couple page gains its live section.
@@ -423,6 +451,88 @@ export default function SettingsScreen() {
               </Pressable>
             );
           })}
+        </View>
+      </View>
+
+      {/* BODY WEIGHT — the weigh-in log + recent history. Storage in
+          kilograms; display converts via the unit preference below. */}
+      <View style={styles.block}>
+        <Text style={[styles.whisper, { color: colors.textMuted }]}>
+          BODY WEIGHT
+        </Text>
+        {weightHistoryQuery.data && weightHistoryQuery.data.length > 0 ? (
+          <View style={{ gap: 4, marginTop: 8 }}>
+            {weightHistoryQuery.data.slice(0, 5).map((entry) => (
+              <View
+                key={entry.id}
+                style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+              >
+                <Text
+                  style={[
+                    styles.unitTileLabel,
+                    { color: colors.text, fontWeight: '400' },
+                  ]}
+                >
+                  {new Date(entry.recordedAt).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </Text>
+                <Text style={[styles.unitTileLabel, { color: colors.text }]}>
+                  {weightUnit === 'lb'
+                    ? `${Math.round(entry.weightKg * 2.20462)} lb`
+                    : `${entry.weightKg} kg`}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+          <TextInput
+            value={weightInput}
+            onChangeText={setWeightInput}
+            placeholder={weightUnit === 'lb' ? 'Enter lb' : 'Enter kg'}
+            placeholderTextColor={colors.textMuted}
+            keyboardType="numeric"
+            style={[
+              styles.unitTile,
+              {
+                backgroundColor: colors.glass.inputBackground,
+                color: colors.text,
+                paddingHorizontal: 16,
+                flex: 1,
+              },
+            ]}
+            testID="weight-input"
+          />
+          <Pressable
+            onPress={handleLogWeight}
+            accessibilityRole="button"
+            accessibilityLabel="Log body weight"
+            disabled={loggingWeight || !weightInput.trim()}
+            style={({ pressed }) => [
+              styles.unitTile,
+              {
+                backgroundColor: weightInput.trim()
+                  ? colors.text
+                  : colors.glass.inputBackground,
+                paddingHorizontal: 20,
+              },
+              pressed ? { opacity: PRESS_DIP } : null,
+            ]}
+            testID="weight-log"
+          >
+            <Text
+              style={[
+                styles.unitTileLabel,
+                {
+                  color: weightInput.trim() ? colors.background : colors.text,
+                },
+              ]}
+            >
+              {loggingWeight ? '…' : 'LOG'}
+            </Text>
+          </Pressable>
         </View>
       </View>
 

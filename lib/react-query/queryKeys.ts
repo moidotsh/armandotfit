@@ -28,6 +28,13 @@ export const queryKeys = {
     current: () => ['profile', 'current'] as const,
   },
 
+  /** Body weight — the weigh-in log (Settings panel). */
+  bodyWeight: {
+    all: ['bodyWeight'] as const,
+    history: () => ['bodyWeight', 'history'] as const,
+    latest: () => ['bodyWeight', 'latest'] as const,
+  },
+
   /** Training partner — the couples link (connect, read-through). */
   partner: {
     all: ['partner'] as const,

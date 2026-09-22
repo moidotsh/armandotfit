@@ -22,5 +22,12 @@ export type {
   TrainingPartner,
   PartnerSessionSummary,
 } from './PartnerRepository';
+export {
+  logWeight,
+  getWeightHistory,
+  getLatestWeight,
+  deleteWeight,
+} from './BodyWeightRepository';
+export type { BodyWeightEntry } from './BodyWeightRepository';
 export { BaseRepository } from './BaseRepository';
 export * from './types';

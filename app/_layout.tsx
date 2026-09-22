@@ -94,7 +94,11 @@ function RootShell() {
 
     const ensureMeta = (name: string, content: string, media?: string) => {
       const selector = `meta[name="${name}"]${media ? `[media="${media}"]` : ''}`;
-      if (document.querySelector(selector)) return;
+      const existing = document.querySelector(selector) as HTMLMetaElement | null;
+      if (existing) {
+        existing.setAttribute('content', content);
+        return;
+      }
       const m = document.createElement('meta');
       m.name = name;
       m.content = content;
@@ -114,7 +118,7 @@ function RootShell() {
     ensureLink('icon', '/icons/192.png', 'image/png');
     ensureMeta('apple-mobile-web-app-capable', 'yes');
     ensureMeta('mobile-web-app-capable', 'yes');
-    ensureMeta('apple-mobile-web-app-status-bar-style', colorScheme === 'dark' ? 'black' : 'default');
+    ensureMeta('apple-mobile-web-app-status-bar-style', 'black-translucent');
     ensureMeta('apple-mobile-web-app-title', APP_DISPLAY_NAME);
     ensureMeta('theme-color', colors.backgroundDeep, '(min-width: 701px)');
     ensureMeta('theme-color', colors.backgroundDeep, '(max-width: 700px)');
