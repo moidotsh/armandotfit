@@ -289,6 +289,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     height: 52,
     paddingHorizontal: PAGE_GUTTER,
+    // iOS 27's Liquid Glass frosts the PWA status-bar zone; this
+    // pushes the folio below the frosted band.
+    paddingTop: 24,
   },
   brand: {
     flexDirection: 'row',

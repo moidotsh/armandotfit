@@ -89,7 +89,7 @@ export function ScreenScaffold({
 
   return (
     <View style={[styles.fill, { backgroundColor: colors.background }]}>
-      <MobileAtmosphere surface={surface} />
+      <MobileAtmosphere surface={surface} showVignette={false} />
       {resolvedHeader}
       <ScrollView
         style={liftedBodyMaxWidth != null ? [SCREEN_BODY_STYLE, { maxWidth: liftedBodyMaxWidth }] : SCREEN_BODY_STYLE}

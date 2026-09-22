@@ -101,7 +101,7 @@ export function BoardShell({
       style={[styles.shell, { backgroundColor: colors.backgroundDeep }]}
       edges={['top', 'bottom']}
     >
-      <MobileAtmosphere surface={surface} />
+      <MobileAtmosphere surface={surface} showVignette={false} />
       {/* THE PAPER'S TOOTH (the atelier pass): one full-bleed grain
           layer over the ground — the page stops reading as a screen
           and starts reading as stock. Pointer-transparent; prints in
