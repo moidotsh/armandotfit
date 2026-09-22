@@ -46,6 +46,15 @@ import type { LoggedCardio } from '../shared/types';
 import { toDisplayWeight, roundDisplayWeight, joinFacts } from '../utils';
 import type { ExerciseKey } from '../shared/exercises';
 
+function injectPlateKeyframes() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('plate-loop-css')) return;
+  const style = document.createElement('style');
+  style.id = 'plate-loop-css';
+  style.textContent = PLATE_LOOP_CSS;
+  document.head.appendChild(style);
+}
+
 export default function ExerciseDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { colors } = useAppTheme();
@@ -107,17 +116,13 @@ export default function ExerciseDetailScreen() {
 
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set());
   const [plateFrame, setPlateFrame] = useState(0);
+  injectPlateKeyframes();
   // THE PLATE LOOP — auto-animates on mount: A holds, fades to B,
   // B holds, fades back. No tap needed.
   // THE PLATE LOOP — simple interval toggle: frame A ↔ B every 1.5s.
   // The dumbest possible animation. It just works.
-  useEffect(() => {
-    if (!exercise?.imageB) return;
-    const id = setInterval(() => {
-      setPlateFrame((f) => (f === 0 ? 1 : 0));
-    }, 1500);
-    return () => clearInterval(id);
-  }, [exercise?.imageB]);
+  // THE PLATE LOOP — pure CSS animation (see plateLoopStyle below).
+  // No JavaScript state, no re-renders — the browser animates.
   // THE PLATE ALIGNMENT — the B frame's camera offset, applied as a
   // translate so the crossfade shows only the movement.
   const plateOffset = plateOffsetFor(exercise?.slug ?? '');
@@ -198,8 +203,8 @@ export default function ExerciseDetailScreen() {
                   <View
                     style={[
                       styles.plateFrameB,
+                      plateLoopStyle,
                       {
-                        opacity: plateFrame === 1 ? 1 : 0,
                         transform: plateOffset
                           ? ([{ translateX: -plateOffset.dx, translateY: -plateOffset.dy }] as unknown as import('react-native').ViewStyle['transform'])
                           : undefined,
@@ -491,6 +496,18 @@ export default function ExerciseDetailScreen() {
     </BoardShell>
   );
 }
+
+// THE PLATE LOOP — pure CSS keyframes, no JS animation.
+// 0-40%: frame B hidden (A shows). 50-90%: frame B visible (B shows).
+// 100%: back to hidden. Loops infinitely.
+const PLATE_LOOP_CSS = `@keyframes plateB {
+  0%, 40% { opacity: 0; }
+  50%, 90% { opacity: 1; }
+  100% { opacity: 0; }
+}`;
+const plateLoopStyle = {
+  animation: 'plateB 3s ease-in-out infinite',
+} as unknown as import('react-native').ViewStyle;
 
 const styles = StyleSheet.create({
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 40 },
