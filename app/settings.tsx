@@ -32,6 +32,7 @@ import {
   disconnectPartner,
   logWeight,
   getWeightHistory,
+  deleteWeight,
 } from '../utils/supabase/repositories';
 import { logger } from '../utils/logger';
 import { joinFacts } from '../utils';
@@ -112,9 +113,20 @@ export default function SettingsScreen() {
       return r.data;
     },
   });
+  const handleDeleteWeight = async (id: string) => {
+    const r = await deleteWeight(id);
+    if (r.success) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bodyWeight.all });
+    }
+  };
+
   const handleLogWeight = async () => {
-    const kg = parseFloat(weightInput);
-    if (!Number.isFinite(kg) || kg <= 0 || kg > 500 || loggingWeight) return;
+    // THE ONE CONVERSION BOUNDARY (invariant 5): the input reads in
+    // DISPLAY units; storage stays kilograms — convert before the write.
+    const displayValue = parseFloat(weightInput);
+    if (!Number.isFinite(displayValue) || displayValue <= 0 || loggingWeight) return;
+    const kg = weightUnit === 'lb' ? displayValue / 2.20462 : displayValue;
+    if (kg <= 0 || kg > 500) return;
     setLoggingWeight(true);
     const r = await logWeight(kg);
     setLoggingWeight(false);
@@ -465,7 +477,7 @@ export default function SettingsScreen() {
             {weightHistoryQuery.data.slice(0, 5).map((entry) => (
               <View
                 key={entry.id}
-                style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+                style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
               >
                 <Text
                   style={[
@@ -478,11 +490,27 @@ export default function SettingsScreen() {
                     day: 'numeric',
                   })}
                 </Text>
-                <Text style={[styles.unitTileLabel, { color: colors.text }]}>
-                  {weightUnit === 'lb'
-                    ? `${Math.round(entry.weightKg * 2.20462)} lb`
-                    : `${entry.weightKg} kg`}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Text style={[styles.unitTileLabel, { color: colors.text }]}>
+                    {weightUnit === 'lb'
+                      ? `${Math.round(entry.weightKg * 2.20462)} lb`
+                      : `${entry.weightKg} kg`}
+                  </Text>
+                  <Pressable
+                    onPress={() => void handleDeleteWeight(entry.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Delete weight entry from ${new Date(entry.recordedAt).toLocaleDateString()}`}
+                    style={({ pressed }) => [
+                      { paddingHorizontal: 8, paddingVertical: 4, minHeight: 44, justifyContent: 'center' },
+                      pressed ? { opacity: PRESS_DIP } : null,
+                    ]}
+                    testID={`weight-delete-${entry.id}`}
+                  >
+                    <Text style={[styles.unitTileLabel, { color: colors.textMuted }]}>
+                      ×
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
             ))}
           </View>
