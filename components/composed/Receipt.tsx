@@ -265,7 +265,9 @@ export function Receipt({ id }: ReceiptProps) {
                       numberOfLines={1}
                       testID={`receipt-bw-decl-${ex.id}`}
                     >
-                      let a = BW×{bwFactor}
+                      let a = BW×{bwFactor} = {roundDisplayWeight(
+                        toDisplayWeight(bwFactor * bodyweightKg, unit),
+                      )}
                     </Text>
                   </View>
                 );
