@@ -326,10 +326,9 @@ export function Floor() {
   const formStationRef = useRef<string | null>(formStationKey);
   if (formStationRef.current !== formStationKey) {
     formStationRef.current = formStationKey;
-    setFormOpen(false); stopPlateLoop();;
+    setFormOpen(false);;
     setReadingOpen(false);
     setPlateFrame(0);
-    stopPlateLoop();
   }
 
   // The program's own ask for this station: the SET count and the LOW
@@ -814,12 +813,12 @@ export function Floor() {
                                 resizeMode="cover"
                               />
                               {entry.imageB ? (
-                                <Animated.Image
+                                <Image
                                   source={{ uri: entry.imageB }}
                                   style={[
                                     StyleSheet.absoluteFillObject,
                                     styles.formPlateFilter,
-                                    { opacity: plateBOpacity },
+                                    { opacity: plateFrame === 1 ? 1 : 0 },
                                     plateOffset
                                       ? {
                                           transform: [

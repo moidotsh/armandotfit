@@ -13,7 +13,7 @@
 // active, ADD TO SESSION is the page's one verb.
 
 import React, {useMemo, useState, useRef, useEffect} from 'react';
-import { Animated, Image, Pressable, StyleSheet, Text, View, type ImageStyle } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View, type ImageStyle } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import {
   MobilePrimaryButton,
@@ -109,28 +109,15 @@ export default function ExerciseDetailScreen() {
   const [plateFrame, setPlateFrame] = useState(0);
   // THE PLATE LOOP — auto-animates on mount: A holds, fades to B,
   // B holds, fades back. No tap needed.
-  const plateBOpacity = useRef(new Animated.Value(0)).current;
+  // THE PLATE LOOP — simple interval toggle: frame A ↔ B every 1.5s.
+  // The dumbest possible animation. It just works.
   useEffect(() => {
     if (!exercise?.imageB) return;
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(plateBOpacity, {
-          toValue: 1,
-          duration: 600,
-          delay: 1000,
-          useNativeDriver: false,
-        }),
-        Animated.timing(plateBOpacity, {
-          toValue: 0,
-          duration: 600,
-          delay: 1000,
-          useNativeDriver: false,
-        }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [exercise?.imageB, plateBOpacity]);
+    const id = setInterval(() => {
+      setPlateFrame((f) => (f === 0 ? 1 : 0));
+    }, 1500);
+    return () => clearInterval(id);
+  }, [exercise?.imageB]);
   // THE PLATE ALIGNMENT — the B frame's camera offset, applied as a
   // translate so the crossfade shows only the movement.
   const plateOffset = plateOffsetFor(exercise?.slug ?? '');
