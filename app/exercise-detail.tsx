@@ -501,9 +501,9 @@ export default function ExerciseDetailScreen() {
 // 0-40%: frame B hidden (A shows). 50-90%: frame B visible (B shows).
 // 100%: back to hidden. Loops infinitely.
 const PLATE_LOOP_CSS = `@keyframes plateB {
-  0%, 40% { opacity: 0; }
-  50%, 90% { opacity: 1; }
-  100% { opacity: 0; }
+  0%, 20% { opacity: 0; }
+  50% { opacity: 1; }
+  80%, 100% { opacity: 0; }
 }`;
 const plateLoopStyle = {
   animation: 'plateB 3s ease-in-out infinite',

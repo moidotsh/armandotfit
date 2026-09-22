@@ -82,9 +82,9 @@ interface Armed {
 }
 
 const PLATE_LOOP_KEYFRAMES = `@keyframes plateB {
-  0%, 40% { opacity: 0; }
-  50%, 90% { opacity: 1; }
-  100% { opacity: 0; }
+  0%, 20% { opacity: 0; }
+  50% { opacity: 1; }
+  80%, 100% { opacity: 0; }
 }`;
 const plateLoopCss = {
   animation: 'plateB 3s ease-in-out infinite',
