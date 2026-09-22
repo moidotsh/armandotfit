@@ -73,11 +73,14 @@ export function Receipt({ id }: ReceiptProps) {
     weight: string;
     reps: string;
   } | null>(null);
+  const [confirmDeleteSet, setConfirmDeleteSet] = useState(false);
 
   // DISMISS — Enter saves, Escape cancels (the keyboard's natural
   // exits). The editing ref keeps the listener closure fresh.
   const editingRef = useRef(editingSet);
   editingRef.current = editingSet;
+  // Reset the delete confirmation when the edit target changes.
+  useEffect(() => { setConfirmDeleteSet(false); }, [editingSet?.setId]);
   // r1-exempt: fire-and-forget keypress save — React 18 no-ops the
   // post-unmount setState; the listener is properly paired-cleared.
   useEffect(() => {
@@ -447,16 +450,33 @@ export function Receipt({ id }: ReceiptProps) {
                           onSubmitEditing={() => void handleSaveSet()}
                         />
                         <Pressable
-                          onPress={() => void handleDeleteSet(editingSet.setId)}
+                          onPress={() => {
+                            if (confirmDeleteSet) {
+                              void handleDeleteSet(editingSet.setId);
+                              setConfirmDeleteSet(false);
+                            } else {
+                              setConfirmDeleteSet(true);
+                            }
+                          }}
                           accessibilityRole="button"
-                          accessibilityLabel="Delete set"
+                          accessibilityLabel={confirmDeleteSet ? 'Tap again to delete set' : 'Delete set'}
                           style={({ pressed }) => [
                             styles.editMiniBtn,
+                            confirmDeleteSet
+                              ? { backgroundColor: colors.alert }
+                              : null,
                             pressed ? { opacity: PRESS_DIP } : null,
                           ]}
                           testID="set-edit-delete"
                         >
-                          <Text style={[styles.editMiniLabel, { color: colors.alert }]}>×</Text>
+                          <Text
+                            style={[
+                              styles.editMiniLabel,
+                              { color: confirmDeleteSet ? colors.background : colors.alert },
+                            ]}
+                          >
+                            {confirmDeleteSet ? '!' : '×'}
+                          </Text>
                         </Pressable>
                         <Pressable
                           onPress={() => setEditingSet(null)}
