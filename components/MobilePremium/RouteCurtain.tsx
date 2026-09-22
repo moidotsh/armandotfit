@@ -82,9 +82,14 @@ export function RouteCurtain() {
     const target = phase !== 'idle' ? colors.focus.background : colors.backgroundDeep;
     const metas = document.querySelectorAll('meta[name="theme-color"]');
     metas.forEach((m) => m.setAttribute('content', target));
+    // The body paints the PWA status-bar zone under black-translucent —
+    // repaint it too or the bar stays the palette color during the sweep.
+    document.documentElement.style.backgroundColor = target;
+    document.body.style.backgroundColor = target;
     return () => {
-      // Restore on unmount (route change without reveal).
       metas.forEach((m) => m.setAttribute('content', colors.backgroundDeep));
+      document.documentElement.style.backgroundColor = colors.backgroundDeep;
+      document.body.style.backgroundColor = colors.backgroundDeep;
     };
   }, [phase, colors.focus.background, colors.backgroundDeep]);
 
