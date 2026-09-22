@@ -192,7 +192,7 @@ export default function ExerciseDetailScreen() {
                       {
                         opacity: plateFrame === 1 ? 1 : 0,
                         transform: plateOffset
-                          ? ([{ translateX: -plateOffset.dx * 0.5, translateY: -plateOffset.dy * 0.5 }] as unknown as ImageStyle['transform'])
+                          ? ([{ translateX: -plateOffset.dx, translateY: -plateOffset.dy }] as unknown as ImageStyle['transform'])
                           : undefined,
                       },
                     ]}
