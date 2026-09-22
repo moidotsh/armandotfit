@@ -11,8 +11,13 @@
 // they could silently disagree.
 
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSessionHistory } from './useWorkouts';
 import { logger } from '../../utils/logger';
+import { queryKeys } from '../../lib/react-query';
+import { bodyweightAsOf } from '../../utils/bodyweight';
+import { getWeightHistory } from '../../utils/supabase/repositories';
+import { SYSTEM_EXERCISES } from '../../shared/exercises';
 
 export interface TopSetFact {
   /** Best loaded weight in that session (ties → the later set). */
@@ -75,9 +80,36 @@ const TOP_SETS_BUDGET_MS = 150;
 
 export function useTopSetsByName() {
   const historyQuery = useSessionHistory();
+  // THE BODYWEIGHT — the weigh-in history powers effective loads for
+  // bodyweight stations (weight=0 → factor × as-of bodyweight).
+  const bodyweightQuery = useQuery({
+    queryKey: queryKeys.bodyWeight.history(),
+    queryFn: async () => {
+      const r = await getWeightHistory(90);
+      if (!r.success) throw r.error;
+      return r.data;
+    },
+  });
   const map = useMemo(() => {
     const t0 = performance.now();
     const derived = deriveTopSets(historyQuery.data ?? []);
+    // BODYWEIGHT EFFECTIVE LOADS — a top set of 0 on a bodyweight
+    // exercise resolves to factor × the bodyweight at that session
+    // (the as-of lookup; the number you carried THEN).
+    if (bodyweightQuery.data && bodyweightQuery.data.length > 0) {
+      for (const [key, fact] of derived) {
+        if (fact.weight !== 0) continue;
+        const entry = SYSTEM_EXERCISES.find(
+          (e) => e.name.toLowerCase() === key,
+        );
+        const factor = entry?.bodyweightLoadFactor;
+        if (factor == null || factor <= 0) continue;
+        const bw = bodyweightAsOf(bodyweightQuery.data, fact.startedAt);
+        if (bw != null && bw > 0) {
+          derived.set(key, { ...fact, weight: factor * bw });
+        }
+      }
+    }
     const ms = performance.now() - t0;
     if (ms > TOP_SETS_BUDGET_MS) {
       logger.warn('queries', `deriveTopSets over budget: ${Math.round(ms)}ms > ${TOP_SETS_BUDGET_MS}ms (${historyQuery.data?.length ?? 0} sessions)`);
@@ -85,6 +117,6 @@ export function useTopSetsByName() {
       logger.debug('queries', `deriveTopSets ${Math.round(ms)}ms (${historyQuery.data?.length ?? 0} sessions)`);
     }
     return derived;
-  }, [historyQuery.data]);
+  }, [historyQuery.data, bodyweightQuery.data]);
   return { map, isLoading: historyQuery.isLoading };
 }
