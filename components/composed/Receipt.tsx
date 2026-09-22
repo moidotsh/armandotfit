@@ -31,8 +31,8 @@ import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/react-query';
 import { navigateToWorkoutDetail, safeGoBack } from '../../navigation';
 import { resolveSlots, sumVolume } from '../../services';
-import { effectiveSetWeight } from '../../utils/bodyweight';
-import { getLatestWeight } from '../../utils/supabase/repositories';
+import { bodyweightAsOf } from '../../utils/bodyweight';
+import { getWeightHistory } from '../../utils/supabase/repositories';
 import {
   rxLabel,
   useProgramOverrideStore,
@@ -89,17 +89,21 @@ export function Receipt({ id }: ReceiptProps) {
   const totalSets = session
     ? session.exercises.reduce((n, e) => n + e.sets.length, 0)
     : 0;
-  // THE BODYWEIGHT — the latest weigh-in powers the volume of
-  // bodyweight stations (factor × bodyweight = effective load).
+  // THE BODYWEIGHT — point-in-time: the weigh-in closest to (and
+  // preferably at-or-before) the session's own date. A receipt from
+  // three weeks ago computes with the weight you carried three weeks
+  // ago, not today's (the as-of resolution — history reads honest).
   const bodyweightQuery = useQuery({
-    queryKey: queryKeys.bodyWeight.latest(),
+    queryKey: queryKeys.bodyWeight.history(),
     queryFn: async () => {
-      const r = await getLatestWeight();
+      const r = await getWeightHistory(90);
       if (!r.success) throw r.error;
       return r.data;
     },
   });
-  const bodyweightKg = bodyweightQuery.data?.weightKg ?? null;
+  const bodyweightKg = session
+    ? bodyweightAsOf(bodyweightQuery.data ?? [], session.startedAt)
+    : null;
 
   const totalKg = session
     ? session.exercises.reduce((n, e) => {

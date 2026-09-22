@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   bodyweightFactorFor,
   effectiveSetWeight,
+  bodyweightAsOf,
 } from '../../utils/bodyweight';
 
 describe('bodyweightFactorFor', () => {
@@ -125,5 +126,35 @@ describe('effectiveSetWeight', () => {
     expect(effectiveSetWeight(null, null, 100)).toBe(0);
     expect(effectiveSetWeight(null, 0.64, null)).toBe(0);
     expect(effectiveSetWeight(null, 0.64, 0)).toBe(0);
+  });
+});
+
+describe('bodyweightAsOf — point-in-time resolution', () => {
+  const entries = [
+    { weightKg: 100, recordedAt: '2027-09-01T10:00:00Z' },
+    { weightKg: 95, recordedAt: '2027-09-15T10:00:00Z' },
+    { weightKg: 92, recordedAt: '2027-09-29T10:00:00Z' },
+  ];
+
+  it('uses the most recent entry at-or-before the session', () => {
+    // Session on Sep 20 → the Sep 15 entry (95 kg) is the latest known
+    expect(bodyweightAsOf(entries, '2027-09-20T08:00:00Z')).toBe(95);
+  });
+
+  it('uses the exact-date entry when it matches', () => {
+    expect(bodyweightAsOf(entries, '2027-09-15T12:00:00Z')).toBe(95);
+  });
+
+  it('a session before all entries falls back to the earliest', () => {
+    // The owner's case: workout happened, weight logged after
+    expect(bodyweightAsOf(entries, '2027-08-30T08:00:00Z')).toBe(100);
+  });
+
+  it('a session after all entries uses the latest', () => {
+    expect(bodyweightAsOf(entries, '2027-10-05T08:00:00Z')).toBe(92);
+  });
+
+  it('empty history returns null', () => {
+    expect(bodyweightAsOf([], '2027-09-20T08:00:00Z')).toBeNull();
   });
 });

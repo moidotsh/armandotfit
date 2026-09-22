@@ -211,3 +211,35 @@ export function effectiveSetWeight(
   }
   return 0;
 }
+
+/**
+ * Point-in-time bodyweight resolution — the entry closest to (and
+ * preferably at-or-before) the given date. The most recent weight
+ * KNOWN at the time of the session; falls back to the earliest entry
+ * when the session predates every weigh-in (the owner's case: the
+ * first weight was logged after the first workout).
+ */
+export function bodyweightAsOf(
+  entries: ReadonlyArray<{ weightKg: number; recordedAt: string }>,
+  sessionDate: string,
+): number | null {
+  if (entries.length === 0) return null;
+  const target = new Date(sessionDate).getTime();
+
+  // Entries recorded at or before the session, newest first.
+  const eligible = entries
+    .filter((e) => new Date(e.recordedAt).getTime() <= target)
+    .sort(
+      (a, b) =>
+        new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime(),
+    );
+  if (eligible.length > 0) return eligible[0].weightKg;
+
+  // No entry at-or-before the session — the earliest entry is the best
+  // estimate (the session predates every weigh-in).
+  const earliest = [...entries].sort(
+    (a, b) =>
+      new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime(),
+  );
+  return earliest[0]?.weightKg ?? null;
+}
