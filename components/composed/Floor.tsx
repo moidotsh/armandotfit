@@ -1134,7 +1134,12 @@ const styles = StyleSheet.create({
   stageColumn: {
     flex: 1,
   },
-  shell: { flex: 1 },
+  shell: {
+    flex: 1,
+    // iOS 27 LIQUID GLASS GUARD — matches BoardShell's shift so the
+    // Floor's header clears the frosted zone on every iPhone.
+    paddingTop: 24,
+  },
   stageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
