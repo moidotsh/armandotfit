@@ -247,6 +247,27 @@ export function Receipt({ id }: ReceiptProps) {
                   {joinFacts(['no tags', `last time: ${joinFacts(lastTags.get(ex.exerciseName)!)}`])}
                 </Text>
               ) : null}
+              {(() => {
+                // THE BODYWEIGHT DECLARATION — one red line defines the
+                // variable; the set rows below read 'a × N' instead of
+                // repeating the effective load every row.
+                const entry = SYSTEM_EXERCISES.find(
+                  (sys) => sys.name === ex.exerciseName,
+                );
+                const bwFactor = entry?.bodyweightLoadFactor;
+                if (bwFactor == null || bwFactor <= 0 || bodyweightKg == null) return null;
+                const effKg = bwFactor * bodyweightKg;
+                const effDisplay = roundDisplayWeight(toDisplayWeight(effKg, unit));
+                return (
+                  <Text
+                    style={[styles.tagsLine, { color: colors.brandText }]}
+                    numberOfLines={1}
+                    testID={`receipt-bw-decl-${ex.id}`}
+                  >
+                    let a = BW·{effDisplay}
+                  </Text>
+                );
+              })()}
               {/* The session's best set wears the record red — the
                   sanctioned job (the receipt's ONLY red mark per
                   exercise; the tonnage stays ink: settled fact). */}
@@ -280,7 +301,7 @@ export function Receipt({ id }: ReceiptProps) {
                   const figure = hasLoad
                     ? `${roundDisplayWeight(toDisplayWeight(s.weight!, unit))} × ${s.reps}`
                     : setDisplayKg != null
-                      ? `BW·${roundDisplayWeight(toDisplayWeight(setDisplayKg, unit))} × ${s.reps}`
+                      ? `a × ${s.reps}`
                       : `BW × ${s.reps}`;
                   return (
                     <RegisterLine
