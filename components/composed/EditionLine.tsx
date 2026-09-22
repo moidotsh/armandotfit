@@ -13,6 +13,9 @@ import { theme,
   PRESS_DIP
 } from '../../constants';
 import { sumVolume } from '../../services';
+import { bodyweightAsOf } from '../../utils/bodyweight';
+import { useBodyweightHistory } from '../../hooks/queries';
+import { SYSTEM_EXERCISES } from '../../shared/exercises';
 import { useWeightUnit } from '../../hooks';
 import { formatVolumeWeight, weightUnitLabel, joinFacts } from '../../utils';
 import type { LoggedExerciseWithSets, TrainingSession } from '../../shared/types';
@@ -43,7 +46,21 @@ export function EditionLine({ session, onPress, lead = false }: EditionLineProps
     weekday: 'short',
     day: 'numeric',
   });
-  const tonnage = sumVolume(session.exercises?.flatMap((e) => e.sets) ?? []);
+  const bodyweightQuery = useBodyweightHistory();
+  const tonnage = (session.exercises ?? []).reduce((n, e) => {
+    const entry = SYSTEM_EXERCISES.find(
+      (sys) => sys.name === e.exerciseName,
+    );
+    const factor = entry?.bodyweightLoadFactor;
+    const effectiveBw =
+      factor != null && bodyweightQuery.data && bodyweightQuery.data.length > 0
+        ? (() => {
+            const bw = bodyweightAsOf(bodyweightQuery.data, session.startedAt);
+            return bw != null ? factor * bw : undefined;
+          })()
+        : undefined;
+    return n + sumVolume(e.sets ?? [], effectiveBw);
+  }, 0);
 
   // THE ARCHIVE ROW SPLITS (the atelier pass): the identity parts
   // read left, the tonnage claims its own right-aligned post — the

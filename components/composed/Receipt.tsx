@@ -251,24 +251,54 @@ export function Receipt({ id }: ReceiptProps) {
                   sanctioned job (the receipt's ONLY red mark per
                   exercise; the tonnage stays ink: settled fact). */}
               {(() => {
+                // THE BODYWEIGHT ROW — a set with no loaded weight on a
+                // bodyweight exercise reads 'BW·75 × 20' (the effective
+                // load), not '0 × 20' (the raw null). The record red
+                // still rides the best display weight.
+                const entry = SYSTEM_EXERCISES.find(
+                  (sys) => sys.name === ex.exerciseName,
+                );
+                const bwFactor = entry?.bodyweightLoadFactor;
+                const bwEffKg =
+                  bwFactor != null && bodyweightKg != null
+                    ? bwFactor * bodyweightKg
+                    : null;
                 const bestWeight = Math.max(
-                  ...ex.sets.map((s) => toDisplayWeight(s.weight ?? 0, unit)),
+                  ...ex.sets.map((s) =>
+                    toDisplayWeight(
+                      s.weight != null && s.weight > 0
+                        ? s.weight
+                        : (bwEffKg ?? 0),
+                      unit,
+                    ),
+                  ),
                   0,
                 );
-                return ex.sets.map((s) => (
-                  <RegisterLine
-                    key={s.id}
-                    monoLabel
-                    label={String(s.position)}
-                    figure={`${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} × ${s.reps}`}
-                    figureTone={
-                      toDisplayWeight(s.weight ?? 0, unit) === bestWeight && bestWeight > 0
-                        ? 'record'
-                        : 'ink'
-                    }
-                    testID={`receipt-set-${ex.id}-${s.position}`}
-                  />
-                ));
+                return ex.sets.map((s) => {
+                  const hasLoad = s.weight != null && s.weight > 0;
+                  const setDisplayKg = hasLoad ? s.weight! : bwEffKg;
+                  const figure = hasLoad
+                    ? `${roundDisplayWeight(toDisplayWeight(s.weight!, unit))} × ${s.reps}`
+                    : setDisplayKg != null
+                      ? `BW·${roundDisplayWeight(toDisplayWeight(setDisplayKg, unit))} × ${s.reps}`
+                      : `BW × ${s.reps}`;
+                  return (
+                    <RegisterLine
+                      key={s.id}
+                      monoLabel
+                      label={String(s.position)}
+                      figure={figure}
+                      figureTone={
+                        setDisplayKg != null &&
+                        toDisplayWeight(setDisplayKg, unit) === bestWeight &&
+                        bestWeight > 0
+                          ? 'record'
+                          : 'ink'
+                      }
+                      testID={`receipt-set-${ex.id}-${s.position}`}
+                    />
+                  );
+                });
               })()}
             </View>
           ))}
