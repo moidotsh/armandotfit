@@ -813,24 +813,25 @@ export function Floor() {
                                 resizeMode="cover"
                               />
                               {entry.imageB ? (
-                                <Image
-                                  source={{ uri: entry.imageB }}
+                                <View
                                   style={[
                                     StyleSheet.absoluteFillObject,
-                                    styles.formPlateFilter,
-                                    { opacity: plateFrame === 1 ? 1 : 0 },
-                                    plateOffset
-                                      ? {
-                                          transform: [
-                                            { translateX: -plateOffset.dx, translateY: -plateOffset.dy },
-                                          ],
-                                        }
-                                      : null,
-                                  ] as unknown as ImageStyle[]}
-                                  accessibilityElementsHidden
-                                  testID="form-plate-image-b"
-                                  resizeMode="cover"
-                                />
+                                    {
+                                      opacity: plateFrame === 1 ? 1 : 0,
+                                      transform: plateOffset
+                                        ? ([{ translateX: -plateOffset.dx, translateY: -plateOffset.dy }] as unknown as import('react-native').ViewStyle['transform'])
+                                        : undefined,
+                                    },
+                                  ]}
+                                >
+                                  <Image
+                                    source={{ uri: entry.imageB }}
+                                    style={[StyleSheet.absoluteFillObject, styles.formPlateFilter] as unknown as ImageStyle[]}
+                                    accessibilityElementsHidden
+                                    testID="form-plate-image-b"
+                                    resizeMode="cover"
+                                  />
+                                </View>
                               ) : null}
                             </View>
                             {entry.imageB ? (

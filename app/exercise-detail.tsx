@@ -195,22 +195,25 @@ export default function ExerciseDetailScreen() {
                   resizeMode="contain"
                 />
                 {exercise.imageB ? (
-                  <Image
-                    source={{ uri: exercise.imageB }}
+                  <View
                     style={[
-                      styles.plateImage,
                       styles.plateFrameB,
                       {
                         opacity: plateFrame === 1 ? 1 : 0,
                         transform: plateOffset
-                          ? ([{ translateX: -plateOffset.dx, translateY: -plateOffset.dy }] as unknown as ImageStyle['transform'])
+                          ? ([{ translateX: -plateOffset.dx, translateY: -plateOffset.dy }] as unknown as import('react-native').ViewStyle['transform'])
                           : undefined,
                       },
                     ]}
-                    accessibilityElementsHidden
-                    testID="entry-plate-image-b"
-                    resizeMode="contain"
-                  />
+                  >
+                    <Image
+                      source={{ uri: exercise.imageB }}
+                      style={styles.plateImage}
+                      accessibilityElementsHidden
+                      testID="entry-plate-image-b"
+                      resizeMode="contain"
+                    />
+                  </View>
                 ) : null}
               </View>
               {exercise.imageB ? (
