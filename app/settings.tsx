@@ -7,8 +7,8 @@
 // struck marks; install/version ride as single rows; Sign Out is the
 // page's one verb.
 
-import React, { useCallback } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Check } from '@tamagui/lucide-icons-2';
 import {
   MobileActionFooter,
@@ -21,8 +21,16 @@ import { useProfile, useUpdateProfile, usePwaPrompt, useRecentSessionDetails } f
 import { DAY_OF_WEEK_LABELS, BLOCK_GAP, INTERVAL, theme,
   PRESS_DIP
 } from '../constants';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../lib/react-query';
 import { useToast } from '../context';
 import { useRestStore, useDeloadStore, useSplitPreferenceStore } from '../stores';
+import {
+  getMyPartnerCode,
+  getPartner,
+  connectPartner,
+  disconnectPartner,
+} from '../utils/supabase/repositories';
 import { logger } from '../utils/logger';
 import { joinFacts } from '../utils';
 import type { WeightUnit } from '../shared/types';
@@ -89,6 +97,47 @@ export default function SettingsScreen() {
   // THE WEIGHT UNIT — the display conversion preference (kg storage
   // throughout; utils/weight.ts owns the arithmetic).
   const weightUnit = profileQuery.data?.weightUnit ?? 'kg';
+
+  // THE TRAINING PARTNER — the couples link. Enter each other's
+  // partner code in Settings; the couple page gains its live section.
+  const [partnerCode, setPartnerCode] = useState('');
+  const [partnerConnecting, setPartnerConnecting] = useState(false);
+  const myCodeQuery = useQuery({
+    queryKey: queryKeys.partner.myCode(),
+    queryFn: async () => {
+      const r = await getMyPartnerCode();
+      if (!r.success) throw r.error;
+      return r.data;
+    },
+    staleTime: Infinity,
+  });
+  const partnerQuery = useQuery({
+    queryKey: queryKeys.partner.current(),
+    queryFn: async () => {
+      const r = await getPartner();
+      if (!r.success) throw r.error;
+      return r.data;
+    },
+  });
+  const queryClient = useQueryClient();
+  const handleConnectPartner = async () => {
+    if (!partnerCode.trim() || partnerConnecting) return;
+    setPartnerConnecting(true);
+    const r = await connectPartner(partnerCode);
+    setPartnerConnecting(false);
+    if (r.success) {
+      setPartnerCode('');
+      queryClient.invalidateQueries({ queryKey: queryKeys.partner.all });
+    } else {
+      showToast('error', r.error?.message ?? 'Connection failed');
+    }
+  };
+  const handleDisconnectPartner = async () => {
+    const r = await disconnectPartner();
+    if (r.success) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.partner.all });
+    }
+  };
 
   // THE REST INSTRUMENT's remembered default (interval-thesis §7):
   // the interval a fresh rest starts with. ±15s steppers, mono
@@ -252,6 +301,90 @@ export default function SettingsScreen() {
             );
           })}
         </View>
+      </View>
+
+      {/* THE TRAINING PARTNER — the couples link. One partner at a
+          time; enter their code, they enter yours. */}
+      <View style={styles.block}>
+        <Text style={[styles.whisper, { color: colors.textMuted }]}>
+          TRAINING PARTNER
+        </Text>
+        {partnerQuery.data ? (
+          <View style={{ gap: 8, marginTop: 8 }}>
+            <Text style={[styles.unitTileLabel, { color: colors.text }]}>
+              {partnerQuery.data.partnerDisplayName || 'Connected'}
+            </Text>
+            <Pressable
+              onPress={handleDisconnectPartner}
+              accessibilityRole="button"
+              accessibilityLabel="Disconnect training partner"
+              style={({ pressed }) => [
+                styles.unitTile,
+                { backgroundColor: colors.glass.inputBackground },
+                pressed ? { opacity: PRESS_DIP } : null,
+              ]}
+              testID="partner-disconnect"
+            >
+              <Text style={[styles.unitTileLabel, { color: colors.text }]}>
+                DISCONNECT
+              </Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={{ gap: 8, marginTop: 8 }}>
+            {myCodeQuery.data ? (
+              <Text style={[styles.unitTileLabel, { color: colors.text }]}>
+                Your code: {myCodeQuery.data}
+              </Text>
+            ) : null}
+            <TextInput
+              value={partnerCode}
+              onChangeText={setPartnerCode}
+              placeholder="Enter their partner code"
+              placeholderTextColor={colors.textMuted}
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={[
+                styles.unitTile,
+                {
+                  backgroundColor: colors.glass.inputBackground,
+                  color: colors.text,
+                  paddingHorizontal: 16,
+                },
+              ]}
+              testID="partner-code-input"
+            />
+            <Pressable
+              onPress={handleConnectPartner}
+              accessibilityRole="button"
+              accessibilityLabel="Connect training partner"
+              disabled={partnerConnecting || !partnerCode.trim()}
+              style={({ pressed }) => [
+                styles.unitTile,
+                {
+                  backgroundColor: partnerCode.trim()
+                    ? colors.text
+                    : colors.glass.inputBackground,
+                },
+                pressed ? { opacity: PRESS_DIP } : null,
+              ]}
+              testID="partner-connect"
+            >
+              <Text
+                style={[
+                  styles.unitTileLabel,
+                  {
+                    color: partnerCode.trim()
+                      ? colors.background
+                      : colors.text,
+                  },
+                ]}
+              >
+                {partnerConnecting ? 'CONNECTING…' : 'CONNECT'}
+              </Text>
+            </Pressable>
+          </View>
+        )}
       </View>
 
       {/* THE PROGRAM EDITION — which split the app trains. Two-tile

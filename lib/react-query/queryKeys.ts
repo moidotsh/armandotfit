@@ -28,6 +28,14 @@ export const queryKeys = {
     current: () => ['profile', 'current'] as const,
   },
 
+  /** Training partner — the couples link (connect, read-through). */
+  partner: {
+    all: ['partner'] as const,
+    myCode: () => ['partner', 'myCode'] as const,
+    current: () => ['partner', 'current'] as const,
+    sessions: () => ['partner', 'sessions'] as const,
+  },
+
   /** Exercise library (local catalog; key kept for cache namespacing). */
   exercises: {
     all: ['exercises'] as const,

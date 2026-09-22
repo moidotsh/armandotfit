@@ -11,6 +11,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { BoardShell } from '../components/composed';
 import { useAppTheme } from '../context';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '../lib/react-query';
+import { getPartner, getPartnerRecentSessions } from '../utils/supabase/repositories';
 import { INTERVAL, ROW_GAP, HALO, BLOCK_GAP, theme, PAGE_GUTTER, PRESS_DIP } from '../constants';
 import {
   TWO_A_DAY_SPLITS,
@@ -67,6 +70,25 @@ export default function CoupleScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const [mode, setMode] = useState<Mode>(isMode(params.mode) ? params.mode : 'twoADay');
   const [sortBy, setSortBy] = useState<'male' | 'female'>('male');
+
+  // THE LIVE SECTION — partner data (only when connected + signed in).
+  const partnerQuery = useQuery({
+    queryKey: queryKeys.partner.current(),
+    queryFn: async () => {
+      const r = await getPartner();
+      if (!r.success) throw r.error;
+      return r.data;
+    },
+  });
+  const partnerSessionsQuery = useQuery({
+    queryKey: queryKeys.partner.sessions(),
+    queryFn: async () => {
+      const r = await getPartnerRecentSessions(5);
+      if (!r.success) throw r.error;
+      return r.data;
+    },
+    enabled: partnerQuery.data != null,
+  });
 
   const days = useMemo(() => {
     if (mode === 'oneADay') {
@@ -438,6 +460,42 @@ export default function CoupleScreen() {
             </View>
           );
         })}
+
+        {/* THE LIVE SECTION — the partner's recent sessions (only
+            when connected; the static plan above is public). */}
+        {partnerQuery.data ? (
+          <>
+            <Text style={styles.dayHead}>The Training</Text>
+            <Text style={styles.whisper}>
+              {partnerQuery.data.partnerDisplayName || 'Partner'} — recent sessions
+            </Text>
+            {(partnerSessionsQuery.data ?? []).map((sess) => (
+              <View key={sess.sessionId} style={styles.row}>
+                <View style={styles.cell}>
+                  <Text style={styles.exerciseName} numberOfLines={1}>
+                    {new Date(sess.startedAt).toLocaleDateString(undefined, {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </Text>
+                  <Text style={styles.rx}>
+                    {sess.splitDay ? `Day ${sess.splitDay}` : 'Ad-hoc'}
+                  </Text>
+                </View>
+                <View style={styles.cell}>
+                  <Text style={styles.exerciseName} numberOfLines={1}>
+                    {sess.totalSets} sets
+                  </Text>
+                  <Text style={styles.rx}>{sess.tonnageKg} kg</Text>
+                </View>
+              </View>
+            ))}
+            {(partnerSessionsQuery.data ?? []).length === 0 ? (
+              <Text style={styles.whisper}>No sessions yet</Text>
+            ) : null}
+          </>
+        ) : null}
 
         {/* THE WORK — both editions' muscle distribution, side by side */}
         <Text style={styles.dayHead}>The Work</Text>

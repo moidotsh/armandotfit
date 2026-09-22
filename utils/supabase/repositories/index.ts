@@ -10,5 +10,17 @@ export {
   userProfileRepository,
   UserProfileRepository,
 } from './UserProfileRepository';
+export {
+  findByPartnerCode,
+  connectPartner,
+  disconnectPartner,
+  getPartner,
+  getMyPartnerCode,
+  getPartnerRecentSessions,
+} from './PartnerRepository';
+export type {
+  TrainingPartner,
+  PartnerSessionSummary,
+} from './PartnerRepository';
 export { BaseRepository } from './BaseRepository';
 export * from './types';
