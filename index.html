@@ -162,6 +162,12 @@
         -webkit-user-select: none;
         user-select: none;
       }
+      /* The root canvas eases between the palette and the curtain's
+         ink — the status bar transition matches the sweep. */
+      html,
+      body {
+        transition: background-color 200ms ease;
+      }
       input,
       textarea {
         -webkit-user-select: auto;
