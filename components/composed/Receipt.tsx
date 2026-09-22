@@ -240,6 +240,7 @@ export function Receipt({ id }: ReceiptProps) {
           slot?.exercise ?? SYSTEM_EXERCISES.find((e) => e.name === ex.exerciseName)?.slug ?? '',
         tags: ex.tags,
         targetRx: slot ? rxLabel(slot) : null,
+        sets: ex.sets.map((s) => ({ weight: s.weight, reps: s.reps })),
       };
     });
     const cardio = [...new Set(session.cardio.map((c) => c.station))];
@@ -398,151 +399,174 @@ export function Receipt({ id }: ReceiptProps) {
                   ),
                   0,
                 );
-                return ex.sets.map((s) => {
-                  const hasLoad = s.weight != null && s.weight > 0;
-                  const setDisplayKg = hasLoad ? s.weight! : bwEffKg;
-                  const isBw = bwEffKg != null;
-                  const figure = isBw
-                    ? hasLoad
-                      ? `a+${roundDisplayWeight(toDisplayWeight(s.weight!, unit))} × ${s.reps}`
-                      : `a × ${s.reps}`
-                    : `${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} × ${s.reps}`;
-                  const isEditing = editingSet?.setId === s.id;
-                  if (isEditing && editingSet) {
-                    // INLINE EDIT — the row itself becomes the form:
-                    // weight × reps inputs, save/cancel, delete. The
-                    // edit happens where your finger already is.
-                    return (
-                      <View
-                        key={s.id}
-                        style={styles.editRow}
-                        testID={`receipt-set-edit-${ex.id}-${s.position}`}
-                      >
-                        <Text style={[styles.editPos, { color: colors.textMuted }]}>
-                          {s.position}
-                        </Text>
-                        <TextInput
-                          value={editingSet.weight}
-                          onChangeText={(v) => setEditingSet({ ...editingSet, weight: v })}
-                          placeholder="lb"
-                          placeholderTextColor={colors.textMuted}
-                          keyboardType="numeric"
-                          style={[
-                            styles.editInlineInput,
-                            { backgroundColor: colors.glass.inputBackground, color: colors.text },
-                          ]}
-                          testID="set-edit-weight"
-                          onSubmitEditing={() => void handleSaveSet()}
-                        />
-                        <Text style={[styles.editTimes, { color: colors.textMuted }]}>×</Text>
-                        <TextInput
-                          value={editingSet.reps}
-                          onChangeText={(v) => setEditingSet({ ...editingSet, reps: v })}
-                          placeholder="reps"
-                          placeholderTextColor={colors.textMuted}
-                          keyboardType="numeric"
-                          style={[
-                            styles.editInlineInput,
-                            styles.editInlineInputNarrow,
-                            { backgroundColor: colors.glass.inputBackground, color: colors.text },
-                          ]}
-                          testID="set-edit-reps"
-                          onSubmitEditing={() => void handleSaveSet()}
-                        />
-                        <Pressable
-                          onPress={() => {
-                            if (confirmDeleteSet) {
-                              void handleDeleteSet(editingSet.setId);
-                              setConfirmDeleteSet(false);
-                            } else {
-                              setConfirmDeleteSet(true);
-                            }
-                          }}
-                          accessibilityRole="button"
-                          accessibilityLabel={confirmDeleteSet ? 'Tap again to delete set' : 'Delete set'}
-                          style={({ pressed }) => [
-                            styles.editMiniBtn,
-                            confirmDeleteSet
-                              ? { backgroundColor: colors.alert }
-                              : null,
-                            pressed ? { opacity: PRESS_DIP } : null,
-                          ]}
-                          testID="set-edit-delete"
-                        >
-                          <Text
-                            style={[
-                              styles.editMiniLabel,
-                              { color: confirmDeleteSet ? colors.background : colors.alert },
-                            ]}
+                // ── ADD SET — the missed set joins the receipt ──
+                const lastSet = ex.sets[ex.sets.length - 1];
+                return (
+                  <>
+                    {ex.sets.map((s) => {
+                      const hasLoad = s.weight != null && s.weight > 0;
+                      const setDisplayKg = hasLoad ? s.weight! : bwEffKg;
+                      const isBw = bwEffKg != null;
+                      const figure = isBw
+                        ? hasLoad
+                          ? `a+${roundDisplayWeight(toDisplayWeight(s.weight!, unit))} × ${s.reps}`
+                          : `a × ${s.reps}`
+                        : `${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} × ${s.reps}`;
+                      const isEditing = editingSet?.setId === s.id;
+                      if (isEditing && editingSet) {
+                        return (
+                          <View
+                            key={s.id}
+                            style={styles.editRow}
+                            testID={`receipt-set-edit-${ex.id}-${s.position}`}
                           >
-                            {confirmDeleteSet ? '!' : '×'}
-                          </Text>
-                        </Pressable>
+                            <Text style={[styles.editPos, { color: colors.textMuted }]}>
+                              {s.position}
+                            </Text>
+                            <TextInput
+                              value={editingSet.weight}
+                              onChangeText={(v) => setEditingSet({ ...editingSet, weight: v })}
+                              placeholder="lb"
+                              placeholderTextColor={colors.textMuted}
+                              keyboardType="numeric"
+                              style={[
+                                styles.editInlineInput,
+                                { backgroundColor: colors.glass.inputBackground, color: colors.text },
+                              ]}
+                              testID="set-edit-weight"
+                              onSubmitEditing={() => void handleSaveSet()}
+                            />
+                            <Text style={[styles.editTimes, { color: colors.textMuted }]}>×</Text>
+                            <TextInput
+                              value={editingSet.reps}
+                              onChangeText={(v) => setEditingSet({ ...editingSet, reps: v })}
+                              placeholder="reps"
+                              placeholderTextColor={colors.textMuted}
+                              keyboardType="numeric"
+                              style={[
+                                styles.editInlineInput,
+                                styles.editInlineInputNarrow,
+                                { backgroundColor: colors.glass.inputBackground, color: colors.text },
+                              ]}
+                              testID="set-edit-reps"
+                              onSubmitEditing={() => void handleSaveSet()}
+                            />
+                            <Pressable
+                              onPress={() => {
+                                if (confirmDeleteSet) {
+                                  void handleDeleteSet(editingSet.setId);
+                                  setConfirmDeleteSet(false);
+                                } else {
+                                  setConfirmDeleteSet(true);
+                                }
+                              }}
+                              accessibilityRole="button"
+                              accessibilityLabel={confirmDeleteSet ? 'Tap again to delete set' : 'Delete set'}
+                              style={({ pressed }) => [
+                                styles.editMiniBtn,
+                                confirmDeleteSet
+                                  ? { backgroundColor: colors.alert }
+                                  : null,
+                                pressed ? { opacity: PRESS_DIP } : null,
+                              ]}
+                              testID="set-edit-delete"
+                            >
+                              <Text
+                                style={[
+                                  styles.editMiniLabel,
+                                  { color: confirmDeleteSet ? colors.background : colors.alert },
+                                ]}
+                              >
+                                {confirmDeleteSet ? '!' : '×'}
+                              </Text>
+                            </Pressable>
+                            <Pressable
+                              onPress={() => setEditingSet(null)}
+                              accessibilityRole="button"
+                              accessibilityLabel="Cancel edit"
+                              style={({ pressed }) => [
+                                styles.editMiniBtn,
+                                pressed ? { opacity: PRESS_DIP } : null,
+                              ]}
+                              testID="set-edit-cancel"
+                            >
+                              <Text style={[styles.editMiniLabel, { color: colors.text }]}>‹</Text>
+                            </Pressable>
+                            <Pressable
+                              onPress={() => void handleSaveSet()}
+                              accessibilityRole="button"
+                              accessibilityLabel="Save set"
+                              style={({ pressed }) => [
+                                styles.editMiniBtn,
+                                { backgroundColor: colors.text },
+                                pressed ? { opacity: PRESS_DIP_PLATE } : null,
+                              ]}
+                              testID="set-edit-save"
+                            >
+                              <Text style={[styles.editMiniLabel, { color: colors.background }]}>✓</Text>
+                            </Pressable>
+                          </View>
+                        );
+                      }
+                      return (
                         <Pressable
-                          onPress={() => setEditingSet(null)}
+                          key={s.id}
+                          onPress={() =>
+                            setEditingSet({
+                              setId: s.id,
+                              exerciseId: ex.id,
+                              weight:
+                                s.weight != null
+                                  ? String(roundDisplayWeight(toDisplayWeight(s.weight, unit)))
+                                  : '',
+                              reps: String(s.reps ?? ''),
+                            })
+                          }
                           accessibilityRole="button"
-                          accessibilityLabel="Cancel edit"
+                          accessibilityLabel={`Edit set ${s.position}: ${figure}`}
                           style={({ pressed }) => [
-                            styles.editMiniBtn,
+                            { minHeight: 44, justifyContent: 'center' },
                             pressed ? { opacity: PRESS_DIP } : null,
                           ]}
-                          testID="set-edit-cancel"
+                          testID={`receipt-set-${ex.id}-${s.position}`}
                         >
-                          <Text style={[styles.editMiniLabel, { color: colors.text }]}>‹</Text>
+                          <RegisterLine
+                            monoLabel
+                            label={String(s.position)}
+                            figure={figure}
+                            figureTone={
+                              setDisplayKg != null &&
+                              toDisplayWeight(setDisplayKg, unit) === bestWeight &&
+                              bestWeight > 0
+                                ? 'record'
+                                : 'ink'
+                            }
+                          />
                         </Pressable>
-                        <Pressable
-                          onPress={() => void handleSaveSet()}
-                          accessibilityRole="button"
-                          accessibilityLabel="Save set"
-                          style={({ pressed }) => [
-                            styles.editMiniBtn,
-                            { backgroundColor: colors.text },
-                            pressed ? { opacity: PRESS_DIP_PLATE } : null,
-                          ]}
-                          testID="set-edit-save"
-                        >
-                          <Text style={[styles.editMiniLabel, { color: colors.background }]}>✓</Text>
-                        </Pressable>
-                      </View>
-                    );
-                  }
-                  return (
+                      );
+                    })}
                     <Pressable
-                      key={s.id}
-                      onPress={() =>
-                        setEditingSet({
-                          setId: s.id,
-                          exerciseId: ex.id,
-                          weight:
-                            s.weight != null
-                              ? String(roundDisplayWeight(toDisplayWeight(s.weight, unit)))
-                              : '',
-                          reps: String(s.reps ?? ''),
-                        })
-                      }
+                      onPress={() => {
+                        void handleAddSet(
+                          ex.id,
+                          lastSet?.weight ?? null,
+                          lastSet?.reps ?? 10,
+                        );
+                      }}
                       accessibilityRole="button"
-                      accessibilityLabel={`Edit set ${s.position}: ${figure}`}
+                      accessibilityLabel={`Add a set to ${ex.exerciseName}`}
                       style={({ pressed }) => [
-                        { minHeight: 44, justifyContent: 'center' },
+                        styles.addSetRow,
                         pressed ? { opacity: PRESS_DIP } : null,
                       ]}
-                      testID={`receipt-set-${ex.id}-${s.position}`}
+                      testID={`receipt-add-set-${ex.id}`}
                     >
-                      <RegisterLine
-                        monoLabel
-                        label={String(s.position)}
-                        figure={figure}
-                        figureTone={
-                          setDisplayKg != null &&
-                          toDisplayWeight(setDisplayKg, unit) === bestWeight &&
-                          bestWeight > 0
-                            ? 'record'
-                            : 'ink'
-                        }
-                      />
+                      <Text style={[styles.addSetLabel, { color: colors.textMuted }]}>
+                        + SET
+                      </Text>
                     </Pressable>
-                  );
-                });
+                  </>
+                );
               })()}
             </View>
           ))}
@@ -676,6 +700,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   editInlineInputNarrow: { width: 52 },
+  addSetRow: {
+    minHeight: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  addSetLabel: {
+    ...theme.typography.mobileEyebrow,
+    letterSpacing: 0.8,
+  },
   editTimes: {
     fontSize: 18,
     fontFamily: theme.fonts.mono,

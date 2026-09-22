@@ -162,6 +162,7 @@ interface WorkoutState {
       exerciseSlug: string;
       tags: string[];
       targetRx: string | null;
+      sets?: Array<{ weight: number | null; reps: number }>;
     }>;
     cardio: CardioStationKey[];
   }) => void;
@@ -287,8 +288,14 @@ export const useWorkoutStore = create<WorkoutState>()(
             tags: [...e.tags],
             targetRx: e.targetRx,
             note: null,
-            // Fresh rows — the new block's ledger starts empty.
-            sets: [],
+            // The continued session's sets carry — the map populates.
+            sets: (e.sets ?? []).map((set, si) => ({
+              localId: newLocalId(),
+              position: si + 1,
+              weight: set.weight,
+              reps: set.reps,
+              note: null,
+            })),
           })),
           cardio: cardio.map((station) => ({
             localId: newLocalId(),

@@ -495,14 +495,42 @@ export class WorkoutRepository
     }
   }
 
-  /** Delete a logged set (accidental double-log, retried set). */
+  /** Delete a logged set + renumber the siblings (position stays
+   * contiguous — deleting set 1 of 3 promotes 2,3 to 1,2). */
   async deleteSet(setId: string): Promise<RepositoryResult<void>> {
     try {
+      // Find the set's exercise and position before deleting.
+      const { data: target, error: findErr } = await supabase
+        .from(WorkoutRepository.LOGGED_SETS)
+        .select('logged_exercise_id, position')
+        .eq('id', setId)
+        .single();
+      if (findErr) throw findErr;
+
       const { error } = await supabase
         .from(WorkoutRepository.LOGGED_SETS)
         .delete()
         .eq('id', setId);
       if (error) throw error;
+
+      // Renumber: read remaining siblings, rewrite positions contiguously.
+      if (target) {
+        const { data: remaining } = await supabase
+          .from(WorkoutRepository.LOGGED_SETS)
+          .select('id, position')
+          .eq('logged_exercise_id', target.logged_exercise_id)
+          .order('position');
+        if (remaining) {
+          for (let i = 0; i < remaining.length; i++) {
+            if (remaining[i].position !== i + 1) {
+              await supabase
+                .from(WorkoutRepository.LOGGED_SETS)
+                .update({ position: i + 1 })
+                .eq('id', remaining[i].id);
+            }
+          }
+        }
+      }
       return ok(undefined);
     } catch (e) {
       return this.handleError('deleteSet', e);
