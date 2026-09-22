@@ -23,6 +23,7 @@ import { BoardShell, RegisterLine , SectionWhisper } from '../components/compose
 import { FilterChip, FilterChipGroup } from '../components/MobilePremium';
 import { useAppTheme, useToast } from '../context';
 import { safeGoBack } from '../navigation';
+import { plateOffsetFor } from '../shared/exercises/plateOffsets';
 import { useExerciseDetail, useTopSetsByName, useWeightUnit, useRecentSessionDetails } from '../hooks';
 import { deriveTrajectory, deriveExerciseVolumeByWeek } from '../services';
 import { useWorkoutStore } from '../stores';
@@ -106,6 +107,9 @@ export default function ExerciseDetailScreen() {
 
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set());
   const [plateFrame, setPlateFrame] = useState(0);
+  // THE PLATE ALIGNMENT — the B frame's camera offset, applied as a
+  // translate so the crossfade shows only the movement.
+  const plateOffset = plateOffsetFor(exercise?.slug ?? '');
   const visiblePoints = useMemo(() => {
     if (!trajectory) return [];
     return trajectory.points.filter((p) => !excluded.has(p.signature));
@@ -185,7 +189,12 @@ export default function ExerciseDetailScreen() {
                     style={[
                       styles.plateImage,
                       styles.plateFrameB,
-                      { opacity: plateFrame === 1 ? 1 : 0 },
+                      {
+                        opacity: plateFrame === 1 ? 1 : 0,
+                        transform: plateOffset
+                          ? ([{ translateX: -plateOffset.dx * 0.5, translateY: -plateOffset.dy * 0.5 }] as unknown as ImageStyle['transform'])
+                          : undefined,
+                      },
                     ]}
                     accessibilityElementsHidden
                     testID="entry-plate-image-b"
