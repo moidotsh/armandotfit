@@ -45,15 +45,24 @@ def decode_gray_bmp(path, resize_w=None):
         if resized: os.unlink(resized)
 
 def ssd(a, aw, ah, b, bw, bh, dx, dy):
+    # BORDER-BAND SSD — compare only the outer strips (where the
+    # static background lives), skipping the center where the moving
+    # subject would pull the alignment away from the camera offset.
+    band = max(8, min(aw, ah) // 6)  # ~1/6 of the smaller dimension
     x0, y0 = max(0, dx), max(0, dy)
     x1, y1 = min(aw, bw + dx), min(ah, bh + dy)
-    w, h = x1 - x0, y1 - y0
-    if w < 10 or h < 10: return float('inf')
+    if x1 - x0 < 10 or y1 - y0 < 10: return float('inf')
+
     total, count = 0.0, 0
     for y in range(y0, y1, 2):
+        in_top = y < y0 + band
+        in_bottom = y >= y1 - band
         ai = y * aw
         bi = (y - dy) * bw
         for x in range(x0, x1, 2):
+            # Skip the center — only compare if in a border band
+            if not (in_top or in_bottom or x < x0 + band or x >= x1 - band):
+                continue
             d = a[ai + x] - b[bi + x - dx]
             total += d * d
             count += 1
