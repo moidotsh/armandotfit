@@ -155,7 +155,13 @@ export function BoardShell({
 }
 
 const styles = StyleSheet.create({
-  shell: { flex: 1 },
+  shell: {
+    flex: 1,
+    // iOS 27's Liquid Glass frosts the PWA status-bar zone; the shell
+    // pushes ALL content below the frosted band (every route, the folio,
+    // the back-chevron eyebrows — one shift, not per-screen).
+    paddingTop: 24,
+  },
   body: { ...SCREEN_BODY_STYLE },
   // The air law (thesis §5): the 20px gutter, and the block rhythm's
   // baseline — top-level blocks carry BLOCK_GAP (32) above them; the
