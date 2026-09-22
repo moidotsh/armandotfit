@@ -72,6 +72,22 @@ export function RouteCurtain() {
   const { colors } = useAppTheme();
   const copy = routeCurtainCopy(pathname);
 
+  // THE STATUS BAR FOLLOWS THE CURTAIN — while the focus plate covers
+  // the screen the PWA system bar reads the curtain's ink (near-black,
+  // mode-independent); on reveal it returns to the palette's ground.
+  // Purely a meta repaint — no visual jank, the OS chrome matches the
+  // surface it overlays.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const target = phase !== 'idle' ? colors.focus.background : colors.backgroundDeep;
+    const metas = document.querySelectorAll('meta[name="theme-color"]');
+    metas.forEach((m) => m.setAttribute('content', target));
+    return () => {
+      // Restore on unmount (route change without reveal).
+      metas.forEach((m) => m.setAttribute('content', colors.backgroundDeep));
+    };
+  }, [phase, colors.focus.background, colors.backgroundDeep]);
+
   // Path watch. `settled` starts null: the cold boot settles silently
   // (the curtain never races the first paint). Every later change
   // drives the machine: an in-flight cover confirms arrival; an idle
