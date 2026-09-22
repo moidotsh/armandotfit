@@ -359,11 +359,16 @@ export function Receipt({ id }: ReceiptProps) {
                     </View>
                     {(hasBw || ex.tags.length > 0) ? (
                       <View style={styles.receiptSubHead}>
-                        {ex.tags.length > 0 ? (
-                          <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
-                            {joinFacts(ex.tags)}
-                          </Text>
-                        ) : null}
+                        <Text
+                          style={[
+                            styles.tagsLine,
+                            styles.subHeadTags,
+                            { color: colors.textMuted },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {ex.tags.length > 0 ? joinFacts(ex.tags) : ''}
+                        </Text>
                         {hasBw ? (
                           <Text
                             style={[styles.tagsLine, { color: colors.brandText }]}
@@ -659,6 +664,7 @@ const styles = StyleSheet.create({
     ...INTERVAL.fact,
   },
   // The exercise register's head: the name left, tags whisper right.
+  subHeadTags: { flex: 1 },
   receiptSubHead: {
     flexDirection: 'row',
     alignItems: 'baseline',
