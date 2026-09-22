@@ -472,6 +472,79 @@ export class WorkoutRepository
       .maybeSingle();
     return data?.name ?? null;
   }
+  // ── SET-LEVEL EDITING (the receipt's edit affordances) ────────────
+
+  /** Update a logged set's weight/reps/note (typo corrections). */
+  async updateSet(
+    setId: string,
+    patch: { weight?: number | null; reps?: number; note?: string | null },
+  ): Promise<RepositoryResult<void>> {
+    try {
+      const snake: Record<string, unknown> = {};
+      if (patch.weight !== undefined) snake.weight = patch.weight;
+      if (patch.reps !== undefined) snake.reps = patch.reps;
+      if (patch.note !== undefined) snake.note = patch.note;
+      const { error } = await supabase
+        .from(WorkoutRepository.LOGGED_SETS)
+        .update(snake)
+        .eq('id', setId);
+      if (error) throw error;
+      return ok(undefined);
+    } catch (e) {
+      return this.handleError('updateSet', e);
+    }
+  }
+
+  /** Delete a logged set (accidental double-log, retried set). */
+  async deleteSet(setId: string): Promise<RepositoryResult<void>> {
+    try {
+      const { error } = await supabase
+        .from(WorkoutRepository.LOGGED_SETS)
+        .delete()
+        .eq('id', setId);
+      if (error) throw error;
+      return ok(undefined);
+    } catch (e) {
+      return this.handleError('deleteSet', e);
+    }
+  }
+
+  /** Add a set to an existing logged exercise (the missed set). */
+  async addSet(
+    loggedExerciseId: string,
+    data: { weight: number | null; reps: number; note?: string },
+  ): Promise<RepositoryResult<void>> {
+    try {
+      const { error } = await supabase
+        .from(WorkoutRepository.LOGGED_SETS)
+        .insert({
+          logged_exercise_id: loggedExerciseId,
+          weight: data.weight,
+          reps: data.reps,
+          note: data.note ?? null,
+        });
+      if (error) throw error;
+      return ok(undefined);
+    } catch (e) {
+      return this.handleError('addSet', e);
+    }
+  }
+
+  /** Delete a logged exercise (cascade clears its sets). */
+  async deleteLoggedExercise(
+    loggedExerciseId: string,
+  ): Promise<RepositoryResult<void>> {
+    try {
+      const { error } = await supabase
+        .from(WorkoutRepository.LOGGED_EXERCISES)
+        .delete()
+        .eq('id', loggedExerciseId);
+      if (error) throw error;
+      return ok(undefined);
+    } catch (e) {
+      return this.handleError('deleteLoggedExercise', e);
+    }
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -544,6 +617,9 @@ function toSessionWithDetails(row: SessionRow & {
           .map(toSet),
       })),
   };
+
+
+
 }
 
 // Singleton — the daily-driver access path.

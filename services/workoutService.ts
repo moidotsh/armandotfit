@@ -37,6 +37,36 @@ export class WorkoutService {
     return workoutRepository.delete(id);
   }
 
+  // ── SET-LEVEL EDITING (the receipt's edit affordances) ────────────
+
+  /** Update a logged set's weight/reps/note (typo corrections). */
+  static async updateSet(
+    setId: ID,
+    patch: { weight?: number | null; reps?: number; note?: string | null },
+  ): Promise<RepositoryResult<void>> {
+    return workoutRepository.updateSet(setId, patch);
+  }
+
+  /** Delete a logged set (accidental double-log, retried set). */
+  static async deleteSet(setId: ID): Promise<RepositoryResult<void>> {
+    return workoutRepository.deleteSet(setId);
+  }
+
+  /** Add a set to an existing logged exercise (the missed set). */
+  static async addSet(
+    loggedExerciseId: ID,
+    data: { weight: number | null; reps: number },
+  ): Promise<RepositoryResult<void>> {
+    return workoutRepository.addSet(loggedExerciseId, data);
+  }
+
+  /** Delete a logged exercise (cascade clears its sets). */
+  static async deleteLoggedExercise(
+    loggedExerciseId: ID,
+  ): Promise<RepositoryResult<void>> {
+    return workoutRepository.deleteLoggedExercise(loggedExerciseId);
+  }
+
   /** Recent sessions for the home dashboard (headers only). */
   static async getRecentSessions(
     userId: ID,

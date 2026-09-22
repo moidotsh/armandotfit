@@ -11,8 +11,8 @@
 // per logged set (ordinal left · air · weight × reps in mono). No
 // panels, no rails.
 
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import {
   MobilePrimaryButton,
   MobileActionFooter,
@@ -27,10 +27,10 @@ import { NextStation } from './NextStation';
 import { QueryErrorNote } from './QueryErrorNote';
 import { useToast, useAppTheme } from '../../context';
 import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags } from '../../hooks';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/react-query';
 import { navigateToWorkoutDetail, safeGoBack } from '../../navigation';
-import { resolveSlots, sumVolume } from '../../services';
+import { resolveSlots, sumVolume, WorkoutService } from '../../services';
 import { bodyweightAsOf } from '../../utils/bodyweight';
 import { getWeightHistory } from '../../utils/supabase/repositories';
 import {
@@ -39,7 +39,7 @@ import {
   useSplitPreferenceStore,
   useWorkoutStore,
 } from '../../stores';
-import { INTERVAL, PAGE_GUTTER, theme } from '../../constants';
+import { INTERVAL, PAGE_GUTTER, PRESS_DIP, PRESS_DIP_PLATE, theme } from '../../constants';
 import { eraFor, SYSTEM_EXERCISES, SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
 import {
   CARDIO_STATIONS,
@@ -65,6 +65,91 @@ export function Receipt({ id }: ReceiptProps) {
   const unit = useWeightUnit();
   const existingQuery = useWorkoutDetail(id);
   const deleteSessionMutation = useDeleteSession();
+
+  // ── SET EDITING (the receipt's edit affordances) ──────────────────
+  const [editingSet, setEditingSet] = useState<{
+    setId: string;
+    exerciseId: string;
+    weight: string;
+    reps: string;
+  } | null>(null);
+
+  // DISMISS — Enter saves, Escape cancels (the keyboard's natural
+  // exits). The editing ref keeps the listener closure fresh.
+  const editingRef = useRef(editingSet);
+  editingRef.current = editingSet;
+  // r1-exempt: fire-and-forget keypress save — React 18 no-ops the
+  // post-unmount setState; the listener is properly paired-cleared.
+  useEffect(() => {
+    if (!editingSet) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setEditingSet(null);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const cur = editingRef.current;
+        if (!cur) return;
+        const reps = parseInt(cur.reps, 10);
+        if (Number.isFinite(reps) && reps > 0) {
+          const weightKg = cur.weight.trim()
+            ? unit === 'lb'
+              ? parseFloat(cur.weight) / 2.20462
+              : parseFloat(cur.weight)
+            : null;
+          void WorkoutService.updateSet(cur.setId, { reps, weight: weightKg }).then((r) => {
+            if (r.success) {
+              setEditingSet(null);
+              queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all });
+              showToast('success', 'Set updated');
+            }
+          });
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [editingSet != null]); // eslint-disable-line react-hooks/exhaustive-deps
+  const queryClient = useQueryClient();
+  const invalidateSession = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all });
+    queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all });
+  };
+  const handleSaveSet = async () => {
+    if (!editingSet) return;
+    const reps = parseInt(editingSet.reps, 10);
+    if (!Number.isFinite(reps) || reps <= 0) return;
+    const weightKg = editingSet.weight.trim()
+      ? unit === 'lb'
+        ? parseFloat(editingSet.weight) / 2.20462
+        : parseFloat(editingSet.weight)
+      : null;
+    const r = await WorkoutService.updateSet(editingSet.setId, {
+      reps,
+      weight: weightKg,
+    });
+    if (r.success) {
+      setEditingSet(null);
+      invalidateSession();
+      showToast('success', 'Set updated');
+    } else {
+      showToast('error', 'Failed to update set');
+    }
+  };
+  const handleDeleteSet = async (setId: string) => {
+    const r = await WorkoutService.deleteSet(setId);
+    if (r.success) {
+      setEditingSet(null);
+      invalidateSession();
+      showToast('success', 'Set deleted');
+    }
+  };
+  const handleAddSet = async (exerciseId: string, weight: number | null, reps: number) => {
+    const r = await WorkoutService.addSet(exerciseId, { weight, reps });
+    if (r.success) {
+      invalidateSession();
+      showToast('success', 'Set added');
+    }
+  };
   const [confirmDelete, setConfirmDelete] = useState(false);
   useEffect(() => {
     if (deleteSessionMutation.isSuccess) {
@@ -319,21 +404,122 @@ export function Receipt({ id }: ReceiptProps) {
                       ? `a+${roundDisplayWeight(toDisplayWeight(s.weight!, unit))} × ${s.reps}`
                       : `a × ${s.reps}`
                     : `${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} × ${s.reps}`;
+                  const isEditing = editingSet?.setId === s.id;
+                  if (isEditing && editingSet) {
+                    // INLINE EDIT — the row itself becomes the form:
+                    // weight × reps inputs, save/cancel, delete. The
+                    // edit happens where your finger already is.
+                    return (
+                      <View
+                        key={s.id}
+                        style={styles.editRow}
+                        testID={`receipt-set-edit-${ex.id}-${s.position}`}
+                      >
+                        <Text style={[styles.editPos, { color: colors.textMuted }]}>
+                          {s.position}
+                        </Text>
+                        <TextInput
+                          value={editingSet.weight}
+                          onChangeText={(v) => setEditingSet({ ...editingSet, weight: v })}
+                          placeholder="lb"
+                          placeholderTextColor={colors.textMuted}
+                          keyboardType="numeric"
+                          style={[
+                            styles.editInlineInput,
+                            { backgroundColor: colors.glass.inputBackground, color: colors.text },
+                          ]}
+                          testID="set-edit-weight"
+                          onSubmitEditing={() => void handleSaveSet()}
+                        />
+                        <Text style={[styles.editTimes, { color: colors.textMuted }]}>×</Text>
+                        <TextInput
+                          value={editingSet.reps}
+                          onChangeText={(v) => setEditingSet({ ...editingSet, reps: v })}
+                          placeholder="reps"
+                          placeholderTextColor={colors.textMuted}
+                          keyboardType="numeric"
+                          style={[
+                            styles.editInlineInput,
+                            { backgroundColor: colors.glass.inputBackground, color: colors.text },
+                          ]}
+                          testID="set-edit-reps"
+                          onSubmitEditing={() => void handleSaveSet()}
+                        />
+                        <Pressable
+                          onPress={() => void handleDeleteSet(editingSet.setId)}
+                          accessibilityRole="button"
+                          accessibilityLabel="Delete set"
+                          style={({ pressed }) => [
+                            styles.editMiniBtn,
+                            pressed ? { opacity: PRESS_DIP } : null,
+                          ]}
+                          testID="set-edit-delete"
+                        >
+                          <Text style={[styles.editMiniLabel, { color: colors.alert }]}>×</Text>
+                        </Pressable>
+                        <Pressable
+                          onPress={() => setEditingSet(null)}
+                          accessibilityRole="button"
+                          accessibilityLabel="Cancel edit"
+                          style={({ pressed }) => [
+                            styles.editMiniBtn,
+                            pressed ? { opacity: PRESS_DIP } : null,
+                          ]}
+                          testID="set-edit-cancel"
+                        >
+                          <Text style={[styles.editMiniLabel, { color: colors.text }]}>‹</Text>
+                        </Pressable>
+                        <Pressable
+                          onPress={() => void handleSaveSet()}
+                          accessibilityRole="button"
+                          accessibilityLabel="Save set"
+                          style={({ pressed }) => [
+                            styles.editMiniBtn,
+                            { backgroundColor: colors.text },
+                            pressed ? { opacity: PRESS_DIP_PLATE } : null,
+                          ]}
+                          testID="set-edit-save"
+                        >
+                          <Text style={[styles.editMiniLabel, { color: colors.background }]}>✓</Text>
+                        </Pressable>
+                      </View>
+                    );
+                  }
                   return (
-                    <RegisterLine
+                    <Pressable
                       key={s.id}
-                      monoLabel
-                      label={String(s.position)}
-                      figure={figure}
-                      figureTone={
-                        setDisplayKg != null &&
-                        toDisplayWeight(setDisplayKg, unit) === bestWeight &&
-                        bestWeight > 0
-                          ? 'record'
-                          : 'ink'
+                      onPress={() =>
+                        setEditingSet({
+                          setId: s.id,
+                          exerciseId: ex.id,
+                          weight:
+                            s.weight != null
+                              ? String(roundDisplayWeight(toDisplayWeight(s.weight, unit)))
+                              : '',
+                          reps: String(s.reps ?? ''),
+                        })
                       }
+                      accessibilityRole="button"
+                      accessibilityLabel={`Edit set ${s.position}: ${figure}`}
+                      style={({ pressed }) => [
+                        { minHeight: 44, justifyContent: 'center' },
+                        pressed ? { opacity: PRESS_DIP } : null,
+                      ]}
                       testID={`receipt-set-${ex.id}-${s.position}`}
-                    />
+                    >
+                      <RegisterLine
+                        monoLabel
+                        label={String(s.position)}
+                        figure={figure}
+                        figureTone={
+                          setDisplayKg != null &&
+                          toDisplayWeight(setDisplayKg, unit) === bestWeight &&
+                          bestWeight > 0
+                            ? 'record'
+                            : 'ink'
+                        }
+                      />
+                    </Pressable>
                   );
                 });
               })()}
@@ -407,7 +593,8 @@ export function Receipt({ id }: ReceiptProps) {
               {confirmDelete ? 'TAP AGAIN TO DELETE' : 'DELETE SESSION'}
             </MobilePrimaryButton>
           </View>
-        </>
+  
+      </>
       )}
     </BoardShell>
   );
@@ -445,6 +632,41 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tagsLine: { ...theme.typography.mobileLedger },
+
+  // INLINE SET EDIT — the row IS the form.
+  editRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 4,
+  },
+  editPos: {
+    ...theme.typography.mobileFigure,
+    width: 24,
+  },
+  editInlineInput: {
+    flex: 1,
+    minHeight: 40,
+    paddingHorizontal: 10,
+    fontSize: 18,
+    fontFamily: theme.fonts.mono,
+  },
+  editTimes: {
+    fontSize: 18,
+    fontFamily: theme.fonts.mono,
+  },
+  editMiniBtn: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editMiniLabel: {
+    fontSize: 18,
+    fontFamily: theme.fonts.mono,
+    fontWeight: '600',
+  },
 });
+
 
 export default Receipt;
