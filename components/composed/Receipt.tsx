@@ -336,6 +336,25 @@ export function Receipt({ id }: ReceiptProps) {
                       <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
                         {ex.exerciseName || 'Exercise'}
                       </Text>
+                      <Pressable
+                        onPress={() => {
+                          const last = ex.sets[ex.sets.length - 1];
+                          void handleAddSet(
+                            ex.id,
+                            last?.weight ?? null,
+                            last?.reps ?? 10,
+                          );
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Add a set to ${ex.exerciseName}`}
+                        style={({ pressed }) => [
+                          styles.headAddBtn,
+                          pressed ? { opacity: PRESS_DIP } : null,
+                        ]}
+                        testID={`receipt-add-set-${ex.id}`}
+                      >
+                        <Text style={[styles.headAddGlyph, { color: colors.text }]}>+</Text>
+                      </Pressable>
                       {ex.tags.length > 0 ? (
                         <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
                           {joinFacts(ex.tags)}
@@ -349,6 +368,25 @@ export function Receipt({ id }: ReceiptProps) {
                     <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
                       {ex.exerciseName || 'Exercise'}
                     </Text>
+                    <Pressable
+                      onPress={() => {
+                        const last = ex.sets[ex.sets.length - 1];
+                        void handleAddSet(
+                          ex.id,
+                          last?.weight ?? null,
+                          last?.reps ?? 10,
+                        );
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Add a set to ${ex.exerciseName}`}
+                      style={({ pressed }) => [
+                        styles.headAddBtn,
+                        pressed ? { opacity: PRESS_DIP } : null,
+                      ]}
+                      testID={`receipt-add-set-${ex.id}`}
+                    >
+                      <Text style={[styles.headAddGlyph, { color: colors.text }]}>+</Text>
+                    </Pressable>
                     <Text
                       style={[styles.tagsLine, { color: colors.brandText }]}
                       numberOfLines={1}
@@ -545,26 +583,6 @@ export function Receipt({ id }: ReceiptProps) {
                         </Pressable>
                       );
                     })}
-                    <Pressable
-                      onPress={() => {
-                        void handleAddSet(
-                          ex.id,
-                          lastSet?.weight ?? null,
-                          lastSet?.reps ?? 10,
-                        );
-                      }}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Add a set to ${ex.exerciseName}`}
-                      style={({ pressed }) => [
-                        styles.addSetRow,
-                        pressed ? { opacity: PRESS_DIP } : null,
-                      ]}
-                      testID={`receipt-add-set-${ex.id}`}
-                    >
-                      <Text style={[styles.addSetLabel, { color: colors.textMuted }]}>
-                        + SET
-                      </Text>
-                    </Pressable>
                   </>
                 );
               })()}
@@ -700,15 +718,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   editInlineInputNarrow: { width: 52 },
-  addSetRow: {
-    minHeight: 36,
-    justifyContent: 'center',
+  headAddBtn: {
+    width: 32,
+    height: 32,
     alignItems: 'center',
-    paddingVertical: 4,
+    justifyContent: 'center',
   },
-  addSetLabel: {
-    ...theme.typography.mobileEyebrow,
-    letterSpacing: 0.8,
+  headAddGlyph: {
+    fontSize: 18,
+    fontFamily: theme.fonts.mono,
+    fontWeight: '500',
   },
   editTimes: {
     fontSize: 18,
