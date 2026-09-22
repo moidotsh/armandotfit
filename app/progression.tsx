@@ -179,6 +179,7 @@ export default function ProgressionScreen() {
                   // slug + the bodyweight factor at read time.
                   const entry = SYSTEM_EXERCISES.find((e) => e.name === pb.exerciseName);
                   const slug = entry?.slug;
+                  const isCalisthenic = (entry?.bodyweightLoadFactor ?? 0) > 0;
                   const adjustedE1rm = calisthenicE1rm(
                     pb.exerciseName,
                     pb.bestWeight,
@@ -208,6 +209,9 @@ export default function ProgressionScreen() {
                         </Text>
                         {/* e1RM — the headline number. */}
                         <Text style={[styles.bestsE1rm, { color: colors.text }]} numberOfLines={1}>
+                          {isCalisthenic ? (
+                            <Text style={{ color: colors.brandText }}>a+</Text>
+                          ) : null}
                           {formatWeight(adjustedE1rm, unit)}
                         </Text>
                       </View>
