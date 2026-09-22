@@ -12,8 +12,8 @@
 // drawing); equipment whispers once. When a draft session is
 // active, ADD TO SESSION is the page's one verb.
 
-import React, { useMemo, useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View, type ImageStyle } from 'react-native';
+import React, {useMemo, useState, useRef, useEffect} from 'react';
+import { Animated, Image, Pressable, StyleSheet, Text, View, type ImageStyle } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import {
   MobilePrimaryButton,
@@ -107,6 +107,30 @@ export default function ExerciseDetailScreen() {
 
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set());
   const [plateFrame, setPlateFrame] = useState(0);
+  // THE PLATE LOOP — auto-animates on mount: A holds, fades to B,
+  // B holds, fades back. No tap needed.
+  const plateBOpacity = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (!exercise?.imageB) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(plateBOpacity, {
+          toValue: 1,
+          duration: 600,
+          delay: 1000,
+          useNativeDriver: false,
+        }),
+        Animated.timing(plateBOpacity, {
+          toValue: 0,
+          duration: 600,
+          delay: 1000,
+          useNativeDriver: false,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [exercise?.imageB, plateBOpacity]);
   // THE PLATE ALIGNMENT — the B frame's camera offset, applied as a
   // translate so the crossfade shows only the movement.
   const plateOffset = plateOffsetFor(exercise?.slug ?? '');
@@ -151,7 +175,7 @@ export default function ExerciseDetailScreen() {
               carry the meaning. */}
           {exercise.image ? (
             <Pressable
-              onPress={() => (exercise.imageB ? setPlateFrame((f) => (f === 0 ? 1 : 0)) : undefined)}
+              
               accessibilityRole="imagebutton"
               accessibilityLabel={
                 exercise.imageB
@@ -204,7 +228,7 @@ export default function ExerciseDetailScreen() {
               </View>
               {exercise.imageB ? (
                 <Text style={[styles.plateWord, { color: colors.textMuted }]}>
-                  {plateFrame === 0 ? '1 · 2' : '2 · 2'}
+                  '1 · 2'
                 </Text>
               ) : null}
             </Pressable>
