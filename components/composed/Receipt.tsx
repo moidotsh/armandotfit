@@ -359,6 +359,11 @@ export function Receipt({ id }: ReceiptProps) {
                     </View>
                     {(hasBw || ex.tags.length > 0) ? (
                       <View style={styles.receiptSubHead}>
+                        {ex.tags.length > 0 ? (
+                          <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
+                            {joinFacts(ex.tags)}
+                          </Text>
+                        ) : null}
                         {hasBw ? (
                           <Text
                             style={[styles.tagsLine, { color: colors.brandText }]}
@@ -368,11 +373,6 @@ export function Receipt({ id }: ReceiptProps) {
                             let a = BW×{bwFactor} = {roundDisplayWeight(
                               toDisplayWeight(bwFactor! * bodyweightKg!, unit),
                             )}
-                          </Text>
-                        ) : null}
-                        {ex.tags.length > 0 ? (
-                          <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
-                            {joinFacts(ex.tags)}
                           </Text>
                         ) : null}
                       </View>
@@ -662,6 +662,7 @@ const styles = StyleSheet.create({
   receiptSubHead: {
     flexDirection: 'row',
     alignItems: 'baseline',
+    justifyContent: 'space-between',
     gap: 12,
     marginBottom: 2,
   },
