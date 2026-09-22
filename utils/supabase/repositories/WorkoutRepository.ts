@@ -543,10 +543,21 @@ export class WorkoutRepository
     data: { weight: number | null; reps: number; note?: string },
   ): Promise<RepositoryResult<void>> {
     try {
+      // Position is NOT NULL (CHECK >= 1): compute max + 1.
+      const { data: existing, error: posErr } = await supabase
+        .from(WorkoutRepository.LOGGED_SETS)
+        .select('position')
+        .eq('logged_exercise_id', loggedExerciseId)
+        .order('position', { ascending: false })
+        .limit(1);
+      if (posErr) throw posErr;
+      const nextPosition = (existing?.[0]?.position ?? 0) + 1;
+
       const { error } = await supabase
         .from(WorkoutRepository.LOGGED_SETS)
         .insert({
           logged_exercise_id: loggedExerciseId,
+          position: nextPosition,
           weight: data.weight,
           reps: data.reps,
           note: data.note ?? null,
