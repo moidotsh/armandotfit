@@ -25,6 +25,9 @@ import {
 import { useDashboardSummary, usePersonalBests, useWeightUnit, useRecentSessionDetails } from '../hooks';
 import { SYSTEM_EXERCISES } from '../shared/exercises';
 import { INTERVAL, PAGE_GUTTER, PRESS_DIP, theme } from '../constants';
+import { e1rm } from '../services';
+import { bodyweightAsOf } from '../utils/bodyweight';
+import { useBodyweightHistory } from '../hooks/queries';
 import { derivePrTimeline } from '../services';
 import { toDisplayWeight, roundDisplayWeight, weightUnitLabel, formatWeight, joinFacts } from '../utils';
 
@@ -55,6 +58,30 @@ export default function ProgressionScreen() {
   const unit = useWeightUnit();
   
   const historyQuery = useRecentSessionDetails(60);
+
+  // THE BODYWEIGHT — calisthenic e1RMs compute from the effective
+  // load (factor × as-of bodyweight + any added load), the same 'a'
+  // the receipt declares. Raw weight alone understates bodyweight work.
+  const bodyweightQuery = useBodyweightHistory();
+  const bodyweightAt = (iso: string) =>
+    bodyweightQuery.data && bodyweightQuery.data.length > 0
+      ? bodyweightAsOf(bodyweightQuery.data, iso)
+      : null;
+  const calisthenicE1rm = (
+    exerciseName: string,
+    loggedWeight: number,
+    reps: number,
+    atIso: string,
+    rawE1rm: number,
+  ): number => {
+    const entry = SYSTEM_EXERCISES.find((e) => e.name === exerciseName);
+    const factor = entry?.bodyweightLoadFactor;
+    if (factor == null || factor <= 0) return rawE1rm;
+    const bw = bodyweightAt(atIso);
+    if (bw == null || bw <= 0) return rawE1rm;
+    const effective = factor * bw + loggedWeight;
+    return e1rm(effective, reps);
+  };
 
   // THE TAG MAP — exercise name → its most-recent tags (the acronym's
   // muted prefix: CCLR = captains-chair + Leg Raise).
@@ -152,7 +179,13 @@ export default function ProgressionScreen() {
                   // slug + the bodyweight factor at read time.
                   const entry = SYSTEM_EXERCISES.find((e) => e.name === pb.exerciseName);
                   const slug = entry?.slug;
-                  const isCalisthenic = (entry?.bodyweightLoadFactor ?? 0) > 0;
+                  const adjustedE1rm = calisthenicE1rm(
+                    pb.exerciseName,
+                    pb.bestWeight,
+                    pb.bestReps,
+                    pb.bestAt,
+                    pb.bestE1rm,
+                  );
                   return (
                     <Pressable
                       key={pb.exerciseName}
@@ -168,9 +201,6 @@ export default function ProgressionScreen() {
                       {/* The exercise IS the row — row rank, full ink. */}
                       <View style={styles.bestsHead}>
                         <Text style={[styles.bestsName, { color: colors.text }]} numberOfLines={1}>
-                          {isCalisthenic ? (
-                            <Text style={{ color: colors.brandText }}>a </Text>
-                          ) : null}
                           {tagPart ? (
                             <Text style={{ color: colors.textMuted }}>{tagPart} </Text>
                           ) : null}
@@ -178,7 +208,7 @@ export default function ProgressionScreen() {
                         </Text>
                         {/* e1RM — the headline number. */}
                         <Text style={[styles.bestsE1rm, { color: colors.text }]} numberOfLines={1}>
-                          {formatWeight(pb.bestE1rm, unit)}
+                          {formatWeight(adjustedE1rm, unit)}
                         </Text>
                       </View>
                       {/* Metadata — muted, furniture rank. */}
@@ -215,7 +245,7 @@ export default function ProgressionScreen() {
                     key={`${pr.at}-${pr.exerciseName}-${i}`}
                     monoPrefix={new Date(pr.at).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' })}
                     label={pr.exerciseName}
-                    labelMuted={[prIsCalisthenic ? 'a' : null, tagPart || null].filter(Boolean).join(' ') || undefined}
+                    labelMuted={tagPart || undefined}
                     figure={`${formatWeight(pr.weight, unit)} × ${pr.reps}`}
                     accessibilityLabel={`${new Date(pr.at).toLocaleDateString()}: ${pr.exerciseName} new best, ${formatWeight(pr.weight, unit)} ${weightUnitLabel(unit)} for ${pr.reps}`}
                     testID={`pr-timeline-line-${i}`}
