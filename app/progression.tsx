@@ -209,10 +209,23 @@ export default function ProgressionScreen() {
                         </Text>
                         {/* e1RM — the headline number. */}
                         <Text style={[styles.bestsE1rm, { color: colors.text }]} numberOfLines={1}>
-                          {isCalisthenic ? (
-                            <Text style={{ color: colors.brandText }}>a+</Text>
-                          ) : null}
-                          {formatWeight(adjustedE1rm, unit)}
+                          {isCalisthenic && entry?.bodyweightLoadFactor != null ? (
+                            (() => {
+                              // a + X = e1RM — subtract the bodyweight
+                              // component so the notation sums honestly.
+                              const bw = bodyweightAt(pb.bestAt) ?? 0;
+                              const aVal = entry.bodyweightLoadFactor * bw;
+                              const remainder = adjustedE1rm - aVal;
+                              return (
+                                <>
+                                  <Text style={{ color: colors.brandText }}>a+</Text>
+                                  {formatWeight(Math.max(0, remainder), unit)}
+                                </>
+                              );
+                            })()
+                          ) : (
+                            formatWeight(adjustedE1rm, unit)
+                          )}
                         </Text>
                       </View>
                       {/* Metadata — muted, furniture rank. */}
