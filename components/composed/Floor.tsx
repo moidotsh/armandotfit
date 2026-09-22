@@ -81,6 +81,26 @@ interface Armed {
   reps: number | null;
 }
 
+const PLATE_LOOP_KEYFRAMES = `@keyframes plateB {
+  0%, 40% { opacity: 0; }
+  50%, 90% { opacity: 1; }
+  100% { opacity: 0; }
+}`;
+const plateLoopCss = {
+  animation: 'plateB 3s ease-in-out infinite',
+} as unknown as import('react-native').ViewStyle;
+
+let plateKeyframesInjected = false;
+function injectPlateKeyframes() {
+  if (typeof document === 'undefined' || plateKeyframesInjected) return;
+  plateKeyframesInjected = true;
+  if (document.getElementById('plate-loop-css')) return;
+  const style = document.createElement('style');
+  style.id = 'plate-loop-css';
+  style.textContent = PLATE_LOOP_KEYFRAMES;
+  document.head.appendChild(style);
+}
+
 export function Floor() {
   const { colors, colorScheme } = useAppTheme();
   const { showToast } = useToast();
@@ -816,8 +836,8 @@ export function Floor() {
                                 <View
                                   style={[
                                     StyleSheet.absoluteFillObject,
+                                    plateLoopCss,
                                     {
-                                      opacity: plateFrame === 1 ? 1 : 0,
                                       transform: plateOffset
                                         ? ([{ translateX: -plateOffset.dx, translateY: -plateOffset.dy }] as unknown as import('react-native').ViewStyle['transform'])
                                         : undefined,
