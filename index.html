@@ -166,6 +166,10 @@
       textarea {
         -webkit-user-select: auto;
         user-select: auto;
+        /* iOS auto-zooms into any input with font-size < 16px —
+           enforce the minimum to prevent the zoom (maximum-scale
+           alone is ignored by iOS 10+ for accessibility). */
+        font-size: 16px !important;
       }
       html,
       body,
