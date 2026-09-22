@@ -145,13 +145,14 @@ export default function ProgressionScreen() {
               </SectionWhisper>
               <View>
                 {pbs.map((pb) => {
-                  const exAcronym = acronymFor(pb.exerciseName);
                   const lastTags = tagMap.get(pb.exerciseName) ?? [];
                   const tagPart = lastTags.map(tagAcronym).join('');
 
                   // Identity joins by NAME (data.ts) — resolve the
-                  // slug for the route at read time.
-                  const slug = SYSTEM_EXERCISES.find((e) => e.name === pb.exerciseName)?.slug;
+                  // slug + the bodyweight factor at read time.
+                  const entry = SYSTEM_EXERCISES.find((e) => e.name === pb.exerciseName);
+                  const slug = entry?.slug;
+                  const isCalisthenic = (entry?.bodyweightLoadFactor ?? 0) > 0;
                   return (
                     <Pressable
                       key={pb.exerciseName}
@@ -167,10 +168,13 @@ export default function ProgressionScreen() {
                       {/* The exercise IS the row — row rank, full ink. */}
                       <View style={styles.bestsHead}>
                         <Text style={[styles.bestsName, { color: colors.text }]} numberOfLines={1}>
+                          {isCalisthenic ? (
+                            <Text style={{ color: colors.brandText }}>a </Text>
+                          ) : null}
                           {tagPart ? (
                             <Text style={{ color: colors.textMuted }}>{tagPart} </Text>
                           ) : null}
-                          {exAcronym}
+                          {pb.exerciseName}
                         </Text>
                         {/* e1RM — the headline number. */}
                         <Text style={[styles.bestsE1rm, { color: colors.text }]} numberOfLines={1}>
@@ -202,15 +206,16 @@ export default function ProgressionScreen() {
               </SectionWhisper>
               <View testID="pr-timeline">
                 {prTimeline.map((pr, i) => {
-                  const exAcronym = acronymFor(pr.exerciseName);
                   const lastTags = tagMap.get(pr.exerciseName) ?? [];
                   const tagPart = lastTags.map(tagAcronym).join('');
+                  const prEntry = SYSTEM_EXERCISES.find((e) => e.name === pr.exerciseName);
+                  const prIsCalisthenic = (prEntry?.bodyweightLoadFactor ?? 0) > 0;
                   return (
                   <RegisterLine
                     key={`${pr.at}-${pr.exerciseName}-${i}`}
                     monoPrefix={new Date(pr.at).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' })}
-                    label={exAcronym}
-                    labelMuted={tagPart || undefined}
+                    label={pr.exerciseName}
+                    labelMuted={[prIsCalisthenic ? 'a' : null, tagPart || null].filter(Boolean).join(' ') || undefined}
                     figure={`${formatWeight(pr.weight, unit)} × ${pr.reps}`}
                     accessibilityLabel={`${new Date(pr.at).toLocaleDateString()}: ${pr.exerciseName} new best, ${formatWeight(pr.weight, unit)} ${weightUnitLabel(unit)} for ${pr.reps}`}
                     testID={`pr-timeline-line-${i}`}
