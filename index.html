@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
 
     <!--
       PWA / Add to Home Screen configuration.
@@ -156,6 +156,17 @@
       carries both into every exported route.
     -->
     <style id="global-scrollbar-css">
+      /* NATIVE FEEL — text is not selectable by default (it's a PWA,
+         not a document); inputs stay selectable so typing works. */
+      * {
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      input,
+      textarea {
+        -webkit-user-select: auto;
+        user-select: auto;
+      }
       html,
       body,
       #root {

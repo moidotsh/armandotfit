@@ -140,7 +140,7 @@ function RootShell() {
     };
     ensureStyle(
       'global-scrollbar-css',
-      '*::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}',
+      '*::-webkit-scrollbar{display:none}*{scrollbar-width:none;-ms-overflow-style:none}*{-webkit-user-select:none;user-select:none}input,textarea{-webkit-user-select:auto;user-select:auto}',
     );
 
     // The focus law (index.html #global-focus-css, mirrored here): the
