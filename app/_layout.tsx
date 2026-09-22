@@ -123,6 +123,14 @@ function RootShell() {
     ensureMeta('theme-color', colors.backgroundDeep, '(min-width: 701px)');
     ensureMeta('theme-color', colors.backgroundDeep, '(max-width: 700px)');
 
+    // THE ROOT PAINT — the global shell CSS hardcodes the light ground
+    // on html/body (the boot plate's cream); every pixel the app does
+    // not explicitly paint shows through it. Repaint both from the LIVE
+    // palette so dark mode owns the whole canvas (the PWA status-bar
+    // area under black-translucent included).
+    document.documentElement.style.backgroundColor = colors.backgroundDeep;
+    document.body.style.backgroundColor = colors.backgroundDeep;
+
     const ensureStyle = (id: string, css: string) => {
       if (document.getElementById(id)) return;
       const el = document.createElement('style');
