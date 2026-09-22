@@ -440,6 +440,7 @@ export function Receipt({ id }: ReceiptProps) {
                           keyboardType="numeric"
                           style={[
                             styles.editInlineInput,
+                            styles.editInlineInputNarrow,
                             { backgroundColor: colors.glass.inputBackground, color: colors.text },
                           ]}
                           testID="set-edit-reps"
@@ -645,12 +646,16 @@ const styles = StyleSheet.create({
     width: 24,
   },
   editInlineInput: {
-    flex: 1,
+    // Constrained — flex:1 pushed the action buttons off mobile
+    // screens. Fixed widths fit the digits they carry.
+    width: 72,
     minHeight: 40,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     fontSize: 18,
     fontFamily: theme.fonts.mono,
+    textAlign: 'center',
   },
+  editInlineInputNarrow: { width: 52 },
   editTimes: {
     fontSize: 18,
     fontFamily: theme.fonts.mono,
