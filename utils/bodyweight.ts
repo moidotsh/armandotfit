@@ -200,16 +200,19 @@ export function effectiveSetWeight(
   bodyweightFactor: number | null | undefined,
   currentBodyweightKg: number | null,
 ): number {
-  if (loggedWeight != null && loggedWeight > 0) return loggedWeight;
+  const load = loggedWeight ?? 0;
   if (
     bodyweightFactor != null &&
     bodyweightFactor > 0 &&
     currentBodyweightKg != null &&
     currentBodyweightKg > 0
   ) {
-    return bodyweightFactor * currentBodyweightKg;
+    // ADDITIVE — a bodyweight exercise with added load (a plate on
+    // back extensions, a vest on pull-ups) carries BOTH: the body's
+    // contribution plus the iron.
+    return bodyweightFactor * currentBodyweightKg + load;
   }
-  return 0;
+  return load;
 }
 
 /**

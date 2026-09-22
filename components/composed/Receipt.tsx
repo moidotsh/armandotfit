@@ -232,42 +232,58 @@ export function Receipt({ id }: ReceiptProps) {
           ) : null}
           {session.exercises.map((ex) => (
             <View key={ex.id} style={styles.receiptBlock}>
-              <View style={styles.receiptExHead}>
-                <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
-                  {ex.exerciseName || 'Exercise'}
+              {(() => {
+                // THE BODYWEIGHT DECLARATION — right-aligned in the
+                // exercise head, opposite the name. One red line
+                // defines the variable; the rows below read 'a × N'
+                // (no added load) or 'a+25 × N' (a plate on top).
+                const entry = SYSTEM_EXERCISES.find(
+                  (sys) => sys.name === ex.exerciseName,
+                );
+                const bwFactor = entry?.bodyweightLoadFactor;
+                if (bwFactor == null || bwFactor <= 0 || bodyweightKg == null) {
+                  return (
+                    <View style={styles.receiptExHead}>
+                      <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                        {ex.exerciseName || 'Exercise'}
+                      </Text>
+                      {ex.tags.length > 0 ? (
+                        <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
+                          {joinFacts(ex.tags)}
+                        </Text>
+                      ) : null}
+                    </View>
+                  );
+                }
+                const effDisplay = roundDisplayWeight(
+                  toDisplayWeight(bwFactor * bodyweightKg, unit),
+                );
+                return (
+                  <View style={styles.receiptExHead}>
+                    <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                      {ex.exerciseName || 'Exercise'}
+                    </Text>
+                    <Text
+                      style={[styles.tagsLine, { color: colors.brandText }]}
+                      numberOfLines={1}
+                      testID={`receipt-bw-decl-${ex.id}`}
+                    >
+                      let a = BW·{effDisplay}
+                    </Text>
+                  </View>
+                );
+              })()}
+              {ex.tags.length > 0 ? (
+                <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
+                  {joinFacts(ex.tags)}
                 </Text>
-                {ex.tags.length > 0 ? (
-                  <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
-                    {joinFacts(ex.tags)}
-                  </Text>
-                ) : null}
-              </View>
+              ) : null}
               {ex.tags.length === 0 && (lastTags.get(ex.exerciseName)?.length ?? 0) > 0 ? (
                 <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
                   {joinFacts(['no tags', `last time: ${joinFacts(lastTags.get(ex.exerciseName)!)}`])}
                 </Text>
               ) : null}
-              {(() => {
-                // THE BODYWEIGHT DECLARATION — one red line defines the
-                // variable; the set rows below read 'a × N' instead of
-                // repeating the effective load every row.
-                const entry = SYSTEM_EXERCISES.find(
-                  (sys) => sys.name === ex.exerciseName,
-                );
-                const bwFactor = entry?.bodyweightLoadFactor;
-                if (bwFactor == null || bwFactor <= 0 || bodyweightKg == null) return null;
-                const effKg = bwFactor * bodyweightKg;
-                const effDisplay = roundDisplayWeight(toDisplayWeight(effKg, unit));
-                return (
-                  <Text
-                    style={[styles.tagsLine, { color: colors.brandText }]}
-                    numberOfLines={1}
-                    testID={`receipt-bw-decl-${ex.id}`}
-                  >
-                    let a = BW·{effDisplay}
-                  </Text>
-                );
-              })()}
+
               {/* The session's best set wears the record red — the
                   sanctioned job (the receipt's ONLY red mark per
                   exercise; the tonnage stays ink: settled fact). */}
@@ -298,11 +314,12 @@ export function Receipt({ id }: ReceiptProps) {
                 return ex.sets.map((s) => {
                   const hasLoad = s.weight != null && s.weight > 0;
                   const setDisplayKg = hasLoad ? s.weight! : bwEffKg;
-                  const figure = hasLoad
-                    ? `${roundDisplayWeight(toDisplayWeight(s.weight!, unit))} × ${s.reps}`
-                    : setDisplayKg != null
-                      ? `a × ${s.reps}`
-                      : `BW × ${s.reps}`;
+                  const isBw = bwEffKg != null;
+                  const figure = isBw
+                    ? hasLoad
+                      ? `a+${roundDisplayWeight(toDisplayWeight(s.weight!, unit))} × ${s.reps}`
+                      : `a × ${s.reps}`
+                    : `${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} × ${s.reps}`;
                   return (
                     <RegisterLine
                       key={s.id}

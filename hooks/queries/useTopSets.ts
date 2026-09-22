@@ -98,7 +98,6 @@ export function useTopSetsByName() {
     // (the as-of lookup; the number you carried THEN).
     if (bodyweightQuery.data && bodyweightQuery.data.length > 0) {
       for (const [key, fact] of derived) {
-        if (fact.weight !== 0) continue;
         const entry = SYSTEM_EXERCISES.find(
           (e) => e.name.toLowerCase() === key,
         );
@@ -106,7 +105,8 @@ export function useTopSetsByName() {
         if (factor == null || factor <= 0) continue;
         const bw = bodyweightAsOf(bodyweightQuery.data, fact.startedAt);
         if (bw != null && bw > 0) {
-          derived.set(key, { ...fact, weight: factor * bw });
+          // ADDITIVE — bodyweight component + any loaded weight.
+          derived.set(key, { ...fact, weight: factor * bw + fact.weight });
         }
       }
     }

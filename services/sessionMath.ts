@@ -23,10 +23,9 @@ export function setVolume(
   bodyweightEffectiveKg?: number,
 ): number {
   if (!isSetFilled(set)) return 0;
-  const weight =
-    set.weight != null && set.weight > 0
-      ? set.weight
-      : bodyweightEffectiveKg ?? 0;
+  // ADDITIVE — the bodyweight component (factor × bodyweight) rides
+  // ON TOP of any loaded weight (a plate on back extensions).
+  const weight = (set.weight ?? 0) + (bodyweightEffectiveKg ?? 0);
   return (set.reps as number) * weight;
 }
 

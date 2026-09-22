@@ -111,9 +111,15 @@ describe('bodyweightFactorFor', () => {
 });
 
 describe('effectiveSetWeight', () => {
-  it('a logged weight IS the effective weight', () => {
+  it('a logged weight with no factor IS the effective weight', () => {
     expect(effectiveSetWeight(100, null, 100)).toBe(100);
-    expect(effectiveSetWeight(62.5, 0.64, 100)).toBe(62.5);
+  });
+
+  it('a bodyweight exercise with added load is ADDITIVE', () => {
+    // weighted push-up: bodyweight component + plate
+    expect(effectiveSetWeight(62.5, 0.64, 100)).toBe(0.64 * 100 + 62.5);
+    // back extension with a 25lb plate at 100kg bodyweight
+    expect(effectiveSetWeight(25, 0.55, 100)).toBe(0.55 * 100 + 25);
   });
 
   it('bodyweight exercises compute factor × bodyweight', () => {
