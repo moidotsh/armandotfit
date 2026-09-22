@@ -13,6 +13,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pencil } from '@tamagui/lucide-icons-2';
 import {
   MobilePrimaryButton,
   MobileActionFooter,
@@ -353,7 +354,7 @@ export function Receipt({ id }: ReceiptProps) {
                         ]}
                         testID={`receipt-add-set-${ex.id}`}
                       >
-                        <Text style={[styles.headAddGlyph, { color: colors.text }]}>+</Text>
+                        <Pencil size={14} color={colors.textMuted} />
                       </Pressable>
                       {ex.tags.length > 0 ? (
                         <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
@@ -385,7 +386,7 @@ export function Receipt({ id }: ReceiptProps) {
                       ]}
                       testID={`receipt-add-set-${ex.id}`}
                     >
-                      <Text style={[styles.headAddGlyph, { color: colors.text }]}>+</Text>
+                      <Pencil size={14} color={colors.textMuted} />
                     </Pressable>
                     <Text
                       style={[styles.tagsLine, { color: colors.brandText }]}
@@ -719,15 +720,11 @@ const styles = StyleSheet.create({
   },
   editInlineInputNarrow: { width: 52 },
   headAddBtn: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  headAddGlyph: {
-    fontSize: 18,
-    fontFamily: theme.fonts.mono,
-    fontWeight: '500',
+    marginLeft: 8,
   },
   editTimes: {
     fontSize: 18,
