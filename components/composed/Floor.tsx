@@ -21,8 +21,9 @@
 // logged (the armed-set model); a logged set is a done set, weight
 // null → 0 (bodyweight) at commit.
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {useEffect, useMemo, useRef, useState, useCallback} from 'react';
 import {
+  Animated,
   Image,
   Pressable,
   ScrollView,
@@ -187,6 +188,19 @@ export function Floor() {
   const [formOpen, setFormOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
   const [plateFrame, setPlateFrame] = useState(0);
+  // THE PLATE FADE — an Animated value for the B frame's opacity.
+  const plateBOpacity = useRef(new Animated.Value(0)).current;
+  const flipPlate = useCallback(() => {
+    setPlateFrame((f) => {
+      const next = f === 0 ? 1 : 0;
+      Animated.timing(plateBOpacity, {
+        toValue: next,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+      return next;
+    });
+  }, [plateBOpacity]);
   const [armedByExercise, setArmedByExercise] = useState<
     Record<string, Armed>
   >({});
@@ -752,7 +766,7 @@ export function Floor() {
                             in, one tap out. */}
                         {entry.image ? (
                           <Pressable
-                            onPress={() => (entry.imageB ? setPlateFrame((f) => (f === 0 ? 1 : 0)) : undefined)}
+                            onPress={() => (entry.imageB ? flipPlate() : undefined)}
                             accessibilityRole="imagebutton"
                             accessibilityLabel={
                               entry.imageB
@@ -781,15 +795,12 @@ export function Floor() {
                                 resizeMode="cover"
                               />
                               {entry.imageB ? (
-                                <Image
+                                <Animated.Image
                                   source={{ uri: entry.imageB }}
                                   style={[
                                     StyleSheet.absoluteFillObject,
                                     styles.formPlateFilter,
-                                    {
-                                      opacity: plateFrame === 1 ? 1 : 0,
-                                      transition: 'opacity 180ms ease',
-                                    },
+                                    { opacity: plateBOpacity },
                                     plateOffset
                                       ? {
                                           transform: [
