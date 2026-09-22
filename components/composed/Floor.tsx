@@ -773,10 +773,9 @@ export function Floor() {
                               <Image
                                 source={{ uri: entry.image }}
                                 style={[
-                                  styles.formPlateFull,
-                                  styles.formPlateFrameA,
-                                  { opacity: 1 },
-                                ]}
+                                  StyleSheet.absoluteFillObject,
+                                  styles.formPlateFilter,
+                                ] as unknown as ImageStyle[]}
                                 accessibilityElementsHidden
                                 testID="form-plate-image-a"
                                 resizeMode="cover"
@@ -785,15 +784,20 @@ export function Floor() {
                                 <Image
                                   source={{ uri: entry.imageB }}
                                   style={[
-                                    styles.formPlateFull,
-                                    styles.formPlateFrameB,
+                                    StyleSheet.absoluteFillObject,
+                                    styles.formPlateFilter,
                                     {
                                       opacity: plateFrame === 1 ? 1 : 0,
-                                      transform: plateOffset
-                                        ? ([{ translateX: -plateOffset.dx, translateY: -plateOffset.dy }] as unknown as ImageStyle['transform'])
-                                        : undefined,
+                                      transition: 'opacity 180ms ease',
                                     },
-                                  ]}
+                                    plateOffset
+                                      ? {
+                                          transform: [
+                                            { translateX: -plateOffset.dx, translateY: -plateOffset.dy },
+                                          ],
+                                        }
+                                      : null,
+                                  ] as unknown as ImageStyle[]}
                                   accessibilityElementsHidden
                                   testID="form-plate-image-b"
                                   resizeMode="cover"
@@ -1301,24 +1305,9 @@ const styles = StyleSheet.create({
   formPlateStack: {
     position: 'relative' as const,
     height: 220,
-  },
-  formPlateFrameA: {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    transition: 'opacity 180ms ease',
-  } as unknown as ImageStyle,
-  formPlateFrameB: {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    transition: 'opacity 180ms ease',
-  } as unknown as ImageStyle,
-  formPlateFull: {
     width: '100%',
-    height: 220,
+  },
+  formPlateFilter: {
     filter: 'grayscale(1) sepia(0.22) contrast(1.04) brightness(1.03)',
   } as unknown as ImageStyle,
   // The cues — the body voice, truncated to three lines; READ MORE
