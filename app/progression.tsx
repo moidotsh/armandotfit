@@ -11,7 +11,7 @@
 // raw sessions; nothing stored.
 
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
 import { BoardShell, BoardHead, NextStation, QueryErrorNote, RegisterLine , SectionWhisper } from '../components/composed';
@@ -24,7 +24,7 @@ import {
 } from '../navigation';
 import { useDashboardSummary, usePersonalBests, useWeightUnit, useRecentSessionDetails } from '../hooks';
 import { SYSTEM_EXERCISES } from '../shared/exercises';
-import { INTERVAL, PAGE_GUTTER } from '../constants';
+import { INTERVAL, PAGE_GUTTER, PRESS_DIP, theme } from '../constants';
 import { derivePrTimeline } from '../services';
 import { toDisplayWeight, roundDisplayWeight, weightUnitLabel, formatWeight, joinFacts } from '../utils';
 
@@ -153,17 +153,38 @@ export default function ProgressionScreen() {
                   // slug for the route at read time.
                   const slug = SYSTEM_EXERCISES.find((e) => e.name === pb.exerciseName)?.slug;
                   return (
-                    <RegisterLine
+                    <Pressable
                       key={pb.exerciseName}
-                      monoPrefix={new Date(pb.bestAt).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' })}
-                      label={exAcronym}
-                      labelMuted={tagPart || undefined}
-                      figure={`${pb.bestWeight} × ${pb.bestReps}`}
                       onPress={slug ? () => navigateToExerciseDetail(slug) : undefined}
-                      accessibilityLabel={`${pb.exerciseName} — best ${pb.bestWeight} ${weightUnitLabel(unit)} for ${pb.bestReps}`}
+                      accessibilityRole={slug ? 'button' : undefined}
+                      accessibilityLabel={`${pb.exerciseName} — e1RM ${Math.round(pb.bestE1rm)}, best ${pb.bestWeight} for ${pb.bestReps}`}
+                      style={({ pressed }) => [
+                        styles.bestsEntry,
+                        pressed ? { opacity: PRESS_DIP } : null,
+                      ]}
                       testID={`gauge-wall-row-${pb.exerciseName}`}
-                      figureTestID={`gauge-wall-figure-${pb.exerciseName}`}
-                    />
+                    >
+                      {/* The exercise IS the row — row rank, full ink. */}
+                      <View style={styles.bestsHead}>
+                        <Text style={[styles.bestsName, { color: colors.text }]} numberOfLines={1}>
+                          {tagPart ? (
+                            <Text style={{ color: colors.textMuted }}>{tagPart} </Text>
+                          ) : null}
+                          {exAcronym}
+                        </Text>
+                        {/* e1RM — the headline number. */}
+                        <Text style={[styles.bestsE1rm, { color: colors.text }]} numberOfLines={1}>
+                          {formatWeight(pb.bestE1rm, unit)}
+                        </Text>
+                      </View>
+                      {/* Metadata — muted, furniture rank. */}
+                      <Text style={[styles.bestsMeta, { color: colors.textMuted }]} numberOfLines={1}>
+                        {new Date(pb.bestAt).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' })}
+                        {' · '}
+                        {pb.bestWeight} × {pb.bestReps}
+                        {' · e1RM'}
+                      </Text>
+                    </Pressable>
                   );
                 })}
               </View>
@@ -218,6 +239,33 @@ export default function ProgressionScreen() {
 }
 
 const styles = StyleSheet.create({
+  // THE BESTS — exercise as identity, e1RM as headline, metadata muted.
+  bestsEntry: {
+    paddingVertical: 6,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  bestsHead: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+  },
+  bestsName: {
+    ...theme.typography.mobileItemTitle,
+    fontSize: 18,
+    fontWeight: '600',
+    flexShrink: 1,
+    flexGrow: 1,
+  },
+  bestsE1rm: {
+    ...theme.typography.mobileFigure,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  bestsMeta: {
+    ...theme.typography.mobileLedger,
+    marginTop: 2,
+  },
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 80 },
   block: {
     ...INTERVAL.block,
