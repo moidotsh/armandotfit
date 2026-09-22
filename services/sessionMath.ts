@@ -15,16 +15,27 @@ export function isSetFilled(set: { reps: number | null; weight: number | null })
   return set.reps !== null && set.weight !== null;
 }
 
-/** Tonnage of one filled set (0 when unfilled). */
-export function setVolume(set: { reps: number | null; weight: number | null }): number {
-  return isSetFilled(set) ? (set.reps as number) * (set.weight as number) : 0;
+/** Tonnage of one filled set (0 when unfilled). When the set carries
+ * no weight AND a bodyweight effective load is given, that load
+ * stands in (the bodyweight factor × the user's bodyweight). */
+export function setVolume(
+  set: { reps: number | null; weight: number | null },
+  bodyweightEffectiveKg?: number,
+): number {
+  if (!isSetFilled(set)) return 0;
+  const weight =
+    set.weight != null && set.weight > 0
+      ? set.weight
+      : bodyweightEffectiveKg ?? 0;
+  return (set.reps as number) * weight;
 }
 
 /** Volume across an exercise's sets. */
 export function sumVolume(
   sets: ReadonlyArray<{ reps: number | null; weight: number | null }>,
+  bodyweightEffectiveKg?: number,
 ): number {
-  return sets.reduce((acc, s) => acc + setVolume(s), 0);
+  return sets.reduce((acc, s) => acc + setVolume(s, bodyweightEffectiveKg), 0);
 }
 
 /** Format kilograms/units with thin thousands separators. */

@@ -27,8 +27,12 @@ import { NextStation } from './NextStation';
 import { QueryErrorNote } from './QueryErrorNote';
 import { useToast, useAppTheme } from '../../context';
 import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags } from '../../hooks';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '../../lib/react-query';
 import { navigateToWorkoutDetail, safeGoBack } from '../../navigation';
 import { resolveSlots, sumVolume } from '../../services';
+import { effectiveSetWeight } from '../../utils/bodyweight';
+import { getLatestWeight } from '../../utils/supabase/repositories';
 import {
   rxLabel,
   useProgramOverrideStore,
@@ -85,8 +89,30 @@ export function Receipt({ id }: ReceiptProps) {
   const totalSets = session
     ? session.exercises.reduce((n, e) => n + e.sets.length, 0)
     : 0;
+  // THE BODYWEIGHT — the latest weigh-in powers the volume of
+  // bodyweight stations (factor × bodyweight = effective load).
+  const bodyweightQuery = useQuery({
+    queryKey: queryKeys.bodyWeight.latest(),
+    queryFn: async () => {
+      const r = await getLatestWeight();
+      if (!r.success) throw r.error;
+      return r.data;
+    },
+  });
+  const bodyweightKg = bodyweightQuery.data?.weightKg ?? null;
+
   const totalKg = session
-    ? session.exercises.reduce((n, e) => n + sumVolume(e.sets), 0)
+    ? session.exercises.reduce((n, e) => {
+        const entry = SYSTEM_EXERCISES.find(
+          (sys) => sys.name === e.exerciseName,
+        );
+        const factor = entry?.bodyweightLoadFactor;
+        const effectiveBw =
+          factor != null && bodyweightKg != null
+            ? factor * bodyweightKg
+            : undefined;
+        return n + sumVolume(e.sets, effectiveBw);
+      }, 0)
     : 0;
 
   // CONTINUE THE DAY — the day continues as a NEW block SEEDED with

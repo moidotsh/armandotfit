@@ -201,6 +201,13 @@ export interface SystemExerciseData {
    */
   modality?: 'floor' | 'dumbbell' | 'barbell' | 'machine' | 'cable' | 'cardio';
   /**
+   * BODYWEIGHT LOAD FACTOR — what fraction of bodyweight this
+   * exercise moves (0.64 push-ups, 0.95 pull-ups, 0.35 leg raises;
+   * force-plate research). Computed at composition from the name
+   * pattern (utils/bodyweight.ts). Volume = factor × bodyweight × reps.
+   */
+  bodyweightLoadFactor?: number;
+  /**
    * Movement family — the substitution role ('chest-press',
    * 'vertical-pull', ...). DISPLAY-ONLY: families group the browse UI
    * and power the in-session swap sheet; they never affect identity,
@@ -2069,6 +2076,7 @@ import { IMPORTED_EXERCISES } from './importedData';
 import { CORE_PLATES } from './corePlates';
 import { CORE_PLATES_B } from './corePlatesB';
 import { CORE_COPY } from './coreCopy';
+import { bodyweightFactorFor } from '../../utils/bodyweight';
 
 export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // Core entries wear their matched plates (corePlates.ts — generated;
@@ -2081,8 +2089,12 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     image: e.image ?? CORE_PLATES[e.slug],
     imageB: e.imageB ?? CORE_PLATES_B[e.slug],
     instructions: CORE_COPY[e.slug] ?? e.instructions,
+    bodyweightLoadFactor: bodyweightFactorFor(e.name) ?? undefined,
   })),
-  ...(IMPORTED_EXERCISES as unknown as SystemExerciseData[]),
+  ...(IMPORTED_EXERCISES as unknown as SystemExerciseData[]).map((e) => ({
+    ...e,
+    bodyweightLoadFactor: bodyweightFactorFor(e.name) ?? undefined,
+  })),
 ];
 
 // ──────────────────────────────────────────────────────────────────────
