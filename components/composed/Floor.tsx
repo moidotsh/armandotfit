@@ -188,18 +188,36 @@ export function Floor() {
   const [formOpen, setFormOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
   const [plateFrame, setPlateFrame] = useState(0);
-  // THE PLATE FADE — an Animated value for the B frame's opacity.
+  // THE PLATE LOOP — the pair auto-animates: frame A holds ~1s,
+  // crossfades to B, B holds ~1s, fades back. The movement reads as
+  // a continuous range without any tap. Still-system compliant: the
+  // fade is the opacity dip, nothing else moves.
   const plateBOpacity = useRef(new Animated.Value(0)).current;
-  const flipPlate = useCallback(() => {
-    setPlateFrame((f) => {
-      const next = f === 0 ? 1 : 0;
-      Animated.timing(plateBOpacity, {
-        toValue: next,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
-      return next;
-    });
+  const plateLoop = useRef<Animated.CompositeAnimation | null>(null);
+  const startPlateLoop = useCallback(() => {
+    plateLoop.current?.stop();
+    plateBOpacity.setValue(0);
+    plateLoop.current = Animated.loop(
+      Animated.sequence([
+        Animated.timing(plateBOpacity, {
+          toValue: 1,
+          duration: 600,
+          delay: 1000,
+          useNativeDriver: false,
+        }),
+        Animated.timing(plateBOpacity, {
+          toValue: 0,
+          duration: 600,
+          delay: 1000,
+          useNativeDriver: false,
+        }),
+      ]),
+    );
+    plateLoop.current.start();
+  }, [plateBOpacity]);
+  const stopPlateLoop = useCallback(() => {
+    plateLoop.current?.stop();
+    plateBOpacity.setValue(0);
   }, [plateBOpacity]);
   const [armedByExercise, setArmedByExercise] = useState<
     Record<string, Armed>
@@ -308,9 +326,10 @@ export function Floor() {
   const formStationRef = useRef<string | null>(formStationKey);
   if (formStationRef.current !== formStationKey) {
     formStationRef.current = formStationKey;
-    setFormOpen(false);
+    setFormOpen(false); stopPlateLoop();;
     setReadingOpen(false);
     setPlateFrame(0);
+    stopPlateLoop();
   }
 
   // The program's own ask for this station: the SET count and the LOW
@@ -766,7 +785,7 @@ export function Floor() {
                             in, one tap out. */}
                         {entry.image ? (
                           <Pressable
-                            onPress={() => (entry.imageB ? flipPlate() : undefined)}
+                            onPress={undefined}
                             accessibilityRole="imagebutton"
                             accessibilityLabel={
                               entry.imageB
@@ -817,7 +836,7 @@ export function Floor() {
                             </View>
                             {entry.imageB ? (
                               <Text style={[styles.formPlateWord, { color: colors.textMuted }]}>
-                                {plateFrame === 0 ? '1 · 2' : '2 · 2'}
+                                '1 · 2'
                               </Text>
                             ) : null}
                           </Pressable>
