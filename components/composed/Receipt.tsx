@@ -323,16 +323,16 @@ export function Receipt({ id }: ReceiptProps) {
           {session.exercises.map((ex) => (
             <View key={ex.id} style={styles.receiptBlock}>
               {(() => {
-                // THE BODYWEIGHT DECLARATION — right-aligned in the
-                // exercise head, opposite the name. One red line
-                // defines the variable; the rows below read 'a × N'
-                // (no added load) or 'a+25 × N' (a plate on top).
+                // THE HEAD — name left, + right. Always the same two
+                // elements; the + never moves, the name never truncates.
+                // The bodyweight declaration and tags share the sub-row.
                 const entry = SYSTEM_EXERCISES.find(
                   (sys) => sys.name === ex.exerciseName,
                 );
                 const bwFactor = entry?.bodyweightLoadFactor;
-                if (bwFactor == null || bwFactor <= 0 || bodyweightKg == null) {
-                  return (
+                const hasBw = bwFactor != null && bwFactor > 0 && bodyweightKg != null;
+                return (
+                  <>
                     <View style={styles.receiptExHead}>
                       <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
                         {ex.exerciseName || 'Exercise'}
@@ -356,55 +356,30 @@ export function Receipt({ id }: ReceiptProps) {
                       >
                         <Plus size={14} color={colors.textMuted} />
                       </Pressable>
-                      {ex.tags.length > 0 ? (
-                        <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
-                          {joinFacts(ex.tags)}
-                        </Text>
-                      ) : null}
                     </View>
-                  );
-                }
-                return (
-                  <View style={styles.receiptExHead}>
-                    <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
-                      {ex.exerciseName || 'Exercise'}
-                    </Text>
-                    <Pressable
-                      onPress={() => {
-                        const last = ex.sets[ex.sets.length - 1];
-                        void handleAddSet(
-                          ex.id,
-                          last?.weight ?? null,
-                          last?.reps ?? 10,
-                        );
-                      }}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Add a set to ${ex.exerciseName}`}
-                      style={({ pressed }) => [
-                        styles.headAddBtn,
-                        pressed ? { opacity: PRESS_DIP } : null,
-                      ]}
-                      testID={`receipt-add-set-${ex.id}`}
-                    >
-                      <Plus size={14} color={colors.textMuted} />
-                    </Pressable>
-                    <Text
-                      style={[styles.tagsLine, { color: colors.brandText }]}
-                      numberOfLines={1}
-                      testID={`receipt-bw-decl-${ex.id}`}
-                    >
-                      let a = BW×{bwFactor} = {roundDisplayWeight(
-                        toDisplayWeight(bwFactor * bodyweightKg, unit),
-                      )}
-                    </Text>
-                  </View>
+                    {(hasBw || ex.tags.length > 0) ? (
+                      <View style={styles.receiptSubHead}>
+                        {hasBw ? (
+                          <Text
+                            style={[styles.tagsLine, { color: colors.brandText }]}
+                            numberOfLines={1}
+                            testID={`receipt-bw-decl-${ex.id}`}
+                          >
+                            let a = BW×{bwFactor} = {roundDisplayWeight(
+                              toDisplayWeight(bwFactor! * bodyweightKg!, unit),
+                            )}
+                          </Text>
+                        ) : null}
+                        {ex.tags.length > 0 ? (
+                          <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
+                            {joinFacts(ex.tags)}
+                          </Text>
+                        ) : null}
+                      </View>
+                    ) : null}
+                  </>
                 );
               })()}
-              {ex.tags.length > 0 ? (
-                <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
-                  {joinFacts(ex.tags)}
-                </Text>
-              ) : null}
               {ex.tags.length === 0 && (lastTags.get(ex.exerciseName)?.length ?? 0) > 0 ? (
                 <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
                   {joinFacts(['no tags', `last time: ${joinFacts(lastTags.get(ex.exerciseName)!)}`])}
@@ -684,6 +659,12 @@ const styles = StyleSheet.create({
     ...INTERVAL.fact,
   },
   // The exercise register's head: the name left, tags whisper right.
+  receiptSubHead: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 12,
+    marginBottom: 2,
+  },
   receiptExHead: {
     flexDirection: 'row',
     alignItems: 'baseline',
