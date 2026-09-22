@@ -26,7 +26,6 @@ export { Minus } from '@tamagui/lucide-icons-2/dist/esm/icons/Minus.mjs';
 export { Monitor } from '@tamagui/lucide-icons-2/dist/esm/icons/Monitor.mjs';
 export { Moon } from '@tamagui/lucide-icons-2/dist/esm/icons/Moon.mjs';
 export { Package } from '@tamagui/lucide-icons-2/dist/esm/icons/Package.mjs';
-export { Pencil } from '@tamagui/lucide-icons-2/dist/esm/icons/Pencil.mjs';
 export { Play } from '@tamagui/lucide-icons-2/dist/esm/icons/Play.mjs';
 export { Plus } from '@tamagui/lucide-icons-2/dist/esm/icons/Plus.mjs';
 export { Search } from '@tamagui/lucide-icons-2/dist/esm/icons/Search.mjs';

@@ -13,7 +13,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Pencil } from '@tamagui/lucide-icons-2';
+import { Plus } from '@tamagui/lucide-icons-2';
 import {
   MobilePrimaryButton,
   MobileActionFooter,
@@ -354,7 +354,7 @@ export function Receipt({ id }: ReceiptProps) {
                         ]}
                         testID={`receipt-add-set-${ex.id}`}
                       >
-                        <Pencil size={14} color={colors.textMuted} />
+                        <Plus size={14} color={colors.textMuted} />
                       </Pressable>
                       {ex.tags.length > 0 ? (
                         <Text style={[styles.tagsLine, { color: colors.textMuted }]} numberOfLines={1}>
@@ -386,7 +386,7 @@ export function Receipt({ id }: ReceiptProps) {
                       ]}
                       testID={`receipt-add-set-${ex.id}`}
                     >
-                      <Pencil size={14} color={colors.textMuted} />
+                      <Plus size={14} color={colors.textMuted} />
                     </Pressable>
                     <Text
                       style={[styles.tagsLine, { color: colors.brandText }]}
@@ -571,7 +571,7 @@ export function Receipt({ id }: ReceiptProps) {
                         >
                           <RegisterLine
                             monoLabel
-                            label={String(s.position)}
+                            label={String(ex.sets.indexOf(s) + 1)}
                             figure={figure}
                             figureTone={
                               setDisplayKg != null &&

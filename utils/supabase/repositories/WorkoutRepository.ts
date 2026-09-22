@@ -546,12 +546,12 @@ export class WorkoutRepository
       // Position is NOT NULL (CHECK >= 1): compute max + 1.
       const { data: existing, error: posErr } = await supabase
         .from(WorkoutRepository.LOGGED_SETS)
-        .select('position')
-        .eq('logged_exercise_id', loggedExerciseId)
-        .order('position', { ascending: false })
-        .limit(1);
+        .select('id')
+        .eq('logged_exercise_id', loggedExerciseId);
       if (posErr) throw posErr;
-      const nextPosition = (existing?.[0]?.position ?? 0) + 1;
+      // Normalize: count + 1 (not max + 1 — stored positions may
+      // have gaps from earlier deletes before the renumber fix).
+      const nextPosition = (existing?.length ?? 0) + 1;
 
       const { error } = await supabase
         .from(WorkoutRepository.LOGGED_SETS)
@@ -563,6 +563,23 @@ export class WorkoutRepository
           note: data.note ?? null,
         });
       if (error) throw error;
+
+      // Normalize ALL positions (heal any gaps from old data).
+      const { data: all } = await supabase
+        .from(WorkoutRepository.LOGGED_SETS)
+        .select('id, position')
+        .eq('logged_exercise_id', loggedExerciseId)
+        .order('position');
+      if (all) {
+        for (let i = 0; i < all.length; i++) {
+          if (all[i].position !== i + 1) {
+            await supabase
+              .from(WorkoutRepository.LOGGED_SETS)
+              .update({ position: i + 1 })
+              .eq('id', all[i].id);
+          }
+        }
+      }
       return ok(undefined);
     } catch (e) {
       return this.handleError('addSet', e);
