@@ -4,28 +4,27 @@
 // (services/splitGenerator.ts + shared/exercises/splitRules.ts), in
 // THE PROGRAM PAGE'S OWN GRAMMAR:
 //
-//   /split-lab               THE OVERVIEW — one CARD per generator
-//                           option (One-a-day / Two-a-day today; the
-//                           program-type list — PPL, Upper/Lower, Bro,
-//                           Anything — grows here as its law set
-//                           lands). Each card previews THAT shape's
-//                           generated edition for the current seed:
-//                           sessions figure, side facts, rotation
-//                           strip, top-muscle share. Tap → the days.
-//   /split-lab?shape=…      THE DAYS — the generated rotation as equal
-//                           chapters of ruled lines (the program days'
-//                           own grammar), closed by VS THE PROGRAM: the
-//                           diverging ± share delta against the
-//                           authored edition of the same shape (bars
-//                           run left of the axis when the generated
-//                           program works a muscle LESS, right when it
-//                           works it more) and the laws' verdict.
+//   /split-lab                 THE OVERVIEW — one CARD per generator
+//                             program type, the six: Full Body
+//                             (one-a-day), HF Full Body (AM/PM),
+//                             Push/Pull/Leg, Upper/Lower, Bro Split,
+//                             Anything Goes. Each card previews THAT
+//                             type's generated board for the current
+//                             seed (sessions figure, side facts,
+//                             rotation strip, top-muscle share). Tap →
+//                             the days.
+//   /split-lab?program=…      THE DAYS — the generated rotation as
+//                             equal chapters of ruled lines (the
+//                             program days' own grammar), closed by
+//                             VS THE PROGRAM: the diverging ± share
+//                             delta against the authored program (the
+//                             full-body types compare against their own
+//                             shape; the other types against the
+//                             shape you run) and the laws' verdict.
 //
 // Reroll picks a new seed; the same seed rebuilds the same boards.
 // Nothing applies — no override is written, no preference flips, the
-// live program is untouched. The edition toggle is deliberately gone:
-// the authored upper/lower editions are a couples-training concept,
-// not a split archetype, and read here as exactly the wrong thing.
+// live program is untouched.
 
 import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -35,34 +34,33 @@ import { MobilePrimaryButton } from '../components/MobilePremium';
 import { BoardShell, SectionWhisper } from '../components/composed';
 import { navigateToExerciseDetail, navigateToSplitLab, safeGoBack } from '../navigation';
 import { useAppTheme } from '../context';
-import {
-  generateSplit,
-  nameForSlug,
-  authoredProgramSlots,
-  muscleShareDeltas,
-} from '../services';
+import { useSplitPreferenceStore } from '../stores';
+import { generateProgram, nameForSlug, authoredProgramSlots, muscleShareDeltas } from '../services';
 import { derivePlanMuscleShare } from '../services';
-import {
-  INTERVAL,
-  ROW_GAP,
-  PAGE_GUTTER,
-  PRESS_DIP,
-  theme,
-} from '../constants';
+import { INTERVAL, ROW_GAP, PAGE_GUTTER, PRESS_DIP, theme } from '../constants';
 import { joinFacts } from '../utils';
-import { MUSCLE_DISPLAY_NAMES } from '../shared/exercises';
+import { MUSCLE_DISPLAY_NAMES, type ProgramType } from '../shared/exercises';
 import type { ResolvedSlot } from '../shared/exercises';
 import type { PreferredSplit } from '../shared/types';
 
-const SHAPES: ReadonlyArray<{ which: PreferredSplit; title: string }> = [
-  { which: 'oneADay', title: 'One-a-day' },
-  { which: 'twoADay', title: 'Two-a-day' },
+/** The card list — the generator program types, in the owner's order. */
+const PROGRAM_CARDS: ReadonlyArray<{
+  program: ProgramType;
+  title: string;
+  /** The days view's statement (short — it prints at 36). */
+  short: string;
+  /** Sessions per day (only HF Full Body trains twice). */
+  sessionsPerDay: 1 | 2;
+}> = [
+  { program: 'fullBodyOneADay', title: 'Full Body — one-a-day', short: 'Full Body', sessionsPerDay: 1 },
+  { program: 'fullBodyHighFrequency', title: 'HF Full Body — AM/PM', short: 'HF Full Body', sessionsPerDay: 2 },
+  { program: 'pushPullLegs', title: 'Push / Pull / Leg', short: 'Push/Pull/Leg', sessionsPerDay: 1 },
+  { program: 'upperLower', title: 'Upper / Lower', short: 'Upper/Lower', sessionsPerDay: 1 },
+  { program: 'broSplit', title: 'Bro Split', short: 'Bro Split', sessionsPerDay: 1 },
+  { program: 'anythingGoes', title: 'Anything Goes', short: 'Anything Goes', sessionsPerDay: 1 },
 ];
 
-const SHAPE_NAME: Record<PreferredSplit, string> = {
-  oneADay: 'One-a-day',
-  twoADay: 'Two-a-day',
-};
+const CARD_BY_PROGRAM = new Map(PROGRAM_CARDS.map((c) => [c.program, c]));
 
 /** The diverging bars' half-width, in glyphs (the leader fills it). */
 const DELTA_BAR_HALF = 8;
@@ -74,20 +72,21 @@ function rxLabel(sets: [number, number], reps: [number, number]): string {
 
 const newSeed = (): number => 1000 + Math.floor(Math.random() * 9000);
 
-const isShape = (v: string | undefined): v is PreferredSplit =>
-  v === 'twoADay' || v === 'oneADay';
+const isProgram = (v: string | undefined): v is ProgramType =>
+  PROGRAM_CARDS.some((c) => c.program === v);
 
 export default function SplitLabScreen() {
   const { colors } = useAppTheme();
   const [seed, setSeed] = useState<number>(4271);
-  const { shape } = useLocalSearchParams<{ shape?: string }>();
+  const { program } = useLocalSearchParams<{ program?: string }>();
+  const preferredShape = useSplitPreferenceStore((s) => s.splitType);
 
-  // Both boards are pure functions of the seed — the overview previews
-  // them all; the days view reads one.
+  // All six boards are pure functions of the seed — the overview
+  // previews them; the days view reads one.
   const boards = useMemo(() => {
-    const map = {} as Record<PreferredSplit, ReturnType<typeof generateSplit>>;
-    for (const { which } of SHAPES) {
-      map[which] = generateSplit({ seed, shape: which, edition: 'upper' });
+    const map = {} as Record<ProgramType, ReturnType<typeof generateProgram>>;
+    for (const { program: p } of PROGRAM_CARDS) {
+      map[p] = generateProgram({ seed, program: p });
     }
     return map;
   }, [seed]);
@@ -98,8 +97,8 @@ export default function SplitLabScreen() {
     </MobilePrimaryButton>
   );
 
-  // ── THE OVERVIEW — one card per generator option ────────────────────
-  if (!isShape(shape)) {
+  // ── THE OVERVIEW — one card per program type ────────────────────────
+  if (!isProgram(program)) {
     return (
       <BoardShell
         surface="analytics"
@@ -115,14 +114,14 @@ export default function SplitLabScreen() {
           {joinFacts([`seed ${seed}`, 'preview only — nothing applies'])}
         </Text>
 
-        {SHAPES.map(({ which, title }, i) => {
+        {PROGRAM_CARDS.map(({ program: which, title, sessionsPerDay }, i) => {
           const board = boards[which];
           const slots = board.days.flatMap((d) => [...d.am, ...d.pm]);
-          const sessions = which === 'twoADay' ? 8 : 4;
+          const sessions = board.days.length * sessionsPerDay;
           const rows = derivePlanMuscleShare(slots, 4);
           const lead = rows[0]?.share ?? 1;
           const strip = board.days
-            .map((d) => `D${d.day} ${'\u2588'.repeat(which === 'twoADay' ? 2 : 1)}`)
+            .map((d) => `D${d.day} ${'\u2588'.repeat(sessionsPerDay)}`)
             .join(' \u2009·\u2009 ');
           return (
             <Pressable
@@ -132,8 +131,8 @@ export default function SplitLabScreen() {
               accessibilityLabel={`${title} generated program — ${slots.length} lifts, ${sessions} sessions a week. View the days`}
               style={({ pressed }) => [
                 styles.card,
-                { borderTopColor: colors.mobilePremium.hairlineBorder },
                 i > 0 ? styles.cardNotFirst : null,
+                { borderTopColor: colors.mobilePremium.hairlineBorder },
                 pressed ? { opacity: PRESS_DIP } : null,
               ]}
               testID={`split-lab-card-${which}`}
@@ -153,7 +152,7 @@ export default function SplitLabScreen() {
                 </Text>
                 <Text style={[styles.cardBigUnit, { color: colors.textSecondary }]}>SESSIONS/WK</Text>
                 <Text style={[styles.cardSideFacts, { color: colors.textSecondary }]} numberOfLines={1}>
-                  {joinFacts(['4 days', `${slots.length} lifts`])}
+                  {joinFacts([`${board.days.length} days`, `${slots.length} lifts`])}
                 </Text>
               </View>
               <Text style={[styles.cardStrip, { color: colors.textSecondary }]} numberOfLines={1}>
@@ -186,12 +185,18 @@ export default function SplitLabScreen() {
   }
 
   // ── THE DAYS — the generated rotation ───────────────────────────────
-  const board = boards[shape];
-  const isTwoADay = shape === 'twoADay';
+  const card = CARD_BY_PROGRAM.get(program)!;
+  const board = boards[program];
+  const isTwoADay = program === 'fullBodyHighFrequency';
   const genSlots = board.days.flatMap((d) => [...d.am, ...d.pm]);
-  const authored = useMemo(() => authoredProgramSlots(shape), [shape]);
-  const delta = useMemo(() => muscleShareDeltas(genSlots, authored), [genSlots, authored]);
-  const failing = board.rules.filter((r) => !r.ok);
+  // The comparison baseline: the full-body types meet their own shape;
+  // the other types meet the shape you actually run.
+  const baselineShape: PreferredSplit = board.shape ?? preferredShape ?? 'twoADay';
+  const { rows: deltaRows, maxAbsDelta } = useMemo(
+    () => muscleShareDeltas(genSlots, authoredProgramSlots(baselineShape)),
+    [genSlots, baselineShape],
+  );
+  const passing = board.rules.filter((r) => r.ok).length;
 
   const renderSlot = (slot: ResolvedSlot, key: string) => (
     <View key={key} style={styles.slotRow}>
@@ -229,13 +234,13 @@ export default function SplitLabScreen() {
           {joinFacts(['THE ROTATION', `SEED ${seed}`])}
         </Text>
         <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
-          {SHAPE_NAME[shape]}
+          {card.short}
         </Text>
         <Text style={[styles.fact, { color: colors.textMuted }]} numberOfLines={1}>
           {joinFacts([
-            '4 days',
+            `${board.days.length} days`,
             `${genSlots.length} lifts`,
-            `${isTwoADay ? 8 : 4} sessions/week`,
+            `${board.days.length * card.sessionsPerDay} sessions/week`,
             'generated',
           ])}
         </Text>
@@ -275,21 +280,22 @@ export default function SplitLabScreen() {
       {/* VS THE PROGRAM — the page's 2px-rule closer. The diverging
           bars: left of the axis the generated program works the muscle
           LESS than the authored one, right more; the figure carries
-          the signed points. The authored baseline is the same shape's
-          authored edition (upper) — overrides never enter. */}
+          the signed points. */}
       <View style={[styles.deltaBlock, { borderTopColor: colors.text }]} testID="split-lab-delta">
         <SectionWhisper rule={false}>VS THE PROGRAM</SectionWhisper>
         <Text style={[styles.deltaFact, { color: colors.textMuted }]} numberOfLines={1}>
           {joinFacts([
             'share of weekly set volume',
-            board.ok ? '7/7 laws pass' : `${failing.length} law${failing.length === 1 ? '' : 's'} fail`,
+            board.ok
+              ? `${passing}/${board.rules.length} laws pass`
+              : `${board.rules.length - passing} law${board.rules.length - passing === 1 ? '' : 's'} fail`,
           ])}
         </Text>
-        {delta.rows.map((row) => {
+        {deltaRows.map((row) => {
           const len =
-            delta.maxAbsDelta === 0
+            maxAbsDelta === 0
               ? 0
-              : Math.round((Math.abs(row.delta) / delta.maxAbsDelta) * DELTA_BAR_HALF);
+              : Math.round((Math.abs(row.delta) / maxAbsDelta) * DELTA_BAR_HALF);
           return (
             <View key={row.muscle} style={styles.deltaRow}>
               <Text style={[styles.deltaLabel, { color: colors.textSecondary }]} numberOfLines={1}>
@@ -356,7 +362,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   cardNotFirst: {
-    marginTop: 24,
+    marginTop: 20,
   },
   cardHead: {
     flexDirection: 'row',

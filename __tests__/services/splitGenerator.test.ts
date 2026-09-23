@@ -6,13 +6,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   generateSplit,
+  generateProgram,
   nameForSlug,
   authoredProgramSlots,
   muscleShareDeltas,
 } from '../../services';
-import { checkEditionLaws, lawsPass } from '../../shared/exercises';
-import { SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
-import type { ProgramEdition } from '../../shared/exercises';
+import { checkEditionLaws, checkProgramLaws, lawsPass, SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
+import type { ProgramEdition, ProgramType } from '../../shared/exercises';
 import type { PreferredSplit } from '../../shared/types';
 
 const EDITIONS: ProgramEdition[] = ['upper', 'lower'];
@@ -97,10 +97,11 @@ describe('generateSplit — the laws hold by construction', () => {
 describe('generateSplit — read-only shape', () => {
   it('carries no persistence or override surface — pure data out', () => {
     const result = generateSplit({ seed: 5, shape: 'oneADay', edition: 'upper' });
-    // The returned object is plain data: seed/shape/edition/days/rules/
-    // ok/attempts. Nothing references stores, overrides, or the DB.
+    // The returned object is plain data: seed/program/shape/edition/
+    // days/rules/ok/attempts. Nothing references stores, overrides,
+    // or the DB.
     expect(Object.keys(result).sort()).toEqual(
-      ['attempts', 'days', 'edition', 'ok', 'rules', 'seed', 'shape'].sort(),
+      ['attempts', 'days', 'edition', 'ok', 'program', 'rules', 'seed', 'shape'].sort(),
     );
     expect(result.rules.every((r) => typeof r.ok === 'boolean')).toBe(true);
   });
@@ -117,6 +118,108 @@ describe('generateSplit — read-only shape', () => {
 describe('nameForSlug', () => {
   it('returns the catalog display name', () => {
     expect(nameForSlug('leg-press')).toBe(SYSTEM_EXERCISES_BY_SLUG['leg-press'].name);
+  });
+});
+
+// ── generateProgram — the six program types ────────────────────────────
+
+const ALL_PROGRAMS: ProgramType[] = [
+  'fullBodyOneADay',
+  'fullBodyHighFrequency',
+  'pushPullLegs',
+  'upperLower',
+  'broSplit',
+  'anythingGoes',
+];
+
+describe('generateProgram — every type passes its own laws', () => {
+  for (const program of ALL_PROGRAMS) {
+    it(`${program}: laws pass across 15 seeds (recomputed, not self-graded)`, () => {
+      for (let seed = 1; seed <= 15; seed++) {
+        const result = generateProgram({ seed, program });
+        expect(
+          result.ok,
+          `seed ${seed}: ${result.rules.filter((r) => !r.ok).map((r) => `${r.id}: ${r.detail}`).join('; ')}`,
+        ).toBe(true);
+        expect(lawsPass(checkProgramLaws(result.days, program))).toBe(true);
+      }
+    });
+
+    it(`${program}: deterministic (same seed → same board)`, () => {
+      const a = generateProgram({ seed: 777, program });
+      const b = generateProgram({ seed: 777, program });
+      expect(a.days).toEqual(b.days);
+    });
+  }
+
+  it('carries the program tag; full-body keeps its shape, others null', () => {
+    expect(generateProgram({ seed: 1, program: 'fullBodyOneADay' }).shape).toBe('oneADay');
+    expect(generateProgram({ seed: 1, program: 'fullBodyHighFrequency' }).shape).toBe('twoADay');
+    expect(generateProgram({ seed: 1, program: 'pushPullLegs' }).shape).toBeNull();
+  });
+});
+
+describe('generateProgram — archetype structures', () => {
+  it('PPL: Push / Pull / Legs × 7, every slot on-theme', () => {
+    const r = generateProgram({ seed: 42, program: 'pushPullLegs' });
+    expect(r.days.map((d) => d.title)).toEqual(['Push', 'Pull', 'Legs']);
+    for (const day of r.days) {
+      expect(day.am).toHaveLength(7);
+      expect(day.pm).toHaveLength(0);
+    }
+    const roles = r.days.map((d) => new Set(d.am.map((s) => SYSTEM_EXERCISES_BY_SLUG[s.exercise]?.movementRole)));
+    expect([...roles[0]]).toEqual(['push']);
+    expect([...roles[1]]).toEqual(['pull']);
+    // Legs day may carry core; everything else is legs.
+    for (const role of roles[2]) expect(['legs', 'core']).toContain(role);
+  });
+
+  it('Upper/Lower: the A/B alternation, upper days push+pull only', () => {
+    const r = generateProgram({ seed: 42, program: 'upperLower' });
+    expect(r.days.map((d) => d.title)).toEqual(['Upper A', 'Lower A', 'Upper B', 'Lower B']);
+    for (const [i, day] of r.days.entries()) {
+      expect(day.am).toHaveLength(7);
+      for (const slot of day.am) {
+        const role = SYSTEM_EXERCISES_BY_SLUG[slot.exercise]?.movementRole;
+        if (i % 2 === 0) expect(['push', 'pull']).toContain(role);
+        else expect(['legs', 'core']).toContain(role);
+      }
+    }
+  });
+
+  it('Bro: five themed days × 6, every slot hits the day muscle set', () => {
+    const r = generateProgram({ seed: 42, program: 'broSplit' });
+    expect(r.days.map((d) => d.title)).toEqual(['Chest', 'Back', 'Legs', 'Shoulders', 'Arms']);
+    const themeMuscles: Record<string, string[]> = {
+      Chest: ['chest', 'upper-chest', 'lower-chest'],
+      Back: ['lats', 'traps', 'upper-back', 'lower-back'],
+      Legs: ['quads', 'hamstrings', 'glutes', 'calves', 'tibialis'],
+      Shoulders: ['front-delts', 'side-delts', 'rear-delts', 'traps'],
+      Arms: ['biceps', 'triceps', 'forearms'],
+    };
+    for (const day of r.days) {
+      expect(day.am).toHaveLength(6);
+      for (const slot of day.am) {
+        const muscles = SYSTEM_EXERCISES_BY_SLUG[slot.exercise]?.primaryMuscles ?? [];
+        expect(
+          muscles.some((m) => themeMuscles[day.title].includes(m as never)),
+          `${day.title}: '${slot.exercise}' [${muscles}] off theme`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it('Anything Goes: 3–6 days × 5–8 slots, the whole week covered', () => {
+    for (let seed = 1; seed <= 12; seed++) {
+      const r = generateProgram({ seed, program: 'anythingGoes' });
+      expect(r.days.length).toBeGreaterThanOrEqual(3);
+      expect(r.days.length).toBeLessThanOrEqual(6);
+      for (const day of r.days) {
+        expect(day.am.length).toBeGreaterThanOrEqual(5);
+        expect(day.am.length).toBeLessThanOrEqual(8);
+      }
+      expect(r.ok).toBe(true);
+    }
   });
 });
 

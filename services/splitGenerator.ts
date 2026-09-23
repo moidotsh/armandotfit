@@ -29,11 +29,17 @@ import {
   type SystemExerciseData,
   ALL_REGIONS,
   MUSCLE_TO_REGION,
+  REGION_MUSCLES,
   checkEditionLaws,
+  checkProgramLaws,
+  dayThemesFor,
   lawsPass,
   primaryMusclesOf,
+  primaryRegionsOf,
   type LawDay,
   type RuleResult,
+  type ProgramType,
+  type DayThemeSpec,
 } from '../shared/exercises';
 import type { PreferredSplit } from '../shared/types';
 
@@ -58,6 +64,32 @@ const POOL_BY_REGION: Map<string, SystemExerciseData[]> = (() => {
       entry.primaryMuscles.map((m) => MUSCLE_TO_REGION[m]).filter(Boolean),
     )) {
       map.get(region)?.push(entry);
+    }
+  }
+  return map;
+})();
+
+// Role pools (the PPL-class program types) and muscle pools (the bro
+// split's muscle-themed days) — same POOL, indexed by the movement
+// role / primary muscle axes.
+const POOL_BY_ROLE: Map<string, SystemExerciseData[]> = (() => {
+  const map = new Map<string, SystemExerciseData[]>();
+  for (const entry of POOL) {
+    if (!entry.movementRole) continue;
+    const list = map.get(entry.movementRole) ?? [];
+    list.push(entry);
+    map.set(entry.movementRole, list);
+  }
+  return map;
+})();
+
+const POOL_BY_MUSCLE: Map<string, SystemExerciseData[]> = (() => {
+  const map = new Map<string, SystemExerciseData[]>();
+  for (const entry of POOL) {
+    for (const m of entry.primaryMuscles) {
+      const list = map.get(m) ?? [];
+      list.push(entry);
+      map.set(m, list);
     }
   }
   return map;
@@ -116,7 +148,10 @@ export interface GeneratedSplitDay extends LawDay {
 export interface GeneratedSplit {
   /** The root seed — the edition's name (deterministic input). */
   seed: number;
-  shape: PreferredSplit;
+  /** The generator program type (the lab's card list). */
+  program: ProgramType;
+  /** The full-body shape, when the program type is full body; else null. */
+  shape: PreferredSplit | null;
   edition: ProgramEdition;
   days: GeneratedSplitDay[];
   /** The laws' verdict on the returned days (all pass unless exhausted). */
@@ -234,10 +269,10 @@ function buildDay(
 }
 
 /**
- * Generate one alternative edition for the seed. Retries derived seeds
- * (seed + attempt) until every law passes or the budget runs out — an
- * exhausted budget still returns the last candidate WITH its failing
- * rules, so the lab shows the truth instead of a spinner.
+ * Generate one alternative FULL-BODY edition for the seed. Retries
+ * derived seeds (seed + attempt) until every law passes or the budget
+ * runs out — an exhausted budget still returns the last candidate WITH
+ * its failing rules, so the lab shows the truth instead of a spinner.
  */
 export function generateSplit({
   seed,
@@ -245,6 +280,7 @@ export function generateSplit({
   edition,
   maxAttempts = 400,
 }: GenerateSplitOptions): GeneratedSplit {
+  const program: ProgramType = shape === 'twoADay' ? 'fullBodyHighFrequency' : 'fullBodyOneADay';
   const compoundBudget = edition === 'upper' ? 12 : 6;
   let days: GeneratedSplitDay[] = [];
   let rules: RuleResult[] = [];
@@ -269,10 +305,219 @@ export function generateSplit({
     days = candidate;
     rules = checkEditionLaws(days, edition);
     if (lawsPass(rules)) {
-      return { seed, shape, edition, days, rules, ok: true, attempts };
+      return { seed, program, shape, edition, days, rules, ok: true, attempts };
     }
   }
-  return { seed, shape, edition, days, rules, ok: false, attempts };
+  return { seed, program, shape, edition, days, rules, ok: false, attempts };
+}
+
+// ── The themed builders (PPL / Upper-Lower / Bro / Anything) ───────────
+
+/** Core slots allowed per themed day (mirrors the law's cap). */
+const MAX_CORE_PER_DAY = 2;
+
+interface DayBuildState {
+  rand: () => number;
+  frequency: Map<string, number>;
+  usedSlugs: Set<string>;
+  usedMuscles: Set<string>;
+  coreCount: number;
+}
+
+function themedPool(theme: DayThemeSpec): SystemExerciseData[] {
+  if (theme.muscles) {
+    const seen = new Set<string>();
+    const out: SystemExerciseData[] = [];
+    for (const m of theme.muscles) {
+      for (const e of POOL_BY_MUSCLE.get(m) ?? []) {
+        if (!seen.has(e.slug)) {
+          seen.add(e.slug);
+          out.push(e);
+        }
+      }
+    }
+    return out;
+  }
+  const out: SystemExerciseData[] = [];
+  for (const role of theme.roles ?? []) out.push(...(POOL_BY_ROLE.get(role) ?? []));
+  return out;
+}
+
+function pickFrom(
+  pool: SystemExerciseData[],
+  state: DayBuildState,
+  preferMuscles?: readonly string[],
+): SystemExerciseData | null {
+  const { rand, frequency, usedSlugs, coreCount } = state;
+  const eligible = pool.filter((e) => {
+    if (usedSlugs.has(e.slug)) return false;
+    if ((frequency.get(e.slug) ?? 0) >= MAX_FREQUENCY) return false;
+    if (e.movementRole === 'core' && coreCount >= MAX_CORE_PER_DAY) return false;
+    return true;
+  });
+  if (eligible.length === 0) return null;
+  // Rank: least-used identity first, unused muscles next, the seeded
+  // jitter last — variety by construction, determinism by seed.
+  const rank = (e: SystemExerciseData) => {
+    const hitsPreferred =
+      preferMuscles !== undefined && e.primaryMuscles.some((m) => preferMuscles.includes(m));
+    const hitsUsed = e.primaryMuscles.some((m) => state.usedMuscles.has(m)) ? 1 : 0;
+    return (
+      (frequency.get(e.slug) ?? 0) * 2 + hitsUsed + (hitsPreferred ? -2 : 0) + rand() * 0.5
+    );
+  };
+  return eligible.reduce((a, b) => (rank(b) < rank(a) ? b : a));
+}
+
+function commit(entry: SystemExerciseData, state: DayBuildState): ResolvedSlot {
+  state.usedSlugs.add(entry.slug);
+  for (const m of primaryMusclesOf(entry.slug)) state.usedMuscles.add(m);
+  if (entry.movementRole === 'core') state.coreCount += 1;
+  state.frequency.set(entry.slug, (state.frequency.get(entry.slug) ?? 0) + 1);
+  return {
+    exercise: entry.slug,
+    suggestedTags: AUTHORED_TAGS.get(entry.slug) ?? [],
+    ...rxFor(entry),
+  };
+}
+
+/** One themed day: cover the require groups, then fill to slot count. */
+function buildThemedDay(
+  dayNumber: number,
+  theme: DayThemeSpec,
+  rand: () => number,
+  frequency: Map<string, number>,
+): GeneratedSplitDay | null {
+  const pool = themedPool(theme);
+  const state: DayBuildState = {
+    rand,
+    frequency,
+    usedSlugs: new Set(),
+    usedMuscles: new Set(),
+    coreCount: 0,
+  };
+  const slots: ResolvedSlot[] = [];
+
+  for (const group of theme.require) {
+    if (slots.length >= theme.slots) break;
+    const entry = pickFrom(pool, state, group.anyOf);
+    if (!entry) return null;
+    slots.push(commit(entry, state));
+  }
+  while (slots.length < theme.slots) {
+    const entry = pickFrom(pool, state);
+    if (!entry) return null;
+    slots.push(commit(entry, state));
+  }
+  return { day: dayNumber, title: theme.title, am: slots, pm: [] };
+}
+
+/** One anything-goes day: unconstrained by theme, but biased toward
+ *  regions the WEEK has not yet worked (the weekly coverage law is
+ *  otherwise a coin flip against Lower Leg's small pool). */
+function buildAnythingDay(
+  dayNumber: number,
+  slotCount: number,
+  rand: () => number,
+  frequency: Map<string, number>,
+  coveredRegions: Set<string>,
+): GeneratedSplitDay | null {
+  const state: DayBuildState = {
+    rand,
+    frequency,
+    usedSlugs: new Set(),
+    usedMuscles: new Set(),
+    coreCount: 0,
+  };
+  const unseenMuscles = (): string[] => {
+    const out: string[] = [];
+    for (const [region, muscles] of Object.entries(REGION_MUSCLES)) {
+      if (!coveredRegions.has(region)) out.push(...muscles);
+    }
+    return out;
+  };
+  const slots: ResolvedSlot[] = [];
+  while (slots.length < slotCount) {
+    const entry = pickFrom(POOL, state, unseenMuscles());
+    if (!entry) return null;
+    slots.push(commit(entry, state));
+    for (const r of primaryRegionsOf(entry.slug)) coveredRegions.add(r);
+  }
+  return { day: dayNumber, title: `Day ${dayNumber}`, am: slots, pm: [] };
+}
+
+export interface GenerateProgramOptions {
+  seed: number;
+  program: ProgramType;
+  edition?: ProgramEdition;
+  maxAttempts?: number;
+}
+
+/**
+ * Generate any program type for the seed — the lab's single entry.
+ * Full-body types delegate to the region builder; themed types build
+ * by their day contracts; Anything Goes rolls its own structure and
+ * answers to the weekly laws. Same retry/verdict contract everywhere.
+ */
+export function generateProgram({
+  seed,
+  program,
+  edition = 'upper',
+  maxAttempts = 400,
+}: GenerateProgramOptions): GeneratedSplit {
+  if (program === 'fullBodyOneADay' || program === 'fullBodyHighFrequency') {
+    return generateSplit({
+      seed,
+      shape: program === 'fullBodyHighFrequency' ? 'twoADay' : 'oneADay',
+      edition,
+      maxAttempts,
+    });
+  }
+
+  const themes = dayThemesFor(program);
+  let days: GeneratedSplitDay[] = [];
+  let rules: RuleResult[] = [];
+  let attempts = 0;
+
+  while (attempts < maxAttempts) {
+    attempts += 1;
+    const rand = mulberry32(seed * 1000 + attempts);
+    const frequency = new Map<string, number>();
+    const candidate: GeneratedSplitDay[] = [];
+    let starved = false;
+
+    if (program === 'anythingGoes') {
+      // The structure itself rolls: 3–6 days, 5–8 slots each.
+      const dayCount = 3 + Math.floor(rand() * 4);
+      const coveredRegions = new Set<string>();
+      for (let d = 1; d <= dayCount; d += 1) {
+        const slotCount = 5 + Math.floor(rand() * 4);
+        const day = buildAnythingDay(d, slotCount, rand, frequency, coveredRegions);
+        if (!day) {
+          starved = true;
+          break;
+        }
+        candidate.push(day);
+      }
+    } else if (themes) {
+      for (let d = 0; d < themes.length; d += 1) {
+        const day = buildThemedDay(d + 1, themes[d], rand, frequency);
+        if (!day) {
+          starved = true;
+          break;
+        }
+        candidate.push(day);
+      }
+    }
+    if (starved) continue;
+
+    days = candidate;
+    rules = checkProgramLaws(days, program, edition);
+    if (lawsPass(rules)) {
+      return { seed, program, shape: null, edition, days, rules, ok: true, attempts };
+    }
+  }
+  return { seed, program, shape: null, edition, days, rules, ok: false, attempts };
 }
 
 /** Display name for a generated slot (catalog name, slug fallback). */

@@ -25,6 +25,7 @@
 
 import { type ProgramEdition } from './splits';
 import { SYSTEM_EXERCISES_BY_SLUG, type SystemExerciseData } from './data';
+import { type MovementRole } from './movementRole';
 
 // ── The muscle → region map (the 7 regions every day must cover) ──────
 
@@ -241,4 +242,340 @@ export function checkEditionLaws(days: readonly LawDay[], edition: ProgramEditio
 /** All laws pass (the generator's success condition). */
 export function lawsPass(rules: readonly RuleResult[]): boolean {
   return rules.every((r) => r.ok);
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// THE PROGRAM TYPES — archetype laws beyond full body. Each type's
+// days carry a THEME (the movement roles or muscles that may appear)
+// and REQUIRED coverage groups (any-of muscle sets); the archetype
+// law set checks purity, coverage, and the shared sanity laws. The
+// full-body types keep the original law set above.
+// ──────────────────────────────────────────────────────────────────────
+
+/** The six generator program types (the lab's card list). */
+export type ProgramType =
+  | 'fullBodyOneADay'
+  | 'fullBodyHighFrequency'
+  | 'pushPullLegs'
+  | 'upperLower'
+  | 'broSplit'
+  | 'anythingGoes';
+
+/** A day's theme: what may appear and what must appear. */
+export interface DayThemeSpec {
+  /** Chapter title ('Push', 'Upper A', 'Chest'…). */
+  title: string;
+  /** Role-themed days: the movement roles allowed on this day. */
+  roles?: readonly MovementRole[];
+  /** Muscle-themed days (bro): a slot qualifies when a primary muscle
+   *  hits this set (roles then fall where they fall — a rear-delt fly
+   *  is pull but belongs on Shoulders day). */
+  muscles?: readonly string[];
+  /** Coverage contract: every group must be hit by some slot's
+   *  primary muscles (any-of semantics). */
+  require: ReadonlyArray<{ id: string; label: string; anyOf: readonly string[] }>;
+  /** Muscle-themed days: ≥ this many DISTINCT theme muscles on the day. */
+  distinctMuscles?: number;
+  /** Slots per session. */
+  slots: number;
+}
+
+const CHEST = ['chest', 'upper-chest', 'lower-chest'];
+const DELTS = ['front-delts', 'side-delts', 'rear-delts'];
+const LEGS = ['quads', 'hamstrings', 'glutes'];
+const CALVES = ['calves', 'tibialis'];
+
+/** PUSH/PULL/LEG — the classic 3-day rotation, one session per day.
+ *  Rear delts + traps pull; front/side delts push; core rides Legs. */
+export const PPL_DAYS: readonly DayThemeSpec[] = [
+  {
+    title: 'Push',
+    roles: ['push'],
+    slots: 7,
+    require: [
+      { id: 'chest', label: 'CHEST', anyOf: CHEST },
+      { id: 'delt', label: 'DELTS', anyOf: ['front-delts', 'side-delts'] },
+      { id: 'triceps', label: 'TRICEPS', anyOf: ['triceps'] },
+    ],
+  },
+  {
+    title: 'Pull',
+    roles: ['pull'],
+    slots: 7,
+    require: [
+      { id: 'width', label: 'WIDTH', anyOf: ['lats', 'upper-back'] },
+      { id: 'biceps', label: 'BICEPS', anyOf: ['biceps'] },
+      { id: 'rear', label: 'REAR DELT / TRAPS', anyOf: ['rear-delts', 'traps'] },
+    ],
+  },
+  {
+    title: 'Legs',
+    roles: ['legs', 'core'],
+    slots: 7,
+    require: [
+      { id: 'quads', label: 'QUADS', anyOf: ['quads'] },
+      { id: 'hamstrings', label: 'HAMSTRINGS', anyOf: ['hamstrings'] },
+      { id: 'glutes', label: 'GLUTES', anyOf: ['glutes'] },
+      { id: 'calves', label: 'CALVES', anyOf: CALVES },
+    ],
+  },
+];
+
+/** UPPER/LOWER — the 4-day alternation. Abs ride the lower days.
+ *  A and B days share their contracts and differ only in title. */
+const UPPER_CONTRACT: DayThemeSpec = {
+  title: 'Upper',
+  roles: ['push', 'pull'],
+  slots: 7,
+  require: [
+    { id: 'chest', label: 'CHEST', anyOf: CHEST },
+    { id: 'back', label: 'BACK', anyOf: ['lats', 'upper-back'] },
+    { id: 'delt', label: 'DELTS', anyOf: DELTS },
+    { id: 'arm', label: 'ARM', anyOf: ['biceps', 'triceps'] },
+  ],
+};
+
+const LOWER_CONTRACT: DayThemeSpec = {
+  title: 'Lower',
+  roles: ['legs', 'core'],
+  slots: 7,
+  require: [
+    { id: 'quads', label: 'QUADS', anyOf: ['quads'] },
+    { id: 'hamstrings', label: 'HAMSTRINGS', anyOf: ['hamstrings'] },
+    { id: 'glutes', label: 'GLUTES', anyOf: ['glutes'] },
+    { id: 'calves', label: 'CALVES', anyOf: CALVES },
+  ],
+};
+
+export const UPPER_LOWER_DAYS: readonly DayThemeSpec[] = [
+  { ...UPPER_CONTRACT, title: 'Upper A' },
+  { ...LOWER_CONTRACT, title: 'Lower A' },
+  { ...UPPER_CONTRACT, title: 'Upper B' },
+  { ...LOWER_CONTRACT, title: 'Lower B' },
+];
+
+/** BRO SPLIT — five muscle-themed days, one region each. */
+export const BRO_DAYS: readonly DayThemeSpec[] = [
+  {
+    title: 'Chest',
+    muscles: CHEST,
+    slots: 6,
+    distinctMuscles: 2,
+    require: [
+      { id: 'chest', label: 'CHEST', anyOf: CHEST },
+      { id: 'upper', label: 'UPPER CHEST', anyOf: ['upper-chest'] },
+    ],
+  },
+  {
+    title: 'Back',
+    muscles: ['lats', 'traps', 'upper-back', 'lower-back'],
+    slots: 6,
+    distinctMuscles: 3,
+    require: [
+      { id: 'width', label: 'WIDTH', anyOf: ['lats', 'upper-back'] },
+      { id: 'traps', label: 'TRAPS / UPPER BACK', anyOf: ['traps', 'upper-back'] },
+    ],
+  },
+  {
+    title: 'Legs',
+    muscles: [...LEGS, ...CALVES],
+    slots: 6,
+    distinctMuscles: 4,
+    require: [
+      { id: 'quads', label: 'QUADS', anyOf: ['quads'] },
+      { id: 'hamstrings', label: 'HAMSTRINGS', anyOf: ['hamstrings'] },
+      { id: 'calves', label: 'CALVES', anyOf: CALVES },
+    ],
+  },
+  {
+    title: 'Shoulders',
+    muscles: [...DELTS, 'traps'],
+    slots: 6,
+    distinctMuscles: 3,
+    require: [
+      { id: 'front', label: 'FRONT OR SIDE DELT', anyOf: ['front-delts', 'side-delts'] },
+      { id: 'rear', label: 'REAR DELT OR TRAPS', anyOf: ['rear-delts', 'traps'] },
+    ],
+  },
+  {
+    title: 'Arms',
+    muscles: ['biceps', 'triceps', 'forearms'],
+    slots: 6,
+    distinctMuscles: 2,
+    require: [
+      { id: 'biceps', label: 'BICEPS', anyOf: ['biceps'] },
+      { id: 'triceps', label: 'TRICEPS', anyOf: ['triceps'] },
+    ],
+  },
+];
+
+/** The day themes for a program type ('anythingGoes' has none — its
+ *  laws are weekly; the full-body types keep the original law set). */
+export function dayThemesFor(program: ProgramType): readonly DayThemeSpec[] | null {
+  switch (program) {
+    case 'pushPullLegs':
+      return PPL_DAYS;
+    case 'upperLower':
+      return UPPER_LOWER_DAYS;
+    case 'broSplit':
+      return BRO_DAYS;
+    default:
+      return null;
+  }
+}
+
+// ── The archetype law checks ───────────────────────────────────────────
+
+/** Core slots allowed per role-themed day (a legs day of abs is not a
+ *  legs day). */
+const MAX_CORE_PER_DAY = 2;
+
+function slotQualifies(slot: LawSlot, theme: DayThemeSpec): boolean {
+  if (theme.muscles) {
+    return primaryMusclesOf(slot.exercise).some((m) => theme.muscles!.includes(m));
+  }
+  const role = SYSTEM_EXERCISES_BY_SLUG[slot.exercise]?.movementRole;
+  return role != null && (theme.roles ?? []).includes(role);
+}
+
+/**
+ * THEME laws for a themed edition (PPL / Upper-Lower / Bro): purity,
+ * coverage, distinctness (bro), core balance, slugs, day repeats.
+ */
+export function checkThemeLaws(
+  days: readonly LawDay[],
+  themes: readonly DayThemeSpec[],
+): RuleResult[] {
+  const purityFailures: string[] = [];
+  const coverageFailures: string[] = [];
+  const distinctFailures: string[] = [];
+  const coreFailures: string[] = [];
+  const repeatFailures: string[] = [];
+  const slugFailures: string[] = [];
+
+  days.forEach((day, di) => {
+    const theme = themes[di];
+    if (!theme) {
+      coverageFailures.push(`Day ${day.day}: no theme for day ${di + 1}`);
+      return;
+    }
+    const slots = [...day.am, ...day.pm];
+    let coreSlots = 0;
+    const seen = new Set<string>();
+    for (const slot of slots) {
+      const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
+      if (!entry || entry.primaryMuscles.length === 0) {
+        slugFailures.push(`Day ${day.day}: '${slot.exercise}' unresolved or muscle-less`);
+        continue;
+      }
+      if (!slotQualifies(slot, theme)) {
+        purityFailures.push(`Day ${day.day} (${theme.title}): '${slot.exercise}' off-theme`);
+      }
+      if (entry.movementRole === 'core') coreSlots += 1;
+      if (seen.has(slot.exercise)) {
+        repeatFailures.push(`Day ${day.day}: '${slot.exercise}' twice`);
+      }
+      seen.add(slot.exercise);
+    }
+    for (const group of theme.require) {
+      const hit = slots.some((slot) =>
+        primaryMusclesOf(slot.exercise).some((m) => group.anyOf.includes(m)),
+      );
+      if (!hit) coverageFailures.push(`Day ${day.day} (${theme.title}): missing ${group.label}`);
+    }
+    if (theme.distinctMuscles != null && theme.muscles) {
+      const distinct = new Set(
+        slots.flatMap((slot) =>
+          primaryMusclesOf(slot.exercise).filter((m) => theme.muscles!.includes(m)),
+        ),
+      ).size;
+      if (distinct < theme.distinctMuscles) {
+        distinctFailures.push(
+          `Day ${day.day} (${theme.title}): only ${distinct} distinct ${theme.title.toLowerCase()} muscles (need ${theme.distinctMuscles})`,
+        );
+      }
+    }
+    if (theme.roles?.includes('core') && coreSlots > MAX_CORE_PER_DAY) {
+      coreFailures.push(`Day ${day.day} (${theme.title}): ${coreSlots} core slots (max ${MAX_CORE_PER_DAY})`);
+    }
+  });
+
+  const r = (id: string, label: string, failures: string[]): RuleResult => ({
+    id,
+    label,
+    ok: failures.length === 0,
+    detail: failures.join('; ') || undefined,
+  });
+  return [
+    r('theme-purity', 'ON THEME', purityFailures),
+    r('theme-coverage', 'THEME COVERAGE', coverageFailures),
+    r('theme-distinct', 'DISTINCT WITHIN DAY', distinctFailures),
+    r('theme-core', 'CORE BALANCE', coreFailures),
+    r('slugs', 'NO SLUG ERRORS', slugFailures),
+    r('theme-repeats', 'NO DAY REPEATS', repeatFailures),
+  ];
+}
+
+/**
+ * WEEKLY laws for the unconstrained type (Anything Goes): structure is
+ * the seed's business; the week still has to be a week — every region
+ * worked, identities resolve, nothing stapled.
+ */
+export function checkWeeklyLaws(days: readonly LawDay[]): RuleResult[] {
+  const slugFailures: string[] = [];
+  const repeatFailures: string[] = [];
+  const frequency = new Map<string, number>();
+  const regions = new Set<string>();
+
+  for (const day of days) {
+    const seen = new Set<string>();
+    for (const slot of [...day.am, ...day.pm]) {
+      const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
+      if (!entry || entry.primaryMuscles.length === 0) {
+        slugFailures.push(`Day ${day.day}: '${slot.exercise}' unresolved or muscle-less`);
+        continue;
+      }
+      if (seen.has(slot.exercise)) repeatFailures.push(`Day ${day.day}: '${slot.exercise}' twice`);
+      seen.add(slot.exercise);
+      frequency.set(slot.exercise, (frequency.get(slot.exercise) ?? 0) + 1);
+      for (const r of primaryRegionsOf(slot.exercise)) regions.add(r);
+    }
+  }
+  const missingRegions = ALL_REGIONS.filter((r) => !regions.has(r));
+  const overStapled = [...frequency.entries()]
+    .filter(([, n]) => n > 2)
+    .map(([slug, n]) => `${slug}×${n}`);
+
+  const r = (id: string, label: string, ok: boolean, detail?: string): RuleResult => ({
+    id,
+    label,
+    ok,
+    detail,
+  });
+  return [
+    r('slugs', 'NO SLUG ERRORS', slugFailures.length === 0, slugFailures.join('; ') || undefined),
+    r('theme-repeats', 'NO DAY REPEATS', repeatFailures.length === 0, repeatFailures.join('; ') || undefined),
+    r('weekly-coverage', 'WEEKLY REGION COVERAGE', missingRegions.length === 0, missingRegions.length ? `Week misses [${missingRegions.join(', ')}]` : undefined),
+    r('frequency', 'NOTHING STAPLED', overStapled.length === 0, overStapled.join(', ') || undefined),
+  ];
+}
+
+/**
+ * The full law check for any program type: full-body types keep the
+ * original edition laws; themed types check their theme laws;
+ * Anything Goes checks the weekly laws.
+ */
+export function checkProgramLaws(
+  days: readonly LawDay[],
+  program: ProgramType,
+  edition: ProgramEdition = 'upper',
+): RuleResult[] {
+  if (program === 'fullBodyOneADay' || program === 'fullBodyHighFrequency') {
+    return checkEditionLaws(days, edition);
+  }
+  if (program === 'anythingGoes') {
+    return checkWeeklyLaws(days);
+  }
+  const themes = dayThemesFor(program);
+  return themes ? checkThemeLaws(days, themes) : checkWeeklyLaws(days);
 }
