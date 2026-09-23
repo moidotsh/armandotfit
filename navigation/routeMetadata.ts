@@ -29,6 +29,7 @@ const ROUTE_AI_METADATA: Record<string, AiRouteMeta> = {
   settings: { title: 'Settings', contextLabel: 'Preferences' },
   program: { title: 'My Program', contextLabel: 'The split' },
   couple: { title: "The Couple's Plan", contextLabel: 'Both editions side by side' },
+  'split-lab': { title: 'Split Lab', contextLabel: 'Generated alternatives (read-only)' },
   dev: { title: 'Dev', contextLabel: 'Internal' },
 };
 

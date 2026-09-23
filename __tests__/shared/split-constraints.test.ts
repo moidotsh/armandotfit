@@ -1,176 +1,84 @@
 // __tests__/shared/split-constraints.test.ts
-// THE SPLIT CONSTRAINT SUITE — the four laws every edition must pass.
+// THE SPLIT CONSTRAINT SUITE — the executable proof behind the laws.
+// The laws themselves now live in shared/exercises/splitRules.ts so
+// the runtime (the Split Lab's generator) and these tests read ONE
+// law book; this file keeps the authored editions under oath and adds
+// the cross-edition (couples) laws that bind two editions together.
 // If these tests are green, any future split (or generated split) that
-// passes them is structurally sound: asynchronous, covered, isolation-
-// dominant, and couples-aligned.
+// passes the shared checker is structurally sound: asynchronous,
+// covered, isolation-dominant, and couples-aligned.
 
 import { describe, expect, it } from 'vitest';
 import {
   TWO_A_DAY_SPLITS,
   FEMALE_TWO_A_DAY_SPLITS,
-} from '../../shared/exercises/splits';
-import { SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises/data';
-
-// ── The muscle → region map (the 7 regions every day must cover) ──────
-
-const MUSCLE_TO_REGION: Record<string, string> = {};
-const REGION_MUSCLES: Record<string, string[]> = {
-  'Lower Leg': ['calves', 'tibialis'],
-  'Upper Leg': ['quads', 'hamstrings', 'glutes'],
-  Core: ['abs', 'lower-abs'],
-  Delt: ['front-delts', 'side-delts', 'rear-delts'],
-  Back: ['lats', 'traps', 'upper-back', 'lower-back'],
-  Chest: ['chest', 'upper-chest', 'lower-chest'],
-  Arm: ['biceps', 'triceps', 'forearms'],
-};
-for (const [region, muscles] of Object.entries(REGION_MUSCLES)) {
-  for (const m of muscles) MUSCLE_TO_REGION[m] = region;
-}
-const ALL_REGIONS = Object.keys(REGION_MUSCLES);
+  type ProgramEdition,
+} from '../../shared/exercises';
+import {
+  REGION_MUSCLES,
+  ALL_REGIONS,
+  checkEditionLaws,
+  dayRegions,
+  primaryMusclesOf,
+  primaryRegionsOf,
+  type LawDay,
+  type RuleResult,
+} from '../../shared/exercises';
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
-interface SlotLike {
-  exercise: string;
-  suggestedTags: string[];
-  sets: [number, number];
-  reps: [number, number];
-}
-
-interface DayLike {
-  day: number;
-  title: string;
-  am: SlotLike[];
-  pm: SlotLike[];
-}
-
-const entry = (slug: string) => SYSTEM_EXERCISES_BY_SLUG[slug];
-const primaryMuscles = (slug: string): string[] => entry(slug)?.primaryMuscles ?? [];
-const primaryRegions = (slug: string): string[] => {
-  const muscles = primaryMuscles(slug);
-  if (muscles.length === 0) return [];
-  return [...new Set(muscles.map((m) => MUSCLE_TO_REGION[m]).filter(Boolean))];
+const rule = (rules: RuleResult[], id: string): RuleResult => {
+  const found = rules.find((r) => r.id === id);
+  if (!found) throw new Error(`Unknown law id: ${id}`);
+  return found;
 };
 
-const dayMuscles = (day: DayLike, window: 'am' | 'pm'): Set<string> => {
-  const s = new Set<string>();
-  for (const slot of day[window]) {
-    for (const m of primaryMuscles(slot.exercise)) s.add(m);
-  }
-  return s;
-};
-
-const dayRegions = (day: DayLike): Set<string> => {
-  const s = new Set<string>();
-  for (const slot of [...day.am, ...day.pm]) {
-    for (const r of primaryRegions(slot.exercise)) s.add(r);
-  }
-  return s;
-};
-
-const editionName = (splits: DayLike[]): string =>
+const editionName = (splits: LawDay[]): string =>
   splits === TWO_A_DAY_SPLITS ? 'UPPER (male)' : 'LOWER (female)';
+
+const editionOf = (splits: LawDay[]): ProgramEdition =>
+  splits === TWO_A_DAY_SPLITS ? 'upper' : 'lower';
 
 // ── The suite ───────────────────────────────────────────────────────────
 
-for (const splits of [TWO_A_DAY_SPLITS, FEMALE_TWO_A_DAY_SPLITS]) {
+for (const splits of [TWO_A_DAY_SPLITS, FEMALE_TWO_A_DAY_SPLITS] as LawDay[][]) {
   const name = editionName(splits);
+  const laws = () => checkEditionLaws(splits, editionOf(splits));
 
   describe(`${name} — split constraints`, () => {
-    // ── 1. ASYNCHRONOUS: no primary muscle in both AM and PM ────────
     it('ASYNCHRONOUS: no primary muscle appears in both AM and PM on any day', () => {
-      for (const day of splits) {
-        const am = dayMuscles(day, 'am');
-        const pm = dayMuscles(day, 'pm');
-        const overlap = [...am].filter((m) => pm.has(m));
-        expect(
-          overlap,
-          `Day ${day.day}: AM muscles [${[...am]}] and PM muscles [${[...pm]}] overlap on [${overlap}]`,
-        ).toHaveLength(0);
-      }
+      const r = rule(laws(), 'async');
+      expect(r.ok, r.detail).toBe(true);
     });
 
-    // ── 2. ALL 7 REGIONS per day ────────────────────────────────────
     it('REGION COVERAGE: all 7 body regions covered every day (AM + PM combined)', () => {
-      for (const day of splits) {
-        const regions = dayRegions(day);
-        const missing = ALL_REGIONS.filter((r) => !regions.has(r));
-        expect(
-          missing,
-          `Day ${day.day}: missing regions [${missing}]`,
-        ).toHaveLength(0);
-      }
+      const r = rule(laws(), 'coverage');
+      expect(r.ok, r.detail).toBe(true);
     });
 
-    // ── 3. MOSTLY ISOLATION: ≤2 compounds per edition ───────────────
     it('MOSTLY ISOLATION: at most 2 compound exercises (multi-primary-muscle) across the edition', () => {
-      const compoundSlugs = new Set(
-        splits.flatMap((day) =>
-          [...day.am, ...day.pm]
-            .filter((slot) => primaryMuscles(slot.exercise).length > 1)
-            .map((slot) => slot.exercise),
-        ),
-      );
-      const max = splits === TWO_A_DAY_SPLITS ? 12 : 6;
-      expect(
-        compoundSlugs.size,
-        `Found ${compoundSlugs.size} unique compounds (max ${max}): ${[...compoundSlugs].join(', ')}`,
-      ).toBeLessThanOrEqual(max);
+      const r = rule(laws(), 'isolation');
+      expect(r.ok, r.detail).toBe(true);
     });
 
-    // ── 4. NO SLUG ERRORS ───────────────────────────────────────────
     it('NO SLUG ERRORS: every exercise resolves in the catalog with at least one primary muscle', () => {
-      for (const day of splits) {
-        for (const slot of [...day.am, ...day.pm]) {
-          const e = entry(slot.exercise);
-          expect(e, `Day ${day.day}: slug '${slot.exercise}' not found in catalog`).toBeDefined();
-          expect(
-            e?.primaryMuscles.length,
-            `Day ${day.day}: '${slot.exercise}' has no primary muscles`,
-          ).toBeGreaterThan(0);
-        }
-      }
+      const r = rule(laws(), 'slugs');
+      expect(r.ok, r.detail).toBe(true);
     });
 
-    // ── 5. VARIETY: different muscles within each region across days ─
     it('VARIETY: Arm — both biceps and triceps appear across the 4 days', () => {
-      const all = new Set<string>();
-      for (const day of splits) {
-        for (const slot of [...day.am, ...day.pm]) {
-          primaryMuscles(slot.exercise).forEach((m) => all.add(m));
-        }
-      }
-      expect(all.has('biceps'), `No biceps exercise in the edition`).toBe(true);
-      expect(all.has('triceps'), `No triceps exercise in the edition`).toBe(true);
+      const r = rule(laws(), 'variety-arm');
+      expect(r.ok, r.detail).toBe(true);
     });
 
     it('VARIETY: Back — at least 3 different back muscles across the 4 days', () => {
-      const backMuscles = new Set<string>();
-      for (const day of splits) {
-        for (const slot of [...day.am, ...day.pm]) {
-          primaryMuscles(slot.exercise)
-            .filter((m) => REGION_MUSCLES['Back'].includes(m))
-            .forEach((m) => backMuscles.add(m));
-        }
-      }
-      expect(
-        backMuscles.size,
-        `Only ${backMuscles.size} distinct back muscles: [${[...backMuscles]}]`,
-      ).toBeGreaterThanOrEqual(3);
+      const r = rule(laws(), 'variety-back');
+      expect(r.ok, r.detail).toBe(true);
     });
 
     it('VARIETY: Upper Leg — quads, hamstrings, AND glutes all appear', () => {
-      const legMuscles = new Set<string>();
-      for (const day of splits) {
-        for (const slot of [...day.am, ...day.pm]) {
-          primaryMuscles(slot.exercise)
-            .filter((m) => REGION_MUSCLES['Upper Leg'].includes(m))
-            .forEach((m) => legMuscles.add(m));
-        }
-      }
-      expect(legMuscles.has('quads')).toBe(true);
-      expect(legMuscles.has('hamstrings')).toBe(true);
-      expect(legMuscles.has('glutes')).toBe(true);
+      const r = rule(laws(), 'variety-legs');
+      expect(r.ok, r.detail).toBe(true);
     });
   });
 }
@@ -183,10 +91,10 @@ describe('COUPLES — cross-edition alignment', () => {
       const male = TWO_A_DAY_SPLITS[d];
       const female = FEMALE_TWO_A_DAY_SPLITS[d];
       const maleCalves = [...male.am, ...male.pm]
-        .filter((s) => primaryRegions(s.exercise).includes('Lower Leg'))
+        .filter((s) => primaryRegionsOf(s.exercise).includes('Lower Leg'))
         .map((s) => s.exercise);
       const femaleCalves = [...female.am, ...female.pm]
-        .filter((s) => primaryRegions(s.exercise).includes('Lower Leg'))
+        .filter((s) => primaryRegionsOf(s.exercise).includes('Lower Leg'))
         .map((s) => s.exercise);
 
       if (maleCalves.length > 0 && femaleCalves.length > 0) {
@@ -208,11 +116,11 @@ describe('COUPLES — cross-edition alignment', () => {
           const mEx = male[w][i].exercise;
           const fEx = female[w][i].exercise;
           if (mEx === fEx) continue; // already shared — fine
-          const mMuscles = new Set(primaryMuscles(mEx));
-          const overlap = primaryMuscles(fEx).filter((m) => mMuscles.has(m));
+          const mMuscles = new Set(primaryMusclesOf(mEx));
+          const overlap = primaryMusclesOf(fEx).filter((m) => mMuscles.has(m));
           expect(
             overlap,
-            `Day ${d + 1} ${w.toUpperCase()} pos ${i + 1}: male '${mEx}' [${[...mMuscles]}] and female '${fEx}' [${primaryMuscles(fEx)}] both target [${overlap}] — if they work the same muscle at the same slot, they should train together`,
+            `Day ${d + 1} ${w.toUpperCase()} pos ${i + 1}: male '${mEx}' [${[...mMuscles]}] and female '${fEx}' [${primaryMusclesOf(fEx)}] both target [${overlap}] — if they work the same muscle at the same slot, they should train together`,
           ).toHaveLength(0);
         }
       }
@@ -268,10 +176,10 @@ describe('COUPLES — cross-edition alignment', () => {
 
       for (const region of sharedRegions) {
         const maleEx = [...male.am, ...male.pm]
-          .filter((s) => primaryRegions(s.exercise).includes(region))
+          .filter((s) => primaryRegionsOf(s.exercise).includes(region))
           .map((s) => s.exercise);
         const femaleEx = [...female.am, ...female.pm]
-          .filter((s) => primaryRegions(s.exercise).includes(region))
+          .filter((s) => primaryRegionsOf(s.exercise).includes(region))
           .map((s) => s.exercise);
         const shared = maleEx.filter((e) => femaleEx.includes(e));
 
@@ -281,5 +189,39 @@ describe('COUPLES — cross-edition alignment', () => {
         ).toBeGreaterThan(0);
       }
     }
+  });
+});
+
+// ── The law book itself stays honest ────────────────────────────────────
+
+describe('THE LAW BOOK — shared/exercises/splitRules', () => {
+  it('carries all 7 regions with non-empty muscle lists', () => {
+    expect(ALL_REGIONS.length).toBe(7);
+    for (const [region, muscles] of Object.entries(REGION_MUSCLES)) {
+      expect(muscles.length, `Region ${region} has no muscles`).toBeGreaterThan(0);
+    }
+  });
+
+  it('flags a deliberately broken day (async + coverage)', () => {
+    const broken: LawDay = {
+      day: 1,
+      title: 'Broken Day',
+      am: [{ exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] }],
+      pm: [{ exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] }],
+    };
+    const rules = checkEditionLaws([broken], 'upper');
+    expect(rule(rules, 'async').ok).toBe(false); // quads in both windows
+    expect(rule(rules, 'coverage').ok).toBe(false); // 6 regions missing
+    expect(rule(rules, 'slugs').ok).toBe(true); // the slug itself is real
+  });
+
+  it('flags an unknown slug', () => {
+    const broken: LawDay = {
+      day: 1,
+      title: 'Ghost Day',
+      am: [{ exercise: 'not-a-real-slug', suggestedTags: [], sets: [3, 3], reps: [8, 10] }],
+      pm: [],
+    };
+    expect(rule(checkEditionLaws([broken], 'upper'), 'slugs').ok).toBe(false);
   });
 });

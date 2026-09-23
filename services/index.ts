@@ -32,6 +32,13 @@ export {
 } from './chartData';
 export { slotKey, resolveSlots } from './programService';
 export {
+  generateSplit,
+  nameForSlug,
+  type GeneratedSplit,
+  type GeneratedSplitDay,
+  type GenerateSplitOptions,
+} from './splitGenerator';
+export {
   e1rm,
   isSetFilled,
   setVolume,

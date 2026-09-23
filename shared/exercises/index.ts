@@ -6,4 +6,5 @@
 
 export * from './splits';
 export * from './data';
+export * from './splitRules';
 export * from './cardio';

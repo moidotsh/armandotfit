@@ -27,7 +27,7 @@ import { ChevronRight } from '@tamagui/lucide-icons-2';
 import { useLocalSearchParams } from 'expo-router';
 import { MobilePrimaryButton } from '../components/MobilePremium';
 import { BoardShell, InkRail, SectionWhisper, SwapGlyph } from '../components/composed';
-import { navigateToExerciseDetail, navigateToProgram, safeGoBack } from '../navigation';
+import { navigateToExerciseDetail, navigateToProgram, navigateToSplitLab, safeGoBack } from '../navigation';
 import { useAppTheme, useToast } from '../context';
 import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots, slotKey, derivePlanMuscleShare } from '../services';
@@ -203,6 +203,29 @@ export default function ProgramScreen() {
             </Pressable>
           );
         })}
+
+        {/* THE SPLIT LAB — the constraint laws as a read-only dial:
+            alternative editions, generated and previewed, nothing
+            applied. Furniture caps + chevron; the quietest ink on the
+            page (it is an instrument, not a program). */}
+        <Pressable
+          onPress={navigateToSplitLab}
+          accessibilityRole="button"
+          accessibilityLabel="The Split Lab — generate alternative programs, read-only preview"
+          style={({ pressed }) => [styles.labLink, pressed ? { opacity: PRESS_DIP } : null]}
+          testID="program-split-lab-link"
+        >
+          <Text style={[styles.labWord, { color: colors.textSecondary }]}>
+            THE SPLIT LAB
+          </Text>
+          <Text
+            style={[styles.labSide, { color: colors.textMuted }]}
+            numberOfLines={1}
+          >
+            GENERATE ALTERNATIVES
+          </Text>
+          <ChevronRight size={18} color={colors.textMuted} />
+        </Pressable>
       </BoardShell>
     );
   }
@@ -441,6 +464,23 @@ const styles = StyleSheet.create({
     },
   cardNotFirst: {
     marginTop: 24,
+  },
+  // ── THE SPLIT LAB link — furniture caps + chevron under the cards;
+  // the quietest ink (an instrument, not a program).
+  labLink: {
+    marginTop: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 36,
+  },
+  labWord: {
+    ...theme.typography.mobileEyebrow,
+  },
+  labSide: {
+    ...theme.typography.mobileEyebrow,
+    marginLeft: 'auto',
+    flexShrink: 1,
   },
   cardHead: {
     flexDirection: 'row',

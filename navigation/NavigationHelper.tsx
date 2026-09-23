@@ -52,6 +52,7 @@ export enum NavigationPath {
   PROGRAM = 'program',
   SPLIT_SELECTION = 'split-selection',
   COUPLE = 'couple',
+  SPLIT_LAB = 'split-lab',
 }
 
 /**
@@ -78,6 +79,8 @@ export const navigationHierarchy: Record<string, NavigationPath> = {
   [NavigationPath.PROGRAM]: NavigationPath.HOME,
   [NavigationPath.COUPLE]: NavigationPath.HOME,
   [NavigationPath.SPLIT_SELECTION]: NavigationPath.HOME,
+  // The lab drills in from the program overview and backs to it.
+  [NavigationPath.SPLIT_LAB]: NavigationPath.PROGRAM,
 };
 
 // ─── Push helpers (drill in) ────────────────────────────────────────────
@@ -148,6 +151,12 @@ export function navigateToProgram(edition?: 'twoADay' | 'oneADay') {
 /** Open the analytics screen (charts + history). */
 export function navigateToAnalytics() {
   push('/analytics');
+}
+
+/** Open the Split Lab — read-only alternative programs generated from
+ *  the split-constraint laws. Preview-only: nothing applies. */
+export function navigateToSplitLab() {
+  push('/split-lab');
 }
 
 

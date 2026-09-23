@@ -19,6 +19,7 @@ export {
   navigateToAnalytics,
   navigateToProgram,
   navigateToSplitSelection,
+  navigateToSplitLab,
   replaceWithHome,
   replaceWithSplitSelection,
   replaceWithWorkoutDetail,
