@@ -154,9 +154,10 @@ export function navigateToAnalytics() {
 }
 
 /** Open the Split Lab — read-only alternative programs generated from
- *  the split-constraint laws. Preview-only: nothing applies. */
-export function navigateToSplitLab() {
-  push('/split-lab');
+ *  the split-constraint laws. Preview-only: nothing applies. With a
+ *  shape, opens straight to that board's days. */
+export function navigateToSplitLab(shape?: 'oneADay' | 'twoADay') {
+  push(shape ? `/split-lab?shape=${shape}` : '/split-lab');
 }
 
 

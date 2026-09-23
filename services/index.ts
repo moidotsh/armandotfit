@@ -34,9 +34,13 @@ export { slotKey, resolveSlots } from './programService';
 export {
   generateSplit,
   nameForSlug,
+  authoredProgramSlots,
+  muscleShareDeltas,
   type GeneratedSplit,
   type GeneratedSplitDay,
   type GenerateSplitOptions,
+  type MuscleDeltaRow,
+  type MuscleShareDelta,
 } from './splitGenerator';
 export {
   e1rm,

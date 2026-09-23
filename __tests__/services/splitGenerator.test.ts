@@ -4,7 +4,12 @@
 // (pure output; no store, no override, no persistence surface).
 
 import { describe, expect, it } from 'vitest';
-import { generateSplit, nameForSlug } from '../../services';
+import {
+  generateSplit,
+  nameForSlug,
+  authoredProgramSlots,
+  muscleShareDeltas,
+} from '../../services';
 import { checkEditionLaws, lawsPass } from '../../shared/exercises';
 import { SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
 import type { ProgramEdition } from '../../shared/exercises';
@@ -112,5 +117,64 @@ describe('generateSplit — read-only shape', () => {
 describe('nameForSlug', () => {
   it('returns the catalog display name', () => {
     expect(nameForSlug('leg-press')).toBe(SYSTEM_EXERCISES_BY_SLUG['leg-press'].name);
+  });
+});
+
+describe('authoredProgramSlots — the comparison baseline', () => {
+  it('two-a-day: 32 authored slots; one-a-day: 28', () => {
+    expect(authoredProgramSlots('twoADay')).toHaveLength(32);
+    expect(authoredProgramSlots('oneADay')).toHaveLength(28);
+  });
+});
+
+describe('muscleShareDeltas — the diverging comparison', () => {
+  it('identical boards read zero across the board', () => {
+    const authored = authoredProgramSlots('twoADay');
+    const { rows, maxAbsDelta } = muscleShareDeltas(authored, authored);
+    expect(maxAbsDelta).toBe(0);
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every((r) => r.delta === 0)).toBe(true);
+  });
+
+  it('signs and magnitudes: swapping a muscle flips its delta', () => {
+    // Authored two-a-day day 1 AM, slot 1 is a quad lift (leg-press);
+    // replace it with a biceps lift and quads must fall, biceps rise.
+    const authored = authoredProgramSlots('twoADay');
+    const quadsBefore = muscleShareDeltas(authored, authored).rows.find(
+      (r) => r.muscle === 'quads',
+    );
+    const swapped: typeof authored = authored.map((slot, i) =>
+      i === 0
+        ? {
+            exercise: 'dumbbell-curl',
+            suggestedTags: [],
+            sets: slot.sets,
+            reps: slot.reps,
+          }
+        : slot,
+    );
+    const { rows } = muscleShareDeltas(swapped, authored);
+    const quads = rows.find((r) => r.muscle === 'quads');
+    const biceps = rows.find((r) => r.muscle === 'biceps');
+    expect(quads?.delta).toBeLessThan(0);
+    expect(quads?.generated).toBeLessThan((quadsBefore?.generated ?? 0) - 0.001);
+    expect(biceps?.delta).toBeGreaterThan(0);
+  });
+
+  it('orders by the authored program (the reference frame stays put)', () => {
+    const authored = authoredProgramSlots('twoADay');
+    const generated = generateSplit({ seed: 11, shape: 'twoADay', edition: 'upper' });
+    const genSlots = generated.days.flatMap((d) => [...d.am, ...d.pm]);
+    const { rows, maxAbsDelta } = muscleShareDeltas(genSlots, authored);
+    // Non-increasing authored share until the authored program runs
+    // out; generated-only muscles (authored = 0) ride the tail.
+    const authoredShares = rows.map((r) => r.authored);
+    const firstZero = authoredShares.findIndex((s) => s === 0);
+    const head = firstZero === -1 ? authoredShares : authoredShares.slice(0, firstZero);
+    const tail = firstZero === -1 ? [] : authoredShares.slice(firstZero);
+    expect(head.every((s, i) => i === 0 || head[i - 1] >= s)).toBe(true);
+    expect(tail.every((s) => s === 0)).toBe(true);
+    expect(maxAbsDelta).toBeGreaterThan(0);
+    expect(rows.every((r) => Math.abs(r.delta) <= maxAbsDelta + 1e-9)).toBe(true);
   });
 });

@@ -209,7 +209,7 @@ export default function ProgramScreen() {
             applied. Furniture caps + chevron; the quietest ink on the
             page (it is an instrument, not a program). */}
         <Pressable
-          onPress={navigateToSplitLab}
+          onPress={() => navigateToSplitLab()}
           accessibilityRole="button"
           accessibilityLabel="The Split Lab — generate alternative programs, read-only preview"
           style={({ pressed }) => [styles.labLink, pressed ? { opacity: PRESS_DIP } : null]}

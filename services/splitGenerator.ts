@@ -22,8 +22,10 @@ import {
   ONE_A_DAY_SPLITS,
   FEMALE_TWO_A_DAY_SPLITS,
   FEMALE_ONE_A_DAY_SPLITS,
+  getSlotsForDay,
   type ProgramEdition,
   type ResolvedSlot,
+  type SessionWindow,
   type SystemExerciseData,
   ALL_REGIONS,
   MUSCLE_TO_REGION,
@@ -276,4 +278,79 @@ export function generateSplit({
 /** Display name for a generated slot (catalog name, slug fallback). */
 export function nameForSlug(slug: string): string {
   return SYSTEM_EXERCISES_BY_SLUG[slug]?.name ?? slug;
+}
+
+// ── The comparison baseline ────────────────────────────────────────────
+// The lab's second question: how does a generated edition's muscle
+// share compare to THE PROGRAM's own for the same shape? The authored
+// slots (upper edition, splits.ts as authored — overrides never enter;
+// the lab compares programs, not user state).
+
+/** The authored program's slots for a shape (the comparison baseline). */
+export function authoredProgramSlots(shape: PreferredSplit): ResolvedSlot[] {
+  const windows: SessionWindow[] = shape === 'twoADay' ? ['am', 'pm'] : ['am'];
+  return [1, 2, 3, 4].flatMap((day) =>
+    windows.flatMap((w) =>
+      getSlotsForDay(shape, day, w).map((slot) => ({ ...slot, exercise: slot.exercise })),
+    ),
+  );
+}
+
+// ── THE DELTA — muscle share, generated vs authored ───────────────────
+
+export interface MuscleDeltaRow {
+  muscle: string;
+  /** Generated edition's share of its own total set-muscle volume (%). */
+  generated: number;
+  /** The authored program's share for the same shape (%). */
+  authored: number;
+  /** generated − authored, percentage points. */
+  delta: number;
+}
+
+export interface MuscleShareDelta {
+  rows: MuscleDeltaRow[];
+  /** Largest |delta| — the diverging bars' normalization scale. */
+  maxAbsDelta: number;
+}
+
+/** Same weighting as derivePlanMuscleShare (sets × each primary muscle). */
+function shareOf(slots: readonly ResolvedSlot[]): Map<string, number> {
+  const tally = new Map<string, number>();
+  for (const slot of slots) {
+    const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
+    for (const m of SYSTEM_EXERCISES_BY_SLUG[slot.exercise]?.primaryMuscles ?? []) {
+      tally.set(m, (tally.get(m) ?? 0) + sets);
+    }
+  }
+  return tally;
+}
+
+/**
+ * Per-muscle share deltas, generated vs authored, ordered by the
+ * AUTHORED program's share (the reference frame stays put; muscles
+ * only the generated edition works append at the end).
+ */
+export function muscleShareDeltas(
+  generated: readonly ResolvedSlot[],
+  authored: readonly ResolvedSlot[],
+): MuscleShareDelta {
+  const gen = shareOf(generated);
+  const auth = shareOf(authored);
+  const genTotal = [...gen.values()].reduce((a, b) => a + b, 0);
+  const authTotal = [...auth.values()].reduce((a, b) => a + b, 0);
+
+  const pct = (n: number, total: number) => (total === 0 ? 0 : (n / total) * 100);
+  const muscles = [
+    ...[...auth.entries()].sort((a, b) => b[1] - a[1]).map(([m]) => m),
+    ...[...gen.keys()].filter((m) => !auth.has(m)).sort((a, b) => (gen.get(b) ?? 0) - (gen.get(a) ?? 0)),
+  ];
+
+  const rows: MuscleDeltaRow[] = muscles.map((muscle) => {
+    const generated = pct(gen.get(muscle) ?? 0, genTotal);
+    const authored = pct(auth.get(muscle) ?? 0, authTotal);
+    return { muscle, generated, authored, delta: generated - authored };
+  });
+  const maxAbsDelta = rows.reduce((max, r) => Math.max(max, Math.abs(r.delta)), 0);
+  return { rows, maxAbsDelta };
 }
