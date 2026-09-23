@@ -31,6 +31,7 @@ import {
   EQUIPMENT_DISPLAY_NAMES,
   EXERCISE_TYPE_DISPLAY,
   MUSCLE_DISPLAY_NAMES,
+  MOVEMENT_ROLE_DISPLAY,
   equipmentSlugs,
   type MuscleSlug,
 } from '../shared/exercises';
@@ -454,11 +455,16 @@ export default function ExerciseDetailScreen() {
             </View>
           ) : null}
 
-          {/* Equipment — one whisper line. */}
-          {exercise.equipment.length > 0 ? (
+          {/* The role + equipment — one whisper line. The role leads
+              (the program-type axis: what day this lift rides); cardio
+              stations carry no role and speak equipment only. */}
+          {exercise.equipment.length > 0 || exercise.movementRole ? (
             <View style={styles.block}>
               <Text style={[styles.equipmentLine, { color: colors.textMuted }]} numberOfLines={1}>
-                {joinFacts(equipmentSlugs(exercise).map((slug) => EQUIPMENT_DISPLAY_NAMES[slug]))}
+                {joinFacts([
+                  exercise.movementRole ? MOVEMENT_ROLE_DISPLAY[exercise.movementRole] : null,
+                  ...equipmentSlugs(exercise).map((slug) => EQUIPMENT_DISPLAY_NAMES[slug]),
+                ])}
               </Text>
             </View>
           ) : null}

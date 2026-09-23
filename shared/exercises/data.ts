@@ -215,6 +215,15 @@ export interface SystemExerciseData {
    * same-family alternatives.
    */
   family?: string;
+  /**
+   * THE MOVEMENT ROLE — the program-type axis (push / pull / legs /
+   * core), derived at composition from name + primary muscles
+   * (movementRole.ts — the judgment book). Legs and core are
+   * muscle-derived; push/pull is the movement call. Undefined for
+   * cardio + neck stations (never programmable). The PPL-class
+   * program types read this; identity never does.
+   */
+  movementRole?: 'push' | 'pull' | 'legs' | 'core';
   /** Sub-label, e.g. 'Incline' or 'Cable'. */
   variation?: string;
   exerciseType: ExerciseType;
@@ -2077,6 +2086,7 @@ import { CORE_PLATES } from './corePlates';
 import { CORE_PLATES_B } from './corePlatesB';
 import { CORE_COPY } from './coreCopy';
 import { bodyweightFactorFor } from '../../utils/bodyweight';
+import { movementRoleOf } from './movementRole';
 
 export const SYSTEM_EXERCISES: SystemExerciseData[] = [
   // Core entries wear their matched plates (corePlates.ts — generated;
@@ -2090,10 +2100,12 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     imageB: e.imageB ?? CORE_PLATES_B[e.slug],
     instructions: CORE_COPY[e.slug] ?? e.instructions,
     bodyweightLoadFactor: bodyweightFactorFor(e.name) ?? undefined,
+    movementRole: movementRoleOf(e),
   })),
   ...(IMPORTED_EXERCISES as unknown as SystemExerciseData[]).map((e) => ({
     ...e,
     bodyweightLoadFactor: bodyweightFactorFor(e.name) ?? undefined,
+    movementRole: movementRoleOf(e),
   })),
 ];
 

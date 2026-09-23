@@ -31,7 +31,7 @@ import { SYSTEM_EXERCISES_BY_SLUG, type SystemExerciseData } from './data';
 export const REGION_MUSCLES: Readonly<Record<string, string[]>> = {
   'Lower Leg': ['calves', 'tibialis'],
   'Upper Leg': ['quads', 'hamstrings', 'glutes'],
-  Core: ['abs', 'lower-abs'],
+  Core: ['abs', 'lower-abs', 'obliques'],
   Delt: ['front-delts', 'side-delts', 'rear-delts'],
   Back: ['lats', 'traps', 'upper-back', 'lower-back'],
   Chest: ['chest', 'upper-chest', 'lower-chest'],
