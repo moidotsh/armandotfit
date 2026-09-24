@@ -58,6 +58,7 @@ import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED,
 } from '../../shared/exercises';
 import { plateOffsetFor } from '../../shared/exercises/plateOffsets';
 import {
+  nextDefaultSessionMode,
   theme,
   MOBILE_CONTENT_WIDTH_STYLE,
   BLOCK_GAP,
@@ -171,6 +172,7 @@ export function Floor() {
   const appendDraftSlots = useWorkoutStore((s) => s.appendDraftSlots);
   const draftSession = useWorkoutStore((s) => s.draft);
   const programEdition = useSplitPreferenceStore((s) => s.edition);
+  const setSplitPreference = useSplitPreferenceStore((s) => s.setPreference);
   const programOverrides = useProgramOverrideStore((s) => s.overrides);
   // THE OTHER WINDOW — the Floor's one big session: on a two-a-day,
   // the window you did NOT start is one quiet link away (an 8pm AM
@@ -223,6 +225,7 @@ export function Floor() {
   const [stationIndex, setStationIndex] = useState(0);
   const [mapCollapsed, setMapCollapsed] = useState(false);
   const [finishOpen, setFinishOpen] = useState(false);
+  const [confirmAddWindow, setConfirmAddWindow] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [tagsOpen, setTagsOpen] = useState(false);
   // THE FORM CHECK — the station's plate + cues; the reset lives in an
@@ -284,6 +287,16 @@ export function Floor() {
   // no window to race — the stranded-spinner lesson, honored).
   useEffect(() => {
     if (logMutation.isSuccess) {
+      // THE ROTATION rides the SAVE, never the start — a discarded AM
+      // is not under your belt, so it never flips the picker's
+      // default. The window is read from the draft BEFORE the reset
+      // below tears it down.
+      const savedDraft = useWorkoutStore.getState().draft;
+      if (savedDraft) {
+        setSplitPreference({
+          sessionMode: nextDefaultSessionMode(savedDraft.splitType, savedDraft.sessionMode),
+        });
+      }
       const savedId = logMutation.data?.id;
       showToast('success', 'Session saved');
       if (savedId) {
@@ -294,7 +307,7 @@ export function Floor() {
         resetSession();
       }
     }
-  }, [logMutation.isSuccess, logMutation.data, showToast, resetSession]);
+  }, [logMutation.isSuccess, logMutation.data, showToast, resetSession, setSplitPreference]);
 
   // Surface mutation errors via the store.
   useEffect(() => {
@@ -698,17 +711,41 @@ export function Floor() {
                 />
               );
             })}
-            {/* THE OTHER WINDOW'S TAIL — one big session: the quiet
-                link that appends the PM (or AM) block to THIS session.
+            {/* THE OTHER WINDOW'S TAIL — one big session: a whisper
+                row (quieter than a way-forward line — it edits the
+                day, it isn't a destination) with a two-tap confirm
+                (the receipt-delete precedent: deliberate, no modal).
                 Disappears once its stations ride the board. */}
             {mapCollapsed || !(otherMissing && otherWindow) ? null : (
-              <NextStation
-                label={`${otherWindow.toUpperCase()} BLOCK`}
-                name={`Add ${otherWindow.toUpperCase()} exercises`}
-                onPress={() => appendDraftSlots(otherSlots)}
-                accessibilityLabel={`Add the ${otherWindow.toUpperCase()} exercises to this session`}
+              <Pressable
+                onPress={() => {
+                  if (confirmAddWindow) {
+                    appendDraftSlots(otherSlots);
+                    setConfirmAddWindow(false);
+                  } else {
+                    setConfirmAddWindow(true);
+                  }
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={`Add the ${otherWindow.toUpperCase()} exercises to this session${confirmAddWindow ? ' — tap again to confirm' : ''}`}
+                style={({ pressed }) => [
+                  styles.addWindowRow,
+                  { borderTopColor: colors.mobilePremium.hairlineBorder },
+                  pressed ? { opacity: PRESS_DIP } : null,
+                ]}
                 testID={`floor-add-${otherWindow}`}
-              />
+              >
+                <Text
+                  style={[
+                    styles.addWindowWord,
+                    { color: confirmAddWindow ? colors.text : colors.textMuted },
+                  ]}
+                >
+                  {confirmAddWindow
+                    ? `TAP AGAIN · ADD ${otherWindow.toUpperCase()} BLOCK`
+                    : `+ ADD ${otherWindow.toUpperCase()} EXERCISES`}
+                </Text>
+              </Pressable>
             )}
             {mapCollapsed ? null : cardioDrafts.map((c, i) => {
               const isActive = instrument === 'cardio' && activeCardio?.localId === c.localId;
@@ -1247,6 +1284,18 @@ export function Floor() {
 }
 
 const styles = StyleSheet.create({
+  // The other window's whisper row — furniture caps on the board's
+  // ground, hairline above, quiet by design (it edits the day).
+  addWindowRow: {
+    borderTopWidth: 1,
+    paddingTop: 8,
+    marginTop: 4,
+    minHeight: 36,
+    justifyContent: 'center',
+  },
+  addWindowWord: {
+    ...theme.typography.mobileEyebrow,
+  },
   announceLine: {
     position: 'absolute',
     width: 1,

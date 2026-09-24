@@ -38,7 +38,6 @@ import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore, useA
 import { resolveSlots } from '../services';
 import {
   WORKOUT_SPLIT_LIST,
-  nextDefaultSessionMode,
   DAY_OF_WEEK_LABELS,
   getUpcomingWorkoutSlots,
   suggestNextSplitDay,
@@ -167,13 +166,10 @@ export default function SplitSelectionScreen() {
 
   const handleStart = () => {
     // Remember the choices — the next launch opens pre-configured. The
-    // window persists ROTATED (nextDefaultSessionMode): an 8pm AM makes
-    // the next open default PM — the picker hands you the session you
-    // haven't just done, never the clock's guess.
-    setPreference({
-      splitType: split,
-      sessionMode: nextDefaultSessionMode(split, session),
-    });
+    // window's ROTATION is owned by the SAVE path (the Floor's
+    // save-success effect): a discarded session never flips the
+    // default — only work under the belt does.
+    setPreference({ splitType: split, sessionMode: session });
     // The session starts NOW: draft.date defaults to the current instant
     // (startSession), which is what the elapsed timer + started_at save.
     // The picked day rides on `day` (split_day), not on the timestamp —
