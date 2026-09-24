@@ -50,6 +50,7 @@ interface LoggedExerciseRow {
   position: number;
   tags: string[] | null;
   note: string | null;
+  rating: string | null;
   /** Embedded join from the nested select (exercises.name). */
   exercise?: { name: string } | null;
 }
@@ -256,6 +257,9 @@ export class WorkoutRepository
               position: input.position,
               tags: input.tags ?? [],
               note: input.note ?? null,
+              // Spread-omitted when unrated: the column rides the
+              // 20270410000000 migration and only rated rows touch it.
+              ...(input.rating ? { rating: input.rating } : {}),
             })
             .select('*')
             .single();
@@ -619,6 +623,7 @@ function toSession(row: SessionRow): TrainingSession {
 }
 
 function toLoggedExercise(row: LoggedExerciseRow): LoggedExercise {
+  // The rating rides as raw text; the vocabulary owns itself in TS.
   return {
     id: row.id,
     sessionId: row.session_id,
@@ -626,6 +631,7 @@ function toLoggedExercise(row: LoggedExerciseRow): LoggedExercise {
     position: row.position,
     tags: row.tags ?? [],
     note: row.note,
+    rating: (row.rating as LoggedExercise['rating']) ?? null,
   };
 }
 

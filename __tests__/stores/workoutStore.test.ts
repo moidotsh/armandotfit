@@ -100,15 +100,18 @@ describe('workoutStore', () => {
     expect(useWorkoutStore.getState().selectedExerciseLocalId).toBe(selected);
   });
 
-  it('the grade evicts its siblings — one verdict per station', () => {
+  it('the rating is single-choice on the draft and threads into the DTO', () => {
     useWorkoutStore.getState().startSession({ splitType: 'oneADay', day: 1 });
     const localId = useWorkoutStore.getState().addExerciseToDraft({ exerciseName: 'Leg Press' });
-    useWorkoutStore.getState().toggleDraftExerciseTag(localId, 'good');
-    expect(useWorkoutStore.getState().draft!.exercises[0].tags).toEqual(['good']);
-    useWorkoutStore.getState().toggleDraftExerciseTag(localId, 'go-up');
-    expect(useWorkoutStore.getState().draft!.exercises[0].tags).toEqual(['go-up']);
-    useWorkoutStore.getState().toggleDraftExerciseTag(localId, 'too-heavy');
-    expect(useWorkoutStore.getState().draft!.exercises[0].tags).toEqual(['too-heavy']);
+    useWorkoutStore.getState().setDraftExerciseRating(localId, 'light');
+    expect(useWorkoutStore.getState().draft!.exercises[0].rating).toBe('light');
+    // Re-tapping the same rating clears it (the verdict is retractable).
+    useWorkoutStore.getState().setDraftExerciseRating(localId, 'light');
+    expect(useWorkoutStore.getState().draft!.exercises[0].rating).toBeNull();
+    useWorkoutStore.getState().setDraftExerciseRating(localId, 'heavy');
+    useWorkoutStore.getState().addSetToDraft(localId, { reps: 8, weight: 180 });
+    const dto = useWorkoutStore.getState().toLogSessionDTO();
+    expect(dto!.exercises[0].rating).toBe('heavy');
   });
 
   it('toLogSessionDTO drops half-filled sets and threads tags', () => {

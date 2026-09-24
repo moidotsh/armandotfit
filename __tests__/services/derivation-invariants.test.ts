@@ -50,6 +50,7 @@ function genSession(rand: () => number, dayOffset: number): SessionWithDetails {
       exerciseId: `cat-${i}`,
       position: i + 1,
       tags,
+      rating: null,
       note: null,
       exerciseName: CATALOG_NAMES[Math.floor(rand() * CATALOG_NAMES.length)]!,
       sets: Array.from({ length: setCount }, (_, j) => ({

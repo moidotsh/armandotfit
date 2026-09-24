@@ -286,11 +286,6 @@ export const TAG_VOCABULARY_SEED: string[] = [
   // (one cable vs two; duplicate machines). One axis per tag.
   'single-pulley',
   'dual-pulley',
-  // The station's grade — the notebook marks (good / go up / too
-  // heavy), one verdict per station, set from the logger's glyphs.
-  'good',
-  'go-up',
-  'too-heavy',
 ];
 
 // ──────────────────────────────────────────────────────────────────────
@@ -319,7 +314,6 @@ export const TAG_AXES: readonly TagAxis[] = [
   { id: 'stance', label: 'STANCE', members: ['seated', 'standing', 'kneeling'] },
   { id: 'pulley', label: 'PULLEYS', members: ['single-pulley', 'dual-pulley'] },
   { id: 'station', label: 'STATION', members: ['station-1', 'station-2'] },
-  { id: 'grade', label: 'GRADE', members: ['good', 'go-up', 'too-heavy'] },
 ];
 
 /** The axis a tag belongs to, if any. */

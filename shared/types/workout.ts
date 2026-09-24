@@ -39,7 +39,17 @@ export interface LoggedExercise {
   position: number; // 1-indexed
   tags: string[];
   note: string | null;
+  /** THE PROGRESSION RATING — the station's verdict on its weight
+   *  (light / right / heavy; the notebook's + ✓ −). Drives the
+   *  progression engine's ladder replay; null = unrated (pre-engine
+   *  history, or the lifter skipped the prompt). */
+  rating: EffortRating | null;
 }
+
+/** The station's verdict on its weight — the progression rating
+ * (the notebook's + ✓ −). Vocabulary lives here with the rest of the
+ * raw-fact shapes; the engine consumes it. */
+export type EffortRating = 'light' | 'right' | 'heavy';
 
 /** A completed set. Reps + weight + optional note; nothing else. */
 export interface LoggedSet {
@@ -107,6 +117,8 @@ export interface LoggedExerciseInputDTO {
   position: number;
   tags?: string[];
   note?: string | null;
+  /** The progression rating (light / right / heavy); omit when unrated. */
+  rating?: EffortRating | null;
   sets: LoggedSetInputDTO[];
 }
 

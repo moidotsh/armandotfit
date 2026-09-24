@@ -60,17 +60,6 @@ export interface RestLine {
   onDismiss: () => void;
 }
 
-/** THE GRADE MARKS — the notebook glyphs → the grade tag axis. */
-const GRADE_MARKS: ReadonlyArray<{
-  tag: 'good' | 'go-up' | 'too-heavy';
-  glyph: string;
-  label: string;
-}> = [
-  { tag: 'good', glyph: '\u2713', label: 'Weight was right' },
-  { tag: 'go-up', glyph: '+', label: 'Go up next time' },
-  { tag: 'too-heavy', glyph: '\u2212', label: 'Weight was difficult' },
-];
-
 export interface TheLoggerProps {
   /** The next set's ordinal (logged sets + 1) — display only. */
   setNumber: number;
@@ -107,14 +96,6 @@ export interface TheLoggerProps {
   programmedSets?: number;
   /** Bulk log — creates `sets` identical rows at `reps`. */
   onLogAverage?: (reps: number, sets: number) => void;
-  /**
-   * THE GRADE — the station's verdict (the notebook marks): the
-   * currently-set grade tag, if any, + the tap handler. ✓ weight was
-   * right · + go up next time · − weight was difficult. Single
-   * choice (the grade tag axis); rides the tags, surfaces in history.
-   */
-  grade?: string | null;
-  onGrade?: (tag: 'good' | 'go-up' | 'too-heavy') => void;
   onLog: () => void;
   onChangeWeight: (weight: number | null) => void;
   onChangeReps: (reps: number | null) => void;
@@ -291,8 +272,6 @@ export function TheLogger({
   suggestArm,
   earnedStep = null,
   unit = 'kg',
-  grade = null,
-  onGrade,
   onLog,
   onChangeWeight,
   onChangeReps,
@@ -379,40 +358,6 @@ export function TheLogger({
         <Text style={[styles.kicker, { color: colors.textMuted }]}>
           {`SET ${String(setNumber).padStart(2, '0')}${repsHint ? ` · TGT ${repsHint}` : ''}`}
         </Text>
-        {/* THE GRADE — the notebook marks on the dock's folio: one
-            verdict per station, one tap, single choice (the axis
-            evicts its siblings at the store seam). Selected carries
-            the full ink; the rest stay muted (ink is state). */}
-        {onGrade ? (
-          <View style={styles.gradeRow}>
-            {GRADE_MARKS.map(({ tag, glyph, label: gradeLabel }) => (
-              <Pressable
-                key={tag}
-                onPress={() => onGrade(tag)}
-                accessibilityRole="button"
-                accessibilityLabel={`Grade: ${gradeLabel}${grade === tag ? ' (set)' : ''}`}
-                hitSlop={6}
-                style={({ pressed }) => [
-                  styles.gradeTap,
-                  pressed ? { opacity: PRESS_DIP } : null,
-                ]}
-                testID={`${testID ?? 'the-logger'}-grade-${tag}`}
-              >
-                <Text
-                  style={[
-                    styles.gradeGlyph,
-                    {
-                      color: grade === tag ? colors.text : colors.textMuted,
-                      fontWeight: grade === tag ? '700' : '400',
-                    },
-                  ]}
-                >
-                  {glyph}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        ) : null}
         {earnedStep != null && weight != null ? (
           <Pressable
             onPress={() => onChangeWeight(Math.round((weight! + earnedStep) * 100) / 100)}
@@ -659,21 +604,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
     minHeight: 24,
-  },
-  gradeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  gradeTap: {
-    minHeight: 24,
-    minWidth: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gradeGlyph: {
-    ...theme.typography.mobileFigure,
-    fontVariant: ['tabular-nums'],
   },
   kicker: {
     ...theme.typography.mobileEyebrow,

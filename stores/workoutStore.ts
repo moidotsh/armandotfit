@@ -37,7 +37,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from '../utils/storage';
 import type { SessionMode } from '../constants';
-import type { LoggedExerciseInputDTO, LogSessionDTO, PreferredSplit } from '../shared/types';
+import type { EffortRating, LoggedExerciseInputDTO, LogSessionDTO, PreferredSplit } from '../shared/types';
 import { tagsWithAxisRespected } from '../shared/exercises';
 import type { ExerciseKey, ResolvedSlot } from '../shared/exercises/splits';
 import { SYSTEM_EXERCISES_BY_SLUG } from '../shared/exercises/data';
@@ -65,6 +65,9 @@ export interface DraftExercise {
   tags: string[];
   /** Programmed Rx label (e.g. '3 × 8–10') — display only, never saved. */
   targetRx: string | null;
+  /** THE PROGRESSION RATING — the station's verdict (light/right/heavy);
+   *  one choice, set from the station's rating row after the work. */
+  rating: EffortRating | null;
   note: string | null;
   sets: DraftSet[];
 }
@@ -202,6 +205,8 @@ interface WorkoutState {
   toggleDraftExerciseTag: (exerciseLocalId: string, tag: string) => void;
   /** Replace a draft exercise's tags wholesale (last-used prefill). */
   setDraftExerciseTags: (exerciseLocalId: string, tags: string[]) => void;
+  /** Set the station's progression rating (single choice). */
+  setDraftExerciseRating: (exerciseLocalId: string, rating: EffortRating) => void;
   /**
    * Swap a draft exercise's IDENTITY in place (session-time
    * substitution): position, Rx label, and logged set rows survive;
@@ -291,6 +296,7 @@ export const useWorkoutStore = create<WorkoutState>()(
             position: i + 1,
             tags: [...e.tags],
             targetRx: e.targetRx,
+            rating: null,
             note: null,
             // The continued session's sets carry — the map populates.
             sets: (e.sets ?? []).map((set, si) => ({
@@ -335,7 +341,8 @@ export const useWorkoutStore = create<WorkoutState>()(
           position: draft.exercises.length + 1,
           tags: [],
           targetRx: exercise.targetRx ?? null,
-          note: null,
+          rating: null,
+      note: null,
           sets: [],
         };
         set({
@@ -450,6 +457,7 @@ export const useWorkoutStore = create<WorkoutState>()(
             position: i + 1,
             tags: [...slot.suggestedTags],
             targetRx: rxLabel(slot),
+            rating: null,
             note: null,
             // The armed-set model: a draft set row exists ONLY once logged
             // (the stage's armed slab is the "next set" — it commits rows,
@@ -477,6 +485,7 @@ export const useWorkoutStore = create<WorkoutState>()(
             position: base + i + 1,
             tags: [...slot.suggestedTags],
             targetRx: rxLabel(slot),
+            rating: null,
             note: null,
             sets: [],
           };
@@ -624,6 +633,21 @@ export const useWorkoutStore = create<WorkoutState>()(
         });
       },
 
+      setDraftExerciseRating: (exerciseLocalId, rating) => {
+        const draft = get().draft;
+        if (!draft) return;
+        set({
+          draft: {
+            ...draft,
+            exercises: draft.exercises.map((e) =>
+              e.localId === exerciseLocalId
+                ? { ...e, rating: e.rating === rating ? null : rating }
+                : e,
+            ),
+          },
+        });
+      },
+
       setDraftExerciseNote: (exerciseLocalId, note) => {
         const draft = get().draft;
         if (!draft) return;
@@ -647,6 +671,7 @@ export const useWorkoutStore = create<WorkoutState>()(
           position: e.position,
           tags: e.tags,
           note: e.note,
+          rating: e.rating,
           sets: e.sets
             .filter(
               (s): s is DraftSet & { reps: number; weight: number } =>

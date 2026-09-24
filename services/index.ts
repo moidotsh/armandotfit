@@ -32,6 +32,19 @@ export {
 } from './chartData';
 export { slotKey, resolveSlots } from './programService';
 export {
+  REP_LADDER,
+  deriveProgression,
+  rangeLabel,
+  progressionKey,
+  sameProgression,
+  rungOf,
+  RATING_GLYPH,
+  type EffortRating,
+  type ProgressionRx,
+  type RatedInstance,
+  type Rung,
+} from './progressionEngine';
+export {
   generateSplit,
   generateProgram,
   nameForSlug,

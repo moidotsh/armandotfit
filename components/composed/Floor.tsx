@@ -48,13 +48,19 @@ import {
   navigateToWorkoutDetail,
   replaceWithHome,
 } from '../../navigation';
-import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, type TopSetFact } from '../../hooks';
+import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, useRecentSessionDetails, type TopSetFact } from '../../hooks';
 import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight, weightStep, hapticImpactLight, hapticImpactMedium, hapticNotificationSuccess, joinFacts } from '../../utils';
 import { useWorkoutStore, useIsOnline, useDeloadStore, useSplitPreferenceStore, useProgramOverrideStore } from '../../stores';
-import { sessionSaveQueue, resolveSlots } from '../../services';
+import {
+  sessionSaveQueue,
+  resolveSlots,
+  deriveProgression,
+  rangeLabel,
+  sameProgression,
+  type RatedInstance,
+} from '../../services';
 import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED,
   plateUrl,
-  tagAxisOf,
 } from '../../shared/exercises';
 import { plateOffsetFor } from '../../shared/exercises/plateOffsets';
 import {
@@ -170,6 +176,7 @@ export function Floor() {
     (s) => s.removeExerciseFromDraft,
   );
   const appendDraftSlots = useWorkoutStore((s) => s.appendDraftSlots);
+  const setDraftExerciseRating = useWorkoutStore((s) => s.setDraftExerciseRating);
   const draftSession = useWorkoutStore((s) => s.draft);
   const programEdition = useSplitPreferenceStore((s) => s.edition);
   const setSplitPreference = useSplitPreferenceStore((s) => s.setPreference);
@@ -417,6 +424,44 @@ export function Floor() {
     return Number.isFinite(high) && high > 0 ? high : null;
   }, [targetRx]);
 
+  // ── THE PROGRESSION ENGINE (the notebook system) ─────────────────
+  // The station's rated history for THIS key (exercise + exact tag
+  // set), oldest first; the engine replays it to the Rx the session
+  // should run. Once a station has been rated even once, the engine
+  // owns its progression — the legacy earned-step stands down.
+  const sessionDetails = useRecentSessionDetails(30);
+  const ratedHistory = useMemo(() => {
+    if (!exercise) return [] as RatedInstance[];
+    const sessions = [...(sessionDetails.data ?? [])].reverse();
+    const out: RatedInstance[] = [];
+    for (const sess of sessions) {
+      for (const ex of sess.exercises) {
+        if (ex.rating == null) continue;
+        if (ex.exerciseName !== exercise.exerciseName) continue;
+        if (!sameProgression(exercise.exerciseName, ex.tags, exercise.tags)) continue;
+        const top = ex.sets.reduce((m, x) => Math.max(m, x.weight), 0);
+        out.push({ weight: top > 0 ? top : null, rating: ex.rating });
+      }
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionDetails.data, exercise?.exerciseName, exercise?.tags.join(',')]);
+
+  const step = weightStep(unit);
+  const originRange: readonly [number, number] = [
+    targetRepsLow ?? 8,
+    targetRepsHigh ?? 10,
+  ];
+  const progressionActive = ratedHistory.length > 0;
+  const beforeRx = useMemo(
+    () => deriveProgression(originRange, ratedHistory, step),
+    [originRange[0], originRange[1], ratedHistory, step],
+  );
+  // The engine's verdict for THIS session's Rx: hint + armed prefill
+  // ride it; the legacy earned-step stands down.
+  const effRepsLow = progressionActive ? beforeRx.range[0] : targetRepsLow;
+  const effRepsHigh = progressionActive ? beforeRx.range[1] : targetRepsHigh;
+
   // THE DELOAD TARGET — the Rx low end while the deload week runs.
   const targetShown = useMemo(() => {
     if (!targetRx || !deload) return targetRx;
@@ -446,8 +491,8 @@ export function Floor() {
       ? armedPrefill.get(exercise.exerciseName.toLowerCase())
       : undefined;
     if (lastTime) return { weight: toArmed(lastTime.weight), reps: lastTime.reps };
-    return { weight: null, reps: targetRepsLow };
-  }, [armedByExercise, exercise, armedPrefill, targetRepsLow, unit]);
+    return { weight: null, reps: effRepsLow };
+  }, [armedByExercise, exercise, armedPrefill, effRepsLow, unit]);
 
   const setArmed = (next: Armed) => {
     if (!exercise) return;
@@ -473,6 +518,9 @@ export function Floor() {
   // the armed weight ⇒ the next increment is earned. Suppressed in a
   // deload week and when the bar hasn't been met.
   const earnedStep: number | null = useMemo(() => {
+    // The progression engine owns overload once a station is rated —
+    // the legacy earned-step stands down (one truth per station).
+    if (progressionActive) return null;
     if (deload) return null;
     if (!exercise || armed.weight == null || targetRepsHigh == null) return null;
     const fact = armedPrefill.get(exercise.exerciseName.toLowerCase());
@@ -481,9 +529,11 @@ export function Floor() {
     if (Math.abs(fact.weight - armedKg) > 0.01) return null;
     if (fact.reps < targetRepsHigh) return null;
     return weightStep(unit);
-  }, [deload, exercise, armed.weight, armedPrefill, targetRepsHigh, unit]);
+  }, [deload, exercise, armed.weight, armedPrefill, targetRepsHigh, unit, progressionActive]);
 
-  const repsHint = targetRx?.split('×')[1]?.trim() ?? null;
+  const repsHint = progressionActive
+    ? rangeLabel(beforeRx.range)
+    : targetRx?.split('×')[1]?.trim() ?? null;
 
   // The rest line rides the CURRENT station (per-exercise memory).
   const stationName = exercise?.exerciseName ?? null;
@@ -820,6 +870,72 @@ export function Floor() {
                 </View>
               </View>
 
+              {/* THE WEIGHT — the notebook's verdict row. After the
+                  work (the station's sets reach its target), rate the
+                  weight FOR THIS RANGE: − too heavy · ✓ just right · +
+                  too light. The rating rides the logged exercise (not a
+                  tag); the NEXT line shows what the engine will serve
+                  next time — reps up, weight up, or holding. */}
+              {(targetSets > 0 ? exercise.sets.length >= targetSets : exercise.sets.length > 0) ? (
+                <View style={styles.ratingBlock} testID={`stage-rating-${exercise.localId}`}>
+                  <View style={styles.ratingRow}>
+                    <Text style={[styles.ratingWhisper, { color: colors.textMuted }]}>
+                      THE WEIGHT
+                    </Text>
+                    {([
+                      { r: 'heavy' as const, glyph: '\u2212', label: 'Too heavy — drop it' },
+                      { r: 'right' as const, glyph: '\u2713', label: 'Just right — hold' },
+                      { r: 'light' as const, glyph: '+', label: 'Too light — go up' },
+                    ]).map(({ r, glyph, label }) => (
+                      <Pressable
+                        key={r}
+                        onPress={() => setDraftExerciseRating(exercise.localId, r)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Rate the weight: ${label}${exercise.rating === r ? ' (set)' : ''}`}
+                        hitSlop={6}
+                        style={({ pressed }) => [
+                          styles.ratingTap,
+                          pressed ? { opacity: PRESS_DIP } : null,
+                        ]}
+                        testID={`stage-rating-${r}`}
+                      >
+                        <Text
+                          style={[
+                            styles.ratingGlyph,
+                            {
+                              color: exercise.rating === r ? colors.text : colors.textMuted,
+                              fontWeight: exercise.rating === r ? '700' : '400',
+                            },
+                          ]}
+                        >
+                          {glyph}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  {exercise.rating ? (
+                    <Text style={[styles.ratingNext, { color: colors.textSecondary }]} numberOfLines={1}>
+                      {(() => {
+                        const topNow = exercise.sets.reduce(
+                          (m, x) => Math.max(m, x.weight ?? 0),
+                          beforeRx.weight ?? 0,
+                        );
+                        const after = deriveProgression(originRange, [
+                          ...ratedHistory,
+                          { weight: topNow > 0 ? topNow : null, rating: exercise.rating },
+                        ], step);
+                        const w = after.weight != null
+                          ? `${roundDisplayWeight(toDisplayWeight(after.weight, unit))} ${unit}`
+                          : '—';
+                        const verb =
+                          after.mode === 'reps' ? 'REPS \u2191' : after.mode === 'weight' ? 'WEIGHT \u2191' : 'HOLDING';
+                        return `NEXT \u00b7 ${w} \u00d7 ${rangeLabel(after.range)} \u00b7 ${verb}`;
+                      })()}
+                    </Text>
+                  ) : null}
+                </View>
+              ) : null}
+
               {/* Tags — one whisper line; the editor opens one tap
                   deeper (tags prefill from last time; mid-set editing
                   is the exception, not the default). */}
@@ -1148,8 +1264,6 @@ export function Floor() {
             weight={armed.weight}
             reps={armed.reps}
             repsHint={repsHint}
-            grade={tagAxisOf('good')?.members.find((t) => exercise.tags.includes(t)) ?? null}
-            onGrade={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
             rest={restLine}
             suggestArm={suggestArm}
             earnedStep={earnedStep}
@@ -1284,6 +1398,35 @@ export function Floor() {
 }
 
 const styles = StyleSheet.create({
+  // ── THE WEIGHT — the notebook verdict row (station-local, after
+  // the ledger; the dock stays the one-field instrument).
+  ratingBlock: {
+    marginTop: 6,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 36,
+  },
+  ratingWhisper: {
+    ...theme.typography.mobileEyebrow,
+    flex: 1,
+  },
+  ratingTap: {
+    minHeight: 36,
+    minWidth: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ratingGlyph: {
+    ...theme.typography.mobileFigure,
+  },
+  ratingNext: {
+    ...theme.typography.mobileLedger,
+    fontVariant: ['tabular-nums'],
+    marginTop: 2,
+  },
   // The other window's whisper row — furniture caps on the board's
   // ground, hairline above, quiet by design (it edits the day).
   addWindowRow: {
