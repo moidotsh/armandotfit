@@ -1,5 +1,67 @@
 # THE INTERVAL — the live figure owns the counter
 
+> **REVISION — THE UPCENDING, PASS ONE: THE FRONT PAGE (the
+> seventeenth pass).** The owner's mandate: full authority — audit
+> everything with fresh eyes, delete what doesn't earn its pixels,
+> redraw what's merely fine, and record every departure as a
+> decision. Pass one spends it on the most valuable surface, the
+> front page, under the three-questions test (what does a lifter
+> need in the 3 seconds before a session, the 30 seconds after,
+> the 30 seconds of daily browsing?). Three decisions:
+>
+> 1. **THE PRESCRIPTION.** The day register was half a notebook:
+>    weights without reps. The paper system it imitates prints the
+>    whole expectation — so the register's rows now carry `62.5 ×
+>    8–10` (the top-set prefill joined to the programmed rep
+>    range, the Floor's `62.5 × 8` grammar extended to the plan).
+>    A lift with no load history carries the range alone in
+>    MUTED ink — the load fact is absent and the print says so
+>    (the unset figure never impersonates a fact; it also never
+>    vanishes — the target is a fact). Above the register's 2px
+>    rule, a size line states the session's length before it
+>    starts: `4 STATIONS · 9–11 SETS` — the one number that says
+>    whether this is a full morning or a half. The split picker's
+>    preview register speaks the same grammar (one language,
+>    stated twice where the pick needs its feedback).
+> 2. **THE WEEK LINE.** Daily browsing's best question — "how's
+>    the week going?" — cost a tap it no longer pays: the current
+>    week rides the front page as seven printed columns
+>    (Sunday-first, the analytics grid's column grammar — the two
+>    calendars teach one shape): weekday rail caps, each day's
+>    session count as a mono figure, '·' for a past day off,
+>    TODAY in red. **A day after today prints NOTHING** — the
+>    future is not a rest day, and a '·' there would lie (honesty
+>    is the one constraint that outranks the daring clause). One
+>    tap opens THE LEDGER. This is a red-job amendment: home was
+>    a zero-red screen; it now carries exactly ONE red node, the
+>    week line's today — the live pulse's job, spent where the
+>    living position is. The walk's red-discipline probe asserts
+>    it (one red node, and it belongs to the week line).
+> 3. **THE ANALYTICS JUMP ROW DIES.** The week line IS the
+>    analytics presence on the front page — the row that said
+>    `this week · N` is deleted (a fact stated twice, a tap
+>    duplicated). The jump stack is three rows again: Program /
+>    Library / Progress.
+>
+> What did NOT change: the statement grammar (whisper · day title
+> · regions), the one verb (START/RESUME), the ticker, the recent
+> sessions as Martian lines, the stillness (the week line is
+> static type, repainted on read), the ramp (12/18/36 — home
+> still carries no counter), the 2px register rule, the hairline
+> budget (THE WEEK and RECENT WORK landmarks, two of three
+> spent), the 490px law (START stays inside the SE fold,
+> probe-verified). The loading posture holds: the week line
+> prints when the activity read SUCCEEDS — never a wall of dots
+> impersonating a settled week.
+>
+> **LANDING.** One commit, gated (`lint:structure` +
+> `tsc --noEmit` + the vitest suite grown by 13 WeekLine tests:
+> the derivation pure and pinned — AM+PM counts 2, future prints
+> nothing, exactly one today — and the render honest — seven
+> cells, one button, the label sums only through today).
+> Verified by `.shots/upend-home-walk.ts` (49 probes green, both
+> modes + SE) and the standing suite with the amended red probe.
+
 > **REVISION — THE EDITORIAL PASS (the sixteenth pass; the visible
 > amendment).** The owner's verdict on the atelier pass: real craft,
 > invisible at arm's length — "I can't even tell what changed." This
@@ -737,13 +799,16 @@ presentation rebuilds.
 ### `/` home — THE CONCIERGE
 Question: "what am I walking into today?" Focal: the day's TITLE
 (statement, sentence case) under the window whisper (AM/PM, printed
-caps, MUTED — furniture never red). Second: THE DAY REGISTER — the
-day's plan as ruled rows (name left, prefill weight figure right),
-wearing the screen's 2px rule. Quiet: the START verb (ink, 56),
-three jump rows (Program / Library / Progress — the streak figure
-lives on Progress), recent sessions as mono lines. Session live:
-the ticker pins under the folio (mode-following, behavior
-unchanged).
+caps, MUTED — furniture never red). Second: THE PRESCRIPTION — the
+day's plan as ruled rows (name left, `prefill × rep-range` figure
+right; no load history → the range alone, muted), a size line
+(`N STATIONS · N–N SETS`) above the screen's one 2px rule. Quiet:
+the START verb (ink, 56), THE WEEK LINE (the current week as seven
+printed columns — session counts, '·' for past days off, today in
+red, the future blank; one tap → THE LEDGER), three jump rows
+(Program / Library / Progress — the streak figure lives on
+Progress), recent sessions as mono lines. Session live: the ticker
+pins under the folio (mode-following, behavior unchanged).
 
 ### `/split-selection` — THE SELECTOR
 Question: "which edition?" Focal: the picked day's title restating
