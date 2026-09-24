@@ -51,6 +51,32 @@ describe('workoutStore', () => {
     expect(useWorkoutStore.getState().draft!.exercises[0].tags).toEqual([]);
   });
 
+  it('respects the tag axes on add — a qualifier sibling leaves when its rival arrives', () => {
+    useWorkoutStore.getState().startSession({ splitType: 'oneADay', day: 1 });
+    const localId = useWorkoutStore.getState().addExerciseToDraft({
+      exerciseName: 'Lat Pulldown',
+    });
+    useWorkoutStore.getState().toggleDraftExerciseTag(localId, 'underhand');
+    useWorkoutStore.getState().toggleDraftExerciseTag(localId, 'single-pulley');
+    // Different axes co-exist: grip + pulleys.
+    expect(useWorkoutStore.getState().draft!.exercises[0].tags).toEqual([
+      'underhand',
+      'single-pulley',
+    ]);
+    // Same axis: dual-pulley replaces single-pulley; underhand stays.
+    useWorkoutStore.getState().toggleDraftExerciseTag(localId, 'dual-pulley');
+    expect(useWorkoutStore.getState().draft!.exercises[0].tags).toEqual([
+      'underhand',
+      'dual-pulley',
+    ]);
+    // Grip flips too — overhand replaces underhand.
+    useWorkoutStore.getState().toggleDraftExerciseTag(localId, 'overhand');
+    expect(useWorkoutStore.getState().draft!.exercises[0].tags).toEqual([
+      'dual-pulley',
+      'overhand',
+    ]);
+  });
+
   it('toLogSessionDTO drops half-filled sets and threads tags', () => {
     useWorkoutStore.getState().startSession({ splitType: 'oneADay', day: 1 });
     const localId = useWorkoutStore.getState().addExerciseToDraft({

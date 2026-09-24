@@ -9,6 +9,7 @@ import {
   suggestNextSplitDay,
   suggestSessionWindow,
 } from '../../constants';
+import { TAG_AXES, tagsWithAxisRespected } from '../../shared/exercises';
 
 describe('getNextSplitDay', () => {
   it('wraps 4 → 1 (the historical off-by-one produced day 5 — empty slots)', () => {
@@ -59,5 +60,54 @@ describe('suggestSessionWindow', () => {
     expect(suggestSessionWindow(new Date(2026, 0, 1, 8))).toBe('am');
     expect(suggestSessionWindow(new Date(2026, 0, 1, 17))).toBe('pm');
     expect(suggestSessionWindow(new Date(2026, 0, 1, 23))).toBe('pm');
+  });
+});
+
+
+// ── TAG AXES — single choice per qualifier axis ───────────────────────
+
+describe('TAG_AXES — the qualifier axes', () => {
+  it('every axis member is single-choice: the sibling leaves on add', () => {
+    expect(tagsWithAxisRespected(['single-pulley'], 'dual-pulley')).toEqual(['dual-pulley']);
+    expect(tagsWithAxisRespected(['dual-pulley', 'underhand'], 'single-pulley')).toEqual([
+      'underhand',
+      'single-pulley',
+    ]);
+    expect(tagsWithAxisRespected(['overhand'], 'underhand')).toEqual(['underhand']);
+    expect(tagsWithAxisRespected(['machine'], 'dumbbell')).toEqual(['dumbbell']);
+    expect(tagsWithAxisRespected(['seated'], 'standing')).toEqual(['standing']);
+  });
+
+  it('free tags append untouched and co-exist with axis members', () => {
+    expect(tagsWithAxisRespected(['single-pulley', 'rope'], 'paused')).toEqual([
+      'single-pulley',
+      'rope',
+      'paused',
+    ]);
+    // Different axes co-exist: grip + attachment + pulley.
+    expect(tagsWithAxisRespected(['underhand', 'single-pulley'], 'rope')).toEqual([
+      'underhand',
+      'single-pulley',
+      'rope',
+    ]);
+  });
+
+  it('a tag outside every axis never displaces anything', () => {
+    expect(tagsWithAxisRespected(['eccentric', 'per-leg'], 'captains-chair')).toEqual([
+      'eccentric',
+      'per-leg',
+      'captains-chair',
+    ]);
+  });
+
+  it('the axes are disjoint — no token claims two axes', () => {
+    const seen = new Map<string, string>();
+    for (const axis of TAG_AXES) {
+      for (const member of axis.members) {
+        const prior = seen.get(member);
+        expect(prior, `'${member}' claimed by both ${prior} and ${axis.id}`).toBeUndefined();
+        seen.set(member, axis.id);
+      }
+    }
   });
 });

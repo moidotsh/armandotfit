@@ -80,6 +80,13 @@ dimension tables, no vocabulary CHECKs.
 - Tags never affect identity, eligibility, or progression defaults.
   Progression comparisons MAY filter by tag at read time; they never
   partition silently.
+- **Tag axes** (2026-09): mutually exclusive qualifier families are
+  declared in TS (`TAG_AXES` in splits.ts — grip, attachment,
+  implement, stance, pulley, station) and enforced at the input
+  boundary ONLY (the draft toggle): adding a member replaces its
+  axis siblings. The DB store stays flat `TEXT[]` — no dimension
+  tables, no CHECKs, and rows written before the axes keep whatever
+  they carry. Free tags outside every axis co-exist with everything.
 
 ## 3. The promotion rule
 

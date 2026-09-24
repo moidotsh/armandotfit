@@ -289,6 +289,50 @@ export const TAG_VOCABULARY_SEED: string[] = [
 ];
 
 // ──────────────────────────────────────────────────────────────────────
+// TAG AXES — mutually exclusive qualifier families. The DB store stays
+// flat TEXT[] (governance §2: no dimension tables, no CHECKs); the
+// axis is an INPUT-BOUNDARY authoring rule: picking a member of an
+// axis REPLACES the axis's other member on the draft (you cannot be
+// single-pulley and dual-pulley, underhand and overhand, seated and
+// standing). One axis per concern, one token per value; tags outside
+// every axis stay free-form and co-exist with everything.
+// ──────────────────────────────────────────────────────────────────────
+
+export interface TagAxis {
+  /** Stable id ('grip', 'pulley'…). */
+  id: string;
+  /** Furniture label for grouped suggestions. */
+  label: string;
+  /** The mutually exclusive members. */
+  members: readonly string[];
+}
+
+export const TAG_AXES: readonly TagAxis[] = [
+  { id: 'grip', label: 'GRIP', members: ['underhand', 'overhand', 'neutral'] },
+  { id: 'attachment', label: 'ATTACHMENT', members: ['rope', 'straight-bar', 'ez-bar', 'lat-bar', 'v-grip', 'handle'] },
+  { id: 'implement', label: 'IMPLEMENT', members: ['machine', 'dumbbell', 'barbell', 'cable'] },
+  { id: 'stance', label: 'STANCE', members: ['seated', 'standing', 'kneeling'] },
+  { id: 'pulley', label: 'PULLEYS', members: ['single-pulley', 'dual-pulley'] },
+  { id: 'station', label: 'STATION', members: ['station-1', 'station-2'] },
+];
+
+/** The axis a tag belongs to, if any. */
+export function tagAxisOf(tag: string): TagAxis | undefined {
+  return TAG_AXES.find((axis) => axis.members.includes(tag));
+}
+
+/**
+ * ADD a tag with the axes respected: if the incoming tag belongs to an
+ * axis, the axis's other members leave (single choice per axis); free
+ * tags append untouched. Pure — the store calls it at the toggle seam.
+ */
+export function tagsWithAxisRespected(current: readonly string[], incoming: string): string[] {
+  const axis = tagAxisOf(incoming);
+  if (!axis) return [...current, incoming];
+  return [...current.filter((t) => !axis.members.includes(t)), incoming];
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // Program editions — 'upper' (the original) and 'lower' (the female
 // equivalent). Both editions share the same 4-day async structure and
 // 17 of 32 slot positions, so a couple training together meets at the

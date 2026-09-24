@@ -38,6 +38,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from '../utils/storage';
 import type { SessionMode } from '../constants';
 import type { LoggedExerciseInputDTO, LogSessionDTO, PreferredSplit } from '../shared/types';
+import { tagsWithAxisRespected } from '../shared/exercises';
 import type { ExerciseKey, ResolvedSlot } from '../shared/exercises/splits';
 import { SYSTEM_EXERCISES_BY_SLUG } from '../shared/exercises/data';
 import { CARDIO_STATIONS, type CardioStationKey } from '../shared/exercises/cardio';
@@ -586,7 +587,12 @@ export const useWorkoutStore = create<WorkoutState>()(
               e.localId === exerciseLocalId
                 ? {
                     ...e,
-                    tags: e.tags.includes(tag) ? e.tags.filter((t) => t !== tag) : [...e.tags, tag],
+                    // Remove is plain; ADD respects the tag axes — a
+                    // qualifier's sibling leaves when it arrives (you
+                    // cannot be single-pulley AND dual-pulley).
+                    tags: e.tags.includes(tag)
+                      ? e.tags.filter((t) => t !== tag)
+                      : tagsWithAxisRespected(e.tags, tag),
                   }
                 : e
             ),
