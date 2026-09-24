@@ -18,6 +18,7 @@ export { Floor } from './Floor';
 export { Receipt, type ReceiptProps } from './Receipt';
 export { BoardHead, type BoardHeadProps } from './BoardHead';
 export { SectionWhisper, type SectionWhisperProps } from './SectionWhisper';
+export { WeekLine, buildWeekLineDays, type WeekLineProps, type WeekDay } from './WeekLine';
 export { QueryErrorNote, type QueryErrorNoteProps } from './QueryErrorNote';
 export { TrendGraph, SharePie, type TrendGraphProps, type SharePieProps, type PieSlice, type TrendPoint } from './TheCharts';
 

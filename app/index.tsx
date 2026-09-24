@@ -2,15 +2,20 @@
 // Home — THE INTERVAL's front (docs/architecture/
 // interval-thesis.md §8). Question: "what am I walking into today?"
 // The day's title is the statement (the page carries no name of its
-// own); **THE DAY REGISTER** — the day's plan as ruled rows (name
-// left · air · the prefill weight as a right-aligned mono figure),
-// wearing the screen's one 2px rule — shows the session's numbers
+// own); **THE PRESCRIPTION** — the day's plan as ruled rows (name
+// left · air · the full expectation right: prefill weight × rep
+// range; a lift with no load history carries the range alone,
+// muted), under the screen's one 2px rule, with the session's size
+// stated above it (stations · sets) — shows the session's numbers
 // before you start it. The window whisper is FURNITURE — printed
 // caps in muted ink (red never rides furniture; interval-thesis
-// §2). START (or RESUME) is the one verb (ink). Jump rows keep
-// their one fact each (the streak lives on the Progress row);
-// recent sessions close the page as Martian lines. While a session
-// runs, BoardShell pins the ticker under the folio.
+// §2). START (or RESUME) is the one verb (ink). **THE WEEK LINE**
+// answers the browser's second question ("how's the week going?")
+// without a tap — the current week as printed figures, today in
+// red, one tap through to THE LEDGER. Jump rows keep their one fact
+// each (the streak lives on the Progress row); recent sessions
+// close the page as Martian lines. While a session runs, BoardShell
+// pins the ticker under the folio.
 
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -21,6 +26,7 @@ import {
   BoardHead,
   EditionLine,
   SectionWhisper,
+  WeekLine,
   WorkoutListSkeleton,
   QueryErrorNote,
   RegisterLine,
@@ -52,7 +58,13 @@ import {
   MUSCLE_TO_REGION,
 } from '../shared/exercises';
 import { useSplitPreferenceStore, useWorkoutStore, useDeloadStore } from '../stores';
-import { useDashboardSummary, useRecentSessionDetails, useTopSetsByName, useWeightUnit } from '../hooks';
+import {
+  useDashboardSummary,
+  useRecentSessionDetails,
+  useTopSetsByName,
+  useWeightUnit,
+  useActivityLog,
+} from '../hooks';
 import { toDisplayWeight, roundDisplayWeight, joinFacts } from '../utils';
 
 const RECENT_COUNT = 3;
@@ -62,6 +74,7 @@ export default function HomeScreen() {
   const summaryQuery = useDashboardSummary();
   const recentQuery = useRecentSessionDetails(5);
   const topSets = useTopSetsByName();
+  const activityQuery = useActivityLog();
   const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
   const edition = useSplitPreferenceStore((s) => s.edition);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
@@ -115,17 +128,36 @@ export default function HomeScreen() {
     return [...regions].map((r) => REGION_WORD[r] ?? r);
   }, [suggestedSlots]);
 
-  // The register rows' figures — the last TOP set per exercise name
-  // (the shared derivation; the same rule that arms the Floor), in
-  // display units. A bodyweight lift (null or 0) carries no figure.
+  // THE SESSION'S SIZE (the upending pass): stations + the programmed
+  // set budget — the one number that says whether this is a full
+  // morning or a half. Computed from the slots; honest about ranges.
+  const sizeLine = useMemo(() => {
+    if (suggestedSlots.length === 0) return null;
+    const min = suggestedSlots.reduce((n, s) => n + s.sets[0], 0);
+    const max = suggestedSlots.reduce((n, s) => n + s.sets[1], 0);
+    return joinFacts([
+      `${suggestedSlots.length} ${suggestedSlots.length === 1 ? 'STATION' : 'STATIONS'}`,
+      min === max ? `${min} SETS` : `${min}–${max} SETS`,
+    ]);
+  }, [suggestedSlots]);
+
+  // The prescription rows' figures — the last TOP set per exercise
+  // name (the shared derivation; the same rule that arms the Floor)
+  // joined to the programmed rep range, in display units. A
+  // bodyweight lift (null or 0) carries the range alone, muted —
+  // the load fact is absent and the print says so.
   const prefillBySlot = useMemo(
     () =>
       suggestedSlots.map((slot) => {
         const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
         const name = entry?.name ?? slot.exercise;
+        const range = `${slot.reps[0]}–${slot.reps[1]}`;
         const kg = topSets.map.get(name.toLowerCase())?.weight ?? null;
-        if (kg == null || kg <= 0) return null;
-        return String(roundDisplayWeight(toDisplayWeight(kg, unit)));
+        if (kg == null || kg <= 0) return { figure: range, muted: true };
+        return {
+          figure: `${roundDisplayWeight(toDisplayWeight(kg, unit))} × ${range}`,
+          muted: false,
+        };
       }),
     [suggestedSlots, topSets, unit],
   );
@@ -203,10 +235,16 @@ export default function HomeScreen() {
         </Text>
       ) : null}
 
-      {/* THE DAY REGISTER — the day's plan as ruled rows wearing
-          the screen's one 2px rule: name · air · the prefill
-          weight. The session's numbers, stated before you start. */}
+      {/* THE PRESCRIPTION — the day's plan as ruled rows wearing the
+          screen's one 2px rule: name · air · prefill × rep range.
+          The session's numbers, stated complete before you start;
+          the size line above the rule says how long it runs. */}
       <View style={styles.block}>
+        {sizeLine ? (
+          <Text style={[styles.sizeLine, { color: colors.textMuted }]} testID="home-size-line">
+            {sizeLine}
+          </Text>
+        ) : null}
         <View style={[styles.dayRegister, { borderTopColor: colors.text }]} testID="home-board">
           {suggestedSlots.length === 0 ? (
             <Text style={[styles.registerEmpty, { color: colors.textMuted }]}>
@@ -220,7 +258,8 @@ export default function HomeScreen() {
                 <RegisterLine
                   key={slot.exercise + i}
                   label={name}
-                  figure={prefillBySlot[i]}
+                  figure={prefillBySlot[i].figure}
+                  figureTone={prefillBySlot[i].muted ? 'muted' : 'ink'}
                   testID={`home-board-row-${i}`}
                   figureTestID={`home-board-figure-${i}`}
                 />
@@ -240,6 +279,23 @@ export default function HomeScreen() {
         </MobilePrimaryButton>
       </View>
 
+      {/* THE WEEK LINE — the browser's second question answered
+          without a tap: the current week as printed figures (session
+          counts, today in red), one tap through to THE LEDGER. The
+          loading posture asserts nothing — it prints when the read
+          succeeds, never a wall of dots impersonating a settled
+          week. */}
+      {activityQuery.isSuccess ? (
+        <View style={styles.block}>
+          <SectionWhisper>THE WEEK</SectionWhisper>
+          <WeekLine
+            sessions={activityQuery.data ?? []}
+            onPress={navigateToAnalytics}
+            testID="home-week"
+          />
+        </View>
+      ) : null}
+
       {/* The jump rows — the Desk's only chrome, each with its fact. */}
       <View style={[styles.block, styles.jumpStack]}>
         {jumpLine(
@@ -253,14 +309,6 @@ export default function HomeScreen() {
           `${SYSTEM_EXERCISES.length} lifts`,
           navigateToExerciseDatabase,
           'home-index-library',
-        )}
-        {jumpLine(
-          'Analytics',
-          summaryQuery.data && summaryQuery.data.thisWeekSessions > 0
-            ? `this week · ${summaryQuery.data.thisWeekSessions}`
-            : null,
-          navigateToAnalytics,
-          'home-index-analytics',
         )}
         {jumpLine(
           'Progress',
@@ -333,6 +381,12 @@ const styles = StyleSheet.create({
   gapNote: {
     ...theme.typography.mobileLedger,
     marginTop: 10,
+  },
+  // The prescription's size line — furniture caps above the 2px rule
+  // (the running head above the printed heading rule).
+  sizeLine: {
+    ...theme.typography.mobileEyebrow,
+    marginBottom: 8,
   },
   // THE DAY REGISTER — the day's lines wearing the screen's one 2px
   // rule (the printed heading rule). No panel: ground + rule + lines.

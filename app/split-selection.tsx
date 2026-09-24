@@ -145,15 +145,21 @@ export default function SplitSelectionScreen() {
 
   // Preview the day's slots with standing substitutions applied.
   const previewSlots = resolveSlots(split, draftDay, session, programOverrides, edition);
-  // The preview register's figures — the shared top-set derivation in
-  // display units (the same rule that arms the Floor); a bodyweight
-  // lift carries no figure.
+  // The preview register's figures — the shared top-set derivation
+  // joined to the programmed rep range, in display units (the same
+  // prescription grammar as home's day register: one language,
+  // stated twice where the pick needs its feedback); a bodyweight
+  // lift carries the range alone, muted.
   const previewPrefills = previewSlots.map((slot) => {
     const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
     const name = entry?.name ?? slot.exercise;
+    const range = `${slot.reps[0]}–${slot.reps[1]}`;
     const kg = topSets.map.get(name.toLowerCase())?.weight ?? null;
-    if (kg == null || kg <= 0) return null;
-    return String(roundDisplayWeight(toDisplayWeight(kg, unit)));
+    if (kg == null || kg <= 0) return { figure: range, muted: true };
+    return {
+      figure: `${roundDisplayWeight(toDisplayWeight(kg, unit))} × ${range}`,
+      muted: false,
+    };
   });
   // The day's targets — the distinct primary muscle groups across the
   // preview slots, in slot order (metadata as structure, computed at
@@ -286,9 +292,9 @@ export default function SplitSelectionScreen() {
         </Text>
       </View>
 
-      {/* THE PLAN — the preview as ruled rows under a hairline:
-          name · air · the prefill weight. The same composition as
-          home's day register: one language, stated twice where the
+      {/* THE PLAN — the preview as ruled rows under the 2px rule:
+          name · air · prefill × rep range. The same composition as
+          home's prescription: one language, stated twice where the
           pick needs its feedback. */}
       <View style={styles.block}>
         {previewSlots.length === 0 ? (
@@ -305,7 +311,8 @@ export default function SplitSelectionScreen() {
                 <RegisterLine
                   key={slot.exercise + i}
                   label={name}
-                  figure={previewPrefills[i]}
+                  figure={previewPrefills[i].figure}
+                  figureTone={previewPrefills[i].muted ? 'muted' : 'ink'}
                   testID={`funnel-row-${i}`}
                   figureTestID={`funnel-figure-${i}`}
                 />
