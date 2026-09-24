@@ -127,6 +127,27 @@
 > figures and re-bucket on the range pick; the walk's mock serves
 > deterministic weigh-ins). Light + dark clean, vitest 870/870.
 
+> **REVISION — THE UPCENDING, PASS FOUR: ONE RED, ONE MEANING (the
+> seventeenth pass, concluded).** The receipt marked every session's
+> heaviest set in record red — a session max in redface, red
+> wallpaper on every receipt, and (after pass two) a second meaning
+> for the same mark two screens from the Floor. The mend: a set
+> wears red iff its loaded weight beats THE PRIOR RECORD — the
+> all-time top per exercise name from sessions that started
+> strictly before the one being viewed (`derivePriorTopSets`,
+> services, pinned by unit tests: strict cutoff, bodyweight
+> contributes nothing, empty history). The receipt cannot inflate
+> its own bar — the Floor's law, mirrored. A quiet session prints a
+> quiet receipt; a PR session shows exactly the beating sets, each
+> labeled for screen readers.
+>
+> Held by choice, not by precedent: THE TIMETABLE and THE SPLIT LAB
+> survive the upending untouched — both walk green in both modes
+> (the lab walkers re-pinned: the PPL starter grew A/B days), and
+> nothing on either surface failed the three-questions test hard
+> enough to spend a change. The GATE and the DIRECTORY keep their
+> twelfth/thirteenth-pass verdicts — sighted then, unchanged now.
+
 > **REVISION — THE EDITORIAL PASS (the sixteenth pass; the visible
 > amendment).** The owner's verdict on the atelier pass: real craft,
 > invisible at arm's length — "I can't even tell what changed." This
