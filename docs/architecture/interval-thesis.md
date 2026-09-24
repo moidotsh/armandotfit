@@ -62,6 +62,41 @@
 > Verified by `.shots/upend-home-walk.ts` (49 probes green, both
 > modes + SE) and the standing suite with the amended red probe.
 
+> **REVISION — THE UPCENDING, PASS TWO: THE RECORD IN THE ROOM (the
+> seventeenth pass, continued).** Two decisions, one mend:
+>
+> 1. **THE RECORD IN THE ROOM (the Floor).** The spec sheet's
+>    number-to-beat and the bests register both spoke red — but the
+>    moment a set BEAT the record, the Floor printed it in the same
+>    ink as every other done set. Now a logged set that beats the
+>    all-time top for its exercise name (from settled history only —
+>    the draft hasn't saved, so it cannot inflate its own bar) wears
+>    the RECORD mark on its ledger figure (redText; the ordinal
+>    stays ink — the mark is the figure, never its label). The
+>    top-set rule (max weight, ties → the later set) is the SAME
+>    derivation that prefillls the bar and ranks the bests — one
+>    rule, stated everywhere it matters. A first-ever set beats
+>    nothing (the bests register lists it as the current best — a
+>    different sentence). Strictly `>`: tying the record is not
+>    beating it. The one-field law, the re-weight, and the still
+>    system are untouched — the mark is ink, spent at LOG.
+> 2. **THE PICKER PAYS ITS SE DEBT.** The archetype description
+>    sentence ("Two sessions today (morning + evening).") died — it
+>    explained what the segments, the AM/PM measure, and the preview
+>    register already say, and its 26px was the difference between
+>    GO inside and outside the SE fold. The 490px law pays by
+>    deletion, not by squeeze (the sight amendment's precedent).
+>    The violation was pre-existing (probe-verified failing on the
+>    untouched tree).
+> 3. **MEND:** the plate-flip label printed its quotes ('1 · 2' —
+>    JSX text children are literal). It prints `1 · 2`.
+>
+> **LANDING.** One commit (`c3a8f75f8`), gated; the walk grew two
+> probes — the record mark on a beating set (figure redText,
+> ordinal ink) and the ledger keeps its ranks (an under-record set
+> stays ink while the record row holds red). Light + dark + SE
+> green; vitest 870/870.
+
 > **REVISION — THE EDITORIAL PASS (the sixteenth pass; the visible
 > amendment).** The owner's verdict on the atelier pass: real craft,
 > invisible at arm's length — "I can't even tell what changed." This
