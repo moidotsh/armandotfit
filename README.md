@@ -61,13 +61,13 @@ The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 13-audit pre-co
 
 | Route | Role |
 |---|---|
-| `/` | Home — the day's plan, streak, recent sessions, quick actions |
+| `/` | Home — the day's prescription (prefill × rep range), the week line, recent sessions |
 | `/split-selection` | Pick split (one-a-day / AM-PM) + day + AM/PM → start session |
 | `/workout-detail` | The Floor (live session) or the Receipt (read-only `?id=`) |
 | `/program` | The timetable — the full AM/PM split, slots + Rx |
 | `/exercise-database`, `/exercise-detail` | The directory (zone lines) + spec sheet (trajectory chart, number to beat) |
 | `/progression` | The records — streak, the gauge wall, PR timeline |
-| `/analytics` | The ledger — consistency grid, muscle share, weekly volume (7/30/90 ranges) |
+| `/analytics` | The ledger — share donut, top-lift lines, weekly volume, the lifetime calendar, bodyweight trend (7/30/90 ranges) |
 | `/login`, `/register`, `/forgot-password`, `/settings` | Shell auth + preferences (theme, weight unit kg/lb, rest default, rest days, install) |
 | `/dev/premium` | Design-system showcase (dev only) |
 
