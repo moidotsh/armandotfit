@@ -27,11 +27,11 @@ import { SectionWhisper } from './SectionWhisper';
 import { NextStation } from './NextStation';
 import { QueryErrorNote } from './QueryErrorNote';
 import { useToast, useAppTheme } from '../../context';
-import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags } from '../../hooks';
+import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags, useRecentSessionDetails } from '../../hooks';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/react-query';
 import { navigateToRegister, navigateToWorkoutDetail, safeGoBack } from '../../navigation';
-import { resolveSlots, sumVolume, WorkoutService } from '../../services';
+import { resolveSlots, sumVolume, WorkoutService, derivePriorTopSets } from '../../services';
 import { bodyweightAsOf } from '../../utils/bodyweight';
 import { getWeightHistory } from '../../utils/supabase/repositories';
 import {
@@ -67,6 +67,19 @@ export function Receipt({ id }: ReceiptProps) {
   const unit = useWeightUnit();
   const existingQuery = useWorkoutDetail(id);
   const deleteSessionMutation = useDeleteSession();
+  // THE PRIOR RECORD (the upending pass): the all-time top per
+  // exercise name from sessions that STARTED BEFORE this one — the
+  // receipt's own rows never inflate their own baseline (the Floor's
+  // law, mirrored: the draft cannot inflate its own bar). Shares the
+  // history cache; a slice is all the baseline needs.
+  const historyQuery = useRecentSessionDetails(60);
+  const priorRecordKg = React.useMemo(
+    () =>
+      existingQuery.data
+        ? derivePriorTopSets(historyQuery.data ?? [], existingQuery.data.startedAt)
+        : new Map<string, number>(),
+    [historyQuery.data, existingQuery.data],
+  );
 
   // ── SET EDITING (the receipt's edit affordances) ──────────────────
   const [editingSet, setEditingSet] = useState<{
@@ -398,14 +411,19 @@ export function Receipt({ id }: ReceiptProps) {
                 </Text>
               ) : null}
 
-              {/* The session's best set wears the record red — the
-                  sanctioned job (the receipt's ONLY red mark per
-                  exercise; the tonnage stays ink: settled fact). */}
+              {/* A set wears the record red when it beats THE PRIOR
+                  RECORD — the all-time top from sessions that started
+                  before this one (the Floor's mark, settled). One red
+                  meaning everywhere: a session-max that beats nothing
+                  prints ink (the old rule wallpapered red on every
+                  receipt's heaviest set); the tonnage stays ink
+                  (settled fact). */}
               {(() => {
                 // THE BODYWEIGHT ROW — a set with no loaded weight on a
-                // bodyweight exercise reads 'BW·75 × 20' (the effective
-                // load), not '0 × 20' (the raw null). The record red
-                // still rides the best display weight.
+                // bodyweight exercise reads 'a × 20' (bodyweight), an
+                // added load 'a+62.5 × 8' — never '0 × 20' (the raw
+                // null). The record red rides LOADED weight only (the
+                // Floor's rule).
                 const entry = SYSTEM_EXERCISES.find(
                   (sys) => sys.name === ex.exerciseName,
                 );
@@ -414,25 +432,15 @@ export function Receipt({ id }: ReceiptProps) {
                   bwFactor != null && bodyweightKg != null
                     ? bwFactor * bodyweightKg
                     : null;
-                const bestWeight = Math.max(
-                  ...ex.sets.map((s) =>
-                    toDisplayWeight(
-                      s.weight != null && s.weight > 0
-                        ? s.weight
-                        : (bwEffKg ?? 0),
-                      unit,
-                    ),
-                  ),
-                  0,
-                );
+                const priorBest = priorRecordKg.get(ex.exerciseName) ?? 0;
                 // ── ADD SET — the missed set joins the receipt ──
                 const lastSet = ex.sets[ex.sets.length - 1];
                 return (
                   <>
                     {ex.sets.map((s) => {
                       const hasLoad = s.weight != null && s.weight > 0;
-                      const setDisplayKg = hasLoad ? s.weight! : bwEffKg;
                       const isBw = bwEffKg != null;
+                      const isRecord = hasLoad && priorBest > 0 && s.weight! > priorBest;
                       const figure = isBw
                         ? hasLoad
                           ? `a+${roundDisplayWeight(toDisplayWeight(s.weight!, unit))} × ${s.reps}`
@@ -549,7 +557,7 @@ export function Receipt({ id }: ReceiptProps) {
                             })
                           }
                           accessibilityRole="button"
-                          accessibilityLabel={`Edit set ${s.position}: ${figure}`}
+                          accessibilityLabel={`Edit set ${s.position}: ${figure}${isRecord ? ' — personal record' : ''}`}
                           style={({ pressed }) => [
                             { minHeight: 44, justifyContent: 'center' },
                             pressed ? { opacity: PRESS_DIP } : null,
@@ -560,13 +568,7 @@ export function Receipt({ id }: ReceiptProps) {
                             monoLabel
                             label={String(ex.sets.indexOf(s) + 1)}
                             figure={figure}
-                            figureTone={
-                              setDisplayKg != null &&
-                              toDisplayWeight(setDisplayKg, unit) === bestWeight &&
-                              bestWeight > 0
-                                ? 'record'
-                                : 'ink'
-                            }
+                            figureTone={isRecord ? 'record' : 'ink'}
                           />
                         </Pressable>
                       );

@@ -131,4 +131,37 @@ export class ProgressionService {
   }
 }
 
+/**
+ * THE PRIOR RECORD (the upending pass): the all-time top LOADED weight
+ * per exercise name, from sessions that started strictly BEFORE
+ * `startedBeforeIso`. The record mark's baseline on the Floor and the
+ * receipt — the session being viewed can never inflate its own bar.
+ * Bodyweight sets (weight 0/null) contribute nothing: the mark rides
+ * loaded iron only, the same rule everywhere.
+ */
+export function derivePriorTopSets(
+  sessions: ReadonlyArray<{
+    startedAt: string;
+    exercises: ReadonlyArray<{
+      exerciseName: string;
+      sets: ReadonlyArray<{ weight: number | null }>;
+    }>;
+  }>,
+  startedBeforeIso: string,
+): Map<string, number> {
+  const cutoff = new Date(startedBeforeIso).getTime();
+  const map = new Map<string, number>();
+  for (const session of sessions) {
+    if (new Date(session.startedAt).getTime() >= cutoff) continue;
+    for (const ex of session.exercises) {
+      if (!ex.exerciseName) continue;
+      for (const set of ex.sets) {
+        const w = set.weight ?? 0;
+        if (w > 0) map.set(ex.exerciseName, Math.max(map.get(ex.exerciseName) ?? 0, w));
+      }
+    }
+  }
+  return map;
+}
+
 export default ProgressionService;

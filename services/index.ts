@@ -8,6 +8,7 @@ export {
   ProgressionService,
   computeStreaks,
   computePersonalBests,
+  derivePriorTopSets,
   type PersonalBest,
 } from './progressionService';
 export { AnalyticsService } from './analyticsService';
