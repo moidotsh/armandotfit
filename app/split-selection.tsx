@@ -60,10 +60,6 @@ import type { PreferredSplit } from '../shared/types';
 
 const SPLIT_SEGMENTS = WORKOUT_SPLIT_LIST.map((s) => ({ value: s.id, label: s.label }));
 
-function splitDescription(id: string): string {
-  return WORKOUT_SPLIT_LIST.find((s) => s.id === id)?.description ?? '';
-}
-
 export default function SplitSelectionScreen() {
   const { colors } = useAppTheme();
   const startSession = useWorkoutStore((s) => s.startSession);
@@ -262,7 +258,12 @@ export default function SplitSelectionScreen() {
           controls ride the standard segmented grammar (the chromeless
           variant left the unselected options reading as bare labels,
           not tappables — the sight amendment unifies the affordance
-          voice with settings' measures). */}
+          voice with settings' measures). The description sentence is
+          DELETED (the upending pass): it explained what the segments,
+          the AM/PM measure, and the preview register already say —
+          and its 26px was the difference between GO inside and
+          outside the SE fold (the 490px law pays by deletion, not by
+          squeeze — the sight amendment's precedent). */}
       <View style={styles.block}>
         <SegmentedControl<string>
           variant="selection"
@@ -287,9 +288,6 @@ export default function SplitSelectionScreen() {
             />
           </View>
         ) : null}
-        <Text style={[styles.splitDescription, { color: colors.textMuted }]} numberOfLines={1}>
-          {splitDescription(splitChoice)}
-        </Text>
       </View>
 
       {/* THE PLAN — the preview as ruled rows under the 2px rule:
@@ -379,10 +377,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   sessionRow: {
-    marginTop: 8,
-  },
-  splitDescription: {
-    ...theme.typography.mobileLedger,
     marginTop: 8,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: 4 },

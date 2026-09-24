@@ -510,6 +510,15 @@ export function Floor() {
     setArmedByExercise((prev) => ({ ...prev, [exercise.localId]: next }));
   };
 
+  // THE RECORD IN THE ROOM — the all-time top set for this exercise
+  // name from settled history (this draft hasn't saved, so it cannot
+  // inflate its own bar). A logged set that beats it wears the
+  // RECORD mark; a first-ever set beats nothing (the bests register
+  // lists it as the current best — a different sentence).
+  const recordKg = exercise
+    ? armedPrefill.get(exercise.exerciseName.toLowerCase())?.weight ?? null
+    : null;
+
   // PREDICTIVE ARMING — the field the recent sets were actually
   // changing: reps held while weight moved → arm weight (you're
   // loading); weight held while reps moved → arm reps (you're
@@ -1012,7 +1021,7 @@ export function Floor() {
                             </View>
                             {entry.imageB ? (
                               <Text style={[styles.formPlateWord, { color: colors.textMuted }]}>
-                                '1 · 2'
+                                1 · 2
                               </Text>
                             ) : null}
                           </Pressable>
@@ -1051,10 +1060,18 @@ export function Floor() {
 
               {/* THE LEDGER — every logged set a ruled row: ordinal
                   left, `weight × reps` right, remove riding the far
-                  edge. */}
+                  edge. A set that beats the all-time top (settled
+                  history only — this draft hasn't saved) wears the
+                  RECORD mark on its figure: the number to beat,
+                  beaten, printed the moment it happens (the top-set
+                  rule — max weight — is the same derivation that
+                  prefillls the bar and ranks the bests). */}
               {exercise.sets.length > 0 ? (
                 <View style={styles.ledger}>
-                  {exercise.sets.map((s) => (
+                  {exercise.sets.map((s) => {
+                    const isRecord =
+                      recordKg != null && (s.weight ?? 0) > recordKg && (s.weight ?? 0) > 0;
+                    return (
                     <View
                       key={s.localId}
                       style={styles.ledgerLine}
@@ -1065,6 +1082,12 @@ export function Floor() {
                           monoLabel
                           label={String(s.position)}
                           figure={`${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} × ${s.reps ?? 0}`}
+                          figureTone={isRecord ? 'record' : 'ink'}
+                          accessibilityLabel={
+                            isRecord
+                              ? `Set ${s.position}, ${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} ${unit} × ${s.reps ?? 0} — personal record`
+                              : `Set ${s.position}, ${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} ${unit} × ${s.reps ?? 0}`
+                          }
                           testID={`stage-set-figure-${s.position}`}
                         />
                       </View>
@@ -1081,7 +1104,8 @@ export function Floor() {
                         <Text style={[styles.ledgerRemoveGlyph, { color: colors.textMuted }]}>×</Text>
                       </Pressable>
                     </View>
-                  ))}
+                    );
+                  })}
                 </View>
               ) : null}
 
