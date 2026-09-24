@@ -42,13 +42,14 @@ import {
   navigateToProgram,
   navigateToExerciseDatabase,
   navigateToProgression,
+  navigateToAnalytics,
 } from '../navigation';
 import {
   getSlotsForDay,
   getDayTitle,
   SYSTEM_EXERCISES,
   SYSTEM_EXERCISES_BY_SLUG,
-  MUSCLE_DISPLAY_NAMES,
+  MUSCLE_TO_REGION,
 } from '../shared/exercises';
 import { useSplitPreferenceStore, useWorkoutStore, useDeloadStore } from '../stores';
 import { useDashboardSummary, useRecentSessionDetails, useTopSetsByName, useWeightUnit } from '../hooks';
@@ -89,17 +90,29 @@ export default function HomeScreen() {
   );
   const dayTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;
 
-  // THE DAY'S TARGETS (the atelier pass): the distinct primary muscle
-  // groups across the suggested slots — the same derivation as the
-  // selector's fact line. The front page says what the day is AND what
-  // it trains; the statement names the day, the fact line carries its
-  // brief.
+  // THE DAY'S TARGETS, CONSOLIDATED TO REGIONS (the owner's
+  // correction): 'Upper Chest, Chest' is CHEST; 'Side Delts, Rear
+  // Delts' is DELT — the line states the day's regions, never a
+  // muscle census, and never wraps (factSingleLine below).
+  const REGION_WORD: Record<string, string> = {
+    'Upper Leg': 'Legs',
+    'Lower Leg': 'Calves',
+    Chest: 'Chest',
+    Delt: 'Delts',
+    Back: 'Back',
+    Arm: 'Arms',
+    Core: 'Core',
+  };
   const targetGroups = useMemo(() => {
-    const names = suggestedSlots
-      .map((slot) => SYSTEM_EXERCISES_BY_SLUG[slot.exercise]?.primaryMuscles[0])
-      .filter(Boolean)
-      .map((m) => MUSCLE_DISPLAY_NAMES[m!]);
-    return [...new Set(names)];
+    const regions = new Set<string>();
+    for (const slot of suggestedSlots) {
+      const muscles = SYSTEM_EXERCISES_BY_SLUG[slot.exercise]?.primaryMuscles ?? [];
+      for (const m of muscles) {
+        const region = MUSCLE_TO_REGION[m];
+        if (region) regions.add(region);
+      }
+    }
+    return [...regions].map((r) => REGION_WORD[r] ?? r);
   }, [suggestedSlots]);
 
   // The register rows' figures — the last TOP set per exercise name
@@ -180,6 +193,7 @@ export default function HomeScreen() {
           deload ? 'DELOAD' : null,
         ])}
         fact={targetGroups.length > 0 ? joinFacts(targetGroups) : null}
+        factSingleLine
       />
 
       {/* The long-gap honesty line — computed at read, one whisper. */}
@@ -239,6 +253,14 @@ export default function HomeScreen() {
           `${SYSTEM_EXERCISES.length} lifts`,
           navigateToExerciseDatabase,
           'home-index-library',
+        )}
+        {jumpLine(
+          'Analytics',
+          summaryQuery.data && summaryQuery.data.thisWeekSessions > 0
+            ? `this week · ${summaryQuery.data.thisWeekSessions}`
+            : null,
+          navigateToAnalytics,
+          'home-index-analytics',
         )}
         {jumpLine(
           'Progress',

@@ -26,6 +26,10 @@ export interface BoardHeadProps {
   statementTestID?: string;
   /** One fact line beneath — waits outside the statement's halo. */
   fact?: string | null;
+  /** The owner's amendment: the MUSCLES summary truncates to one
+   *  line (ellipsizes) — content facts elsewhere still wrap (a
+   *  wrapped fact is honest; a wrapped muscles list is clutter). */
+  factSingleLine?: boolean;
   /** Furniture caps above the statement (≤3 words). */
   whisper?: string | null;
   /** The whisper's read — red ink for the living position. */
@@ -40,6 +44,7 @@ export function BoardHead({
   statement,
   statementTestID,
   fact = null,
+  factSingleLine = false,
   whisper = null,
   whisperTone = 'quiet',
   variant = 'words',
@@ -75,9 +80,13 @@ export function BoardHead({
         {statement}
       </Text>
       {fact ? (
-        // Wraps, never ellipsizes (the sight amendment): the fact is
-        // content, and a fact line that truncates lies about the day.
-        <Text style={[styles.fact, { color: colors.textMuted }]}>
+        // Wraps, never ellipsizes (the sight amendment) — unless the
+        // caller spends factSingleLine (the muscles summary's one-line
+        // law; the owner's correction).
+        <Text
+          style={[styles.fact, { color: colors.textMuted }]}
+          numberOfLines={factSingleLine ? 1 : undefined}
+        >
           {fact}
         </Text>
       ) : null}
