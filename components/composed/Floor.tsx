@@ -447,7 +447,10 @@ export function Floor() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionDetails.data, exercise?.exerciseName, exercise?.tags.join(',')]);
 
-  const step = weightStep(unit);
+  // The engine replays STORAGE weights (kg) — the step must cross
+  // the unit boundary with them: 5 lb of iron is ~2.27 kg, NOT 5 kg
+  // (the bug that turned 50 lb − one step into "39 lb").
+  const step = fromDisplayWeight(weightStep(unit), unit);
   const originRange: readonly [number, number] = [
     targetRepsLow ?? 8,
     targetRepsHigh ?? 10,
@@ -870,72 +873,6 @@ export function Floor() {
                 </View>
               </View>
 
-              {/* THE WEIGHT — the notebook's verdict row. After the
-                  work (the station's sets reach its target), rate the
-                  weight FOR THIS RANGE: − too heavy · ✓ just right · +
-                  too light. The rating rides the logged exercise (not a
-                  tag); the NEXT line shows what the engine will serve
-                  next time — reps up, weight up, or holding. */}
-              {(targetSets > 0 ? exercise.sets.length >= targetSets : exercise.sets.length > 0) ? (
-                <View style={styles.ratingBlock} testID={`stage-rating-${exercise.localId}`}>
-                  <View style={styles.ratingRow}>
-                    <Text style={[styles.ratingWhisper, { color: colors.textMuted }]}>
-                      THE WEIGHT
-                    </Text>
-                    {([
-                      { r: 'heavy' as const, glyph: '\u2212', label: 'Too heavy — drop it' },
-                      { r: 'right' as const, glyph: '\u2713', label: 'Just right — hold' },
-                      { r: 'light' as const, glyph: '+', label: 'Too light — go up' },
-                    ]).map(({ r, glyph, label }) => (
-                      <Pressable
-                        key={r}
-                        onPress={() => setDraftExerciseRating(exercise.localId, r)}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Rate the weight: ${label}${exercise.rating === r ? ' (set)' : ''}`}
-                        hitSlop={6}
-                        style={({ pressed }) => [
-                          styles.ratingTap,
-                          pressed ? { opacity: PRESS_DIP } : null,
-                        ]}
-                        testID={`stage-rating-${r}`}
-                      >
-                        <Text
-                          style={[
-                            styles.ratingGlyph,
-                            {
-                              color: exercise.rating === r ? colors.text : colors.textMuted,
-                              fontWeight: exercise.rating === r ? '700' : '400',
-                            },
-                          ]}
-                        >
-                          {glyph}
-                        </Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                  {exercise.rating ? (
-                    <Text style={[styles.ratingNext, { color: colors.textSecondary }]} numberOfLines={1}>
-                      {(() => {
-                        const topNow = exercise.sets.reduce(
-                          (m, x) => Math.max(m, x.weight ?? 0),
-                          beforeRx.weight ?? 0,
-                        );
-                        const after = deriveProgression(originRange, [
-                          ...ratedHistory,
-                          { weight: topNow > 0 ? topNow : null, rating: exercise.rating },
-                        ], step);
-                        const w = after.weight != null
-                          ? `${roundDisplayWeight(toDisplayWeight(after.weight, unit))} ${unit}`
-                          : '—';
-                        const verb =
-                          after.mode === 'reps' ? 'REPS \u2191' : after.mode === 'weight' ? 'WEIGHT \u2191' : 'HOLDING';
-                        return `NEXT \u00b7 ${w} \u00d7 ${rangeLabel(after.range)} \u00b7 ${verb}`;
-                      })()}
-                    </Text>
-                  ) : null}
-                </View>
-              ) : null}
-
               {/* Tags — one whisper line; the editor opens one tap
                   deeper (tags prefill from last time; mid-set editing
                   is the exception, not the default). */}
@@ -1122,7 +1059,73 @@ export function Floor() {
                 </View>
               ) : null}
 
-              {index < exercises.length - 1 ? (
+              {/* THE WEIGHT — the notebook's verdict row. After the
+                  work (the station's sets reach its target), rate the
+                  weight FOR THIS RANGE: − too heavy · ✓ just right · +
+                  too light. The rating rides the logged exercise (not a
+                  tag); the NEXT line shows what the engine will serve
+                  next time — reps up, weight up, or holding. */}
+              {(targetSets > 0 ? exercise.sets.length >= targetSets : exercise.sets.length > 0) ? (
+                <View style={styles.ratingBlock} testID={`stage-rating-${exercise.localId}`}>
+                  <View style={styles.ratingRow}>
+                    <Text style={[styles.ratingWhisper, { color: colors.textMuted }]}>
+                      THE WEIGHT
+                    </Text>
+                    {([
+                      { r: 'heavy' as const, glyph: '\u2212', label: 'Too heavy — drop it' },
+                      { r: 'right' as const, glyph: '\u2713', label: 'Just right — hold' },
+                      { r: 'light' as const, glyph: '+', label: 'Too light — go up' },
+                    ]).map(({ r, glyph, label }) => (
+                      <Pressable
+                        key={r}
+                        onPress={() => setDraftExerciseRating(exercise.localId, r)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Rate the weight: ${label}${exercise.rating === r ? ' (set)' : ''}`}
+                        hitSlop={6}
+                        style={({ pressed }) => [
+                          styles.ratingTap,
+                          pressed ? { opacity: PRESS_DIP } : null,
+                        ]}
+                        testID={`stage-rating-${r}`}
+                      >
+                        <Text
+                          style={[
+                            styles.ratingGlyph,
+                            {
+                              color: exercise.rating === r ? colors.text : colors.textMuted,
+                              fontWeight: exercise.rating === r ? '700' : '400',
+                            },
+                          ]}
+                        >
+                          {glyph}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  {exercise.rating ? (
+                    <Text style={[styles.ratingNext, { color: colors.textSecondary }]} numberOfLines={1}>
+                      {(() => {
+                        const topNow = exercise.sets.reduce(
+                          (m, x) => Math.max(m, x.weight ?? 0),
+                          beforeRx.weight ?? 0,
+                        );
+                        const after = deriveProgression(originRange, [
+                          ...ratedHistory,
+                          { weight: topNow > 0 ? topNow : null, rating: exercise.rating },
+                        ], step);
+                        const w = after.weight != null
+                          ? `${roundDisplayWeight(toDisplayWeight(after.weight, unit))} ${unit}`
+                          : '—';
+                        const verb =
+                          after.mode === 'reps' ? 'REPS \u2191' : after.mode === 'weight' ? 'WEIGHT \u2191' : 'HOLDING';
+                        return `NEXT \u00b7 ${w} \u00d7 ${rangeLabel(after.range)} \u00b7 ${verb}`;
+                      })()}
+                    </Text>
+                  ) : null}
+                </View>
+              ) : null}
+
+              {index < exercises.length - 1 ?(
                 <NextStation
                   name={exercises[index + 1].exerciseName}
                   onPress={() => setStationIndex(index + 1)}
