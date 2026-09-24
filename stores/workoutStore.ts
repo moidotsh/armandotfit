@@ -179,6 +179,9 @@ interface WorkoutState {
    * `draft.exercises.length === 0` — this overwrites unconditionally.
    */
   hydrateFromSplit: (slots: ResolvedSlot[]) => void;
+  /** Append the other window's slots to the RUNNING session (the
+   *  Floor's ADD PM/AM EXERCISES link — one big session). */
+  appendDraftSlots: (slots: ResolvedSlot[]) => void;
   removeExerciseFromDraft: (localId: string) => void;
   /** CARDIO (pass C1): add a machine station to the draft. */
   addCardioToDraft: (station: CardioStationKey) => string;
@@ -459,6 +462,27 @@ export const useWorkoutStore = create<WorkoutState>()(
           draft: { ...draft, exercises },
           selectedExerciseLocalId: exercises[0]?.localId ?? null,
         });
+      },
+
+      appendDraftSlots: (slots) => {
+        const draft = get().draft;
+        if (!draft) return;
+        const base = draft.exercises.length;
+        const added: DraftExercise[] = slots.map((slot, i) => {
+          const catalog = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
+          return {
+            localId: newLocalId(),
+            exerciseSlug: slot.exercise,
+            exerciseName: catalog?.name ?? slot.exercise,
+            position: base + i + 1,
+            tags: [...slot.suggestedTags],
+            targetRx: rxLabel(slot),
+            note: null,
+            sets: [],
+          };
+        });
+        // The current station STAYS selected — appending is not a jump.
+        set({ draft: { ...draft, exercises: [...draft.exercises, ...added] } });
       },
 
       removeExerciseFromDraft: (localId) => {

@@ -72,6 +72,11 @@ async function main() {
         '--access', 'public',
         '--cache-control-max-age', CACHE_MAX_AGE,
         '--allow-overwrite',
+        // One advanced operation per file: multipart (the CLI default)
+        // bills ~3 ops/file (start + parts + complete) — 1,354 files
+        // would blow the Hobby 2K/month cap in one run. Single PUTs
+        // land at ~1.4K, under it.
+        '--multipart', 'false',
         ...passthrough,
       ]);
       done += 1;

@@ -50,10 +50,11 @@ import {
 } from '../../navigation';
 import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, type TopSetFact } from '../../hooks';
 import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight, weightStep, hapticImpactLight, hapticImpactMedium, hapticNotificationSuccess, joinFacts } from '../../utils';
-import { useWorkoutStore, useIsOnline, useDeloadStore } from '../../stores';
-import { sessionSaveQueue } from '../../services';
-import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED ,
+import { useWorkoutStore, useIsOnline, useDeloadStore, useSplitPreferenceStore, useProgramOverrideStore } from '../../stores';
+import { sessionSaveQueue, resolveSlots } from '../../services';
+import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED,
   plateUrl,
+  tagAxisOf,
 } from '../../shared/exercises';
 import { plateOffsetFor } from '../../shared/exercises/plateOffsets';
 import {
@@ -167,6 +168,26 @@ export function Floor() {
   const removeExerciseFromDraft = useWorkoutStore(
     (s) => s.removeExerciseFromDraft,
   );
+  const appendDraftSlots = useWorkoutStore((s) => s.appendDraftSlots);
+  const draftSession = useWorkoutStore((s) => s.draft);
+  const programEdition = useSplitPreferenceStore((s) => s.edition);
+  const programOverrides = useProgramOverrideStore((s) => s.overrides);
+  // THE OTHER WINDOW — the Floor's one big session: on a two-a-day,
+  // the window you did NOT start is one quiet link away (an 8pm AM
+  // offers PM — rotation, not clock). Hidden once its stations ride
+  // the draft.
+  const otherWindow =
+    draftSession?.splitType === 'twoADay' &&
+    draftSession.day != null &&
+    !draftSession.adHoc
+      ? draftSession.sessionMode === 'am'
+        ? ('pm' as const)
+        : ('am' as const)
+      : null;
+  const otherSlots =
+    otherWindow && draftSession?.day != null
+      ? resolveSlots('twoADay', draftSession.day, otherWindow, programOverrides, programEdition)
+      : [];
   const toggleDraftExerciseTag = useWorkoutStore(
     (s) => s.toggleDraftExerciseTag,
   );
@@ -337,6 +358,11 @@ export function Floor() {
   );
 
   const exercises = draft?.exercises ?? [];
+  // The other window's stations are missing until one of them rides
+  // the draft (the ADD link's visibility rule).
+  const otherMissing =
+    otherSlots.length > 0 &&
+    !exercises.some((e) => otherSlots.some((slot) => slot.exercise === e.exerciseSlug));
   const index = Math.min(stationIndex, Math.max(0, exercises.length - 1));
   const exercise = exercises[index] ?? null;
   const plateOffset = plateOffsetFor(exercise?.exerciseSlug ?? '');
@@ -672,6 +698,18 @@ export function Floor() {
                 />
               );
             })}
+            {/* THE OTHER WINDOW'S TAIL — one big session: the quiet
+                link that appends the PM (or AM) block to THIS session.
+                Disappears once its stations ride the board. */}
+            {mapCollapsed || !(otherMissing && otherWindow) ? null : (
+              <NextStation
+                label={`${otherWindow.toUpperCase()} BLOCK`}
+                name={`Add ${otherWindow.toUpperCase()} exercises`}
+                onPress={() => appendDraftSlots(otherSlots)}
+                accessibilityLabel={`Add the ${otherWindow.toUpperCase()} exercises to this session`}
+                testID={`floor-add-${otherWindow}`}
+              />
+            )}
             {mapCollapsed ? null : cardioDrafts.map((c, i) => {
               const isActive = instrument === 'cardio' && activeCardio?.localId === c.localId;
               const total = c.rows.reduce((n, r) => n + r.durationSec, 0);
@@ -1073,6 +1111,8 @@ export function Floor() {
             weight={armed.weight}
             reps={armed.reps}
             repsHint={repsHint}
+            grade={tagAxisOf('good')?.members.find((t) => exercise.tags.includes(t)) ?? null}
+            onGrade={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
             rest={restLine}
             suggestArm={suggestArm}
             earnedStep={earnedStep}

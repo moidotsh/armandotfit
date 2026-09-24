@@ -104,6 +104,7 @@ export {
   getNextSplitDay,
   suggestNextSplitDay,
   suggestSessionWindow,
+  nextDefaultSessionMode,
   parseDayId,
   isRestDay,
   getUpcomingDays,

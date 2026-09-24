@@ -10,6 +10,7 @@ import {
   suggestSessionWindow,
 } from '../../constants';
 import { TAG_AXES, tagsWithAxisRespected } from '../../shared/exercises';
+import { nextDefaultSessionMode } from '../../constants';
 
 describe('getNextSplitDay', () => {
   it('wraps 4 → 1 (the historical off-by-one produced day 5 — empty slots)', () => {
@@ -109,5 +110,21 @@ describe('TAG_AXES — the qualifier axes', () => {
         seen.set(member, axis.id);
       }
     }
+  });
+});
+
+
+// ── The rotation default — the picker hands you the session you
+// haven't just done (8pm AM still flips to PM; never the clock). ────
+
+describe('nextDefaultSessionMode', () => {
+  it('two-a-day rotates: AM begets PM, PM begets AM', () => {
+    expect(nextDefaultSessionMode('twoADay', 'am')).toBe('pm');
+    expect(nextDefaultSessionMode('twoADay', 'pm')).toBe('am');
+  });
+
+  it('one-a-day keeps the picked mode', () => {
+    expect(nextDefaultSessionMode('oneADay', 'am')).toBe('am');
+    expect(nextDefaultSessionMode('oneADay', 'pm')).toBe('pm');
   });
 });

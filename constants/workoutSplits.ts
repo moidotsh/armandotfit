@@ -130,6 +130,19 @@ export function suggestSessionWindow(now: Date = new Date()): SessionMode {
 }
 
 /**
+ * The picker's next default window after a start: two-a-day ROTATES —
+ * an 8pm AM still flips the next default to PM (rotation, not clock;
+ * the show-up-late-and-do-both night never toggles twice). One-a-day
+ * keeps whatever was picked.
+ */
+export function nextDefaultSessionMode(
+  split: PreferredSplit,
+  started: SessionMode,
+): SessionMode {
+  return split === 'twoADay' ? (started === 'am' ? 'pm' : 'am') : started;
+}
+
+/**
  * Parses a split-day id back to its 1..4 integer. Throws on bad input —
  * signals a programmer error (selectedId out of range), not user input.
  */

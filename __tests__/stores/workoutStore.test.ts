@@ -77,6 +77,40 @@ describe('workoutStore', () => {
     ]);
   });
 
+  it('appendDraftSlots appends the other window without disturbing the current station', () => {
+    useWorkoutStore.getState().startSession({ splitType: 'twoADay', day: 1, sessionMode: 'am' });
+    useWorkoutStore.getState().hydrateFromSplit([
+      { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+    ]);
+    const before = useWorkoutStore.getState().draft!.exercises;
+    expect(before.length).toBeGreaterThan(0);
+    const selected = useWorkoutStore.getState().selectedExerciseLocalId;
+    const pmSlots = [
+      { exercise: 'machine-incline-press' as const, suggestedTags: [], sets: [3, 3] as [number, number], reps: [8, 10] as [number, number] },
+      { exercise: 'cable-lateral-raise' as const, suggestedTags: ['egyptian'], sets: [3, 3] as [number, number], reps: [15, 20] as [number, number] },
+    ];
+    useWorkoutStore.getState().appendDraftSlots(pmSlots);
+    const after = useWorkoutStore.getState().draft!.exercises;
+    expect(after.length).toBe(before.length + 2);
+    // Positions continue the sequence; the tail carries the appended.
+    expect(after[after.length - 1].position).toBe(after.length);
+    expect(after[after.length - 2].targetRx).not.toBeNull();
+    // The current station STAYS selected — appending is not a jump.
+    expect(useWorkoutStore.getState().selectedExerciseLocalId).toBe(selected);
+  });
+
+  it('the grade evicts its siblings — one verdict per station', () => {
+    useWorkoutStore.getState().startSession({ splitType: 'oneADay', day: 1 });
+    const localId = useWorkoutStore.getState().addExerciseToDraft({ exerciseName: 'Leg Press' });
+    useWorkoutStore.getState().toggleDraftExerciseTag(localId, 'good');
+    expect(useWorkoutStore.getState().draft!.exercises[0].tags).toEqual(['good']);
+    useWorkoutStore.getState().toggleDraftExerciseTag(localId, 'go-up');
+    expect(useWorkoutStore.getState().draft!.exercises[0].tags).toEqual(['go-up']);
+    useWorkoutStore.getState().toggleDraftExerciseTag(localId, 'too-heavy');
+    expect(useWorkoutStore.getState().draft!.exercises[0].tags).toEqual(['too-heavy']);
+  });
+
   it('toLogSessionDTO drops half-filled sets and threads tags', () => {
     useWorkoutStore.getState().startSession({ splitType: 'oneADay', day: 1 });
     const localId = useWorkoutStore.getState().addExerciseToDraft({
