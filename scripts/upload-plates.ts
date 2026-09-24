@@ -21,7 +21,10 @@ import { join } from 'path';
 import { spawn } from 'child_process';
 
 const PLATES_DIR = join(import.meta.dir, '..', 'public', 'exercise-plates');
-const CACHE = 'public, max-age=31536000, immutable';
+// One-year max-age (the CLI's --cache-control-max-age, in seconds) —
+// plates only change by deliberate regeneration, and re-runs pass
+// --allow-overwrite to replace same-path blobs.
+const CACHE_MAX_AGE = '31536000';
 const CONCURRENCY = 8;
 
 const passthrough = process.argv.slice(2);
@@ -67,7 +70,8 @@ async function main() {
         'blob', 'put', join('public', 'exercise-plates', file),
         '--pathname', `exercise-plates/${file}`,
         '--access', 'public',
-        '--cache-control', CACHE,
+        '--cache-control-max-age', CACHE_MAX_AGE,
+        '--allow-overwrite',
         ...passthrough,
       ]);
       done += 1;
