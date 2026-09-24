@@ -17,7 +17,8 @@
     "prepare": "husky",
     "verify:web-build": "bun run scripts/verify-web-build.ts",
     "check:shell-drift": "bun run scripts/check-shell-drift.ts",
-    "plates:upload": "bun run scripts/upload-plates.ts"
+    "plates:upload": "bun run scripts/upload-plates.ts",
+    "plates:deploy-static": "bun run scripts/deploy-plates-static.ts"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",

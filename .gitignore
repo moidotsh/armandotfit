@@ -46,3 +46,6 @@ __screenshots__/
 
 # NOTE: bun.lock IS committed. Only package-lock.json and yarn.lock are
 # forbidden (audit-pattern-compliance enforces "only bun.lock at root").
+.vercel
+.env*
+.plates-static/
