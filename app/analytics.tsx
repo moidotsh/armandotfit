@@ -20,8 +20,8 @@ import { LoadingSpinner } from '../components/primitives';
 import { BoardShell, BoardHead, QueryErrorNote, RegisterLine, SectionWhisper, SharePie, TrendGraph } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
-import { useAnalyticsHistory, useRecentSessionDetails, useActivityLog } from '../hooks';
-import { deriveMuscleShare, deriveTrajectory, MUSCLE_GROUPS } from '../services';
+import { useAnalyticsHistory, useRecentSessionDetails, useActivityLog, useBodyweightHistory } from '../hooks';
+import { deriveMuscleShare, deriveTrajectory, MUSCLE_GROUPS, sumVolume } from '../services';
 import { AnalyticsService } from '../services';
 import { addDays, toDisplayWeight, roundDisplayWeight, joinFacts } from '../utils';
 import { navigateToExerciseDetail } from '../navigation';
@@ -29,6 +29,7 @@ import { SYSTEM_EXERCISES, MUSCLE_DISPLAY_NAMES } from '../shared/exercises';
 import { useWeightUnit } from '../hooks';
 import { BLOCK_GAP, INTERVAL, theme, PAGE_GUTTER } from '../constants';
 import { formatCardioMinutes } from '../shared/exercises/cardio';
+import { bodyweightAsOf } from '../utils/bodyweight';
 import type { DayActivity } from '../shared/types';
 
 type Range = 7 | 30 | 90;
@@ -109,6 +110,58 @@ export default function AnalyticsScreen() {
     return AnalyticsService.bucketWeekly(historyQuery.data);
   }, [historyQuery.data]);
 
+  // THE ENGINE, MACRO — weekly tonnage (the upending pass): the
+  // per-lift lines above are the micro; the volume line answers the
+  // macro question ("am I doing more work?"). Same tonnage convention
+  // as the receipt (bodyweight load counted at its as-of weight);
+  // bucketed Sunday-first, the register grid's column grammar.
+  const bodyweightQuery = useBodyweightHistory();
+  const volumeWeeks = useMemo(() => {
+    if (!detailsQuery.isSuccess) return [];
+    const since = Date.now() - range * 86_400_000;
+    const buckets = new Map<string, number>();
+    for (const s of detailsQuery.data ?? []) {
+      const t = new Date(s.startedAt).getTime();
+      if (t < since) continue;
+      const d = new Date(s.startedAt);
+      const sunday = new Date(d);
+      sunday.setDate(d.getDate() - d.getDay());
+      sunday.setHours(0, 0, 0, 0);
+      const key = `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
+      const vol = s.exercises.reduce((n, ex) => {
+        const entry = SYSTEM_EXERCISES.find((sys) => sys.name === ex.exerciseName);
+        const factor = entry?.bodyweightLoadFactor;
+        const effectiveBw =
+          factor != null && (bodyweightQuery.data ?? []).length > 0
+            ? (() => {
+                const bw = bodyweightAsOf(bodyweightQuery.data ?? [], s.startedAt);
+                return bw != null ? factor * bw : undefined;
+              })()
+            : undefined;
+        return n + sumVolume(ex.sets ?? [], effectiveBw);
+      }, 0);
+      buckets.set(key, (buckets.get(key) ?? 0) + vol);
+    }
+    return [...buckets.entries()]
+      .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+      .map(([k, v]) => ({ at: new Date(`${k}T00:00:00`).getTime(), value: roundDisplayWeight(toDisplayWeight(v, unit)) }));
+  }, [detailsQuery.isSuccess, detailsQuery.data, range, unit, bodyweightQuery.data]);
+
+  // THE BODY — the weigh-in trend (Settings logs the entries; the
+  // charts page draws the line). ≥2 points or nothing (the loading
+  // posture asserts nothing; one weigh-in has no trend).
+  const bodyPoints = useMemo(
+    () =>
+      (bodyweightQuery.data ?? [])
+        .slice()
+        .reverse()
+        .map((row) => ({
+          at: new Date(row.recordedAt).getTime(),
+          value: roundDisplayWeight(toDisplayWeight(row.weightKg, unit)),
+        })),
+    [bodyweightQuery.data, unit],
+  );
+
   const maxWorkouts = Math.max(1, ...weekly.map((w) => w.sessions));
   const sessionsInRange = weekly.reduce((sum, w) => sum + w.sessions, 0);
   // THE ENGINE — cardio minutes in range, computed at read from the
@@ -183,10 +236,12 @@ export default function AnalyticsScreen() {
       ) : (
         <>
 
-          {/* THE SHARE — the historical muscle % as a donut + the
-              printed table (the /program share grammar, computed from
-              logged history for the picked range). THE CHARTS ROUND:
-              the one drawn surface (owner-sanctioned). */}
+          {/* THE SHARE — the historical muscle % as a donut + its
+              legend (the upending pass: the printed bar table is
+              DELETED — the legend IS the census, square chips + caps
+              labels + mono %; the bars were the same numbers drawn
+              twice). THE CHARTS ROUND: the one drawn surface
+              (owner-sanctioned). */}
           {shareRows.length > 0 ? (
             <View style={styles.block}>
               <SectionWhisper>
@@ -194,25 +249,6 @@ export default function AnalyticsScreen() {
               </SectionWhisper>
               <View testID="analytics-share-pie">
                 <SharePie slices={pieSlices} />
-              </View>
-              <View style={styles.shareTable} testID="analytics-share-rows">
-                {shareRows.map((r) => {
-                  const lead = shareRows[0]?.share || 1;
-                  const bar = Math.max(1, Math.round((r.share / lead) * 16));
-                  return (
-                    <View key={r.muscle} style={styles.shareRow}>
-                      <Text style={[styles.shareLabel, { color: colors.textSecondary }]} numberOfLines={1}>
-                        {(MUSCLE_DISPLAY_NAMES[r.muscle as keyof typeof MUSCLE_DISPLAY_NAMES] ?? r.muscle).toUpperCase()}
-                      </Text>
-                      <Text style={[styles.shareBar, { color: colors.text }]}>
-                        {'\u2588'.repeat(bar)}
-                      </Text>
-                      <Text style={[styles.sharePct, { color: colors.textMuted }]}>
-                        {`${Math.round(r.share * 100)}%`}
-                      </Text>
-                    </View>
-                  );
-                })}
               </View>
             </View>
           ) : null}
@@ -250,6 +286,39 @@ export default function AnalyticsScreen() {
                   </View>
                 );
               })}
+            </View>
+          ) : null}
+
+          {/* THE ENGINE, MACRO — weekly tonnage as one line (the
+              upending pass): the top-lifts lines are the micro; this
+              is the macro. Same block grammar: ruled row + the drawn
+              line. */}
+          {volumeWeeks.length >= 2 ? (
+            <View style={styles.block}>
+              <SectionWhisper>
+                {`THE ENGINE · WEEKLY VOLUME · ${unit}`}
+              </SectionWhisper>
+              {(() => {
+                const first = volumeWeeks[0].value;
+                const last = volumeWeeks[volumeWeeks.length - 1].value;
+                const pct = first > 0 ? Math.round(((last - first) / first) * 100) : 0;
+                return (
+                  <View testID="analytics-volume">
+                    <RegisterLine
+                      label={`tonnage per week · ${volumeWeeks.length} weeks`}
+                      figure={`${first} → ${last} · ${pct >= 0 ? '+' : ''}${pct}%`}
+                      figureTone="muted"
+                      accessibilityLabel={`Weekly volume: ${first} to ${last} ${unit} across ${volumeWeeks.length} weeks, ${pct >= 0 ? '+' : ''}${pct} percent`}
+                      testID="analytics-volume-row"
+                    />
+                    <TrendGraph
+                      points={volumeWeeks}
+                      accessibilityLabel={`Weekly volume line graph, ${volumeWeeks.length} weeks`}
+                      testID="analytics-volume-graph"
+                    />
+                  </View>
+                );
+              })()}
             </View>
           ) : null}
 
@@ -330,6 +399,39 @@ export default function AnalyticsScreen() {
                 accessibilityLabel={`Balance: ${lowestGroup.group} carries the least work, ${Math.round(lowestGroup.share)} percent of volume`}
                 testID="analytics-balance"
               />
+            </View>
+          ) : null}
+
+          {/* THE BODY — the weigh-in trend (the upending pass):
+              Settings logs the entries; the charts page draws the
+              line. ≥2 points or nothing — one weigh-in has no trend,
+              and the loading posture asserts nothing. */}
+          {bodyweightQuery.isSuccess && bodyPoints.length >= 2 ? (
+            <View style={styles.block}>
+              <SectionWhisper>
+                {`THE BODY · BODYWEIGHT · ${unit}`}
+              </SectionWhisper>
+              {(() => {
+                const first = bodyPoints[0].value;
+                const last = bodyPoints[bodyPoints.length - 1].value;
+                const delta = Math.round((last - first) * 10) / 10;
+                return (
+                  <View testID="analytics-body">
+                    <RegisterLine
+                      label={`${bodyPoints.length} weigh-ins`}
+                      figure={`${first} → ${last} · ${delta >= 0 ? '+' : ''}${delta}`}
+                      figureTone="muted"
+                      accessibilityLabel={`Bodyweight: ${first} to ${last} ${unit} across ${bodyPoints.length} weigh-ins, ${delta >= 0 ? '+' : ''}${delta} ${unit}`}
+                      testID="analytics-body-row"
+                    />
+                    <TrendGraph
+                      points={bodyPoints}
+                      accessibilityLabel={`Bodyweight line graph, ${bodyPoints.length} weigh-ins`}
+                      testID="analytics-body-graph"
+                    />
+                  </View>
+                );
+              })()}
             </View>
           ) : null}
         </>
@@ -430,30 +532,9 @@ function RegisterGrid({
 }
 
 const styles = StyleSheet.create({
-  // ── THE CHARTS ROUND — the share table mirrors /program's share
-  // grammar; the lifts stack a ruled row + the drawn line.
-  shareTable: { marginTop: 12 },
-  shareRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    minHeight: 20,
-  },
-  shareLabel: {
-    ...theme.typography.mobileEyebrow,
-    width: 92,
-    flexShrink: 0,
-  },
-  shareBar: {
-    ...theme.typography.mobileLedger,
-    letterSpacing: 0,
-    color: undefined,
-  },
-  sharePct: {
-    ...theme.typography.mobileLedger,
-    marginLeft: 'auto',
-    fontVariant: ['tabular-nums'],
-  },
+  // ── THE CHARTS ROUND — the lifts (and the volume/body lines) stack
+  // a ruled row + the drawn line; the share table is deleted (the
+  // pie's legend is the census — the upending pass).
   liftBlock: {
     marginTop: 12,
   },
