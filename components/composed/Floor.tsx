@@ -231,7 +231,11 @@ export function Floor() {
   );
 
   const [stationIndex, setStationIndex] = useState(0);
-  const [mapCollapsed, setMapCollapsed] = useState(false);
+  // THE BOARD IS ASKED FOR, NEVER AMBIENT (the owner's correction):
+  // collapsed by default — MAP reveals it, a row pick (or scrolling
+  // away) folds it. Scrolling up shows nothing the user didn't ask
+  // to see.
+  const [mapCollapsed, setMapCollapsed] = useState(true);
   const [finishOpen, setFinishOpen] = useState(false);
   const [confirmAddWindow, setConfirmAddWindow] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
@@ -374,6 +378,9 @@ export function Floor() {
         const next = y < 40;
         return prev === next ? prev : next;
       });
+      // Scrolling away folds an open board — leaving the map closes
+      // it (the board never lingers as ambient content).
+      if (y > 40) setMapCollapsed(true);
     },
     [],
   );
@@ -770,7 +777,11 @@ export function Floor() {
                     userScrolledRef.current = true;
                     setStationIndex(i);
                     setInstrument('iron');
-                    scrollRef.current?.scrollTo({ y: mapHeightRef.current, animated: true });
+                    // The pick folds the board — you asked for the
+                    // station, not the map (y: 0 — the station IS the
+                    // top once the board folds).
+                    setMapCollapsed(true);
+                    scrollRef.current?.scrollTo({ y: 0, animated: true });
                   }}
                   accessibilityLabel={`Station ${i + 1}, ${ex.exerciseName}, ${done} sets logged. Go to station`}
                   testID={`floor-map-row-${i}`}
@@ -829,6 +840,7 @@ export function Floor() {
                     userScrolledRef.current = true;
                     setActiveCardioId(c.localId);
                     setInstrument('cardio');
+                    setMapCollapsed(true);
                     scrollRef.current?.scrollToEnd({ animated: true });
                   }}
                   accessibilityLabel={`Cardio, ${CARDIO_STATIONS[c.station].name}, ${c.rows.length} sittings. Focus the machine`}
