@@ -20,7 +20,7 @@ import { LoadingSpinner } from '../components/primitives';
 import { BoardShell, BoardHead, QueryErrorNote, RegisterLine, SectionWhisper, SharePie, TrendGraph } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
-import { useAnalyticsHistory, useRecentSessionDetails } from '../hooks';
+import { useAnalyticsHistory, useRecentSessionDetails, useActivityLog } from '../hooks';
 import { deriveMuscleShare, deriveTrajectory, MUSCLE_GROUPS } from '../services';
 import { AnalyticsService } from '../services';
 import { addDays, toDisplayWeight, roundDisplayWeight, joinFacts } from '../utils';
@@ -121,14 +121,23 @@ export default function AnalyticsScreen() {
       .reduce((n, session) => n + session.cardio.reduce((m, r) => m + r.durationSec, 0), 0);
   }, [detailsQuery.data, range]);
 
-  // Grid range: today + range days back (matches the repository's
-  // `gte(date, today - daysBack)` filter so every row returned by the
-  // hook lands on a visible cell).
+  // THE CALENDAR SPANS THE LIFETIME (the owner's correction): from
+  // the first logged day to today — never a rolling 30/90 window with
+  // dead air before it. The grid reads the shared activity log (200
+  // sessions deep, same cache key — no second fetch), unfiltered; the
+  // range pick still governs the share, the graphs, and the weekly
+  // rows below.
+  const activityQuery = useActivityLog();
+  const gridData = useMemo(
+    () => (activityQuery.data ? AnalyticsService.dailyActivity(activityQuery.data, 4000) : []),
+    [activityQuery.data],
+  );
   const gridRange = useMemo(() => {
     const end = new Date();
-    const start = addDays(end, -range);
+    const earliest = activityQuery.data?.[activityQuery.data.length - 1]?.startedAt;
+    const start = earliest ? new Date(earliest) : addDays(end, -range);
     return { startDate: toISODate(start), endDate: toISODate(end) };
-  }, [range]);
+  }, [activityQuery.data, range]);
 
   return (
     <BoardShell
@@ -173,71 +182,7 @@ export default function AnalyticsScreen() {
         <QueryErrorNote onRetry={() => void historyQuery.refetch()} testID="analytics-error" />
       ) : (
         <>
-          <View style={styles.block}>
-            {/* THE REGISTER GRID — the calendar as type: one mono
-                character per day (the session count, '·' for days
-                off, TODAY in red), seven columns, density as ink
-                weight. Tabular by construction. */}
-            <SectionWhisper>
-              CALENDAR · TRAINED DAYS
-            </SectionWhisper>
-            {!historyQuery.isSuccess ? (
-              <LoadingSpinner />
-            ) : (
-              <RegisterGrid
-                data={historyQuery.data ?? []}
-                startDate={gridRange.startDate}
-                endDate={gridRange.endDate}
-                testID="analytics-consistency-grid"
-              />
-            )}
-          </View>
 
-          {/* The weeks — ruled rows: date left · air · the session
-              figure right; the record week's figure in red. */}
-          {!historyQuery.isSuccess ? null : weekly.length === 0 ? (
-            <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-              No workouts in this range yet.
-            </Text>
-          ) : (
-            <View style={styles.block}>
-              {weekly.map((w) => {
-                const isRecord = w.sessions === maxWorkouts && w.sessions > 0;
-                return (
-                  <RegisterLine
-                    key={w.weekStart}
-                    label={new Date(w.weekStart).toLocaleDateString(undefined, {
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                    figure={`${w.sessions}`}
-                    muted={!isRecord}
-                    figureTone={isRecord ? 'record' : 'ink'}
-                    accessibilityLabel={`Week of ${new Date(w.weekStart).toLocaleDateString()}: ${w.sessions} sessions`}
-                    testID={`analytics-week-${w.weekStart}`}
-                  />
-                );
-              })}
-            </View>
-          )}
-
-          {/* THE ENGINE — cardio minutes in the picked range, one
-              ruled row (muted figure: it is a fact, not a record). */}
-          {detailsQuery.isSuccess && cardioSecInRange > 0 ? (
-            <View style={styles.block}>
-              <RegisterLine
-                label={`cardio · last ${range} days`}
-                figure={formatCardioMinutes(cardioSecInRange)}
-                figureTone="muted"
-                accessibilityLabel={`Cardio, ${formatCardioMinutes(cardioSecInRange)} in the last ${range} days`}
-                testID="analytics-cardio"
-              />
-            </View>
-          ) : null}
-
-          {/* THE BALANCE — one row: the most-neglected group and its
-              share (computed at read; the full per-lift story lives
-              on each spec sheet). */}
           {/* THE SHARE — the historical muscle % as a donut + the
               printed table (the /program share grammar, computed from
               logged history for the picked range). THE CHARTS ROUND:
@@ -308,6 +253,71 @@ export default function AnalyticsScreen() {
             </View>
           ) : null}
 
+          <View style={styles.block}>
+            {/* THE REGISTER GRID — the calendar as type: one mono
+                character per day (the session count, '·' for days
+                off, TODAY in red), seven columns, density as ink
+                weight. Tabular by construction. */}
+            <SectionWhisper>
+              CALENDAR · TRAINED DAYS
+            </SectionWhisper>
+            {!historyQuery.isSuccess ? (
+              <LoadingSpinner />
+            ) : (
+              <RegisterGrid
+                data={gridData}
+                startDate={gridRange.startDate}
+                endDate={gridRange.endDate}
+                testID="analytics-consistency-grid"
+              />
+            )}
+          </View>
+
+          {/* The weeks — ruled rows: date left · air · the session
+              figure right; the record week's figure in red. */}
+          {!historyQuery.isSuccess ? null : weekly.length === 0 ? (
+            <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+              No workouts in this range yet.
+            </Text>
+          ) : (
+            <View style={styles.block}>
+              {weekly.map((w) => {
+                const isRecord = w.sessions === maxWorkouts && w.sessions > 0;
+                return (
+                  <RegisterLine
+                    key={w.weekStart}
+                    label={new Date(w.weekStart).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                    figure={`${w.sessions}`}
+                    muted={!isRecord}
+                    figureTone={isRecord ? 'record' : 'ink'}
+                    accessibilityLabel={`Week of ${new Date(w.weekStart).toLocaleDateString()}: ${w.sessions} sessions`}
+                    testID={`analytics-week-${w.weekStart}`}
+                  />
+                );
+              })}
+            </View>
+          )}
+
+          {/* THE ENGINE — cardio minutes in the picked range, one
+              ruled row (muted figure: it is a fact, not a record). */}
+          {detailsQuery.isSuccess && cardioSecInRange > 0 ? (
+            <View style={styles.block}>
+              <RegisterLine
+                label={`cardio · last ${range} days`}
+                figure={formatCardioMinutes(cardioSecInRange)}
+                figureTone="muted"
+                accessibilityLabel={`Cardio, ${formatCardioMinutes(cardioSecInRange)} in the last ${range} days`}
+                testID="analytics-cardio"
+              />
+            </View>
+          ) : null}
+
+          {/* THE BALANCE — one row: the most-neglected group and its
+              share (computed at read; the full per-lift story lives
+              on each spec sheet). */}
           {lowestGroup ? (
             <View style={styles.block}>
               <SectionWhisper>
