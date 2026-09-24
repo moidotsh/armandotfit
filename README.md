@@ -71,16 +71,20 @@ The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 13-audit pre-co
 | `/login`, `/register`, `/forgot-password`, `/settings` | Shell auth + preferences (theme, weight unit kg/lb, rest default, rest days, install) |
 | `/dev/premium` | Design-system showcase (dev only) |
 
-## Plate hosting (Vercel Blob)
+## Plate hosting (static plates project)
 
-The 1,354 exercise-plate JPEGs (61 MB) live in a Vercel Blob store, not
-the deployment output — each deploy ships kilobytes, not the catalog.
+The 1,354 exercise-plate JPEGs (61 MB) live in their own static Vercel
+project — `armandotfit-plates` — deployed ONCE (`bun run
+plates:deploy-static`), never re-deployed unless the plates change.
+Each app deploy ships kilobytes, not the catalog. (The earlier Vercel
+Blob store was abandoned: a one-time bulk upload tripped the Hobby
+advanced-operations cap and store ACCESS paused for 30 days — 403s on
+every read. A static deployment has no operations meter.)
 
-- **Setup (once):** `vercel blob create-store armandotfit-plates --access public`,
-  then `bun run plates:upload` (CLI linked via `vercel link`).
-- **Wire:** set `EXPO_PUBLIC_PLATE_BASE` on the Vercel project to the store's
-  base URL (`https://<store-hash>.public.blob.vercel-storage.com`). The deploy
-  build strips `dist/exercise-plates` ONLY when this is set — no env, no strip,
+- **Wire:** `EXPO_PUBLIC_PLATE_BASE` on the Vercel project (Production) =
+  `https://armandotfit-plates.vercel.app` (the PRODUCTION alias —
+  deployment URLs sit behind SSO protection). The deploy build strips
+  `dist/exercise-plates` ONLY when this is set — no env, no strip,
   plates ship locally as before.
 - **Local dev:** no env needed — `shared/exercises/plateUrl.ts` falls back to
   the root-relative path served from `public/`.

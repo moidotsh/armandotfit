@@ -69,12 +69,13 @@ async function main() {
   const res = await run('vercel', ['deploy', '--prod', '--yes', '--name', 'armandotfit-plates'], STAGE);
   console.log(res.out.trim());
   if (!res.ok) process.exit(1);
-  const url = res.out.match(/https:\/\/[a-z0-9-]+\.vercel\.app/i)?.[0];
-  if (url) {
-    console.log('\nNext — set this on the armandotfit project (Production):');
-    console.log(`  EXPO_PUBLIC_PLATE_BASE = ${url}`);
-    console.log('then redeploy the app.');
-  }
+  // The deployment-specific URL is SSO-protected (deployment
+  // protection); the project's PRODUCTION alias is the public one.
+  const url = 'https://armandotfit-plates.vercel.app';
+  console.log('\nNext — set this on the armandotfit project (Production):');
+  console.log(`  EXPO_PUBLIC_PLATE_BASE = ${url}`);
+  console.log('then redeploy the app (the alias, NOT the deployment URL —');
+  console.log('deployment URLs sit behind SSO protection).');
 }
 
 main();
