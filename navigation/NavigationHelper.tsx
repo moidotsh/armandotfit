@@ -27,7 +27,43 @@ import { useAuthStore } from '../stores';
 // seam declared by `theme.transition.style`. Inert under 'none' (no
 // behavior change); under 'curtain' (the ink dialect's preset) the plate
 // covers before the swap and the destination stamps on.
-const push = (path: string | Href) => withRouteCurtain(() => router.push(path as never), 'up');
+//
+// THE BACK-STACK LAW (the owner's correction): the chevron must never
+// re-serve the same page. Two polluters, both handled at this seam:
+//   1. A rapid double-tap fires two pushes of the same href before the
+//      first settles (the curtain hides it) — a stale entry that reads
+//      as "back came back to the same page". Guarded by a short
+//      duplicate window.
+//   2. Same-path-different-params pushes (browsing spec sheets) stack
+//      sibling entries — replaced instead, so one back always returns
+//      to the list the user actually came from.
+const lastPushRef = { href: '', at: 0 };
+const DUP_WINDOW_MS = 400;
+
+const webUrl = () =>
+  typeof window !== 'undefined'
+    ? { pathname: window.location.pathname, search: window.location.search }
+    : null;
+
+const push = (path: string | Href) => {
+  const href = typeof path === 'string' ? path : '';
+  const now = Date.now();
+  // Same href twice inside the window: the first tap is already in
+  // flight — this one is a bounce, drop it.
+  if (href && lastPushRef.href === href && now - lastPushRef.at < DUP_WINDOW_MS) return;
+  lastPushRef.href = href;
+  lastPushRef.at = now;
+  // Same path: the family rule — never stack siblings.
+  const url = webUrl();
+  const targetPath = href.split('?')[0];
+  const targetSearch = href.includes('?') ? href.slice(href.indexOf('?')) : '';
+  if (url && targetPath && url.pathname === targetPath) {
+    if (url.search === targetSearch) return; // already here — a twin helps nobody
+    withRouteCurtain(() => router.replace(path as never), 'up');
+    return;
+  }
+  withRouteCurtain(() => router.push(path as never), 'up');
+};
 const replace = (path: string | Href) => withRouteCurtain(() => router.replace(path as never), 'up');
 const back = () => withRouteCurtain(() => router.back(), 'down');
 
