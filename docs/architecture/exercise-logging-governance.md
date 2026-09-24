@@ -53,7 +53,11 @@ either (`Shoulder Press`, `Tibia Raise` — machine is merely the default
 tag). `Leg Press Calf Raise` and `Standing Machine Calf Raise` are two
 identities (3-for-3 on the test); grip/attachment/style are always tags
 (`Lat Pulldown` + `underhand`, `Machine Ab Crunch` + `eccentric`,
-`Face Pull` + `rope`).
+`Face Pull` + `rope`). Station-instance qualifiers — the same lift on
+different hardware (`single-pulley` vs `dual-pulley`, `station-1` vs
+`station-2` for duplicate machines) — are always tags: rack-side
+choices, one axis per tag, one token per value; the progression read
+may filter by them, identity never splits (decided 2026-09).
 
 Moving the boundary is cheap in both directions (split = insert + update
 by tag; merge = read-time union) but still a decision, not a refactor.

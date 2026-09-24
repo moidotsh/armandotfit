@@ -282,6 +282,10 @@ export const TAG_VOCABULARY_SEED: string[] = [
   'egyptian',
   'eccentric',
   'per-leg',
+  // Station-instance qualifiers — the same lift on different hardware
+  // (one cable vs two; duplicate machines). One axis per tag.
+  'single-pulley',
+  'dual-pulley',
 ];
 
 // ──────────────────────────────────────────────────────────────────────
