@@ -3,31 +3,33 @@
 // On success, the central AuthGuard in app/_layout.tsx routes to
 // home — no per-screen redirect effect needed.
 //
-// THE GATE (interval-thesis §8): the action sentence IS the
-// statement ("Sign in."), the brand rides a folio line (same masthead
-// as home), the form sits open on the ground (no panel), links are
-// RED INK (red's second job), and the verb is the page's heaviest
-// ink. No nameplate rule.
+// THE GATE, WELCOME SIDE: the statement greets ("Welcome back.") and
+// the verb carries the action; the MODE TOGGLE rides between them and
+// the form — one tap to registration for the new lifter, no dead end
+// for the returning one (guests funneled here by the logging gates
+// flip straight over). Links are RED INK (red's second job); the
+// verb is the page's heaviest ink; no nameplate rule.
 
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Dumbbell } from '@tamagui/lucide-icons-2';
+import { ChevronRight, Dumbbell } from '@tamagui/lucide-icons-2';
 import {
   MobileAtmosphere,
   MobileInput,
   MobilePrimaryButton,
-  MobileActionFooter,
   MobileAlert,
+  SegmentedControl,
 } from '../components/MobilePremium';
 import { useAuth, useAppTheme } from '../context';
-import { navigateToRegister, navigateToForgotPassword } from '../navigation';
+import { navigateToForgotPassword, replaceWithHome, replaceWithRegister } from '../navigation';
 import {
   MOBILE_CONTENT_WIDTH_STYLE,
   SCREEN_BODY_STYLE,
   INTERVAL,
   theme,
+  PRESS_DIP,
 } from '../constants';
 
 export default function LoginScreen() {
@@ -62,11 +64,38 @@ export default function LoginScreen() {
           </Text>
         </View>
       </View>
-      <View style={styles.body} testID="login-scroll">
-        {/* THE STATEMENT — the action sentence. */}
+      <ScrollView
+        style={styles.body}
+        contentContainerStyle={styles.bodyContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        testID="login-scroll"
+      >
+        {/* THE STATEMENT — the greeting; the verb carries the action. */}
         <Text style={[styles.statement, { color: colors.text }]}>
-          Sign in.
+          Welcome back.
         </Text>
+        <Text style={[styles.fact, { color: colors.textMuted }]}>
+          The iron remembers — every set is where you left it.
+        </Text>
+
+        {/* THE MODE TOGGLE — registration one tap away; existing users
+            never hunt for their door. */}
+        <View style={styles.toggleBlock}>
+          <SegmentedControl<string>
+            variant="selection"
+            segments={[
+              { value: 'login', label: 'SIGN IN' },
+              { value: 'register', label: 'CREATE ACCOUNT' },
+            ]}
+            value="login"
+            onChange={(v) => {
+              if (v === 'register') replaceWithRegister();
+            }}
+            accessibilityLabel="Sign in or create account"
+            testID="auth-mode-toggle"
+          />
+        </View>
 
         <View style={styles.block}>
           <MobileInput
@@ -101,23 +130,26 @@ export default function LoginScreen() {
           {error ? <MobileAlert variant="error" title="Sign-in failed" body={error} /> : null}
         </View>
 
-        <View style={styles.block}>
-          <Pressable
-            onPress={navigateToRegister}
-            accessibilityRole="link"
-            accessibilityLabel="Create an account"
-            style={styles.helpLinkBox}
-          >
-            <Text style={[styles.helpLink, { color: colors.textMuted }]}>
-              New here?{' '}
-              <Text style={[styles.helpLinkUnderline, { color: colors.brandText }]}>
-                Create an account
-              </Text>
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-      <MobileActionFooter>
+        {/* The guest's door — the app browses open; leave the gate and
+            go home without an account (the logging gates will be here
+            when the lifting gets serious). */}
+        <Pressable
+          onPress={replaceWithHome}
+          accessibilityRole="link"
+          accessibilityLabel="Continue as guest"
+          style={({ pressed }) => [styles.guestBox, pressed ? { opacity: PRESS_DIP } : null]}
+          testID="auth-continue-guest"
+        >
+          <Text style={[styles.guestWord, { color: colors.textSecondary }]}>
+            CONTINUE AS GUEST
+          </Text>
+          <ChevronRight size={16} color={colors.textMuted} />
+        </Pressable>
+      </ScrollView>
+      {/* THE VERB — bare on the ground (no footer plate: a plate in a
+          plate reads as a container in a container; the SafeAreaView's
+          bottom edge is the dock). */}
+      <View style={styles.verbDock}>
         <MobilePrimaryButton
           onPress={handleSubmit}
           loading={submitting}
@@ -125,7 +157,7 @@ export default function LoginScreen() {
         >
           SIGN IN
         </MobilePrimaryButton>
-      </MobileActionFooter>
+      </View>
     </SafeAreaView>
   );
 }
@@ -151,14 +183,24 @@ const styles = StyleSheet.create({
   },
   body: {
     ...SCREEN_BODY_STYLE,
+  },
+  bodyContent: {
     paddingHorizontal: 20,
     paddingTop: 8,
-  },
-  block: {
-    ...INTERVAL.block,
+    paddingBottom: 24,
   },
   statement: {
     ...INTERVAL.statement,
+  },
+  fact: {
+    ...INTERVAL.fact,
+    marginBottom: 8,
+  },
+  toggleBlock: {
+    ...INTERVAL.block,
+  },
+  block: {
+    ...INTERVAL.block,
   },
   linkBox: {
     minHeight: 44,
@@ -169,14 +211,19 @@ const styles = StyleSheet.create({
     ...theme.typography.mobileLedger,
     textDecorationLine: 'underline',
   },
-  helpLinkBox: {
+  guestBox: {
+    ...INTERVAL.block,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     minHeight: 44,
-    justifyContent: 'center',
   },
-  helpLink: {
-    ...theme.typography.mobileItemTitle,
+  guestWord: {
+    ...theme.typography.mobileEyebrow,
   },
-  helpLinkUnderline: {
-    textDecorationLine: 'underline',
+  verbDock: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
 });

@@ -7,7 +7,7 @@
 // struck marks; install/version ride as single rows; Sign Out is the
 // page's one verb.
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Check } from '@tamagui/lucide-icons-2';
 import {
@@ -16,8 +16,9 @@ import {
 } from '../components/MobilePremium';
 import { BoardShell } from '../components/composed';
 import { useAuth, useAppTheme, type ColorSchemePreference } from '../context';
-import { navigateToPremiumShowcase, safeGoBack } from '../navigation';
+import { navigateToPremiumShowcase, replaceWithLogin, safeGoBack } from '../navigation';
 import { useProfile, useUpdateProfile, usePwaPrompt, useRecentSessionDetails } from '../hooks';
+import { useAuthStore } from '../stores';
 import { DAY_OF_WEEK_LABELS, BLOCK_GAP, INTERVAL, theme,
   PRESS_DIP
 } from '../constants';
@@ -47,6 +48,16 @@ const PREFERENCE_LABELS: Record<ColorSchemePreference, string> = {
 const PREFERENCE_ORDER: ColorSchemePreference[] = ['light', 'dark', 'system'];
 
 export default function SettingsScreen() {
+
+  // THE GUEST GATE — settings is the account surface (preferences
+  // persist per lifter, server-side). Guests land on the gate.
+  // Reactive on status — the restore window must not slip past it.
+  const authStatus = useAuthStore((s) => s.status);
+  useEffect(() => {
+    if (authStatus === 'unauthenticated') {
+      replaceWithLogin();
+    }
+  }, [authStatus]);
   const { session, signOut } = useAuth();
   const { preference, setPreference, colors } = useAppTheme();
   const { showToast } = useToast();

@@ -4,29 +4,44 @@
 // session exists. The AuthProvider fires `session === null` and the
 // user stays on this screen with a "check your inbox" notice.
 //
-// THE GATE's register page: the action sentence IS the statement
-// ("Create account."), the brand dies (the back chevron leads), the
-// form sits open on the field, links are underlined ink, the verb is
-// ink-filled (touch amendment: one fact, one place — the password
-// rule rides the placeholder alone; the verb never wore red).
+// THE GATE, PITCH SIDE: the statement is the promise ("Every set,
+// remembered.") and THE PITCH carries the three facts of the product
+// — the program, the logger, the numbers — in the app's own
+// whisper-and-fact grammar. The MODE TOGGLE sits between pitch and
+// form: an existing lifter flips to SIGN IN without reading a pitch
+// twice. Links are underlined ink; the verb is ink-filled.
 
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   MobileAtmosphere,
   MobileInput,
   MobilePrimaryButton,
-  MobileActionFooter,
   MobileAlert,
+  SegmentedControl,
 } from '../components/MobilePremium';
-import { ChevronLeft } from '@tamagui/lucide-icons-2';
+import { ChevronLeft, ChevronRight } from '@tamagui/lucide-icons-2';
 import { useAuth, useAppTheme } from '../context';
-import { replaceWithLogin, safeGoBack } from '../navigation';
+import { replaceWithHome, replaceWithLogin, safeGoBack } from '../navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SCREEN_BODY_STYLE, INTERVAL, theme,
-  PRESS_DIP
-} from '../constants';
+import { SCREEN_BODY_STYLE, INTERVAL, theme, PRESS_DIP } from '../constants';
+
+/** THE PITCH — the product in three facts, the app's own grammar. */
+const PITCH: ReadonlyArray<{ whisper: string; fact: string }> = [
+  {
+    whisper: 'THE PROGRAM',
+    fact: 'Four days a week, the whole body — one-a-day or AM/PM.',
+  },
+  {
+    whisper: 'THE LOGGER',
+    fact: 'One field. The set is logged before the chalk settles.',
+  },
+  {
+    whisper: 'THE NUMBERS',
+    fact: 'PRs, streaks, and the next plate jump — computed, not guessed.',
+  },
+];
 
 export default function RegisterScreen() {
   const { signUp } = useAuth();
@@ -75,33 +90,53 @@ export default function RegisterScreen() {
           <ChevronLeft size={26} color={colors.text} />
         </Pressable>
       </View>
-      <View style={styles.body} testID="register-scroll">
-        {/* THE STATEMENT — the action sentence. */}
+      <ScrollView
+        style={styles.body}
+        contentContainerStyle={styles.bodyContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        testID="register-scroll"
+      >
+        {/* THE STATEMENT — the promise; the pitch facts carry the rest. */}
         <Text style={[styles.statement, { color: colors.text }]}>
-          Create account.
+          Every set, remembered.
         </Text>
 
-        {confirmationNeeded ? (
-          <View style={styles.block}>
-            <MobileAlert
-              variant="success"
-              title="Check your inbox"
-              body={`We sent a confirmation link to ${email}. Click it to activate your account.`}
-            />
-            <View style={{ height: 16 }} />
-            <Pressable
-              onPress={replaceWithLogin}
-              accessibilityRole="link"
-              accessibilityLabel="Sign in"
-              style={styles.helpLinkBox}
-            >
-              <Text style={[styles.helpLink, { color: colors.textMuted }]}>
-                Already confirmed? <Text style={[styles.helpLinkUnderline, { color: colors.brandText }]}>Sign in</Text>
-              </Text>
-            </Pressable>
-          </View>
-        ) : (
+        {!confirmationNeeded ? (
           <>
+            {/* THE PITCH — three facts in the app's own grammar (the
+                program cards' whisper + fact lines). */}
+            <View style={styles.pitchBlock} testID="register-pitch">
+              {PITCH.map((row) => (
+                <View key={row.whisper} style={styles.pitchRow}>
+                  <Text style={[styles.pitchWhisper, { color: colors.textMuted }]}>
+                    {row.whisper}
+                  </Text>
+                  <Text style={[styles.pitchFact, { color: colors.textSecondary }]}>
+                    {row.fact}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            {/* THE MODE TOGGLE — the returning lifter's door, one tap
+                away; the guest funnel never annoys them with a pitch. */}
+            <View style={styles.toggleBlock}>
+              <SegmentedControl<string>
+                variant="selection"
+                segments={[
+                  { value: 'login', label: 'SIGN IN' },
+                  { value: 'register', label: 'CREATE ACCOUNT' },
+                ]}
+                value="register"
+                onChange={(v) => {
+                  if (v === 'login') replaceWithLogin();
+                }}
+                accessibilityLabel="Sign in or create account"
+                testID="auth-mode-toggle"
+              />
+            </View>
+
             <View style={styles.block}>
               <MobileInput
                 label="Email"
@@ -138,24 +173,45 @@ export default function RegisterScreen() {
               ) : null}
             </View>
 
-            <View style={styles.block}>
-              <Pressable
-                onPress={replaceWithLogin}
-                accessibilityRole="link"
-                accessibilityLabel="Sign in"
-                style={styles.helpLinkBox}
-              >
-                <Text style={[styles.helpLink, { color: colors.textMuted }]}>
-                  Already have an account?{' '}
-                  <Text style={[styles.helpLinkUnderline, { color: colors.brandText }]}>Sign in</Text>
-                </Text>
-              </Pressable>
-            </View>
+            {/* The guest's door — same as the login side. */}
+            <Pressable
+              onPress={replaceWithHome}
+              accessibilityRole="link"
+              accessibilityLabel="Continue as guest"
+              style={({ pressed }) => [styles.guestBox, pressed ? { opacity: PRESS_DIP } : null]}
+              testID="auth-continue-guest"
+            >
+              <Text style={[styles.guestWord, { color: colors.textSecondary }]}>
+                CONTINUE AS GUEST
+              </Text>
+              <ChevronRight size={16} color={colors.textMuted} />
+            </Pressable>
           </>
+        ) : (
+          <View style={styles.block}>
+            <MobileAlert
+              variant="success"
+              title="Check your inbox"
+              body={`We sent a confirmation link to ${email}. Click it to activate your account.`}
+            />
+            <View style={{ height: 16 }} />
+            <Pressable
+              onPress={replaceWithLogin}
+              accessibilityRole="link"
+              accessibilityLabel="Sign in"
+              style={styles.helpLinkBox}
+            >
+              <Text style={[styles.helpLink, { color: colors.textMuted }]}>
+                Already confirmed?{' '}
+                <Text style={[styles.helpLinkUnderline, { color: colors.brandText }]}>Sign in</Text>
+              </Text>
+            </Pressable>
+          </View>
         )}
-      </View>
+      </ScrollView>
+      {/* THE VERB — bare on the ground (no footer plate; see login). */}
       {!confirmationNeeded ? (
-        <MobileActionFooter>
+        <View style={styles.verbDock}>
           <MobilePrimaryButton
             onPress={handleSubmit}
             loading={submitting}
@@ -163,7 +219,7 @@ export default function RegisterScreen() {
           >
             CREATE ACCOUNT
           </MobilePrimaryButton>
-        </MobileActionFooter>
+        </View>
       ) : null}
     </SafeAreaView>
   );
@@ -184,14 +240,34 @@ const styles = StyleSheet.create({
   },
   body: {
     ...SCREEN_BODY_STYLE,
+  },
+  bodyContent: {
     paddingHorizontal: 20,
     paddingTop: 8,
-  },
-  block: {
-    ...INTERVAL.block,
+    paddingBottom: 24,
   },
   statement: {
     ...INTERVAL.statement,
+  },
+  pitchBlock: {
+    ...INTERVAL.block,
+    gap: 10,
+  },
+  pitchRow: {
+    minHeight: 20,
+  },
+  pitchWhisper: {
+    ...theme.typography.mobileEyebrow,
+  },
+  pitchFact: {
+    ...theme.typography.mobileLedger,
+    marginTop: 2,
+  },
+  toggleBlock: {
+    ...INTERVAL.block,
+  },
+  block: {
+    ...INTERVAL.block,
   },
   helpLinkBox: {
     minHeight: 44,
@@ -202,5 +278,20 @@ const styles = StyleSheet.create({
   },
   helpLinkUnderline: {
     textDecorationLine: 'underline',
+  },
+  guestBox: {
+    ...INTERVAL.block,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 44,
+  },
+  guestWord: {
+    ...theme.typography.mobileEyebrow,
+  },
+  verbDock: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
 });

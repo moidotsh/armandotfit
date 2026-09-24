@@ -14,12 +14,15 @@ export type NavDrawerAnchor = 'window' | 'column';
 
 export const APP_LAYOUT = {
   /**
-   * Wall authenticated surfaces behind auth. armandotfit owns real
-   * per-user training history — every route except login/register/
-   * forgot-password is authenticated. (The starter ships this false;
-   * this consumer flips it true.)
+   * GUEST-BROWSE MODE: the app renders for signed-out visitors — the
+   * program, the library, the lab, analytics all read (empty states,
+   * no lies). The LOGGING flows gate themselves: session start
+   * (split-selection), continuation (the receipt), and the account
+   * surface (settings) each check auth at their seam and route guests
+   * to the gate. (The starter default is true; this consumer browses
+   * open.)
    */
-  authGuard: true as boolean,
+  authGuard: false as boolean,
 
   /**
    * How the nav drawer handles the brand area when open.

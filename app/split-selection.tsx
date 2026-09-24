@@ -22,7 +22,7 @@
 // day, sessionMode) and navigates to the active session — which
 // auto-hydrates from the program slots (getSlotsForDay) locally.
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   MobilePrimaryButton,
@@ -31,10 +31,10 @@ import {
 } from '../components/MobilePremium';
 import { BoardShell, BoardHead, RegisterLine } from '../components/composed';
 import { useAppTheme } from '../context';
-import { navigateToWorkoutDetail, replaceWithWorkoutDetail, safeGoBack } from '../navigation';
+import { navigateToWorkoutDetail, replaceWithRegister, replaceWithWorkoutDetail, safeGoBack } from '../navigation';
 import { useProfile, useRecentWorkouts, useTopSetsByName, useWeightUnit } from '../hooks';
 import { toDisplayWeight, roundDisplayWeight, joinFacts } from '../utils';
-import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
+import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore, useAuthStore } from '../stores';
 import { resolveSlots } from '../services';
 import {
   WORKOUT_SPLIT_LIST,
@@ -68,6 +68,17 @@ export default function SplitSelectionScreen() {
   const { colors } = useAppTheme();
   const startSession = useWorkoutStore((s) => s.startSession);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
+
+  // THE GUEST GATE — the app browses open, but a session belongs to a
+  // lifter: guests arriving at the funnel land on the gate (register
+  // first, login a toggle away). Reactive on status — the restore
+  // window (idle → loading) must not slip past the gate.
+  const authStatus = useAuthStore((s) => s.status);
+  useEffect(() => {
+    if (authStatus === 'unauthenticated') {
+      replaceWithRegister();
+    }
+  }, [authStatus]);
 
   // Profile + recent sessions drive the day-of-split suggestion + the
   // rest-day map. Both fall back to safe defaults while loading so the

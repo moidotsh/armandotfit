@@ -30,12 +30,13 @@ import { useToast, useAppTheme } from '../../context';
 import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags } from '../../hooks';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/react-query';
-import { navigateToWorkoutDetail, safeGoBack } from '../../navigation';
+import { navigateToRegister, navigateToWorkoutDetail, safeGoBack } from '../../navigation';
 import { resolveSlots, sumVolume, WorkoutService } from '../../services';
 import { bodyweightAsOf } from '../../utils/bodyweight';
 import { getWeightHistory } from '../../utils/supabase/repositories';
 import {
   rxLabel,
+  useAuthStore,
   useProgramOverrideStore,
   useSplitPreferenceStore,
   useWorkoutStore,
@@ -218,6 +219,12 @@ export function Receipt({ id }: ReceiptProps) {
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
   const splitType = useSplitPreferenceStore((s) => s.splitType);
   const handleContinue = () => {
+    // THE GUEST GATE — continuing starts a session; sessions belong to
+    // lifters. Guests land on the gate.
+    if (useAuthStore.getState().status === 'unauthenticated') {
+      navigateToRegister();
+      return;
+    }
     if (!session) return;
     const window = windowLabel === 'AM' ? 'am' : 'pm';
     // Rx recovery: match each logged name back to its programmed slot
