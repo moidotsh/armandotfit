@@ -112,4 +112,5 @@ Direct-copy consumer of the public starter (sibling at `../arqavellum`, `github.
 | MobilePremium design system | `docs/architecture/mobile-premium-design-system.md` |
 | The active design thesis (THE INTERVAL: the live figure owns the counter — the two-state logger, ink as state, the ruled row, the harmonic ramp, the still system + the re-weight, budgets you can count) | `docs/architecture/interval-thesis.md` |
 | PWA installability | `docs/architecture/pwa-installability.md` |
+| Plate hosting (TEMPORARY static project — the why + the return-to-Blob runbook, ~2026-10-24) | `docs/architecture/plate-hosting.md` |
 | Theme tokens / palette values | `constants/theme.ts` |
