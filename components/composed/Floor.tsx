@@ -57,6 +57,7 @@ import {
   deriveProgression,
   rangeLabel,
   sameProgression,
+  RATING_GLYPH,
   type RatedInstance,
 } from '../../services';
 import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED,
@@ -613,6 +614,14 @@ export function Floor() {
 
   // The pips' ask: the program's set count when present, extended as
   // extra sets land; a free draw when the station has no Rx.
+  // THE GATE — a station that finished its sets and gave no verdict
+  // holds the way forward (the map stays the escape hatch for the
+  // rare deliberate skip). Free stations (no target) never gate.
+  const stationNeedsRating =
+    targetSets > 0 &&
+    (exercise?.sets.length ?? 0) >= targetSets &&
+    exercise != null &&
+    exercise.rating == null;
   const pipsTotal = targetSets > 0
     ? Math.max(targetSets, exercise ? exercise.sets.length + 1 : 1)
     : exercise
@@ -744,11 +753,16 @@ export function Floor() {
               const slotTarget = parseInt(ex.targetRx?.split('×')[0] ?? '', 10);
               const target = Number.isFinite(slotTarget) && slotTarget > 0 ? slotTarget : 0;
               const figure = done > 0 ? (target > 0 ? `${done}/${target}` : `${done}`) : null;
+              // THE VERDICT GLYPH — the notebook's mark rides the map
+              // row beside the sets figure: the session reads as a
+              // collection of rated stations (the quiet incentive to
+              // rate them all). Same ink state as its row.
+              const verdict = ex.rating ? RATING_GLYPH[ex.rating] : null;
               return (
                 <RegisterLine
                   key={ex.localId}
                   label={ex.exerciseName}
-                  figure={figure}
+                  figure={figure != null && verdict ? `${figure} ${verdict}` : (figure ?? verdict ?? null)}
                   muted={!isCurrent}
                   bold={isCurrent}
                   onPress={() => {
@@ -1127,9 +1141,14 @@ export function Floor() {
 
               {index < exercises.length - 1 ?(
                 <NextStation
-                  name={exercises[index + 1].exerciseName}
+                  name={
+                    stationNeedsRating
+                      ? 'Rate the weight to continue'
+                      : exercises[index + 1].exerciseName
+                  }
                   onPress={() => setStationIndex(index + 1)}
                   bright={restClock.settled}
+                  gated={stationNeedsRating}
                   testID="stage-next-station"
                 />
               ) : null}

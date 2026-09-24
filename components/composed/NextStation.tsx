@@ -32,6 +32,12 @@ export interface NextStationProps {
    * reads 0 (state change, not motion: the still law holds).
    */
   bright?: boolean;
+  /**
+   * GATED — the row reads as the ask, not the way: muted throughout,
+   * no press. The Floor gates the way forward behind the station's
+   * verdict (rate the weight to continue); the map stays the escape.
+   */
+  gated?: boolean;
   testID?: string;
 }
 
@@ -41,29 +47,37 @@ export function NextStation({
   label = 'NEXT',
   accessibilityLabel,
   bright = false,
+  gated = false,
   testID,
 }: NextStationProps) {
   const { colors } = useAppTheme();
   return (
     <Pressable
-      onPress={onPress}
+      onPress={gated ? undefined : onPress}
+      disabled={gated}
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? `Next station: ${name}`}
+      accessibilityLabel={
+        gated ? 'Rate the weight to continue' : accessibilityLabel ?? `Next station: ${name}`
+      }
       style={({ pressed }) => [
         styles.row,
         { borderTopColor: colors.mobilePremium.hairlineBorder },
-        pressed ? { opacity: PRESS_DIP } : null,
+        !gated && pressed ? { opacity: PRESS_DIP } : null,
       ]}
       testID={testID}
     >
       <Text style={[styles.nextWord, { color: colors.textMuted }]}>{label}</Text>
       <Text
-        style={[styles.nextName, { color: colors.text }, bright ? styles.nextNameBright : null]}
+        style={[
+          styles.nextName,
+          { color: gated ? colors.textMuted : colors.text },
+          !gated && bright ? styles.nextNameBright : null,
+        ]}
         numberOfLines={1}
       >
         {name}
       </Text>
-      <ChevronRight size={20} color={colors.text} />
+      <ChevronRight size={20} color={gated ? colors.textMuted : colors.text} />
     </Pressable>
   );
 }

@@ -25,7 +25,7 @@ import { ChevronLeft, ChevronRight } from '@tamagui/lucide-icons-2';
 import { useAuth, useAppTheme } from '../context';
 import { replaceWithHome, replaceWithLogin, safeGoBack } from '../navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SCREEN_BODY_STYLE, INTERVAL, theme, PRESS_DIP } from '../constants';
+import { SCREEN_BODY_STYLE, MOBILE_CONTENT_WIDTH_STYLE, INTERVAL, theme, PRESS_DIP } from '../constants';
 
 /** THE PITCH — the product in three facts, the app's own grammar. */
 const PITCH: ReadonlyArray<{ whisper: string; fact: string }> = [
@@ -229,8 +229,15 @@ const styles = StyleSheet.create({
   shell: {
     flex: 1,
   },
+  // The chevron rides the mobile column (same constraint as the
+  // body — 20px gutter, centered; the raw 8px offset broke the
+  // constraint on wide viewports).
   backBlock: {
-    paddingHorizontal: 8,
+    ...MOBILE_CONTENT_WIDTH_STYLE,
+    alignSelf: 'center',
+    // The body's own 20px gutter — the chevron opens the column
+    // exactly where the statement does (8px left it 12px shy).
+    paddingHorizontal: 20,
   },
   backCta: {
     width: 44,
