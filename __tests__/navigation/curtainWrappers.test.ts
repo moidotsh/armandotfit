@@ -17,7 +17,10 @@ const SOURCE = readFileSync(
 
 describe('curtain wrappers', () => {
   it('push/replace/back delegate to the router, never to themselves', () => {
-    expect(SOURCE).toMatch(/const push = .* withRouteCurtain\(\(\) => router\.push\(/);
+    // push grew THE BACK-STACK GUARD (dup window + same-path replace)
+    // — the delegation still exists, now on its own line inside the
+    // guard; the pin follows the delegate, not the one-liner shape.
+    expect(SOURCE).toMatch(/withRouteCurtain\(\(\) => router\.push\(path as never\), 'up'\)/);
     expect(SOURCE).toMatch(/const replace = .* withRouteCurtain\(\(\) => router\.replace\(/);
     expect(SOURCE).toMatch(/const back = \(\) => withRouteCurtain\(\(\) => router\.back\(\), 'down'\);/);
   });
