@@ -32,6 +32,7 @@ import {
   EXERCISE_TYPE_DISPLAY,
   MUSCLE_DISPLAY_NAMES,
   MOVEMENT_ROLE_DISPLAY,
+  plateUrl,
   equipmentSlugs,
   type MuscleSlug,
 } from '../shared/exercises';
@@ -190,7 +191,7 @@ export default function ExerciseDetailScreen() {
                   pure opacity crossfade: the still system's repaint. */}
               <View style={styles.plateStack}>
                 <Image
-                  source={{ uri: exercise.image }}
+                  source={{ uri: plateUrl(exercise.image) }}
                   style={[
                     styles.plateImage,
                     styles.plateFrameA,
@@ -213,7 +214,7 @@ export default function ExerciseDetailScreen() {
                     ]}
                   >
                     <Image
-                      source={{ uri: exercise.imageB }}
+                      source={{ uri: plateUrl(exercise.imageB) }}
                       style={styles.plateImage}
                       accessibilityElementsHidden
                       testID="entry-plate-image-b"

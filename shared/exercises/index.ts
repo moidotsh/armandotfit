@@ -8,4 +8,5 @@ export * from './splits';
 export * from './data';
 export * from './splitRules';
 export * from './movementRole';
+export * from './plateUrl';
 export * from './cardio';

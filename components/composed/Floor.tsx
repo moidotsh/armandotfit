@@ -52,7 +52,9 @@ import { useLogWorkout, useFloorSession, useRestClock, useWeightUnit, type TopSe
 import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel, formatVolumeWeight, weightStep, hapticImpactLight, hapticImpactMedium, hapticNotificationSuccess, joinFacts } from '../../utils';
 import { useWorkoutStore, useIsOnline, useDeloadStore } from '../../stores';
 import { sessionSaveQueue } from '../../services';
-import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED } from '../../shared/exercises';
+import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED ,
+  plateUrl,
+} from '../../shared/exercises';
 import { plateOffsetFor } from '../../shared/exercises/plateOffsets';
 import {
   theme,
@@ -823,7 +825,7 @@ export function Floor() {
                           >
                             <View style={styles.formPlateStack}>
                               <Image
-                                source={{ uri: entry.image }}
+                                source={{ uri: plateUrl(entry.image) }}
                                 style={[
                                   StyleSheet.absoluteFillObject,
                                   styles.formPlateFilter,
@@ -845,7 +847,7 @@ export function Floor() {
                                   ]}
                                 >
                                   <Image
-                                    source={{ uri: entry.imageB }}
+                                    source={{ uri: plateUrl(entry.imageB) }}
                                     style={[StyleSheet.absoluteFillObject, styles.formPlateFilter] as unknown as ImageStyle[]}
                                     accessibilityElementsHidden
                                     testID="form-plate-image-b"

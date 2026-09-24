@@ -71,6 +71,20 @@ The full 47-pattern constitution lives in `ARCHITECTURE.md`. The 13-audit pre-co
 | `/login`, `/register`, `/forgot-password`, `/settings` | Shell auth + preferences (theme, weight unit kg/lb, rest default, rest days, install) |
 | `/dev/premium` | Design-system showcase (dev only) |
 
+## Plate hosting (Vercel Blob)
+
+The 1,354 exercise-plate JPEGs (61 MB) live in a Vercel Blob store, not
+the deployment output — each deploy ships kilobytes, not the catalog.
+
+- **Setup (once):** `vercel blob create-store armandotfit-plates --access public`,
+  then `bun run plates:upload` (CLI linked via `vercel link`).
+- **Wire:** set `EXPO_PUBLIC_PLATE_BASE` on the Vercel project to the store's
+  base URL (`https://<store-hash>.public.blob.vercel-storage.com`). The deploy
+  build strips `dist/exercise-plates` ONLY when this is set — no env, no strip,
+  plates ship locally as before.
+- **Local dev:** no env needed — `shared/exercises/plateUrl.ts` falls back to
+  the root-relative path served from `public/`.
+
 ## Reference docs
 
 | Doc | What it owns |
