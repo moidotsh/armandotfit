@@ -97,6 +97,36 @@
 > stays ink while the record row holds red). Light + dark + SE
 > green; vitest 870/870.
 
+> **REVISION — THE UPCENDING, PASS THREE: THE CHARTS PUSHED
+> FURTHER (the seventeenth pass, continued).** The owner's word on
+> the charts round: push further. Three decisions on THE LEDGER:
+>
+> 1. **THE ENGINE, MACRO — the weekly volume line.** The per-lift
+>    lines answer the micro question ("is this lift climbing?");
+>    the macro question ("am I doing more work?") had no chart.
+>    Weekly tonnage — the receipt's own convention (bodyweight
+>    load counted at its as-of weight), bucketed Sunday-first —
+>    rides one TrendGraph under a ruled row (`first → last · %`),
+>    the same block grammar as the lifts. The range pick governs
+>    it like every other derivation on the page.
+> 2. **THE BODY — the bodyweight line.** Settings logs the
+>    weigh-ins; the charts page drew nothing for them. ≥2 points
+>    renders one TrendGraph + row (`78 → 80 · +2.5`); fewer
+>    renders nothing (one weigh-in has no trend; the loading
+>    posture asserts nothing).
+> 3. **THE SHARE TABLE DIES.** The donut's legend IS the census —
+>    square chips, caps labels, mono % — and the printed bar
+>    table below it restated the same distribution a second time
+>    (the same numbers, drawn twice). Deleted; the tail beyond the
+>    top five still folds into Other, and THE BALANCE still names
+>    the neglected group.
+>
+> **LANDING.** One commit, gated; `charts-probe.ts` re-pinned to
+> the new law (the legend is the census — the table's survival
+> fails the probe; the volume and body lines assert with their
+> figures and re-bucket on the range pick; the walk's mock serves
+> deterministic weigh-ins). Light + dark clean, vitest 870/870.
+
 > **REVISION — THE EDITORIAL PASS (the sixteenth pass; the visible
 > amendment).** The owner's verdict on the atelier pass: real craft,
 > invisible at arm's length — "I can't even tell what changed." This
@@ -911,13 +941,15 @@ redText figures with its date). Quiet: totals as one mono line; the
 PR timeline as ruled rows; the analytics link.
 
 ### `/analytics` — THE LEDGER
-Question: "how regular?" Focal: the count (mono 72 — "sessions ·
-last N days" beneath). Second: THE REGISTER GRID — day cells as
-mono 12 characters (on-ramp this time): the day's set count (blank
-= no session), today in red, rest days `·`; seven columns, tabular
-by construction. Quiet: weekly sessions as ruled rows (record
-week's figure in red), THE BALANCE line (the most-neglected group —
-one row, restored to the page), the range pick (segmented).
+Question: "how regular — and how is it trending?" Focal: the count
+(mono 72 — "sessions · last N days" beneath). Second: THE SHARE
+(the donut + its legend — the legend IS the census), THE
+PROGRESSION (the top lifts' top-set lines, one graph each), THE
+ENGINE (weekly volume — the macro line), THE REGISTER GRID (the
+lifetime calendar as type: day cells as mono 12 set counts, '·'
+rest days, today in red, seven columns). Quiet: weekly rows (the
+record week's figure in red), the cardio row, THE BALANCE, THE
+BODY (the weigh-in line — ≥2 points or nothing), the range pick.
 
 ### `/settings` — THE PANEL
 Question: "how is it set?" Focal: the current theme word restating
