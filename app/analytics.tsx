@@ -17,13 +17,16 @@ import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SegmentedControl } from '../components/MobilePremium';
 import { LoadingSpinner } from '../components/primitives';
-import { BoardShell, BoardHead, QueryErrorNote, RegisterLine , SectionWhisper } from '../components/composed';
+import { BoardShell, BoardHead, QueryErrorNote, RegisterLine, SectionWhisper, SharePie, TrendGraph } from '../components/composed';
 import { useAppTheme } from '../context';
 import { safeGoBack } from '../navigation';
 import { useAnalyticsHistory, useRecentSessionDetails } from '../hooks';
-import { deriveMuscleShare, MUSCLE_GROUPS } from '../services';
+import { deriveMuscleShare, deriveTrajectory, MUSCLE_GROUPS } from '../services';
 import { AnalyticsService } from '../services';
-import { addDays } from '../utils';
+import { addDays, toDisplayWeight, roundDisplayWeight, joinFacts } from '../utils';
+import { navigateToExerciseDetail } from '../navigation';
+import { SYSTEM_EXERCISES, MUSCLE_DISPLAY_NAMES } from '../shared/exercises';
+import { useWeightUnit } from '../hooks';
 import { BLOCK_GAP, INTERVAL, theme, PAGE_GUTTER } from '../constants';
 import { formatCardioMinutes } from '../shared/exercises/cardio';
 import type { DayActivity } from '../shared/types';
@@ -60,6 +63,46 @@ export default function AnalyticsScreen() {
     }
     return worst;
   }, [detailsQuery.data, range]);
+
+  // ── THE CHARTS ROUND (owner-sanctioned): the share as a pie and
+  // the historical % rows; the top lifts' trajectories as line graphs.
+  const unit = useWeightUnit();
+  const shareRows = useMemo(
+    () => (detailsQuery.isSuccess ? deriveMuscleShare(detailsQuery.data ?? [], range) : []),
+    [detailsQuery.isSuccess, detailsQuery.data, range],
+  );
+  const pieSlices = useMemo(() => {
+    if (shareRows.length <= 6) return shareRows.map((r) => ({ label: MUSCLE_DISPLAY_NAMES[r.muscle as keyof typeof MUSCLE_DISPLAY_NAMES] ?? r.muscle, value: r.share }));
+    const top = shareRows.slice(0, 5);
+    const rest = shareRows.slice(5).reduce((n, r) => n + r.share, 0);
+    return [
+      ...top.map((r) => ({ label: MUSCLE_DISPLAY_NAMES[r.muscle as keyof typeof MUSCLE_DISPLAY_NAMES] ?? r.muscle, value: r.share })),
+      { label: 'Other', value: rest },
+    ];
+  }, [shareRows]);
+  const topLifts = useMemo(() => {
+    if (!detailsQuery.isSuccess) return [];
+    const since = Date.now() - range * 24 * 60 * 60 * 1000;
+    const counts = new Map<string, number>();
+    for (const s of detailsQuery.data ?? []) {
+      if (new Date(s.startedAt).getTime() < since) continue;
+      for (const ex of s.exercises) {
+        const seen = new Set<string>([ex.exerciseName]);
+        for (const n of seen) counts.set(n, (counts.get(n) ?? 0) + 1);
+      }
+    }
+    return [...counts.entries()]
+      .filter(([, n]) => n >= 2)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([name, n]) => {
+        const t = deriveTrajectory(detailsQuery.data ?? [], name);
+        const pts = t.points.map((p) => ({ at: p.at, value: roundDisplayWeight(toDisplayWeight(p.weight, unit)) }));
+        const slug = SYSTEM_EXERCISES.find((e) => e.name === name)?.slug ?? null;
+        return { name, sessions: n, points: pts, slug };
+      })
+      .filter((x) => x.points.length >= 2);
+  }, [detailsQuery.isSuccess, detailsQuery.data, range, unit]);
 
   const weekly = useMemo(() => {
     if (!historyQuery.data) return [];
@@ -195,6 +238,76 @@ export default function AnalyticsScreen() {
           {/* THE BALANCE — one row: the most-neglected group and its
               share (computed at read; the full per-lift story lives
               on each spec sheet). */}
+          {/* THE SHARE — the historical muscle % as a donut + the
+              printed table (the /program share grammar, computed from
+              logged history for the picked range). THE CHARTS ROUND:
+              the one drawn surface (owner-sanctioned). */}
+          {shareRows.length > 0 ? (
+            <View style={styles.block}>
+              <SectionWhisper>
+                {`THE SHARE · LAST ${range} DAYS`}
+              </SectionWhisper>
+              <View testID="analytics-share-pie">
+                <SharePie slices={pieSlices} />
+              </View>
+              <View style={styles.shareTable} testID="analytics-share-rows">
+                {shareRows.map((r) => {
+                  const lead = shareRows[0]?.share || 1;
+                  const bar = Math.max(1, Math.round((r.share / lead) * 16));
+                  return (
+                    <View key={r.muscle} style={styles.shareRow}>
+                      <Text style={[styles.shareLabel, { color: colors.textSecondary }]} numberOfLines={1}>
+                        {(MUSCLE_DISPLAY_NAMES[r.muscle as keyof typeof MUSCLE_DISPLAY_NAMES] ?? r.muscle).toUpperCase()}
+                      </Text>
+                      <Text style={[styles.shareBar, { color: colors.text }]}>
+                        {'\u2588'.repeat(bar)}
+                      </Text>
+                      <Text style={[styles.sharePct, { color: colors.textMuted }]}>
+                        {`${Math.round(r.share * 100)}%`}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
+
+          {/* THE PROGRESSION — the top lifts' top-set lines, one
+              graph per lift (ink on the ground; tap the name for the
+              spec sheet). */}
+          {topLifts.length > 0 ? (
+            <View style={styles.block}>
+              <SectionWhisper>
+                {`THE PROGRESSION · TOP LIFTS · ${unit}`}
+              </SectionWhisper>
+              {topLifts.map((lift) => {
+                const first = lift.points[0]?.value ?? 0;
+                const last = lift.points[lift.points.length - 1]?.value ?? 0;
+                const pct = first > 0 ? Math.round(((last - first) / first) * 100) : 0;
+                return (
+                  <View
+                    key={lift.name}
+                    style={styles.liftBlock}
+                    testID={`analytics-lift-${lift.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                  >
+                    <RegisterLine
+                      label={lift.name}
+                      figure={`${first} → ${last} · ${pct >= 0 ? '+' : ''}${pct}%`}
+                      onPress={lift.slug ? () => navigateToExerciseDetail(lift.slug!) : undefined}
+                      accessibilityLabel={`${lift.name}: top set ${first} to ${last} ${unit}, ${pct >= 0 ? '+' : ''}${pct} percent over ${lift.sessions} sessions`}
+                      testID={`analytics-lift-row-${lift.slug ?? lift.name}`}
+                    />
+                    <TrendGraph
+                      points={lift.points}
+                      accessibilityLabel={`${lift.name} progression line graph`}
+                      testID={`analytics-lift-graph-${lift.slug ?? lift.name}`}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+          ) : null}
+
           {lowestGroup ? (
             <View style={styles.block}>
               <SectionWhisper>
@@ -307,6 +420,33 @@ function RegisterGrid({
 }
 
 const styles = StyleSheet.create({
+  // ── THE CHARTS ROUND — the share table mirrors /program's share
+  // grammar; the lifts stack a ruled row + the drawn line.
+  shareTable: { marginTop: 12 },
+  shareRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 20,
+  },
+  shareLabel: {
+    ...theme.typography.mobileEyebrow,
+    width: 92,
+    flexShrink: 0,
+  },
+  shareBar: {
+    ...theme.typography.mobileLedger,
+    letterSpacing: 0,
+    color: undefined,
+  },
+  sharePct: {
+    ...theme.typography.mobileLedger,
+    marginLeft: 'auto',
+    fontVariant: ['tabular-nums'],
+  },
+  liftBlock: {
+    marginTop: 12,
+  },
   bodyContent: {
     paddingHorizontal: PAGE_GUTTER,
     paddingTop: 4,

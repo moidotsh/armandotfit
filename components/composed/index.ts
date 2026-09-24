@@ -19,6 +19,7 @@ export { Receipt, type ReceiptProps } from './Receipt';
 export { BoardHead, type BoardHeadProps } from './BoardHead';
 export { SectionWhisper, type SectionWhisperProps } from './SectionWhisper';
 export { QueryErrorNote, type QueryErrorNoteProps } from './QueryErrorNote';
+export { TrendGraph, SharePie, type TrendGraphProps, type SharePieProps, type PieSlice, type TrendPoint } from './TheCharts';
 
 // Shell composed layer (synced from arqavellum)
 export { RootGestureProvider } from './RootGestureProvider';
