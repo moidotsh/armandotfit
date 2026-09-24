@@ -35,13 +35,17 @@ import { BoardShell, SectionWhisper } from '../components/composed';
 import { navigateToExerciseDetail, navigateToSplitLab, safeGoBack } from '../navigation';
 import { useAppTheme } from '../context';
 import { useSplitPreferenceStore } from '../stores';
-import { generateProgram, nameForSlug, authoredProgramSlots, muscleShareDeltas } from '../services';
+import {
+  generateProgram,
+  nameForSlug,
+  authoredBaselineFor,
+  muscleShareDeltas,
+} from '../services';
 import { derivePlanMuscleShare } from '../services';
 import { INTERVAL, ROW_GAP, PAGE_GUTTER, PRESS_DIP, theme } from '../constants';
 import { joinFacts } from '../utils';
 import { MUSCLE_DISPLAY_NAMES, type ProgramType } from '../shared/exercises';
 import type { ResolvedSlot } from '../shared/exercises';
-import type { PreferredSplit } from '../shared/types';
 
 /** The card list — the generator program types, in the owner's order. */
 const PROGRAM_CARDS: ReadonlyArray<{
@@ -57,6 +61,7 @@ const PROGRAM_CARDS: ReadonlyArray<{
   { program: 'pushPullLegs', title: 'Push / Pull / Leg', short: 'Push/Pull/Leg', sessionsPerDay: 1 },
   { program: 'upperLower', title: 'Upper / Lower', short: 'Upper/Lower', sessionsPerDay: 1 },
   { program: 'broSplit', title: 'Bro Split', short: 'Bro Split', sessionsPerDay: 1 },
+  { program: 'fullyEqual', title: 'Fully Equal', short: 'Fully Equal', sessionsPerDay: 1 },
   { program: 'anythingGoes', title: 'Anything Goes', short: 'Anything Goes', sessionsPerDay: 1 },
 ];
 
@@ -189,12 +194,12 @@ export default function SplitLabScreen() {
   const board = boards[program];
   const isTwoADay = program === 'fullBodyHighFrequency';
   const genSlots = board.days.flatMap((d) => [...d.am, ...d.pm]);
-  // The comparison baseline: the full-body types meet their own shape;
-  // the other types meet the shape you actually run.
-  const baselineShape: PreferredSplit = board.shape ?? preferredShape ?? 'twoADay';
+  // The comparison baseline: the archetype's own authored starter when
+  // one exists (PPL / Upper-Lower / Bro), the same-shape full-body
+  // edition otherwise, the shape you actually run for Anything Goes.
   const { rows: deltaRows, maxAbsDelta } = useMemo(
-    () => muscleShareDeltas(genSlots, authoredProgramSlots(baselineShape)),
-    [genSlots, baselineShape],
+    () => muscleShareDeltas(genSlots, authoredBaselineFor(program, preferredShape ?? 'twoADay')),
+    [genSlots, program, preferredShape],
   );
   const passing = board.rules.filter((r) => r.ok).length;
 

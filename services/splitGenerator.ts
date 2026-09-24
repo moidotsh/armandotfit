@@ -23,6 +23,7 @@ import {
   FEMALE_TWO_A_DAY_SPLITS,
   FEMALE_ONE_A_DAY_SPLITS,
   getSlotsForDay,
+  getStarterDays,
   type ProgramEdition,
   type ResolvedSlot,
   type SessionWindow,
@@ -40,6 +41,7 @@ import {
   type RuleResult,
   type ProgramType,
   type DayThemeSpec,
+  EQUAL_MUSCLES,
 } from '../shared/exercises';
 import type { PreferredSplit } from '../shared/types';
 
@@ -381,18 +383,21 @@ function commit(entry: SystemExerciseData, state: DayBuildState): ResolvedSlot {
   };
 }
 
-/** One themed day: cover the require groups, then fill to slot count. */
+/** One themed day: cover the require groups, then fill to slot count.
+ *  `forbidden` carries the paired pass's identities (the A/B variety
+ *  law — Push B may not repeat Push A's stations). */
 function buildThemedDay(
   dayNumber: number,
   theme: DayThemeSpec,
   rand: () => number,
   frequency: Map<string, number>,
+  forbidden: ReadonlySet<string> = new Set(),
 ): GeneratedSplitDay | null {
   const pool = themedPool(theme);
   const state: DayBuildState = {
     rand,
     frequency,
-    usedSlugs: new Set(),
+    usedSlugs: new Set(forbidden),
     usedMuscles: new Set(),
     coreCount: 0,
   };
@@ -446,6 +451,68 @@ function buildAnythingDay(
   return { day: dayNumber, title: `Day ${dayNumber}`, am: slots, pm: [] };
 }
 
+
+// ── The fully-equal builder ────────────────────────────────────────────
+// 20 muscles, every one landing at the SAME set volume. Construction:
+// every slot carries UNIFORM sets (3) and only hits muscles still at
+// zero — so a multi-primary pick must pair two unfinished muscles
+// (upper-chest has no single-muscle entry in the catalog; its incline
+// presses share the budget with front-delts or chest, and the builder
+// processes upper-chest FIRST so a partner is always unfinished).
+
+const EQUAL_SETS: [number, number] = [3, 3];
+
+function buildFullyEqualDays(
+  rand: () => number,
+  frequency: Map<string, number>,
+): GeneratedSplitDay[] | null {
+  const done = new Set<string>();
+  const daySlots: ResolvedSlot[][] = [[], [], [], []];
+  const usedSlugs = new Set<string>();
+
+  // Upper-chest first (it must pair); the rest shuffled.
+  const order = [
+    'upper-chest',
+    ...shuffled(EQUAL_MUSCLES.filter((m) => m !== 'upper-chest'), rand),
+  ];
+
+  for (const muscle of order) {
+    if (done.has(muscle)) continue;
+    // Candidates: every primary muscle still at zero (the pick will
+    // complete them all at EQUAL_SETS), identity fresh.
+    const candidates = POOL.filter((e) => {
+      if (usedSlugs.has(e.slug)) return false;
+      if ((frequency.get(e.slug) ?? 0) >= MAX_FREQUENCY) return false;
+      const ms = e.primaryMuscles as readonly string[];
+      if (ms.length === 0 || ms.length > 3) return false;
+      if (!ms.includes(muscle)) return false;
+      return ms.every((m) => EQUAL_MUSCLES.includes(m) && !done.has(m));
+    });
+    if (candidates.length === 0) return null;
+    const entry = candidates[Math.floor(rand() * candidates.length)];
+    usedSlugs.add(entry.slug);
+    frequency.set(entry.slug, (frequency.get(entry.slug) ?? 0) + 1);
+    for (const m of entry.primaryMuscles) done.add(m);
+    // Round-robin the day with the fewest slots (5/5/5/5 across 20
+    // slots when every pick is single-muscle; pair picks land wherever
+    // the count needs it).
+    const target = daySlots.reduce((a, b, i) => (b.length < daySlots[a].length ? i : a), 0);
+    daySlots[target].push({
+      exercise: entry.slug,
+      suggestedTags: AUTHORED_TAGS.get(entry.slug) ?? [],
+      sets: EQUAL_SETS,
+      reps: entry.defaultReps,
+    });
+  }
+  if (!EQUAL_MUSCLES.every((m) => done.has(m))) return null;
+  return daySlots.map((slots, i) => ({
+    day: i + 1,
+    title: `Equal Day ${i + 1}`,
+    am: slots,
+    pm: [],
+  }));
+}
+
 export interface GenerateProgramOptions {
   seed: number;
   program: ProgramType;
@@ -486,7 +553,14 @@ export function generateProgram({
     const candidate: GeneratedSplitDay[] = [];
     let starved = false;
 
-    if (program === 'anythingGoes') {
+    if (program === 'fullyEqual') {
+      const days = buildFullyEqualDays(rand, frequency);
+      if (days) {
+        candidate.push(...days);
+      } else {
+        starved = true;
+      }
+    } else if (program === 'anythingGoes') {
       // The structure itself rolls: 3–6 days, 5–8 slots each.
       const dayCount = 3 + Math.floor(rand() * 4);
       const coveredRegions = new Set<string>();
@@ -500,12 +574,19 @@ export function generateProgram({
         candidate.push(day);
       }
     } else if (themes) {
+      // A/B VARIETY by construction: each pass through a theme forbids
+      // its paired pass's identities (the base theme strips ' A'/' B').
+      const passesByTheme = new Map<string, Set<string>>();
       for (let d = 0; d < themes.length; d += 1) {
-        const day = buildThemedDay(d + 1, themes[d], rand, frequency);
+        const base = themes[d].title.replace(/\s+[AB]$/, '');
+        const forbidden = passesByTheme.get(base) ?? new Set<string>();
+        const day = buildThemedDay(d + 1, themes[d], rand, frequency, forbidden);
         if (!day) {
           starved = true;
           break;
         }
+        for (const slot of day.am) forbidden.add(slot.exercise);
+        passesByTheme.set(base, forbidden);
         candidate.push(day);
       }
     }
@@ -539,6 +620,32 @@ export function authoredProgramSlots(shape: PreferredSplit): ResolvedSlot[] {
       getSlotsForDay(shape, day, w).map((slot) => ({ ...slot, exercise: slot.exercise })),
     ),
   );
+}
+
+/**
+ * The authored baseline a generated program compares against: the
+ * archetype's own starter when one exists (PPL / Upper-Lower / Bro),
+ * the authored full-body edition of the same shape for the full-body
+ * types, and the shape you actually run for Anything Goes.
+ */
+export function authoredBaselineFor(
+  program: ProgramType,
+  preferredShape: PreferredSplit = 'twoADay',
+): ResolvedSlot[] {
+  if (program === 'fullBodyOneADay') return authoredProgramSlots('oneADay');
+  if (program === 'fullBodyHighFrequency') return authoredProgramSlots('twoADay');
+  if (
+    program === 'pushPullLegs' ||
+    program === 'upperLower' ||
+    program === 'broSplit' ||
+    program === 'fullyEqual'
+  ) {
+    const starterId = program === 'pushPullLegs' ? 'ppl' : program;
+    return getStarterDays(starterId).flatMap((d) =>
+      d.session.map((slot) => ({ ...slot, exercise: slot.exercise })),
+    );
+  }
+  return authoredProgramSlots(preferredShape);
 }
 
 // ── THE DELTA — muscle share, generated vs authored ───────────────────

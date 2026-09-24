@@ -148,6 +148,17 @@ export function navigateToProgram(edition?: 'twoADay' | 'oneADay') {
   push(edition ? `/program?edition=${edition}` : '/program');
 }
 
+/** Open a starter program's days (the authored PPL / Upper-Lower /
+ *  Bro rotations on the program page). */
+export function navigateToStarterProgram(program: 'ppl' | 'upperLower' | 'broSplit' | 'fullyEqual') {
+  push(`/program?program=${program}`);
+}
+
+/** Open OTHER SPLITS — the starter cards + the generator link. */
+export function navigateToOtherSplits() {
+  push('/program?view=other');
+}
+
 /** Open the analytics screen (charts + history). */
 export function navigateToAnalytics() {
   push('/analytics');

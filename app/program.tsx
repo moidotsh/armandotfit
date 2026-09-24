@@ -27,7 +27,7 @@ import { ChevronRight } from '@tamagui/lucide-icons-2';
 import { useLocalSearchParams } from 'expo-router';
 import { MobilePrimaryButton } from '../components/MobilePremium';
 import { BoardShell, InkRail, SectionWhisper, SwapGlyph } from '../components/composed';
-import { navigateToExerciseDetail, navigateToProgram, navigateToSplitLab, safeGoBack } from '../navigation';
+import { navigateToExerciseDetail, navigateToOtherSplits, navigateToProgram, navigateToStarterProgram, navigateToSplitLab, safeGoBack } from '../navigation';
 import { useAppTheme, useToast } from '../context';
 import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import { resolveSlots, slotKey, derivePlanMuscleShare } from '../services';
@@ -39,7 +39,9 @@ import {
   SYSTEM_EXERCISES_BY_SLUG,
   MUSCLE_DISPLAY_NAMES,
   getSlotsForDay,
+  getStarterDays,
   type SessionWindow,
+  type StarterProgram,
 } from '../shared/exercises';
 import { INTERVAL, ROW_GAP, theme, PAGE_GUTTER, PRESS_DIP } from '../constants';
 import { joinFacts } from '../utils';
@@ -63,17 +65,38 @@ const splitsFor = (which: PreferredSplit, ed: string) =>
     ? which === 'oneADay' ? FEMALE_ONE_A_DAY_SPLITS : FEMALE_TWO_A_DAY_SPLITS
     : which === 'oneADay' ? ONE_A_DAY_SPLITS : TWO_A_DAY_SPLITS;
 
-const editionSentence = (days: number): string => `${days} days, two ways.`;
-
 const isEdition = (v: string | undefined): v is PreferredSplit =>
   v === 'twoADay' || v === 'oneADay';
+
+/** The starter programs — the other authored archetypes, offered as
+ *  quiet links under the editions (OTHER SPLITS). */
+const STARTER_CARDS: ReadonlyArray<{ program: StarterProgram; title: string }> = [
+  { program: 'ppl', title: 'Push/Pull/Leg' },
+  { program: 'upperLower', title: 'Upper/Lower' },
+  { program: 'broSplit', title: 'Bro Split' },
+  { program: 'fullyEqual', title: 'Fully Equal' },
+];
+
+const STARTER_NAME: Record<StarterProgram, string> = {
+  ppl: 'Push/Pull/Leg',
+  upperLower: 'Upper/Lower',
+  broSplit: 'Bro Split',
+  fullyEqual: 'Fully Equal',
+};
+
+const isStarterProgram = (v: string | undefined): v is StarterProgram =>
+  v === 'ppl' || v === 'upperLower' || v === 'broSplit' || v === 'fullyEqual';
 
 export default function ProgramScreen() {
   const { colors } = useAppTheme();
   const { showToast } = useToast();
   const split = useSplitPreferenceStore((s) => s.splitType);
   const programEdition = useSplitPreferenceStore((s) => s.edition);
-  const { edition } = useLocalSearchParams<{ edition?: string }>();
+  const { edition, program: programParam, view } = useLocalSearchParams<{
+    edition?: string;
+    program?: string;
+    view?: string;
+  }>();
 
   const overrides = useProgramOverrideStore((s) => s.overrides);
   const [pickerFor, setPickerFor] = useState<string | null>(null);
@@ -82,7 +105,9 @@ export default function ProgramScreen() {
   const overriddenCount = Object.keys(overrides).length;
 
   // ── THE OVERVIEW ────────────────────────────────────────────────────
-  if (!isEdition(edition)) {
+  // (the shelf views below — view=other and program=… — must slip past
+  //  this guard; only the plain /program reads the overview.)
+  if (!isEdition(edition) && view !== 'other' && !isStarterProgram(programParam)) {
     // The rotation's length — both editions share the same four days.
     const liveDays = splitsFor(split, programEdition).length;
     const statsOf = (which: PreferredSplit) => {
@@ -110,7 +135,7 @@ export default function ProgramScreen() {
             and stands alone in its halo: the cards below carry every
             stat (the old fact line repeated the live card's). */}
         <Text style={[styles.statement, { color: colors.text }]} numberOfLines={2}>
-          {editionSentence(liveDays)}
+          {`${liveDays} days, two ways.`}
         </Text>
 
         {/* THE EDITION CARDS — the ground plus the screen's 2px rule
@@ -204,10 +229,116 @@ export default function ProgramScreen() {
           );
         })}
 
-        {/* THE SPLIT LAB — the constraint laws as a read-only dial:
-            alternative editions, generated and previewed, nothing
-            applied. Furniture caps + chevron; the quietest ink on the
-            page (it is an instrument, not a program). */}
+        {/* OTHER SPLITS — one quiet link under the editions. The
+            starters themselves live one screen deep as cards, the
+            generator under them; the overview stays the live
+            program's page. */}
+        <Pressable
+          onPress={() => navigateToOtherSplits()}
+          accessibilityRole="button"
+          accessibilityLabel="Other splits — the starter programs and the generator"
+          style={({ pressed }) => [styles.labLink, pressed ? { opacity: PRESS_DIP } : null]}
+          testID="program-other-splits-link"
+        >
+          <Text style={[styles.labWord, { color: colors.textSecondary }]}>
+            OTHER SPLITS
+          </Text>
+          <Text
+            style={[styles.labSide, { color: colors.textMuted }]}
+            numberOfLines={1}
+          >
+            {`${STARTER_CARDS.length} STARTERS · GENERATOR`}
+          </Text>
+          <ChevronRight size={18} color={colors.textMuted} />
+        </Pressable>
+      </BoardShell>
+    );
+  }
+
+  // ── OTHER SPLITS — the starter cards + the generator link ──────────
+  if (view === 'other') {
+    return (
+      <BoardShell
+        surface="analytics"
+        onBack={safeGoBack}
+        testID="program-other-splits"
+        contentContainerStyle={styles.bodyContent}
+      >
+        <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>THE STARTERS</Text>
+        <Text style={[styles.statement, { color: colors.text }]} numberOfLines={2}>
+          Other ways through the week.
+        </Text>
+        <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
+          {joinFacts(['authored starters', `${STARTER_CARDS.length} programs`])}
+        </Text>
+
+        {/* The starter cards — the same card grammar as the editions,
+            muted ink throughout (only the live program carries full
+            ink). Tap to read the days. */}
+        {STARTER_CARDS.map(({ program: which, title }, i) => {
+          const starter = getStarterDays(which);
+          const slots = starter.flatMap((d) => d.session);
+          const rows = derivePlanMuscleShare(slots, 4);
+          const lead = rows[0]?.share ?? 1;
+          const strip = starter.map((d) => `D${d.day} \u2588`).join(' \u2009·\u2009 ');
+          return (
+            <Pressable
+              key={which}
+              onPress={() => navigateToStarterProgram(which)}
+              accessibilityRole="button"
+              accessibilityLabel={`${title} starter program — ${starter.length} days, ${slots.length} lifts. View the days`}
+              style={({ pressed }) => [
+                styles.card,
+                { borderTopWidth: 1, borderTopColor: colors.mobilePremium.hairlineBorder },
+                i === 0 ? styles.cardFirst : styles.cardNotFirst,
+                pressed ? { opacity: PRESS_DIP } : null,
+              ]}
+              testID={`program-starter-card-${which}`}
+            >
+              <View style={styles.cardHead}>
+                <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>
+                  {title}
+                </Text>
+                <ChevronRight size={20} color={colors.text} />
+              </View>
+              <View style={styles.cardFigureRow}>
+                <Text
+                  style={[styles.cardBigFigure, { color: colors.text }]}
+                  accessibilityLabel={`${starter.length} sessions per week`}
+                >
+                  {String(starter.length)}
+                </Text>
+                <Text style={[styles.cardBigUnit, { color: colors.textSecondary }]}>SESSIONS/WK</Text>
+                <Text style={[styles.cardSideFacts, { color: colors.textSecondary }]} numberOfLines={1}>
+                  {joinFacts([`${starter.length} days`, `${slots.length} lifts`])}
+                </Text>
+              </View>
+              <Text style={[styles.cardStrip, { color: colors.textSecondary }]} numberOfLines={1}>
+                {strip}
+              </Text>
+              {rows.length > 0 ? (
+                <View style={styles.cardShare}>
+                  {rows.map((row) => (
+                    <View key={row.muscle} style={styles.cardShareRow}>
+                      <Text style={[styles.cardShareLabel, { color: colors.textSecondary }]} numberOfLines={1}>
+                        {MUSCLE_DISPLAY_NAMES[row.muscle].toUpperCase()}
+                      </Text>
+                      <Text style={[styles.cardShareBar, { color: colors.textSecondary }]}>
+                        {'\u2588'.repeat(Math.max(1, Math.round((row.share / lead) * 10)))}
+                      </Text>
+                      <Text style={[styles.cardSharePct, { color: colors.textMuted }]}>
+                        {`${row.share}%`}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+            </Pressable>
+          );
+        })}
+
+        {/* THE SPLIT LAB — the generator, the quiet last link on the
+            shelf (read-only previews, nothing applies). */}
         <Pressable
           onPress={() => navigateToSplitLab()}
           accessibilityRole="button"
@@ -218,10 +349,7 @@ export default function ProgramScreen() {
           <Text style={[styles.labWord, { color: colors.textSecondary }]}>
             THE SPLIT LAB
           </Text>
-          <Text
-            style={[styles.labSide, { color: colors.textMuted }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.labSide, { color: colors.textMuted }]} numberOfLines={1}>
             GENERATE ALTERNATIVES
           </Text>
           <ChevronRight size={18} color={colors.textMuted} />
@@ -230,7 +358,107 @@ export default function ProgramScreen() {
     );
   }
 
+  // ── THE STARTER DAYS (an authored archetype's rotation) ────────────
+  if (isStarterProgram(programParam)) {
+    const starter = getStarterDays(programParam);
+    const starterSlots = starter.flatMap((d) => d.session);
+    const starterShare = derivePlanMuscleShare(starterSlots, 99);
+    const starterLead = starterShare[0]?.share ?? 1;
+    return (
+      <BoardShell
+        surface="analytics"
+        onBack={safeGoBack}
+        testID="program-starter-days"
+        contentContainerStyle={styles.bodyContent}
+      >
+        <View style={styles.dayFirst}>
+          <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
+            {joinFacts(['THE ROTATION', `${starter.length} DAYS`, CURRENT_ERA])}
+          </Text>
+          <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
+            {STARTER_NAME[programParam]}
+          </Text>
+          <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
+            {joinFacts([
+              `${starter.length} days`,
+              `${starterSlots.length} lifts`,
+              `${starter.length} sessions/week`,
+              'starter',
+            ])}
+          </Text>
+        </View>
+
+        {/* Equal chapters of ruled lines; the names tap through to the
+            spec sheets. Starters carry no override mechanism — the
+            authored slots read as authored (the lab generates). */}
+        {starter.map((day, di) => (
+          <View
+            key={day.day}
+            style={[
+              di === 0 ? styles.dayFirstChapter : styles.daySeparated,
+              di > 0 ? { borderTopColor: colors.mobilePremium.hairlineBorder } : null,
+            ]}
+          >
+            <View style={styles.dayHeadRow}>
+              <Text style={[styles.dayTitle, { color: colors.text }]} numberOfLines={1}>
+                {day.title}
+              </Text>
+              <Text style={[styles.dayHeadFigure, { color: colors.textMuted }]}>
+                {`${day.session.length} lifts`}
+              </Text>
+            </View>
+            {day.session.map((slot, i) => {
+              const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
+              const name = entry?.name ?? slot.exercise;
+              return (
+                <View key={`${day.day}:${i}`} style={styles.slotRow}>
+                  <Pressable
+                    onPress={entry ? () => navigateToExerciseDetail(entry.slug) : undefined}
+                    accessibilityRole={entry ? 'button' : undefined}
+                    accessibilityLabel={entry ? `${name} — view details` : name}
+                    style={({ pressed }) => [
+                      styles.slotNameHold,
+                      pressed ? { opacity: PRESS_DIP } : null,
+                    ]}
+                    testID={`program-starter-slot-${entry?.slug ?? `${day.day}-${i}`}`}
+                  >
+                    <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
+                      {name}
+                    </Text>
+                  </Pressable>
+                  <Text style={[styles.slotRx, { color: colors.text }]}>
+                    {rxLabel(slot.sets, slot.reps)}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        ))}
+
+        {starterShare.length > 0 ? (
+          <View style={[styles.shareBlock, { borderTopColor: colors.text }]} testID="program-share">
+            <SectionWhisper rule={false}>THE WORK</SectionWhisper>
+            {starterShare.map((row) => (
+              <View key={row.muscle} style={styles.shareRow}>
+                <Text style={[styles.shareLabel, { color: colors.textSecondary }]} numberOfLines={1}>
+                  {MUSCLE_DISPLAY_NAMES[row.muscle].toUpperCase()}
+                </Text>
+                <Text style={[styles.shareBar, { color: colors.text }]}>
+                  {'\u2588'.repeat(Math.max(1, Math.round((row.share / starterLead) * 16)))}
+                </Text>
+                <Text style={[styles.sharePct, { color: colors.textMuted }]}>
+                  {`${row.share}%`}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+      </BoardShell>
+    );
+  }
+
   // ── THE DAYS (the edition detail) ───────────────────────────────────
+  if (!isEdition(edition)) return null; // unreachable past the shelf guards
   const viewedSplit: PreferredSplit = edition;
   const days = splitsFor(viewedSplit, programEdition);
   const isTwoADay = viewedSplit === 'twoADay';
@@ -465,8 +693,12 @@ const styles = StyleSheet.create({
   cardNotFirst: {
     marginTop: 24,
   },
-  // ── THE SPLIT LAB link — furniture caps + chevron under the cards;
-  // the quietest ink (an instrument, not a program).
+  // ── THE OTHER-SPLITS SHELF — the starter cards (first follows the
+  // fact line, the rest keep the card rhythm) and THE SPLIT LAB as
+  // the quiet last link.
+  cardFirst: {
+    marginTop: 16,
+  },
   labLink: {
     marginTop: 24,
     flexDirection: 'row',

@@ -6,6 +6,13 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  PPL_STARTER,
+  UPPER_LOWER_STARTER,
+  BRO_STARTER,
+  FULLY_EQUAL_STARTER,
+  type StarterDay,
+} from '../../shared/exercises';
+import {
   PPL_DAYS,
   UPPER_LOWER_DAYS,
   BRO_DAYS,
@@ -13,6 +20,7 @@ import {
   checkThemeLaws,
   checkWeeklyLaws,
   checkProgramLaws,
+  checkFullyEqualLaws,
   type LawDay,
   type RuleResult,
 } from '../../shared/exercises';
@@ -37,8 +45,10 @@ const day = (n: number, title: string, slug: string, slots = 6): LawDay => ({
 });
 
 describe('the day themes are well-formed', () => {
-  it('PPL: Push / Pull / Legs, 7 slots each, required groups present', () => {
-    expect(PPL_DAYS.map((d) => d.title)).toEqual(['Push', 'Pull', 'Legs']);
+  it('PPL: the six-day double pass, 7 slots each, required groups present', () => {
+    expect(PPL_DAYS.map((d) => d.title)).toEqual([
+      'Push A', 'Pull A', 'Legs A', 'Push B', 'Pull B', 'Legs B',
+    ]);
     for (const d of PPL_DAYS) {
       expect(d.slots).toBe(7);
       expect(d.require.length).toBeGreaterThanOrEqual(3);
@@ -73,11 +83,37 @@ describe('the day themes are well-formed', () => {
 describe('theme laws fail what they should', () => {
   it('OFF THEME: a squat on Push day fails purity', () => {
     const days = PPL_DAYS.map((t, i) =>
-      t.title === 'Push' ? day(i + 1, t.title, 'barbell-back-squat', 7) : day(i + 1, t.title, 'push-up', 7),
+      t.title === 'Push A' ? day(i + 1, t.title, 'barbell-back-squat', 7) : day(i + 1, t.title, 'push-up', 7),
     );
     const r = rule(checkThemeLaws(days, PPL_DAYS), 'theme-purity');
     expect(r.ok).toBe(false);
     expect(r.detail).toContain('barbell-back-squat');
+  });
+
+  it("A/B VARIETY: Push B repeating Push A's station fails", () => {
+    const days = PPL_DAYS.map((t, i) => day(i + 1, t.title, 'push-up', 7));
+    const r = rule(checkThemeLaws(days, PPL_DAYS), 'ab-variety');
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain("Push B repeats Push A's");
+  });
+
+  it('A/B VARIETY: disjoint paired days pass', () => {
+    const PICKS: Record<string, string> = {
+      'Push A': 'push-up',
+      'Push B': 'machine-dip',
+      'Pull A': 'dumbbell-curl',
+      'Pull B': 'face-pull',
+      'Legs A': 'leg-extension',
+      'Legs B': 'glute-bridge',
+    };
+    const days: LawDay[] = PPL_DAYS.map((t, i) => ({
+      day: i + 1,
+      title: t.title,
+      am: [{ exercise: PICKS[t.title], suggestedTags: [], sets: [3, 3], reps: [8, 10] }],
+      pm: [],
+    }));
+    const r = rule(checkThemeLaws(days, PPL_DAYS), 'ab-variety');
+    expect(r.ok).toBe(true);
   });
 
   it('MISSING COVERAGE: a Pull day of curls misses WIDTH and REAR', () => {
@@ -140,5 +176,76 @@ describe('checkProgramLaws dispatch', () => {
     const days = [day(1, 'Day 1', 'push-up', 6)];
     expect(checkProgramLaws(days, 'anythingGoes').some((r) => r.id === 'weekly-coverage')).toBe(true);
     expect(checkProgramLaws(days, 'pushPullLegs').some((r) => r.id === 'theme-purity')).toBe(true);
+  });
+});
+
+
+// ── The authored starters obey their own laws ──────────────────────────
+
+describe('the starters pass their archetype laws', () => {
+  const toLawDays = (days: StarterDay[]): LawDay[] =>
+    days.map((d) => ({ day: d.day, title: d.title, am: d.session, pm: [] }));
+
+  it('PPL_STARTER (6-day, abs aboard) passes every PPL law', () => {
+    const rules = checkThemeLaws(toLawDays(PPL_STARTER), PPL_DAYS);
+    const bad = rules.filter((r) => !r.ok);
+    expect(bad, bad.map((r) => `${r.label}: ${r.detail}`).join('; ')).toHaveLength(0);
+    expect(PPL_STARTER).toHaveLength(6);
+    expect(PPL_STARTER.every((d) => d.session.length === 7)).toBe(true);
+    // Abs ride the rotation (the owner's ask).
+    const coreSlots = PPL_STARTER.flatMap((d) =>
+      d.session.filter((s) => ['machine-ab-crunch', 'leg-raise', 'cable-rope-crunch', 'cable-wood-chop', 'hanging-knee-raise'].includes(s.exercise)),
+    );
+    expect(coreSlots.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('UPPER_LOWER_STARTER passes every Upper/Lower law', () => {
+    const rules = checkThemeLaws(toLawDays(UPPER_LOWER_STARTER), UPPER_LOWER_DAYS);
+    expect(rules.filter((r) => !r.ok)).toHaveLength(0);
+  });
+
+  it('BRO_STARTER passes every Bro law', () => {
+    const rules = checkThemeLaws(toLawDays(BRO_STARTER), BRO_DAYS);
+    expect(rules.filter((r) => !r.ok)).toHaveLength(0);
+  });
+
+  it('FULLY_EQUAL_STARTER trains all 20 muscles at identical volume', () => {
+    const rules = checkFullyEqualLaws(toLawDays(FULLY_EQUAL_STARTER));
+    const bad = rules.filter((r) => !r.ok);
+    expect(bad, bad.map((r) => `${r.label}: ${r.detail}`).join('; ')).toHaveLength(0);
+  });
+});
+
+describe('the fully-equal laws fail what they should', () => {
+  const eqDay = (n: number, slug: string, sets: [number, number] = [3, 3]): LawDay => ({
+    day: n,
+    title: `Equal Day ${n}`,
+    am: [{ exercise: slug, suggestedTags: [], sets, reps: [10, 12] }],
+    pm: [],
+  });
+
+  it('one over-fed muscle breaks EQUAL VOLUME', () => {
+    const days = [...FULLY_EQUAL_STARTER.map((d, i) => ({
+      day: i + 1, title: d.title,
+      am: d.session.map((s) => ({ ...s })),
+      pm: [],
+    }))];
+    // Double chest's volume: a second chest slot.
+    days[0].am.push({ exercise: 'incline-dumbbell-fly', suggestedTags: [], sets: [3, 3], reps: [12, 15] });
+    const r = rule(checkFullyEqualLaws(days), 'equal-volume');
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('(max 6)');
+  });
+
+  it('a missing muscle breaks EVERY MUSCLE TRAINED', () => {
+    const days = FULLY_EQUAL_STARTER.map((d, i) => ({
+      day: i + 1,
+      title: d.title,
+      am: d.session.filter((s) => s.exercise !== 'tibia-raise'),
+      pm: [],
+    }));
+    const r = rule(checkFullyEqualLaws(days), 'equal-coverage');
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('tibialis');
   });
 });

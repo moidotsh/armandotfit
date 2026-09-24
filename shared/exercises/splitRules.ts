@@ -259,6 +259,7 @@ export type ProgramType =
   | 'pushPullLegs'
   | 'upperLower'
   | 'broSplit'
+  | 'fullyEqual'
   | 'anythingGoes';
 
 /** A day's theme: what may appear and what must appear. */
@@ -285,40 +286,55 @@ const DELTS = ['front-delts', 'side-delts', 'rear-delts'];
 const LEGS = ['quads', 'hamstrings', 'glutes'];
 const CALVES = ['calves', 'tibialis'];
 
-/** PUSH/PULL/LEG — the classic 3-day rotation, one session per day.
- *  Rear delts + traps pull; front/side delts push; core rides Legs. */
+/** PUSH/PULL/LEG — the 6-day double pass (PPL×2, the classic high-
+ *  frequency rotation). The A rotation and the B rotation are TWO
+ *  PASSES through the same themes, and the 6-day variety law binds
+ *  them: a theme's A and B days share NO exercise identity — the
+ *  second pass changes the angle and the implements (bench → incline
+ *  dumbbell; row → chin-up; squat → RDL), it never repeats the
+ *  station. Rear delts + traps pull; front/side delts push; core
+ *  rides every theme's tail (one slot at most, the core-balance law). */
+const PPL_PUSH_CONTRACT: DayThemeSpec = {
+  title: 'Push',
+  roles: ['push', 'core'],
+  slots: 7,
+  require: [
+    { id: 'chest', label: 'CHEST', anyOf: CHEST },
+    { id: 'delt', label: 'DELTS', anyOf: ['front-delts', 'side-delts'] },
+    { id: 'triceps', label: 'TRICEPS', anyOf: ['triceps'] },
+  ],
+};
+
+const PPL_PULL_CONTRACT: DayThemeSpec = {
+  title: 'Pull',
+  roles: ['pull', 'core'],
+  slots: 7,
+  require: [
+    { id: 'width', label: 'WIDTH', anyOf: ['lats', 'upper-back'] },
+    { id: 'biceps', label: 'BICEPS', anyOf: ['biceps'] },
+    { id: 'rear', label: 'REAR DELT / TRAPS', anyOf: ['rear-delts', 'traps'] },
+  ],
+};
+
+const PPL_LEGS_CONTRACT: DayThemeSpec = {
+  title: 'Legs',
+  roles: ['legs', 'core'],
+  slots: 7,
+  require: [
+    { id: 'quads', label: 'QUADS', anyOf: ['quads'] },
+    { id: 'hamstrings', label: 'HAMSTRINGS', anyOf: ['hamstrings'] },
+    { id: 'glutes', label: 'GLUTES', anyOf: ['glutes'] },
+    { id: 'calves', label: 'CALVES', anyOf: CALVES },
+  ],
+};
+
 export const PPL_DAYS: readonly DayThemeSpec[] = [
-  {
-    title: 'Push',
-    roles: ['push'],
-    slots: 7,
-    require: [
-      { id: 'chest', label: 'CHEST', anyOf: CHEST },
-      { id: 'delt', label: 'DELTS', anyOf: ['front-delts', 'side-delts'] },
-      { id: 'triceps', label: 'TRICEPS', anyOf: ['triceps'] },
-    ],
-  },
-  {
-    title: 'Pull',
-    roles: ['pull'],
-    slots: 7,
-    require: [
-      { id: 'width', label: 'WIDTH', anyOf: ['lats', 'upper-back'] },
-      { id: 'biceps', label: 'BICEPS', anyOf: ['biceps'] },
-      { id: 'rear', label: 'REAR DELT / TRAPS', anyOf: ['rear-delts', 'traps'] },
-    ],
-  },
-  {
-    title: 'Legs',
-    roles: ['legs', 'core'],
-    slots: 7,
-    require: [
-      { id: 'quads', label: 'QUADS', anyOf: ['quads'] },
-      { id: 'hamstrings', label: 'HAMSTRINGS', anyOf: ['hamstrings'] },
-      { id: 'glutes', label: 'GLUTES', anyOf: ['glutes'] },
-      { id: 'calves', label: 'CALVES', anyOf: CALVES },
-    ],
-  },
+  { ...PPL_PUSH_CONTRACT, title: 'Push A' },
+  { ...PPL_PULL_CONTRACT, title: 'Pull A' },
+  { ...PPL_LEGS_CONTRACT, title: 'Legs A' },
+  { ...PPL_PUSH_CONTRACT, title: 'Push B' },
+  { ...PPL_PULL_CONTRACT, title: 'Pull B' },
+  { ...PPL_LEGS_CONTRACT, title: 'Legs B' },
 ];
 
 /** UPPER/LOWER — the 4-day alternation. Abs ride the lower days.
@@ -452,6 +468,13 @@ export function checkThemeLaws(
   const coreFailures: string[] = [];
   const repeatFailures: string[] = [];
   const slugFailures: string[] = [];
+  const abFailures: string[] = [];
+
+  // A/B VARIETY — paired passes through a theme ('Push A' / 'Push B',
+  // 'Upper A' / 'Upper B') share NO exercise identity: the second
+  // pass changes the angle and the implements, never the station.
+  const baseOf = (title: string) => title.replace(/\s+[AB]$/, '');
+  const passesByTheme = new Map<string, Array<{ title: string; slugs: Set<string> }>>();
 
   days.forEach((day, di) => {
     const theme = themes[di];
@@ -498,6 +521,17 @@ export function checkThemeLaws(
     if (theme.roles?.includes('core') && coreSlots > MAX_CORE_PER_DAY) {
       coreFailures.push(`Day ${day.day} (${theme.title}): ${coreSlots} core slots (max ${MAX_CORE_PER_DAY})`);
     }
+
+    const base = baseOf(theme.title);
+    const passes = passesByTheme.get(base) ?? [];
+    const clash = passes.find((p) => [...seen].some((s) => p.slugs.has(s)));
+    if (clash) {
+      abFailures.push(
+        `${theme.title} repeats ${clash.title}'s ${[...seen].filter((s) => clash.slugs.has(s)).join(', ')}`,
+      );
+    }
+    passes.push({ title: theme.title, slugs: seen });
+    passesByTheme.set(base, passes);
   });
 
   const r = (id: string, label: string, failures: string[]): RuleResult => ({
@@ -511,6 +545,7 @@ export function checkThemeLaws(
     r('theme-coverage', 'THEME COVERAGE', coverageFailures),
     r('theme-distinct', 'DISTINCT WITHIN DAY', distinctFailures),
     r('theme-core', 'CORE BALANCE', coreFailures),
+    r('ab-variety', 'A/B VARIETY', abFailures),
     r('slugs', 'NO SLUG ERRORS', slugFailures),
     r('theme-repeats', 'NO DAY REPEATS', repeatFailures),
   ];
@@ -560,6 +595,66 @@ export function checkWeeklyLaws(days: readonly LawDay[]): RuleResult[] {
   ];
 }
 
+
+// ── THE FULLY-EQUAL LAWS ───────────────────────────────────────────────
+// Every muscle in the vocabulary trained EXACTLY the same — the share
+// chart is perfectly flat (each muscle 1/20 of the week's set volume).
+
+/** The 20 trainable muscles — every catalog muscle that carries
+ *  programmable entries. */
+export const EQUAL_MUSCLES: readonly string[] = [
+  'abs', 'biceps', 'calves', 'chest', 'forearms', 'front-delts', 'glutes',
+  'hamstrings', 'lats', 'lower-abs', 'lower-back', 'obliques', 'quads',
+  'rear-delts', 'side-delts', 'tibialis', 'traps', 'triceps', 'upper-back',
+  'upper-chest',
+];
+
+/**
+ * THE FULLY-EQUAL LAWS: every muscle trained, every muscle's weekly
+ * set volume IDENTICAL (a multi-primary exercise counts toward each of
+ * its primary muscles — the shared budget must still land equal).
+ */
+export function checkFullyEqualLaws(days: readonly LawDay[]): RuleResult[] {
+  const slugFailures: string[] = [];
+  const repeatFailures: string[] = [];
+  const tally = new Map<string, number>();
+
+  for (const day of days) {
+    const seen = new Set<string>();
+    for (const slot of [...day.am, ...day.pm]) {
+      const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
+      if (!entry || entry.primaryMuscles.length === 0) {
+        slugFailures.push(`Day ${day.day}: '${slot.exercise}' unresolved or muscle-less`);
+        continue;
+      }
+      if (seen.has(slot.exercise)) repeatFailures.push(`Day ${day.day}: '${slot.exercise}' twice`);
+      seen.add(slot.exercise);
+      const sets = slot.sets[1] > 0 ? slot.sets[1] : slot.sets[0];
+      for (const m of entry.primaryMuscles) {
+        tally.set(m, (tally.get(m) ?? 0) + sets);
+      }
+    }
+  }
+
+  const missing = EQUAL_MUSCLES.filter((m) => !tally.has(m));
+  const volumes = EQUAL_MUSCLES.map((m) => tally.get(m) ?? 0);
+  const minV = Math.min(...volumes);
+  const maxV = Math.max(...volumes);
+  const equal = minV === maxV && minV > 0;
+  const unequalDetail = !equal
+    ? EQUAL_MUSCLES.filter((m) => (tally.get(m) ?? 0) !== maxV)
+        .map((m) => `${m}=${tally.get(m) ?? 0}`)
+        .join(', ') + ` (max ${maxV})`
+    : undefined;
+
+  return [
+    { id: 'slugs', label: 'NO SLUG ERRORS', ok: slugFailures.length === 0, detail: slugFailures.join('; ') || undefined },
+    { id: 'theme-repeats', label: 'NO DAY REPEATS', ok: repeatFailures.length === 0, detail: repeatFailures.join('; ') || undefined },
+    { id: 'equal-coverage', label: 'EVERY MUSCLE TRAINED', ok: missing.length === 0, detail: missing.length ? `Week misses [${missing.join(', ')}]` : undefined },
+    { id: 'equal-volume', label: 'EQUAL VOLUME', ok: equal, detail: unequalDetail },
+  ];
+}
+
 /**
  * The full law check for any program type: full-body types keep the
  * original edition laws; themed types check their theme laws;
@@ -575,6 +670,9 @@ export function checkProgramLaws(
   }
   if (program === 'anythingGoes') {
     return checkWeeklyLaws(days);
+  }
+  if (program === 'fullyEqual') {
+    return checkFullyEqualLaws(days);
   }
   const themes = dayThemesFor(program);
   return themes ? checkThemeLaws(days, themes) : checkWeeklyLaws(days);

@@ -36,6 +36,7 @@ export {
   generateProgram,
   nameForSlug,
   authoredProgramSlots,
+  authoredBaselineFor,
   muscleShareDeltas,
   type GeneratedSplit,
   type GeneratedSplitDay,

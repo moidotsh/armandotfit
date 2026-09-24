@@ -48,7 +48,7 @@ export type ExerciseKey =
   | 'cable-curl'
   // Lower-focus edition identities
   | 'barbell-back-squat'
-  | 'romanian-deadlift'
+  | 'romanian-deadlift-barbell'
   | 'dumbbell-romanian-deadlift'
   | 'leg-extension'
   | 'seated-calf-raise-machine'
@@ -57,7 +57,37 @@ export type ExerciseKey =
   | 'glute-kickback'
   | 'thigh-abductor'
   | 'thigh-adductor'
-  | 'plie-dumbbell-squat';
+  | 'plie-dumbbell-squat'
+  // Program-starter identities (the PPL / Upper-Lower / Bro starters
+  // below — all CORE + seeded, same catalog, authored the same way)
+  | 'flat-barbell-bench-press'
+  | 'incline-dumbbell-press'
+  | 'barbell-overhead-press'
+  | 'dumbbell-lateral-raise'
+  | 'machine-lateral-raise'
+  | 'arnold-press'
+  | 'cable-tricep-pushdown'
+  | 'machine-overhead-tricep-extension'
+  | 'close-grip-bench-press'
+  | 'barbell-skull-crusher'
+  | 'cable-wood-chop'
+  | 'cable-rope-crunch'
+  | 'floor-crunch'
+  | 'hanging-knee-raise'
+  | 'barbell-row'
+  | 'machine-seated-row'
+  | 'wide-grip-cable-row'
+  | 't-bar-row'
+  | 'chin-up'
+  | 'dumbbell-rear-delt-fly'
+  | 'ez-bar-curl'
+  | 'hammer-curl'
+  | 'preacher-curl-machine'
+  | 'barbell-curl'
+  | 'dumbbell-pullover'
+  | 'barbell-shrug'
+  | 'cable-wrist-curl'
+  | 'front-squat';
 
 /** AM vs PM session — planning-time context for twoADay splits. */
 export type SessionWindow = 'am' | 'pm' | 'single';
@@ -394,6 +424,302 @@ export const FEMALE_ONE_A_DAY_SPLITS: OneADayDay[] = [
     ],
   },
 ];
+
+// ──────────────────────────────────────────────────────────────────────
+// THE PROGRAM STARTERS — authored editions for the other archetypes
+// (PPL / Upper-Lower / Bro), the same authored-asset discipline as
+// the full-body programs above: pure TypeScript, never the database,
+// slots carrying coarse identity + suggested tags + programmed Rx.
+// Each starter must pass its archetype's law set (the suite proves
+// it); the Split Lab's generator draws from the same law book.
+// ──────────────────────────────────────────────────────────────────────
+
+/** The starter program ids (the lab's non-full-body program types). */
+export type StarterProgram = 'ppl' | 'upperLower' | 'broSplit' | 'fullyEqual';
+
+/** One single-session starter day (the day count varies by program). */
+export interface StarterDay {
+  day: number;
+  title: string;
+  session: SplitSlot[];
+}
+
+// PUSH/PULL/LEG — the 6-day double pass. The A rotation trains the
+// heavy compounds (bench, row, squat); the B rotation changes the
+// angle and the implements (incline dumbbell, chin-up, RDL) — every
+// theme's two days share NO identity, the 6-day variety law in the
+// law book. Abs ride five of the six days (one slot: crunch, leg
+// raise, rope crunch, wood chop, hanging knee raise).
+export const PPL_STARTER: StarterDay[] = [
+  {
+    day: 1,
+    title: 'Push A',
+    session: [
+      { exercise: 'flat-barbell-bench-press', suggestedTags: [], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'barbell-overhead-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-incline-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'cable-tricep-pushdown', suggestedTags: ['rope', 'neutral'], sets: [3, 3], reps: [10, 12] },
+      { exercise: 'machine-overhead-tricep-extension', suggestedTags: [], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [2, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 2,
+    title: 'Pull A',
+    session: [
+      { exercise: 'barbell-row', suggestedTags: ['overhand'], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'lat-pulldown', suggestedTags: ['underhand', 'lat-bar'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-seated-row', suggestedTags: ['v-grip', 'neutral'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'dumbbell-curl', suggestedTags: ['seated', 'incline'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'hammer-curl', suggestedTags: ['neutral'], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'leg-raise', suggestedTags: ['captains-chair'], sets: [2, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 3,
+    title: 'Legs A',
+    session: [
+      { exercise: 'barbell-back-squat', suggestedTags: [], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'leg-extension', suggestedTags: [], sets: [3, 3], reps: [12, 15] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'tibia-raise', suggestedTags: ['machine'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'cable-rope-crunch', suggestedTags: ['rope', 'kneeling'], sets: [2, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 4,
+    title: 'Push B',
+    session: [
+      { exercise: 'incline-dumbbell-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'dumbbell-overhead-press', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'dumbbell-lateral-raise', suggestedTags: [], sets: [3, 3], reps: [12, 15] },
+      { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'machine-dip', suggestedTags: [], sets: [2, 2], reps: [8, 10] },
+      { exercise: 'cable-wood-chop', suggestedTags: ['high-to-low'], sets: [2, 3], reps: [12, 15] },
+    ],
+  },
+  {
+    day: 5,
+    title: 'Pull B',
+    session: [
+      { exercise: 't-bar-row', suggestedTags: [], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'chin-up', suggestedTags: ['neutral'], sets: [3, 3], reps: [6, 10] },
+      { exercise: 'wide-grip-cable-row', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'dumbbell-rear-delt-fly', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'ez-bar-curl', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'preacher-curl-machine', suggestedTags: [], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'hanging-knee-raise', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+    ],
+  },
+  {
+    day: 6,
+    title: 'Legs B',
+    session: [
+      { exercise: 'romanian-deadlift-barbell', suggestedTags: [], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'bulgarian-split-squat', suggestedTags: ['dumbbell', 'per-leg'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'lying-leg-curl-machine', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'glute-bridge', suggestedTags: ['barbell'], sets: [3, 3], reps: [10, 12] },
+      { exercise: 'seated-calf-raise-machine', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'thigh-abductor', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'back-extension', suggestedTags: [], sets: [2, 3], reps: [10, 12] },
+    ],
+  },
+];
+
+// UPPER/LOWER — the 4-day alternation. Upper A leads with the barbell
+// bench + pulldown; Upper B flips to incline dumbbell + row. Lower A
+// squats; Lower B fronts. Abs ride both lower days.
+export const UPPER_LOWER_STARTER: StarterDay[] = [
+  {
+    day: 1,
+    title: 'Upper A',
+    session: [
+      { exercise: 'flat-barbell-bench-press', suggestedTags: [], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'lat-pulldown', suggestedTags: ['underhand', 'lat-bar'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'barbell-overhead-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-seated-row', suggestedTags: ['v-grip', 'neutral'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'barbell-curl', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'cable-tricep-pushdown', suggestedTags: ['rope', 'neutral'], sets: [3, 3], reps: [10, 12] },
+    ],
+  },
+  {
+    day: 2,
+    title: 'Lower A',
+    session: [
+      { exercise: 'barbell-back-squat', suggestedTags: [], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'romanian-deadlift-barbell', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'tibia-raise', suggestedTags: ['machine'], sets: [2, 3], reps: [15, 20] },
+      { exercise: 'floor-crunch', suggestedTags: [], sets: [2, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 3,
+    title: 'Upper B',
+    session: [
+      { exercise: 'incline-dumbbell-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'barbell-row', suggestedTags: ['overhand'], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'dumbbell-overhead-press', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'chin-up', suggestedTags: ['neutral'], sets: [3, 3], reps: [6, 10] },
+      { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'hammer-curl', suggestedTags: ['neutral'], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'machine-overhead-tricep-extension', suggestedTags: [], sets: [2, 3], reps: [10, 12] },
+    ],
+  },
+  {
+    day: 4,
+    title: 'Lower B',
+    session: [
+      { exercise: 'front-squat', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'bulgarian-split-squat', suggestedTags: ['dumbbell', 'per-leg'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'lying-leg-curl-machine', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'leg-extension', suggestedTags: [], sets: [3, 3], reps: [12, 15] },
+      { exercise: 'glute-bridge', suggestedTags: ['barbell'], sets: [3, 3], reps: [10, 12] },
+      { exercise: 'seated-calf-raise-machine', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'cable-rope-crunch', suggestedTags: ['rope', 'kneeling'], sets: [2, 3], reps: [15, 20] },
+    ],
+  },
+];
+
+// BRO SPLIT — the five region days. Each day stays inside its muscle
+// theme with the distinctness the law demands (two chest muscles,
+// three back, four leg, three delt heads, both arms).
+export const BRO_STARTER: StarterDay[] = [
+  {
+    day: 1,
+    title: 'Chest',
+    session: [
+      { exercise: 'flat-barbell-bench-press', suggestedTags: [], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'incline-dumbbell-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-incline-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-chest-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'incline-dumbbell-fly', suggestedTags: [], sets: [2, 2], reps: [12, 15] },
+      { exercise: 'dumbbell-pullover', suggestedTags: [], sets: [2, 3], reps: [10, 12] },
+    ],
+  },
+  {
+    day: 2,
+    title: 'Back',
+    session: [
+      { exercise: 'barbell-row', suggestedTags: ['overhand'], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'chin-up', suggestedTags: ['neutral'], sets: [3, 3], reps: [6, 10] },
+      { exercise: 't-bar-row', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'straight-arm-pulldown', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'machine-seated-row', suggestedTags: ['v-grip', 'neutral'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'dumbbell-shrug', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+    ],
+  },
+  {
+    day: 3,
+    title: 'Legs',
+    session: [
+      { exercise: 'barbell-back-squat', suggestedTags: [], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'romanian-deadlift-barbell', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'leg-extension', suggestedTags: [], sets: [3, 3], reps: [12, 15] },
+      { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+    ],
+  },
+  {
+    day: 4,
+    title: 'Shoulders',
+    session: [
+      { exercise: 'barbell-overhead-press', suggestedTags: [], sets: [4, 4], reps: [6, 8] },
+      { exercise: 'arnold-press', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-lateral-raise', suggestedTags: [], sets: [3, 3], reps: [12, 15] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'dumbbell-rear-delt-fly', suggestedTags: [], sets: [2, 3], reps: [12, 15] },
+      { exercise: 'barbell-shrug', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+    ],
+  },
+  {
+    day: 5,
+    title: 'Arms',
+    session: [
+      { exercise: 'close-grip-bench-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'barbell-curl', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'barbell-skull-crusher', suggestedTags: [], sets: [3, 3], reps: [10, 12] },
+      { exercise: 'hammer-curl', suggestedTags: ['neutral'], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'cable-overhead-tricep-extension', suggestedTags: ['rope', 'neutral'], sets: [2, 3], reps: [10, 12] },
+      { exercise: 'preacher-curl-machine', suggestedTags: [], sets: [2, 3], reps: [10, 12] },
+    ],
+  },
+];
+
+
+// FULLY EQUAL — every muscle in the vocabulary trained EXACTLY the
+// same: 20 muscles × 3 sets, a perfectly flat share chart (the one
+// multi-primary slot is deliberate: upper-chest has no single-muscle
+// exercise in the catalog, so the incline press carries upper-chest
+// AND front-delts' shared budget — both land at 3).
+export const FULLY_EQUAL_STARTER: StarterDay[] = [
+  {
+    day: 1,
+    title: 'Equal Day 1',
+    session: [
+      { exercise: 'machine-chest-fly', suggestedTags: [], sets: [3, 3], reps: [12, 15] },
+      { exercise: 'lat-pulldown', suggestedTags: ['underhand', 'lat-bar'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'leg-extension', suggestedTags: [], sets: [3, 3], reps: [12, 15] },
+      { exercise: 'cable-lateral-raise', suggestedTags: ['egyptian', 'handle'], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'dumbbell-curl', suggestedTags: ['seated', 'incline'], sets: [3, 3], reps: [8, 10] },
+    ],
+  },
+  {
+    day: 2,
+    title: 'Equal Day 2',
+    session: [
+      { exercise: 'incline-dumbbell-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'wide-grip-cable-row', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'machine-leg-curl', suggestedTags: ['seated'], sets: [3, 3], reps: [8, 10] },
+      { exercise: 'cable-tricep-pushdown', suggestedTags: ['rope', 'neutral'], sets: [3, 3], reps: [10, 12] },
+      { exercise: 'machine-shrug', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
+    ],
+  },
+  {
+    day: 3,
+    title: 'Equal Day 3',
+    session: [
+      { exercise: 'face-pull', suggestedTags: ['rope', 'neutral'], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'back-extension', suggestedTags: [], sets: [3, 3], reps: [10, 12] },
+      { exercise: 'tibia-raise', suggestedTags: ['machine'], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'machine-ab-crunch', suggestedTags: ['eccentric'], sets: [3, 3], reps: [15, 20] },
+      { exercise: 'glute-bridge', suggestedTags: ['barbell'], sets: [3, 3], reps: [10, 12] },
+    ],
+  },
+  {
+    day: 4,
+    title: 'Equal Day 4',
+    session: [
+      { exercise: 'hanging-knee-raise', suggestedTags: [], sets: [3, 3], reps: [12, 15] },
+      { exercise: 'cable-wood-chop', suggestedTags: ['high-to-low'], sets: [3, 3], reps: [12, 15] },
+      { exercise: 'cable-wrist-curl', suggestedTags: [], sets: [3, 3], reps: [12, 15] },
+      { exercise: 'standing-machine-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
+    ],
+  },
+];
+
+/** The starter days for a program (empty for unknown ids). */
+export function getStarterDays(program: StarterProgram): StarterDay[] {
+  switch (program) {
+    case 'ppl':
+      return PPL_STARTER;
+    case 'upperLower':
+      return UPPER_LOWER_STARTER;
+    case 'broSplit':
+      return BRO_STARTER;
+    case 'fullyEqual':
+      return FULLY_EQUAL_STARTER;
+  }
+}
 
 // ──────────────────────────────────────────────────────────────────────
 // Lookup helpers

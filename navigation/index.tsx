@@ -18,6 +18,8 @@ export {
   navigateToProgression,
   navigateToAnalytics,
   navigateToProgram,
+  navigateToStarterProgram,
+  navigateToOtherSplits,
   navigateToSplitSelection,
   navigateToSplitLab,
   replaceWithHome,

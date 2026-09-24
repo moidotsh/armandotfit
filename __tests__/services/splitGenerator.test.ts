@@ -129,6 +129,7 @@ const ALL_PROGRAMS: ProgramType[] = [
   'pushPullLegs',
   'upperLower',
   'broSplit',
+  'fullyEqual',
   'anythingGoes',
 ];
 
@@ -160,18 +161,24 @@ describe('generateProgram — every type passes its own laws', () => {
 });
 
 describe('generateProgram — archetype structures', () => {
-  it('PPL: Push / Pull / Legs × 7, every slot on-theme', () => {
+  it('PPL: the 6-day double pass — on-theme AND A/B disjoint', () => {
     const r = generateProgram({ seed: 42, program: 'pushPullLegs' });
-    expect(r.days.map((d) => d.title)).toEqual(['Push', 'Pull', 'Legs']);
+    expect(r.days.map((d) => d.title)).toEqual([
+      'Push A', 'Pull A', 'Legs A', 'Push B', 'Pull B', 'Legs B',
+    ]);
     for (const day of r.days) {
       expect(day.am).toHaveLength(7);
       expect(day.pm).toHaveLength(0);
     }
     const roles = r.days.map((d) => new Set(d.am.map((s) => SYSTEM_EXERCISES_BY_SLUG[s.exercise]?.movementRole)));
-    expect([...roles[0]]).toEqual(['push']);
-    expect([...roles[1]]).toEqual(['pull']);
-    // Legs day may carry core; everything else is legs.
-    for (const role of roles[2]) expect(['legs', 'core']).toContain(role);
+    for (const role of [...roles[0], ...roles[3]]) expect(['push', 'core']).toContain(role);
+    for (const role of [...roles[1], ...roles[4]]) expect(['pull', 'core']).toContain(role);
+    for (const role of [...roles[2], ...roles[5]]) expect(['legs', 'core']).toContain(role);
+    // A/B VARIETY: the paired days share no identity.
+    const slugsOf = (i: number) => new Set(r.days[i].am.map((s) => s.exercise));
+    for (const [a, b] of [[0, 3], [1, 4], [2, 5]] as const) {
+      expect([...slugsOf(a)].filter((s) => slugsOf(b).has(s))).toEqual([]);
+    }
   });
 
   it('Upper/Lower: the A/B alternation, upper days push+pull only', () => {
@@ -206,6 +213,24 @@ describe('generateProgram — archetype structures', () => {
           `${day.title}: '${slot.exercise}' [${muscles}] off theme`,
         ).toBe(true);
       }
+    }
+  });
+
+  it('Fully Equal: 4 days, every muscle at identical volume', () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const r = generateProgram({ seed, program: 'fullyEqual' });
+      expect(r.days).toHaveLength(4);
+      const tally = new Map<string, number>();
+      for (const day of r.days) {
+        for (const slot of day.am) {
+          for (const m of SYSTEM_EXERCISES_BY_SLUG[slot.exercise]?.primaryMuscles ?? []) {
+            tally.set(m, (tally.get(m) ?? 0) + slot.sets[1]);
+          }
+        }
+      }
+      const volumes = new Set(tally.values());
+      expect(volumes.size, `seed ${seed}: volumes ${[...tally.entries()].map(([m, v]) => `${m}=${v}`).join(' ')}`).toBe(1);
+      expect(tally.size).toBe(20);
     }
   });
 
