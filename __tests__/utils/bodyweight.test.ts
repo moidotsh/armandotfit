@@ -164,3 +164,31 @@ describe('bodyweightAsOf — point-in-time resolution', () => {
     expect(bodyweightAsOf([], '2027-09-20T08:00:00Z')).toBeNull();
   });
 });
+
+
+// ── THE STACK GATE (the owner's report: 135 lb seated calf raise ──────
+// printed as 'a+135') — a machine/cable lift's load is the stack; a
+// name that matches a bodyweight pattern must not smuggle bodyweight
+// in. Station-carried movements (pull-ups on the bar, leg raises on
+// the chair) keep their factor despite the machine modality.
+
+describe('bodyweightFactorFor — the stack gate', () => {
+  it('a machine stack named like a bodyweight lift carries NO factor', () => {
+    expect(bodyweightFactorFor('Seated Calf Raise', { slug: 'seated-calf-raise-machine', modality: 'machine' })).toBeNull();
+    expect(bodyweightFactorFor('Standing Calf Raises', { slug: 'standing-calf-raises', modality: 'machine' })).toBeNull();
+    expect(bodyweightFactorFor('Cable Incline Pushdown', { slug: 'cable-incline-pushdown', modality: 'cable' })).toBeNull();
+  });
+
+  it('station-carried bodyweight movements keep theirs', () => {
+    expect(bodyweightFactorFor('Pull-up', { slug: 'pull-up-bar', modality: 'machine' })).toBeGreaterThan(0);
+    expect(bodyweightFactorFor('Leg Raise', { slug: 'leg-raise', modality: 'machine' })).toBeGreaterThan(0);
+    expect(bodyweightFactorFor('Rope Crunch', { slug: 'rope-crunch', modality: 'cable' })).toBeGreaterThan(0);
+  });
+
+  it('floor movements and loaded variants are untouched', () => {
+    expect(bodyweightFactorFor('Push-Up', { slug: 'push-up', modality: 'floor' })).toBeGreaterThan(0);
+    expect(bodyweightFactorFor('Single-Leg Calf Raise', { slug: 'single-leg-calf-raise', modality: 'floor' })).toBeGreaterThan(0);
+    // Name-only callers (legacy) behave as before.
+    expect(bodyweightFactorFor('Push-Up')).toBeGreaterThan(0);
+  });
+});

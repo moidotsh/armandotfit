@@ -175,11 +175,50 @@ const FACTOR_RULES: FactorRule[] = [
 ];
 
 /**
+ * STATION-CARRIED BODYWEIGHT MOVEMENTS — performed ON equipment, but
+ * the body is the resistance (the modality says machine because the
+ * station is one: a pull-up bar, a captain's chair, a hyper bench).
+ * These keep their factor despite a machine/cable modality; every
+ * other machine/cable lift is a STACK — its load is the stack, and a
+ * name that happens to match a bodyweight pattern ('Seated Calf
+ * Raise' matching /calf raise/) must not smuggle bodyweight in.
+ * The owner's report: a 135 lb seated calf raise printed as 'a+135'.
+ */
+const STATION_BODYWEIGHT_SLUGS: ReadonlySet<string> = new Set([
+  'pull-up-bar',
+  'chin-up',
+  'leg-raise',
+  'floor-leg-raise',
+  'hanging-knee-raise',
+  'reverse-hyperextension',
+  'chair-squat',
+  'lunge-sprint',
+  'smith-machine-pistol-squat',
+  'rope-crunch',
+  'standing-rope-crunch',
+]);
+
+/**
  * The bodyweight load factor for an exercise, by name pattern.
  * Returns null when the exercise isn't a recognized bodyweight
  * movement (bands, machines, implements, loaded variants).
+ *
+ * A `modality` of 'machine' or 'cable' means a STACK bears the load —
+ * factor null, unless the slug is a station-carried bodyweight
+ * movement (see above). Pass the entry's slug + modality from the
+ * catalog composition; omit them only in name-only callers (tests).
  */
-export function bodyweightFactorFor(name: string): number | null {
+export function bodyweightFactorFor(
+  name: string,
+  identity?: { slug?: string; modality?: string },
+): number | null {
+  const modality = identity?.modality;
+  if (
+    (modality === 'machine' || modality === 'cable') &&
+    !(identity?.slug != null && STATION_BODYWEIGHT_SLUGS.has(identity.slug))
+  ) {
+    return null;
+  }
   for (const rule of FACTOR_RULES) {
     if (rule.exclude?.test(name)) continue;
     if (rule.pattern.test(name)) {

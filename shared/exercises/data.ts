@@ -2099,12 +2099,14 @@ export const SYSTEM_EXERCISES: SystemExerciseData[] = [
     image: e.image ?? CORE_PLATES[e.slug],
     imageB: e.imageB ?? CORE_PLATES_B[e.slug],
     instructions: CORE_COPY[e.slug] ?? e.instructions,
-    bodyweightLoadFactor: bodyweightFactorFor(e.name) ?? undefined,
+    bodyweightLoadFactor:
+      bodyweightFactorFor(e.name, { slug: e.slug, modality: e.modality }) ?? undefined,
     movementRole: movementRoleOf(e),
   })),
   ...(IMPORTED_EXERCISES as unknown as SystemExerciseData[]).map((e) => ({
     ...e,
-    bodyweightLoadFactor: bodyweightFactorFor(e.name) ?? undefined,
+    bodyweightLoadFactor:
+      bodyweightFactorFor(e.name, { slug: e.slug, modality: e.modality }) ?? undefined,
     movementRole: movementRoleOf(e),
   })),
 ];
