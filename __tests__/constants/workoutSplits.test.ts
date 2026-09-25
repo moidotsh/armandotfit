@@ -9,7 +9,7 @@ import {
   suggestNextSplitDay,
   suggestSessionWindow,
 } from '../../constants';
-import { TAG_AXES, tagsWithAxisRespected } from '../../shared/exercises';
+import { TAG_AXES, TAG_VOCABULARY_SEED, tagsWithAxisRespected } from '../../shared/exercises';
 import { nextDefaultSessionMode } from '../../constants';
 
 describe('getNextSplitDay', () => {
@@ -126,5 +126,24 @@ describe('nextDefaultSessionMode', () => {
   it('one-a-day keeps the picked mode', () => {
     expect(nextDefaultSessionMode('oneADay', 'am')).toBe('am');
     expect(nextDefaultSessionMode('oneADay', 'pm')).toBe('pm');
+  });
+});
+
+
+// ── THE STATION AXIS — pattern-matched instances ──────────────────────
+
+describe('the station axis', () => {
+  it('any station-N is on the axis — station-3 (a third cable stack) evicts station-1', () => {
+    expect(tagsWithAxisRespected(['station-1', 'underhand'], 'station-3')).toEqual([
+      'underhand',
+      'station-3',
+    ]);
+    // Open-ended: station-7 (typed free-form) is on the axis too.
+    expect(tagsWithAxisRespected(['station-1'], 'station-7')).toEqual(['station-7']);
+  });
+
+  it('the vocabulary suggests three stations and stations do not evict grip', () => {
+    expect(TAG_VOCABULARY_SEED).toEqual(expect.arrayContaining(['station-1', 'station-2', 'station-3']));
+    expect(tagsWithAxisRespected(['station-1'], 'underhand')).toEqual(['station-1', 'underhand']);
   });
 });

@@ -60,7 +60,7 @@ import {
   RATING_GLYPH,
   type RatedInstance,
 } from '../../services';
-import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED,
+import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED, TAG_AXES,
   plateUrl,
 } from '../../shared/exercises';
 import { plateOffsetFor } from '../../shared/exercises/plateOffsets';
@@ -85,6 +85,12 @@ import { RegisterLine } from './RegisterLine';
 import { TagChips } from './TagChips';
 import { InkRail, SwapGlyph } from './InkRail';
 import { NextStation } from './NextStation';
+
+/** The seed's free words — everything OUTSIDE the qualifier axes
+ *  (the axes render themselves in the editor). */
+const FREE_TAG_WORDS = TAG_VOCABULARY_SEED.filter(
+  (t) => !TAG_AXES.some((a) => a.members.includes(t) || (a.pattern?.test(t) ?? false)),
+);
 
 /** The armed set's editable values. */
 interface Armed {
@@ -928,9 +934,14 @@ export function Floor() {
               {tagsOpen ? (
                 <TagChips
                   tags={exercise.tags}
-                  suggestions={TAG_VOCABULARY_SEED.filter(
+                  // The unlabeled run carries the FREE vocabulary
+                  // (the seed's non-axis words — incline, eccentric,
+                  // per-leg…); the editor's axes render everything
+                  // structured. The program's own hints already ride
+                  // the chip row (they prefill as active tags).
+                  suggestions={FREE_TAG_WORDS.filter(
                     (t) => !exercise.tags.includes(t),
-                  ).slice(0, 3)}
+                  ).slice(0, 4)}
                   onToggleTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
                   onAddTag={(tag) => toggleDraftExerciseTag(exercise.localId, tag)}
                   testID={`tag-chips-${exercise.localId}`}

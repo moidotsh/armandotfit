@@ -286,6 +286,11 @@ export const TAG_VOCABULARY_SEED: string[] = [
   // (one cable vs two; duplicate machines). One axis per tag.
   'single-pulley',
   'dual-pulley',
+  // Station instances — the gym's cable stacks and duplicate machines
+  // (any station-N is on the axis; these three are the suggestions).
+  'station-1',
+  'station-2',
+  'station-3',
 ];
 
 // ──────────────────────────────────────────────────────────────────────
@@ -305,6 +310,10 @@ export interface TagAxis {
   label: string;
   /** The mutually exclusive members. */
   members: readonly string[];
+  /** Open-ended members (any match is on the axis and evicts its
+   *  siblings): the station axis takes station-N for any N — a gym
+   *  with three cable stacks tags station-3 without a vocabulary edit. */
+  pattern?: RegExp;
 }
 
 export const TAG_AXES: readonly TagAxis[] = [
@@ -313,12 +322,14 @@ export const TAG_AXES: readonly TagAxis[] = [
   { id: 'implement', label: 'IMPLEMENT', members: ['machine', 'dumbbell', 'barbell', 'cable'] },
   { id: 'stance', label: 'STANCE', members: ['seated', 'standing', 'kneeling'] },
   { id: 'pulley', label: 'PULLEYS', members: ['single-pulley', 'dual-pulley'] },
-  { id: 'station', label: 'STATION', members: ['station-1', 'station-2'] },
+  { id: 'station', label: 'STATION', members: ['station-1', 'station-2', 'station-3'], pattern: /^station-\d+$/ },
 ];
 
-/** The axis a tag belongs to, if any. */
+/** The axis a tag belongs to, if any (members OR the axis's pattern). */
 export function tagAxisOf(tag: string): TagAxis | undefined {
-  return TAG_AXES.find((axis) => axis.members.includes(tag));
+  return TAG_AXES.find(
+    (axis) => axis.members.includes(tag) || (axis.pattern?.test(tag) ?? false),
+  );
 }
 
 /**
@@ -329,7 +340,9 @@ export function tagAxisOf(tag: string): TagAxis | undefined {
 export function tagsWithAxisRespected(current: readonly string[], incoming: string): string[] {
   const axis = tagAxisOf(incoming);
   if (!axis) return [...current, incoming];
-  return [...current.filter((t) => !axis.members.includes(t)), incoming];
+  const onAxis = (t: string) =>
+    axis.members.includes(t) || (axis.pattern?.test(t) ?? false);
+  return [...current.filter((t) => !onAxis(t)), incoming];
 }
 
 // ──────────────────────────────────────────────────────────────────────

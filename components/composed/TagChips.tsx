@@ -9,6 +9,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useAppTheme } from '../../context';
+import { TAG_AXES } from '../../shared/exercises';
 import { theme,
   PRESS_DIP
 } from '../../constants';
@@ -16,7 +17,8 @@ import { theme,
 export interface TagChipsProps {
   /** Currently active tags on the logged exercise. */
   tags: string[];
-  /** Suggested tags shown as one-tap words (program suggestions first). */
+  /** Program-suggested tags shown as one unlabeled one-tap run
+   *  (the slot's own realization hints). */
   suggestions?: string[];
   onToggleTag: (tag: string) => void;
   /** Fired when the user submits a new tag via the input. */
@@ -82,6 +84,45 @@ export function TagChips({
         </View>
       ) : null}
 
+      {/* THE AXES — one labeled run per qualifier family: GRIP ·
+          underhand overhand neutral, STATION · 1 2 3… Picking a member
+          evicts its siblings (the axis law at the store seam), so the
+          single-choice nature is VISIBLE before the tap. Members
+          already active ride the chip row above. */}
+      {TAG_AXES.map((axis) => (
+        <View key={axis.id} style={styles.axisRow} testID={`${testID ?? 'tag-chips'}-axis-${axis.id}`}>
+          <Text style={[styles.axisLabel, { color: colors.textMuted }]}>{axis.label}</Text>
+          <View style={styles.axisWords}>
+            {axis.members.map((tag) => {
+              const isActive = active.has(tag);
+              return (
+                <Pressable
+                  key={tag}
+                  onPress={() => onToggleTag(tag)}
+                  accessibilityRole="button"
+                  // Distinct from the chip row's label (the active
+                  // member renders in both places by design: the chip is
+                  // the tag, the axis word is the family's visible choice).
+                  accessibilityLabel={`${isActive ? 'Clear' : 'Add'} tag ${tag}`}
+                  hitSlop={6}
+                  style={({ pressed }) => [styles.wordCta, pressed ? { opacity: PRESS_DIP } : null]}
+                  testID={`${testID ?? 'tag-chips'}-axis-${axis.id}-${tag}`}
+                >
+                  <Text
+                    style={[
+                      styles.wordText,
+                      { color: isActive ? colors.text : colors.textSecondary },
+                    ]}
+                  >
+                    {tag.replace(/^station-(\d)$/, '$1')}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      ))}
+
       <View style={styles.chipRow}>
         {suggestionList.map((tag) => (
           <Pressable
@@ -140,6 +181,25 @@ export function TagChips({
 
 const styles = StyleSheet.create({
   wrap: { gap: 2, marginTop: 4 },
+  // Each axis: the caps label in a fixed left post, the words wrapping
+  // beside it — the tag row's own grammar, one axis per line.
+  axisRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 32,
+  },
+  axisLabel: {
+    ...theme.typography.mobileEyebrow,
+    width: 92,
+    flexShrink: 0,
+  },
+  axisWords: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    flex: 1,
+  },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 2, alignItems: 'center' },
   // Every pressable clears the 44px touch floor — the visual marking
   // chip rides centered inside the box (RN-web hitSlop does not expand
