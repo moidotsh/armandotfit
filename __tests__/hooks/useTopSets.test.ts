@@ -49,3 +49,35 @@ describe('deriveTopSets', () => {
     expect(map.has('lat pulldown')).toBe(true);
   });
 });
+
+
+// ── THE RAW CONTRACT (the owner's report: a bodyweight leg raise armed ──
+// as '72 lb' and printed 'a+72'). The map feeds the logger's arming and
+// the register's digits — raw-weight contexts, both. The effective load
+// lives in utils/bodyweight.effectiveSetWeight, computed by the reads
+// that need it.
+
+describe('useTopSets — the raw contract', () => {
+  it('a pure bodyweight lift stays 0 — never the effective load', () => {
+    const map = deriveTopSets([
+      session('2026-12-10T10:00:00Z', [
+        { exerciseName: 'Leg Raise', sets: [{ weight: null, reps: 15 }, { weight: 0, reps: 15 }] },
+      ]),
+    ]);
+    const fact = map.get('leg raise');
+    expect(fact).toBeDefined();
+    // Raw is raw: arming 0 is correct (the athlete IS the load; added
+    // plates are typed when they exist).
+    expect(fact!.weight).toBe(0);
+  });
+
+  it('an added-weight calisthenic lift reports only the ADDED weight', () => {
+    const map = deriveTopSets([
+      session('2026-12-10T10:00:00Z', [
+        { exerciseName: 'Pull-up', sets: [{ weight: 10, reps: 6 }] },
+      ]),
+    ]);
+    // 10 kg of plates — not 10 + bodyweight.
+    expect(map.get('pull-up')!.weight).toBe(10);
+  });
+});

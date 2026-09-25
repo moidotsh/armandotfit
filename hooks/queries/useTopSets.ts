@@ -15,13 +15,20 @@ import { useQuery } from '@tanstack/react-query';
 import { useSessionHistory } from './useWorkouts';
 import { logger } from '../../utils/logger';
 import { queryKeys } from '../../lib/react-query';
-import { bodyweightAsOf } from '../../utils/bodyweight';
 import { getWeightHistory } from '../../utils/supabase/repositories';
 import { SYSTEM_EXERCISES } from '../../shared/exercises';
 
 export interface TopSetFact {
-  /** Best loaded weight in that session (ties → the later set). */
+  /** The RAW best loaded weight in that session (ties → the later set,
+   *  kg, 0 for pure bodyweight) — the ARMING source. Never the
+   *  effective load: arming 0.35 × bodyweight as a working weight got
+   *  a bodyweight leg raise logged as '72 lb' and printed 'a+72'
+   *  (double-counting the athlete). */
   weight: number;
+  /** The EFFECTIVE load (factor × bodyweight at that session + the raw
+   *  weight) when the lift carries a bodyweight component — for volume
+   *  and e1RM reads only, never for arming. */
+  effectiveWeight?: number;
   /** Reps performed at that weight. */
   reps: number;
   /** Sets logged for the exercise in that session. */
@@ -82,34 +89,17 @@ export function useTopSetsByName() {
   const historyQuery = useSessionHistory();
   // THE BODYWEIGHT — the weigh-in history powers effective loads for
   // bodyweight stations (weight=0 → factor × as-of bodyweight).
-  const bodyweightQuery = useQuery({
-    queryKey: queryKeys.bodyWeight.history(),
-    queryFn: async () => {
-      const r = await getWeightHistory(90);
-      if (!r.success) throw r.error;
-      return r.data;
-    },
-  });
   const map = useMemo(() => {
     const t0 = performance.now();
     const derived = deriveTopSets(historyQuery.data ?? []);
-    // BODYWEIGHT EFFECTIVE LOADS — a top set of 0 on a bodyweight
-    // exercise resolves to factor × the bodyweight at that session
-    // (the as-of lookup; the number you carried THEN).
-    if (bodyweightQuery.data && bodyweightQuery.data.length > 0) {
-      for (const [key, fact] of derived) {
-        const entry = SYSTEM_EXERCISES.find(
-          (e) => e.name.toLowerCase() === key,
-        );
-        const factor = entry?.bodyweightLoadFactor;
-        if (factor == null || factor <= 0) continue;
-        const bw = bodyweightAsOf(bodyweightQuery.data, fact.startedAt);
-        if (bw != null && bw > 0) {
-          // ADDITIVE — bodyweight component + any loaded weight.
-          derived.set(key, { ...fact, weight: factor * bw + fact.weight });
-        }
-      }
-    }
+    // RAW ONLY. This map arms the logger and prints the register's
+    // digits — both raw-weight contexts. The EFFECTIVE load
+    // (factor × bodyweight + added weight) is `effectiveSetWeight`
+    // in utils/bodyweight, computed at read by the volume/e1RM paths
+    // that need it. Deriving it into `weight` here armed a pure
+    // bodyweight leg raise with ~72 lb (0.35 × bodyweight), which then
+    // logged as a real weight and printed 'a+72' — double-counting the
+    // athlete (the owner's report).
     const ms = performance.now() - t0;
     if (ms > TOP_SETS_BUDGET_MS) {
       logger.warn('queries', `deriveTopSets over budget: ${Math.round(ms)}ms > ${TOP_SETS_BUDGET_MS}ms (${historyQuery.data?.length ?? 0} sessions)`);
@@ -117,6 +107,6 @@ export function useTopSetsByName() {
       logger.debug('queries', `deriveTopSets ${Math.round(ms)}ms (${historyQuery.data?.length ?? 0} sessions)`);
     }
     return derived;
-  }, [historyQuery.data, bodyweightQuery.data]);
+  }, [historyQuery.data]);
   return { map, isLoading: historyQuery.isLoading };
 }
