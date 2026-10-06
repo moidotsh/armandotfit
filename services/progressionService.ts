@@ -19,17 +19,20 @@ function localDate(iso: string): string {
  * Consecutive-day streaks over a set of session dates (sorted input not
  * required). A day counts when ≥1 session started on it (local time).
  *
- * DECLARED REST DAYS ARE NEUTRAL: a day-of-week the profile marks as
- * rest neither extends nor breaks a run — the streak measures the
- * training days, not the calendar's mercy (a Tue/Thu/Sat rest cadence
- * can no longer shred an otherwise perfect run). No rest days declared
- * ⇒ the strict consecutive-day rule, unchanged.
+ * DECLARED DAYS OFF ARE NEUTRAL: a rest day-of-week the profile marks,
+ * or a single marked sick date — neither extends nor breaks a run; the
+ * streak measures the training days, not the calendar's mercy (a
+ * Tue/Thu/Sat rest cadence or a flu Tuesday can no longer shred an
+ * otherwise perfect run). Nothing declared ⇒ the strict
+ * consecutive-day rule, unchanged.
  */
 export function computeStreaks(
   startedAts: string[],
   restDows: readonly number[] = [],
+  sickDates: readonly string[] = [],
 ): StreakInfo {
   const rest = new Set(restDows);
+  const sick = new Set(sickDates);
   const days = new Set(startedAts.map(localDate));
   if (days.size === 0) return { current: 0, best: 0 };
 
@@ -40,40 +43,52 @@ export function computeStreaks(
     const prev = new Date(sorted[i - 1] + 'T12:00:00');
     const cur = new Date(sorted[i] + 'T12:00:00');
     // The gap between two training days keeps the run alive only when
-    // every skipped day was a declared rest day.
-    run = gapOnlyRestDays(prev, cur, rest) ? run + 1 : 1;
+    // every skipped day was declared off (rest dow or sick date).
+    run = gapAllDeclaredOff(prev, cur, rest, sick) ? run + 1 : 1;
     if (run > best) best = run;
   }
 
   // Current streak counts back from today (or yesterday — a streak
   // survives until a TRAINING day fully passes without a session).
-  // Rest days read through: they never break the walk.
+  // Declared days off read through: they never break the walk.
   const today = new Date();
   today.setHours(12, 0, 0, 0);
   let current = 0;
   const cursor = new Date(today);
-  if (!days.has(dateStr(cursor)) && !rest.has(cursor.getDay())) {
+  if (!days.has(dateStr(cursor)) && !isDeclaredOff(cursor, rest, sick)) {
     cursor.setDate(cursor.getDate() - 1);
   }
   const floor = new Date(sorted[0] + 'T12:00:00');
   while (cursor.getTime() >= floor.getTime()) {
     if (days.has(dateStr(cursor))) current++;
-    else if (!rest.has(cursor.getDay())) break;
+    else if (!isDeclaredOff(cursor, rest, sick)) break;
     cursor.setDate(cursor.getDate() - 1);
   }
 
   return { current, best: Math.max(best, current) };
 }
 
-/** Every calendar day STRICTLY BETWEEN prev and cur is a declared rest
- * day (noon-anchored dates + setDate arithmetic — DST-safe). With no
- * rest declared this is the plain consecutive-day test. */
-function gapOnlyRestDays(prev: Date, cur: Date, rest: ReadonlySet<number>): boolean {
+/** A declared day off: the profile's rest day-of-week, or a marked
+ * sick date ('YYYY-MM-DD'). Either way, the calendar's mercy applies. */
+function isDeclaredOff(d: Date, rest: ReadonlySet<number>, sick: ReadonlySet<string>): boolean {
+  return rest.has(d.getDay()) || sick.has(dateStr(d));
+}
+
+/** Every calendar day STRICTLY BETWEEN prev and cur is a declared day
+ * off — rest dow or sick date (noon-anchored dates + setDate
+ * arithmetic — DST-safe). With nothing declared this is the plain
+ * consecutive-day test. */
+function gapAllDeclaredOff(
+  prev: Date,
+  cur: Date,
+  rest: ReadonlySet<number>,
+  sick: ReadonlySet<string>,
+): boolean {
   const diff = Math.round((cur.getTime() - prev.getTime()) / 86_400_000);
   if (diff === 1) return true;
-  if (rest.size === 0) return false;
+  if (rest.size === 0 && sick.size === 0) return false;
   for (let d = new Date(prev); d < cur; d.setDate(d.getDate() + 1)) {
-    if (d.getTime() !== prev.getTime() && !rest.has(d.getDay())) return false;
+    if (d.getTime() !== prev.getTime() && !isDeclaredOff(d, rest, sick)) return false;
   }
   return true;
 }
@@ -144,17 +159,19 @@ export class ProgressionService {
   /**
    * Home-dashboard summary over the shared activity log. Zeros across
    * the board for fresh accounts. `restDays` (the profile's declared
-   * day-of-week rest marks) stay neutral inside the streak.
+   * day-of-week rest marks) and `sickDays` (marked 'YYYY-MM-DD' dates)
+   * stay neutral inside the streak.
    */
   static summarizeActivity(
     sessions: ReadonlyArray<Pick<TrainingSession, 'startedAt'>>,
     restDays: readonly number[] = [],
+    sickDays: readonly string[] = [],
   ): ProgressionSummary {
     const startedAts = sessions.map((s) => s.startedAt);
     const ws = weekStart();
     const thisWeek = sessions.filter((s) => localDate(s.startedAt) >= ws).length;
     return {
-      streak: computeStreaks(startedAts, restDays),
+      streak: computeStreaks(startedAts, restDays, sickDays),
       totalSessions: sessions.length,
       thisWeekSessions: thisWeek,
       lastSessionDate: sessions[0]?.startedAt ?? null,

@@ -22,6 +22,7 @@ interface UserRow {
   display_name: string;
   weight_unit: string;
   rest_days: number[] | null;
+  sick_days: string[] | null;
   created_at: string;
 }
 
@@ -59,7 +60,7 @@ export class UserProfileRepository
     }
   }
 
-  /** Update display name / rest days. */
+  /** Update display name / rest days / sick days. */
   async update(
     id: string,
     dto: ProfileUpdateDTO,
@@ -68,6 +69,7 @@ export class UserProfileRepository
       const snake: Record<string, unknown> = {};
       if (dto.displayName !== undefined) snake.display_name = dto.displayName;
       if (dto.restDays !== undefined) snake.rest_days = dto.restDays;
+      if (dto.sickDays !== undefined) snake.sick_days = dto.sickDays;
       if (dto.weightUnit !== undefined) snake.weight_unit = dto.weightUnit;
       if (Object.keys(snake).length === 0) {
         const existing = await this.findByUserId(id);
@@ -139,6 +141,7 @@ function toProfile(row: UserRow): Profile {
     id: row.id,
     displayName: row.display_name,
     restDays: row.rest_days ?? [],
+    sickDays: row.sick_days ?? [],
     weightUnit: toWeightUnit(row.weight_unit),
     createdAt: row.created_at,
   };

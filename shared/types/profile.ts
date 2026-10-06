@@ -20,6 +20,9 @@ export interface Profile {
   displayName: string;
   /** JS getDay integers (Sun=0..Sat=6) marked as rest. */
   restDays: number[];
+  /** Singular marked days off ('YYYY-MM-DD' local) — sick days. The
+   * streak reads them as neutral (computed, never stored). */
+  sickDays: string[];
   /** Display-only preference — every stored weight is kg. */
   weightUnit: WeightUnit;
   createdAt: string;
@@ -29,5 +32,6 @@ export interface Profile {
 export interface ProfileUpdateDTO {
   displayName?: string;
   restDays?: number[];
+  sickDays?: string[];
   weightUnit?: WeightUnit;
 }

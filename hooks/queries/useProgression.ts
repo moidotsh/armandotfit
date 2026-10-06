@@ -17,6 +17,7 @@ import { useProfile } from './useProfile';
 import type { DayActivity, ProgressionSummary } from '../../shared/types';
 
 const EMPTY_REST_DAYS: readonly number[] = [];
+const EMPTY_SICK_DAYS: readonly string[] = [];
 
 const EMPTY_SUMMARY: ProgressionSummary = {
   streak: { current: 0, best: 0 },
@@ -26,18 +27,20 @@ const EMPTY_SUMMARY: ProgressionSummary = {
 };
 
 /** Home-dashboard summary (streaks + totals) over the activity log.
- * The profile's declared rest days stay neutral inside the streak —
- * the run measures training days, not calendar mercy. */
+ * The profile's declared days off — rest dows and marked sick dates —
+ * stay neutral inside the streak: the run measures training days, not
+ * calendar mercy. */
 export function useDashboardSummary() {
   const activity = useActivityLog();
   const profile = useProfile();
   const restDays = profile.data?.restDays ?? EMPTY_REST_DAYS;
+  const sickDays = profile.data?.sickDays ?? EMPTY_SICK_DAYS;
   const data = useMemo(
     () =>
       activity.data
-        ? ProgressionService.summarizeActivity(activity.data, restDays)
+        ? ProgressionService.summarizeActivity(activity.data, restDays, sickDays)
         : EMPTY_SUMMARY,
-    [activity.data, restDays],
+    [activity.data, restDays, sickDays],
   );
   return {
     data,

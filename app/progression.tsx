@@ -22,7 +22,8 @@ import {
   navigateToSplitSelection,
   safeGoBack,
 } from '../navigation';
-import { useDashboardSummary, usePersonalBests, useWeightUnit, useRecentSessionDetails } from '../hooks';
+import { useDashboardSummary, usePersonalBests, useWeightUnit, useRecentSessionDetails, useProfile, useUpdateProfile } from '../hooks';
+import { logger } from '../utils/logger';
 import { SYSTEM_EXERCISES } from '../shared/exercises';
 import { INTERVAL, PAGE_GUTTER, PRESS_DIP, theme } from '../constants';
 import { e1rm } from '../services';
@@ -51,11 +52,41 @@ function tagAcronym(tag: string): string {
     .toUpperCase();
 }
 
+/** Local calendar today, 'YYYY-MM-DD' — the sick mark's key. */
+function localTodayKey(): string {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
 export default function ProgressionScreen() {
   const { colors } = useAppTheme();
   const summaryQuery = useDashboardSummary();
   const pbQuery = usePersonalBests();
   const unit = useWeightUnit();
+
+  // THE SICK MARK — the day off that isn't a cadence. It lives beside
+  // the streak it protects: you wonder whether the run broke, and the
+  // word that answers is right here. One tap marks today, one more
+  // returns it; the streak math reads the date as neutral (computed,
+  // never stored — this is a declared input, like a rest dow).
+  const profileQuery = useProfile();
+  const updateProfile = useUpdateProfile();
+  const profileReady = profileQuery.isSuccess;
+  const sickDays = profileQuery.data?.sickDays ?? [];
+  const todayKey = localTodayKey();
+  const outSick = sickDays.includes(todayKey);
+  const toggleSick = React.useCallback(() => {
+    if (!profileReady) return;
+    const next = outSick
+      ? sickDays.filter((d) => d !== todayKey)
+      : [...sickDays, todayKey].sort();
+    updateProfile.mutate(
+      { sickDays: next },
+      { onError: (err) => logger.warn('mutations', 'sick-day update failed:', err.message) },
+    );
+  }, [profileReady, outSick, sickDays, todayKey, updateProfile]);
   
   const historyQuery = useRecentSessionDetails(60);
 
@@ -151,6 +182,35 @@ export default function ProgressionScreen() {
             variant="figure"
             tone="record"
           />
+
+          {/* THE SICK MARK — one furniture line under the figure it
+              shields. Unmarked, it offers; marked, it states in full
+              ink (INK IS STATE) and one tap returns. */}
+          <Pressable
+            onPress={toggleSick}
+            accessibilityRole="button"
+            accessibilityLabel={
+              outSick
+                ? 'Marked out sick today. Tap to return'
+                : 'Mark today as a sick day — the streak reads through it'
+            }
+            accessibilityState={{ disabled: !profileReady }}
+            style={({ pressed }) => [
+              styles.sickMark,
+              {
+                borderTopColor: colors.mobilePremium.hairlineBorder,
+                borderBottomColor: colors.mobilePremium.hairlineBorder,
+              },
+              pressed ? { opacity: PRESS_DIP } : null,
+            ]}
+            testID="sick-mark"
+          >
+            <Text
+              style={[styles.sickMarkWord, { color: outSick ? colors.text : colors.textMuted }]}
+            >
+              {outSick ? 'OUT SICK — TAP TO RETURN' : 'OUT SICK TODAY?'}
+            </Text>
+          </Pressable>
 
           {/* Totals — one figure line. */}
           <View style={styles.block}>
@@ -317,6 +377,19 @@ const styles = StyleSheet.create({
   bestsMeta: {
     ...theme.typography.mobileLedger,
     marginTop: 2,
+  },
+  // The sick mark — a whisper-weight furniture word, centered on a
+  // hairline pair; marked, the word itself carries the state ink.
+  sickMark: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  sickMarkWord: {
+    ...theme.typography.mobileLedger,
+    letterSpacing: 0.8,
   },
   bodyContent: { paddingHorizontal: PAGE_GUTTER, paddingTop: 4, paddingBottom: 80 },
   block: {

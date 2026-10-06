@@ -51,7 +51,7 @@ if (!URL_ || !KEY) {
 // utils/supabase/repositories/*.ts (the schema-truth test pins the
 // client side; this pins the live side).
 const TABLE_COLUMNS: Record<string, string[]> = {
-  users: ['id', 'display_name', 'weight_unit', 'rest_days'],
+  users: ['id', 'display_name', 'weight_unit', 'rest_days', 'sick_days'],
   exercises: ['id', 'user_id', 'name'],
   sessions: ['id', 'user_id', 'started_at', 'note', 'split_day'],
   logged_exercises: [
