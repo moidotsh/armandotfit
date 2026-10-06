@@ -9,7 +9,7 @@ import {
   suggestNextSplitDay,
   suggestSessionWindow,
 } from '../../constants';
-import { TAG_AXES, TAG_VOCABULARY_SEED, tagsWithAxisRespected } from '../../shared/exercises';
+import { TAG_AXES, TAG_VOCABULARY_SEED, tagsWithAxisRespected, isPerSideInstance } from '../../shared/exercises';
 import { nextDefaultSessionMode } from '../../constants';
 
 describe('getNextSplitDay', () => {
@@ -168,5 +168,31 @@ describe('the station axis', () => {
   it('the vocabulary suggests three stations and stations do not evict grip', () => {
     expect(TAG_VOCABULARY_SEED).toEqual(expect.arrayContaining(['station-1', 'station-2', 'station-3']));
     expect(tagsWithAxisRespected(['station-1'], 'underhand')).toEqual(['station-1', 'underhand']);
+  });
+});
+
+// ── THE SIDES AXIS — per-side entry grammar ───────────────────────────
+
+describe('the sides axis', () => {
+  it('per-arm / per-leg / per-side are one axis — picking one evicts the others', () => {
+    const sides = TAG_AXES.find((a) => a.id === 'sides');
+    expect(sides?.members).toEqual(['per-side', 'per-arm', 'per-leg']);
+    expect(tagsWithAxisRespected(['per-leg', 'dumbbell'], 'per-side')).toEqual([
+      'dumbbell',
+      'per-side',
+    ]);
+    // The vocabulary suggests all three (per-leg rode the authored
+    // boards first; the other two are its siblings).
+    expect(TAG_VOCABULARY_SEED).toEqual(
+      expect.arrayContaining(['per-side', 'per-arm', 'per-leg']),
+    );
+  });
+
+  it('isPerSideInstance — any SIDES member marks the figure; nothing else does', () => {
+    expect(isPerSideInstance(['per-side'])).toBe(true);
+    expect(isPerSideInstance(['dumbbell', 'per-leg'])).toBe(true);
+    expect(isPerSideInstance(['dumbbell', 'seated'])).toBe(false);
+    expect(isPerSideInstance([])).toBe(false);
+    expect(isPerSideInstance(null)).toBe(false);
   });
 });

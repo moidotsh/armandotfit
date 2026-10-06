@@ -62,7 +62,7 @@ import {
   type RatedInstance,
 } from '../../services';
 import { SYSTEM_EXERCISES_BY_SLUG, TAG_VOCABULARY_SEED, TAG_AXES,
-  plateUrl,
+  isPerSideInstance, plateUrl,
 } from '../../shared/exercises';
 import { plateOffsetFor } from '../../shared/exercises/plateOffsets';
 import {
@@ -1390,6 +1390,7 @@ export function Floor() {
             weight={armed.weight}
             reps={armed.reps}
             repsHint={repsHint}
+            perSide={isPerSideInstance(exercise?.tags)}
             rest={restLine}
             suggestArm={suggestArm}
             earnedStep={earnedStep}

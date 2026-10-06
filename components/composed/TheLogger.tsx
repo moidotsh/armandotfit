@@ -87,6 +87,12 @@ export interface TheLoggerProps {
   /** The display unit — the stepper steps in it (2.5 kg / 5 lb). */
   unit?: WeightUnit;
   /**
+   * THE SIDES GRAMMAR — the instance is tagged per-side, so the armed
+   * weight is ONE limb's load and the figure reads the notebook's
+   * '30s'. Display-only: the stored number never changes.
+   */
+  perSide?: boolean;
+  /**
    * AVERAGE MODE — the programmed rep range [low, high] from the Rx.
    * When present, the TGT hint is tappable and enters average mode:
    * tap LOW / MID / HIGH on the range to set the average, then one
@@ -272,6 +278,7 @@ export function TheLogger({
   suggestArm,
   earnedStep = null,
   unit = 'kg',
+  perSide = false,
   onLog,
   onChangeWeight,
   onChangeReps,
@@ -330,7 +337,9 @@ export function TheLogger({
     }
   };
 
-  const weightText = weight == null ? '—' : String(weight);
+  // The sides grammar rides the figure: not while that field is being
+  // typed (digits only), always once the field settles.
+  const weightText = weight == null ? '—' : `${weight}${perSide ? 's' : ''}`;
   const repsText = reps == null ? '—' : String(Math.max(0, Math.round(reps)));
 
   // THE LIVE QUESTION — while rest runs, the clock owns the counter
@@ -346,7 +355,7 @@ export function TheLogger({
           borderTopColor: colors.text,
         },
       ]}
-      accessibilityLabel={`Logger, set ${setNumber}: ${weight ?? 'no weight'} ${unit} by ${reps ?? 'no reps'} reps`}
+      accessibilityLabel={`Logger, set ${setNumber}: ${weight ?? 'no weight'} ${unit}${perSide ? ' per side' : ''} by ${reps ?? 'no reps'} reps`}
     >
       {/* THE KICKER — the dock's folio: the set ordinal + the target,
           printed caps, with THE EARNED STEP riding beside it (one
@@ -431,7 +440,7 @@ export function TheLogger({
           boxStyle={restRunning ? styles.weightBoxRest : styles.weightBox}
           onDraft={setDraftText}
           commitDraft={commitDraft}
-          accessibilityLabel={`Weight, currently ${weight == null ? 'not set' : `${weight} ${unit}`} — tap to arm weight`}
+          accessibilityLabel={`Weight, currently ${weight == null ? 'not set' : `${weight} ${unit}${perSide ? ' per side' : ''}`} — tap to arm weight`}
           inputAccessibilityLabel="Weight input"
           onOpenKeyboard={() => openKeyboard('weight')}
           onPressField={() => {
@@ -499,7 +508,7 @@ export function TheLogger({
       <Pressable
         onPress={onLog}
         accessibilityRole="button"
-        accessibilityLabel={ready ? `Log set, ${weight} ${unit}, ${reps} reps` : 'Log set'}
+        accessibilityLabel={ready ? `Log set, ${weight} ${unit}${perSide ? ' per side' : ''}, ${reps} reps` : 'Log set'}
         style={({ pressed }) => [
           styles.logButton,
           // The verb's ink plate wears the paper's tooth (the atelier

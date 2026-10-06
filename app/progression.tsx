@@ -24,7 +24,7 @@ import {
 } from '../navigation';
 import { useDashboardSummary, usePersonalBests, useWeightUnit, useRecentSessionDetails, useProfile, useUpdateProfile } from '../hooks';
 import { logger } from '../utils/logger';
-import { SYSTEM_EXERCISES } from '../shared/exercises';
+import { SYSTEM_EXERCISES, isPerSideInstance } from '../shared/exercises';
 import { INTERVAL, PAGE_GUTTER, PRESS_DIP, theme } from '../constants';
 import { e1rm } from '../services';
 import { bodyweightAsOf } from '../utils/bodyweight';
@@ -252,7 +252,7 @@ export default function ProgressionScreen() {
                       key={pb.exerciseName}
                       onPress={slug ? () => navigateToExerciseDetail(slug) : undefined}
                       accessibilityRole={slug ? 'button' : undefined}
-                      accessibilityLabel={`${pb.exerciseName} — e1RM ${Math.round(pb.bestE1rm)}, best ${pb.bestWeight} for ${pb.bestReps}`}
+                      accessibilityLabel={`${pb.exerciseName} — e1RM ${Math.round(pb.bestE1rm)}, best ${pb.bestWeight}${isPerSideInstance(tagMap.get(pb.exerciseName)) ? 's' : ''} for ${pb.bestReps}`}
                       style={({ pressed }) => [
                         styles.bestsEntry,
                         pressed ? { opacity: PRESS_DIP } : null,
@@ -292,7 +292,7 @@ export default function ProgressionScreen() {
                       <Text style={[styles.bestsMeta, { color: colors.textMuted }]} numberOfLines={1}>
                         {new Date(pb.bestAt).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit' })}
                         {' · '}
-                        {pb.bestWeight} × {pb.bestReps}
+                        {pb.bestWeight}{isPerSideInstance(tagMap.get(pb.exerciseName)) ? 's' : ''} × {pb.bestReps}
                         {' · e1RM'}
                       </Text>
                     </Pressable>

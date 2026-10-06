@@ -26,6 +26,18 @@ describe('sessionMath', () => {
     expect(sumVolume(sets)).toBe(1600);
   });
 
+  it('PER-SIDE — the load doubles, the body does not (the notebook 30s)', () => {
+    // 30s × 8: one limb's 30, both limbs moving → 480, not 240.
+    expect(setVolume({ reps: 8, weight: 30 }, undefined, true)).toBe(480);
+    // Unflagged, the same row reads the plain one-load math.
+    expect(setVolume({ reps: 8, weight: 30 })).toBe(240);
+    // The bodyweight component stays single: one body lifts, however
+    // many limbs carry iron (a weighted lunge: load ×2 + body ×1).
+    expect(setVolume({ reps: 10, weight: 20 }, 70, true)).toBe(10 * (40 + 70));
+    // The per-side read rides the SIDES axis members — any of them.
+    expect(sumVolume([{ reps: 8, weight: 30 }], undefined, true)).toBe(480);
+  });
+
   it('Epley e1RM: 100×5 → 116.7; zero-guarded', () => {
     expect(e1rm(100, 5)).toBeCloseTo(116.67, 1);
     expect(e1rm(0, 5)).toBe(0);

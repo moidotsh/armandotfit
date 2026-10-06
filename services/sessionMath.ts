@@ -17,15 +17,20 @@ export function isSetFilled(set: { reps: number | null; weight: number | null })
 
 /** Tonnage of one filled set (0 when unfilled). When the set carries
  * no weight AND a bodyweight effective load is given, that load
- * stands in (the bodyweight factor × the user's bodyweight). */
+ * stands in (the bodyweight factor × the user's bodyweight).
+ *
+ * PER-SIDE — when the instance is tagged per-side, the stored load is
+ * ONE limb's (the notebook's '30s'): both limbs move it, so the LOAD
+ * doubles; the body does not (one body lifts, however many limbs). */
 export function setVolume(
   set: { reps: number | null; weight: number | null },
   bodyweightEffectiveKg?: number,
+  perSide = false,
 ): number {
   if (!isSetFilled(set)) return 0;
   // ADDITIVE — the bodyweight component (factor × bodyweight) rides
   // ON TOP of any loaded weight (a plate on back extensions).
-  const weight = (set.weight ?? 0) + (bodyweightEffectiveKg ?? 0);
+  const weight = (set.weight ?? 0) * (perSide ? 2 : 1) + (bodyweightEffectiveKg ?? 0);
   return (set.reps as number) * weight;
 }
 
@@ -33,8 +38,9 @@ export function setVolume(
 export function sumVolume(
   sets: ReadonlyArray<{ reps: number | null; weight: number | null }>,
   bodyweightEffectiveKg?: number,
+  perSide = false,
 ): number {
-  return sets.reduce((acc, s) => acc + setVolume(s, bodyweightEffectiveKg), 0);
+  return sets.reduce((acc, s) => acc + setVolume(s, bodyweightEffectiveKg, perSide), 0);
 }
 
 /** Format kilograms/units with thin thousands separators. */

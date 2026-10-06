@@ -42,7 +42,7 @@ import {
   useWorkoutStore,
 } from '../../stores';
 import { INTERVAL, PAGE_GUTTER, PRESS_DIP, PRESS_DIP_PLATE, theme } from '../../constants';
-import { eraFor, SYSTEM_EXERCISES, SYSTEM_EXERCISES_BY_SLUG } from '../../shared/exercises';
+import { eraFor, SYSTEM_EXERCISES, SYSTEM_EXERCISES_BY_SLUG, isPerSideInstance } from '../../shared/exercises';
 import {
   CARDIO_STATIONS,
   formatCardioDuration,
@@ -218,7 +218,7 @@ export function Receipt({ id }: ReceiptProps) {
           factor != null && bodyweightKg != null
             ? factor * bodyweightKg
             : undefined;
-        return n + sumVolume(e.sets, effectiveBw);
+        return n + sumVolume(e.sets, effectiveBw, isPerSideInstance(e.tags));
       }, 0)
     : 0;
 
@@ -441,6 +441,11 @@ export function Receipt({ id }: ReceiptProps) {
                 const priorBest = priorRecordKg.get(ex.exerciseName) ?? 0;
                 // ── ADD SET — the missed set joins the receipt ──
                 const lastSet = ex.sets[ex.sets.length - 1];
+                // The sides grammar: a per-side instance's rows read the
+                // notebook's '30s × 8' (display only — the row stores
+                // the one limb's number).
+                const perSide = isPerSideInstance(ex.tags);
+                const suffix = perSide ? 's' : '';
                 return (
                   <>
                     {ex.sets.map((s) => {
@@ -449,9 +454,9 @@ export function Receipt({ id }: ReceiptProps) {
                       const isRecord = hasLoad && priorBest > 0 && s.weight! > priorBest;
                       const figure = isBw
                         ? hasLoad
-                          ? `a+${roundDisplayWeight(toDisplayWeight(s.weight!, unit))} × ${s.reps}`
+                          ? `a+${roundDisplayWeight(toDisplayWeight(s.weight!, unit))}${suffix} × ${s.reps}`
                           : `a × ${s.reps}`
-                        : `${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))} × ${s.reps}`;
+                        : `${roundDisplayWeight(toDisplayWeight(s.weight ?? 0, unit))}${suffix} × ${s.reps}`;
                       const isEditing = editingSet?.setId === s.id;
                       if (isEditing && editingSet) {
                         return (

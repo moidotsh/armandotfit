@@ -25,7 +25,7 @@ import { deriveMuscleShare, deriveTrajectory, MUSCLE_GROUPS, sumVolume } from '.
 import { AnalyticsService } from '../services';
 import { addDays, toDisplayWeight, roundDisplayWeight, joinFacts } from '../utils';
 import { navigateToExerciseDetail } from '../navigation';
-import { SYSTEM_EXERCISES, MUSCLE_DISPLAY_NAMES } from '../shared/exercises';
+import { SYSTEM_EXERCISES, MUSCLE_DISPLAY_NAMES, isPerSideInstance } from '../shared/exercises';
 import { useWeightUnit } from '../hooks';
 import { BLOCK_GAP, INTERVAL, theme, PAGE_GUTTER } from '../constants';
 import { formatCardioMinutes } from '../shared/exercises/cardio';
@@ -138,7 +138,7 @@ export default function AnalyticsScreen() {
                 return bw != null ? factor * bw : undefined;
               })()
             : undefined;
-        return n + sumVolume(ex.sets ?? [], effectiveBw);
+        return n + sumVolume(ex.sets ?? [], effectiveBw, isPerSideInstance(ex.tags));
       }, 0);
       buckets.set(key, (buckets.get(key) ?? 0) + vol);
     }

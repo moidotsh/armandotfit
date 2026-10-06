@@ -15,7 +15,7 @@ import { theme,
 import { sumVolume } from '../../services';
 import { bodyweightAsOf } from '../../utils/bodyweight';
 import { useBodyweightHistory } from '../../hooks/queries';
-import { SYSTEM_EXERCISES } from '../../shared/exercises';
+import { SYSTEM_EXERCISES, isPerSideInstance } from '../../shared/exercises';
 import { useWeightUnit } from '../../hooks';
 import { formatVolumeWeight, weightUnitLabel, joinFacts } from '../../utils';
 import type { LoggedExerciseWithSets, TrainingSession } from '../../shared/types';
@@ -59,7 +59,7 @@ export function EditionLine({ session, onPress, lead = false }: EditionLineProps
             return bw != null ? factor * bw : undefined;
           })()
         : undefined;
-    return n + sumVolume(e.sets ?? [], effectiveBw);
+    return n + sumVolume(e.sets ?? [], effectiveBw, isPerSideInstance(e.tags));
   }, 0);
 
   // THE ARCHIVE ROW SPLITS (the atelier pass): the identity parts

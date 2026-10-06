@@ -286,6 +286,8 @@ export const TAG_VOCABULARY_SEED: string[] = [
   'captains-chair',
   'egyptian',
   'eccentric',
+  'per-side',
+  'per-arm',
   'per-leg',
   // Station-instance qualifiers — the same lift on different hardware
   // (one cable vs two; duplicate machines). One axis per tag.
@@ -326,6 +328,7 @@ export const TAG_AXES: readonly TagAxis[] = [
   { id: 'attachment', label: 'ATTACHMENT', members: ['rope', 'straight-bar', 'ez-bar', 'lat-bar', 'v-grip', 'handle'] },
   { id: 'implement', label: 'IMPLEMENT', members: ['machine', 'dumbbell', 'barbell', 'cable'] },
   { id: 'stance', label: 'STANCE', members: ['seated', 'standing', 'kneeling'] },
+  { id: 'sides', label: 'SIDES', members: ['per-side', 'per-arm', 'per-leg'] },
   { id: 'pulley', label: 'PULLEYS', members: ['single-pulley', 'dual-pulley'] },
   { id: 'station', label: 'STATION', members: ['station-1', 'station-2', 'station-3'], pattern: /^station-\d+$/ },
 ];
@@ -335,6 +338,21 @@ export function tagAxisOf(tag: string): TagAxis | undefined {
   return TAG_AXES.find(
     (axis) => axis.members.includes(tag) || (axis.pattern?.test(tag) ?? false),
   );
+}
+
+/** THE SIDES TEST — the instance's logged weight is ONE limb's load
+ * (the notebook's '30s'): tonnage counts both limbs, e1RM climbs in
+ * per-side units, and the figure reads '30s'. Any SIDES member
+ * qualifies — the generic per-side, per-arm, or the authored per-leg
+ * (Bulgarian split squats have carried it since the first boards).
+ * Whether a lift runs per-side is the OWNER's call, made once on the
+ * instance and remembered through its tags — a plate-loaded shrug and
+ * a pin-loaded one are different truths, not different exercises. */
+export function isPerSideInstance(
+  tags: ReadonlyArray<string> | null | undefined,
+): boolean {
+  if (!tags || tags.length === 0) return false;
+  return tags.includes('per-side') || tags.includes('per-arm') || tags.includes('per-leg');
 }
 
 /**

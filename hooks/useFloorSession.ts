@@ -25,6 +25,7 @@ import { useNowTick } from './useNowTick';
 import { resolveLiveSlots } from '../services';
 import { useSplitPreferenceStore } from '../stores';
 import { sumVolume, formatElapsed } from '../services';
+import { isPerSideInstance } from '../shared/exercises';
 
 export function useFloorSession() {
   const draft = useWorkoutStore((s) => s.draft);
@@ -92,7 +93,7 @@ export function useFloorSession() {
     ? draft.exercises.reduce((n, e) => n + e.sets.length, 0)
     : 0;
   const sessionKg = draft
-    ? draft.exercises.reduce((n, e) => n + sumVolume(e.sets), 0)
+    ? draft.exercises.reduce((n, e) => n + sumVolume(e.sets, undefined, isPerSideInstance(e.tags)), 0)
     : 0;
   const elapsed = draft?.date ? formatElapsed(draft.date, nowTick) : '00:00';
 
