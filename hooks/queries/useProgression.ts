@@ -13,7 +13,10 @@ import {
   type PersonalBest,
 } from '../../services';
 import { useActivityLog, useSessionHistory } from './useWorkouts';
+import { useProfile } from './useProfile';
 import type { DayActivity, ProgressionSummary } from '../../shared/types';
+
+const EMPTY_REST_DAYS: readonly number[] = [];
 
 const EMPTY_SUMMARY: ProgressionSummary = {
   streak: { current: 0, best: 0 },
@@ -22,12 +25,19 @@ const EMPTY_SUMMARY: ProgressionSummary = {
   lastSessionDate: null,
 };
 
-/** Home-dashboard summary (streaks + totals) over the activity log. */
+/** Home-dashboard summary (streaks + totals) over the activity log.
+ * The profile's declared rest days stay neutral inside the streak —
+ * the run measures training days, not calendar mercy. */
 export function useDashboardSummary() {
   const activity = useActivityLog();
+  const profile = useProfile();
+  const restDays = profile.data?.restDays ?? EMPTY_REST_DAYS;
   const data = useMemo(
-    () => (activity.data ? ProgressionService.summarizeActivity(activity.data) : EMPTY_SUMMARY),
-    [activity.data],
+    () =>
+      activity.data
+        ? ProgressionService.summarizeActivity(activity.data, restDays)
+        : EMPTY_SUMMARY,
+    [activity.data, restDays],
   );
   return {
     data,
