@@ -108,6 +108,11 @@ const plateLoopCss = {
   animation: 'plateB 3s ease-in-out infinite',
 } as unknown as import('react-native').ViewStyle;
 
+// The surface seam for the plate loop: web drives the fade with the
+// injected keyframes (Library's plate runs the same rule); native has
+// no CSS engine, so the same choreography runs as an Animated opacity.
+const IS_WEB = typeof document !== 'undefined';
+
 let plateKeyframesInjected = false;
 function injectPlateKeyframes() {
   if (typeof document === 'undefined' || plateKeyframesInjected) return;
@@ -259,7 +264,11 @@ export function Floor() {
   // station changes.
   const [formOpen, setFormOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
-  const [plateFrame, setPlateFrame] = useState(0);
+  // The plate's hold state: one tap freezes the loop mid-frame, one
+  // more releases it (a new station starts fresh). Web pauses through
+  // animationPlayState; native stops the Animated loop in the effect
+  // below.
+  const [platePaused, setPlatePaused] = useState(false);
   // THE PLATE LOOP — the pair auto-animates: frame A holds ~1s,
   // crossfades to B, B holds ~1s, fades back. The movement reads as
   // a continuous range without any tap. Still-system compliant: the
@@ -387,6 +396,13 @@ export function Floor() {
   // top the chip folds the board; anywhere else it reveals the board).
   const scrollYRef = useRef(0);
   const [atTop, setAtTop] = useState(true);
+  // The reveal flight: a MAP reveal scrolls to the top, and the flight
+  // itself passes y > 40 — the same zone the scroller reads as
+  // "scrolling away". The guard holds the fold off until the flight
+  // lands (y < 40) or the user takes the scroller by hand — without
+  // it the reveal re-collapses the board mid-flight and MAP appears
+  // to do nothing.
+  const revealScrollingRef = useRef(false);
   const handleScroll = React.useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const y = event.nativeEvent.contentOffset.y;
@@ -395,6 +411,10 @@ export function Floor() {
         const next = y < 40;
         return prev === next ? prev : next;
       });
+      if (revealScrollingRef.current) {
+        if (y < 40) revealScrollingRef.current = false;
+        return;
+      }
       // Scrolling away folds an open board — leaving the map closes
       // it (the board never lingers as ambient content).
       if (y > 40) setMapCollapsed(true);
@@ -411,6 +431,12 @@ export function Floor() {
   const index = Math.min(stationIndex, Math.max(0, exercises.length - 1));
   const exercise = exercises[index] ?? null;
   const plateOffset = plateOffsetFor(exercise?.exerciseSlug ?? '');
+  // The station's plate entry, hoisted: the loop effect reads it, the
+  // HOW-TO panel renders it — one source, no drift.
+  const plateEntry = exercise?.exerciseSlug
+    ? SYSTEM_EXERCISES_BY_SLUG[exercise.exerciseSlug]
+    : undefined;
+  const platePaired = Boolean(plateEntry?.image && plateEntry?.imageB);
   const pickerExercise = draft?.exercises.find((e) => e.localId === pickerFor) ?? null;
 
   // THE FORM CHECK RESET — close the plate/cues when the station
@@ -421,8 +447,23 @@ export function Floor() {
     formStationRef.current = formStationKey;
     setFormOpen(false);;
     setReadingOpen(false);
-    setPlateFrame(0);
+    setPlatePaused(false);
   }
+
+  // THE PLATE LOOP WIRING — web injects the keyframes once (the same
+  // rule Library's plate runs) and pauses through animationPlayState;
+  // native has no CSS engine, so the loop lives here: running while
+  // the HOW-TO shows a paired plate, stopped on pause, unmount, or
+  // station change.
+  injectPlateKeyframes();
+  useEffect(() => {
+    if (IS_WEB) return;
+    if (!formOpen || !platePaired || platePaused) {
+      stopPlateLoop();
+      return;
+    }
+    startPlateLoop();
+  }, [formOpen, platePaired, platePaused, startPlateLoop, stopPlateLoop]);
 
   // The program's own ask for this station: the SET count and the LOW
   // end of the rep range ("4×8-10" -> 4 sets, 8 reps) — the pips
@@ -705,6 +746,7 @@ export function Floor() {
               openingSettledRef.current = true;
               if (mapCollapsed || !atTop) {
                 setMapCollapsed(false);
+                revealScrollingRef.current = true;
                 scrollRef.current?.scrollTo({ y: 0, animated: true });
               } else {
                 setMapCollapsed(true);
@@ -757,6 +799,7 @@ export function Floor() {
           keyboardShouldPersistTaps="handled"
           onScrollBeginDrag={() => {
             userScrolledRef.current = true;
+            revealScrollingRef.current = false;
           }}
           onScroll={handleScroll}
           scrollEventThrottle={16}
@@ -965,9 +1008,7 @@ export function Floor() {
                   the whole thing; it closes when the station changes
                   (mid-set, the answer is one tap, never a scroll). */}
               {(() => {
-                const entry = exercise.exerciseSlug
-                  ? SYSTEM_EXERCISES_BY_SLUG[exercise.exerciseSlug]
-                  : undefined;
+                const entry = plateEntry;
                 if (!entry?.image && !entry?.instructions) return null;
                 return (
                   <View testID={`form-check-${exercise.localId}`}>
@@ -986,15 +1027,16 @@ export function Floor() {
                       <View style={styles.formPanel}>
                         {/* The plate — fully open inside the HOW-TO, no
                             second toggle (the owner's call: opening the
-                            how-to IS asking for the picture). One tap
-                            in, one tap out. */}
+                            how-to IS asking for the picture). The loop
+                            answers to the owner too: one tap holds the
+                            frame, one more releases it. */}
                         {entry.image ? (
                           <Pressable
-                            onPress={undefined}
+                            onPress={entry.imageB ? () => setPlatePaused((p) => !p) : undefined}
                             accessibilityRole="imagebutton"
                             accessibilityLabel={
                               entry.imageB
-                                ? `Plate: ${exercise.exerciseName} — ${plateFrame === 0 ? 'concentric' : 'eccentric'} frame; tap to flip`
+                                ? `Plate: ${exercise.exerciseName} — ${platePaused ? 'held; tap to resume' : 'tap to hold'}`
                                 : `Plate: ${exercise.exerciseName}`
                             }
                             style={({ pressed }) => [
@@ -1019,10 +1061,15 @@ export function Floor() {
                                 resizeMode="cover"
                               />
                               {entry.imageB ? (
-                                <View
+                                <Animated.View
                                   style={[
                                     StyleSheet.absoluteFillObject,
-                                    plateLoopCss,
+                                    IS_WEB
+                                      ? ([
+                                          plateLoopCss,
+                                          { animationPlayState: platePaused ? 'paused' : 'running' },
+                                        ] as unknown as import('react-native').ViewStyle)
+                                      : ({ opacity: plateBOpacity } as unknown as import('react-native').ViewStyle),
                                     {
                                       transform: plateOffset
                                         ? ([{ translateX: -plateOffset.dx, translateY: -plateOffset.dy }] as unknown as import('react-native').ViewStyle['transform'])
@@ -1037,12 +1084,12 @@ export function Floor() {
                                     testID="form-plate-image-b"
                                     resizeMode="cover"
                                   />
-                                </View>
+                                </Animated.View>
                               ) : null}
                             </View>
                             {entry.imageB ? (
                               <Text style={[styles.formPlateWord, { color: colors.textMuted }]}>
-                                1 · 2
+                                {platePaused ? 'HELD' : '1 · 2'}
                               </Text>
                             ) : null}
                           </Pressable>
