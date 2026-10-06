@@ -20,10 +20,11 @@
 //
 // The exchange is THE RE-WEIGHT — a repaint at LOG and at settle,
 // never an animation (THE STILL SYSTEM holds). THE ONE-FIELD LAW
-// governs both states: exactly one armed field, ONE shared stepper
-// pair stepping it by its own step (2.5 kg / 1 rep), tap to arm,
-// tap again to type. The most common log in existence still costs
-// ONE THUMB, ONE TAP on LOG SET.
+// governs the FIGURE: exactly one armed field, tap to arm, tap again
+// to type. THE STEPPERS are two dedicated pairs — one per figure,
+// both always live (weight by its own step 2.5 kg / 5 lb, reps by
+// one rep): stepping never asks arming, mid-rest included. The most
+// common log in existence still costs ONE THUMB, ONE TAP on LOG SET.
 //
 // 2027-01 refinements (behavior, unchanged): steppers HOLD TO
 // REPEAT (400 ms delay, 80 ms cadence — paired cleanup per R4a);
@@ -289,9 +290,10 @@ export function TheLogger({
   const ready = weight != null && reps != null;
   const tid = testID ?? 'the-logger';
 
-  // THE ONE-FIELD LAW: exactly one armed field at a time. The steppers
-  // step the armed field; tapping the other field arms it; tapping the
-  // armed field opens the keyboard.
+  // THE ONE-FIELD LAW: exactly one armed field at a time. Arming
+  // governs the KEYBOARD only — tapping the other field arms it,
+  // tapping the armed field opens the keyboard. The stepper pairs
+  // below are dedicated per figure and never re-aim.
   const [field, setField] = useState<'weight' | 'reps'>('weight');
   const [editing, setEditing] = useState<'weight' | 'reps' | null>(null);
   const [draftText, setDraftText] = useState('');
@@ -323,16 +325,15 @@ export function TheLogger({
     setEditing(null);
   };
 
-  const step = field === 'weight' ? weightStep(unit) : 1;
-  const stepLabel = String(step);
-  const bump = (dir: 1 | -1) => {
-    if (field === 'weight') {
+  const weightStepLabel = String(weightStep(unit));
+  const bump = (which: 'weight' | 'reps', dir: 1 | -1) => {
+    if (which === 'weight') {
       const base = weight ?? 0;
-      const next = Math.round((base + dir * step) * 100) / 100;
+      const next = Math.round((base + dir * weightStep(unit)) * 100) / 100;
       onChangeWeight(next <= 0 ? null : next);
     } else {
       const base = reps ?? 0;
-      const next = base + dir * step;
+      const next = base + dir;
       onChangeReps(next <= 0 ? null : next);
     }
   };
@@ -486,23 +487,53 @@ export function TheLogger({
         />
       </View>
 
-      {/* THE ONE STEPPER PAIR — steps the ARMED field by its own step. */}
+      {/* THE STEPPER PAIRS — one per figure, both always live. The
+          weight pair steps by its own step (2.5 kg / 5 lb), the reps
+          pair by one rep; no arming needed to step — arming governs
+          the keyboard (tap the armed field, tap again to type). The
+          reps pair survives mid-rest: gassed on set one, the plan
+          bends with a thumb, not a field hunt. */}
       <View style={styles.stepperRow}>
-        <StepButton
-          dir={-1}
-          label={`Decrease ${field === 'weight' ? `weight by ${stepLabel}` : 'reps by 1'}`}
-          onPress={() => bump(-1)}
-          testID={`${tid}-step-dec`}
-        />
-        <Text style={[styles.stepperStep, { color: colors.textMuted }]} testID={`${tid}-step-label`}>
-          {field === 'weight' ? `${stepLabel} ${unit}` : '1 rep'}
-        </Text>
-        <StepButton
-          dir={1}
-          label={`Increase ${field === 'weight' ? `weight by ${stepLabel}` : 'reps by 1'}`}
-          onPress={() => bump(1)}
-          testID={`${tid}-step-inc`}
-        />
+        <View style={styles.stepperPair}>
+          <StepButton
+            dir={-1}
+            label={`Decrease weight by ${weightStepLabel}`}
+            onPress={() => bump('weight', -1)}
+            testID={`${tid}-weight-dec`}
+          />
+          <Text
+            style={[styles.stepperStep, { color: colors.textMuted }]}
+            testID={`${tid}-weight-step-label`}
+          >
+            {`${weightStepLabel} ${unit}`}
+          </Text>
+          <StepButton
+            dir={1}
+            label={`Increase weight by ${weightStepLabel}`}
+            onPress={() => bump('weight', 1)}
+            testID={`${tid}-weight-inc`}
+          />
+        </View>
+        <View style={styles.stepperPair}>
+          <StepButton
+            dir={-1}
+            label="Decrease reps by 1"
+            onPress={() => bump('reps', -1)}
+            testID={`${tid}-reps-dec`}
+          />
+          <Text
+            style={[styles.stepperStep, { color: colors.textMuted }]}
+            testID={`${tid}-reps-step-label`}
+          >
+            1 rep
+          </Text>
+          <StepButton
+            dir={1}
+            label="Increase reps by 1"
+            onPress={() => bump('reps', 1)}
+            testID={`${tid}-reps-inc`}
+          />
+        </View>
       </View>
 
       <Pressable
@@ -681,8 +712,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: 16,
     marginTop: 4,
+  },
+  // One pair per figure — the label is the pair's caption, the pair
+  // never re-aims (no arming to step).
+  stepperPair: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   stepper: {
     width: 44,
@@ -696,7 +734,7 @@ const styles = StyleSheet.create({
   },
   stepperStep: {
     ...theme.typography.mobileEyebrow,
-    minWidth: 52,
+    minWidth: 48,
     textAlign: 'center',
   },
   logButton: {

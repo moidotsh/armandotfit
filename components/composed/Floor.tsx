@@ -1177,17 +1177,31 @@ export function Floor() {
                 </View>
               ) : null}
 
-              {/* THE WEIGHT — the notebook's verdict row. After the
-                  work (the station's sets reach its target), rate the
-                  weight FOR THIS RANGE: − too heavy · ✓ just right · +
-                  too light. The rating rides the logged exercise (not a
-                  tag); the NEXT line shows what the engine will serve
-                  next time — reps up, weight up, or holding. */}
-              {(targetSets > 0 ? exercise.sets.length >= targetSets : exercise.sets.length > 0) ? (
-                <View style={styles.ratingBlock} testID={`stage-rating-${exercise.localId}`}>
+              {/* THE WEIGHT — the notebook's verdict row. Present from
+                  the FIRST logged set — gassed on set two, gym closing
+                  at two of three: the rating is still yours to make —
+                  but it arrives quiet (dimmed, · SO FAR) and takes its
+                  full voice when the station's sets reach their target.
+                  Rate the weight FOR THIS RANGE: − too heavy · ✓ just
+                  right · + too light. The rating rides the logged
+                  exercise (not a tag); the NEXT line shows what the
+                  engine will serve next time — reps up, weight up, or
+                  holding. */}
+              {exercise.sets.length > 0 ? (
+                <View
+                  style={[
+                    styles.ratingBlock,
+                    targetSets > 0 && exercise.sets.length < targetSets
+                      ? styles.ratingBlockEarly
+                      : null,
+                  ]}
+                  testID={`stage-rating-${exercise.localId}`}
+                >
                   <View style={styles.ratingRow}>
                     <Text style={[styles.ratingWhisper, { color: colors.textMuted }]}>
-                      THE WEIGHT
+                      {targetSets > 0 && exercise.sets.length < targetSets
+                        ? 'THE WEIGHT · SO FAR'
+                        : 'THE WEIGHT'}
                     </Text>
                     {([
                       { r: 'heavy' as const, glyph: '\u2212', label: 'Too heavy — drop it' },
@@ -1529,6 +1543,12 @@ const styles = StyleSheet.create({
   // the ledger; the dock stays the one-field instrument).
   ratingBlock: {
     marginTop: 6,
+  },
+  // BEFORE THE QUOTA — present from the first set but quiet: the
+  // verdict is provisional (· SO FAR) and takes its full ink when the
+  // target's sets are in. Taps are unchanged — early is allowed.
+  ratingBlockEarly: {
+    opacity: 0.55,
   },
   ratingRow: {
     flexDirection: 'row',
