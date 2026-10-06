@@ -14,9 +14,12 @@ export {
   RemoveSlotGlyph,
   RestoreSlotGlyph,
   AddExerciseRow,
+  TagsGlyph,
   RxEditSheet,
+  TagEditSheet,
   AddExerciseSheet,
   type RxEditSheetProps,
+  type TagEditSheetProps,
   type AddExerciseSheetProps,
   type SlotBench,
 } from './ProgramEdit';

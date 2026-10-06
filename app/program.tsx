@@ -47,6 +47,8 @@ import {
   RxEditSheet,
   SectionWhisper,
   SwapGlyph,
+  TagEditSheet,
+  TagsGlyph,
   type SlotBench,
 } from '../components/composed';
 import { navigateToExerciseDetail, navigateToOtherSplits, navigateToProgram, navigateToStarterProgram, navigateToSplitLab, safeGoBack } from '../navigation';
@@ -143,10 +145,11 @@ export default function ProgramScreen() {
 
   const nameFor = (slug: string) => SYSTEM_EXERCISES_BY_SLUG[slug]?.name ?? slug;
 
-  /** Capture a slot's whole state at open time — the swap bench and
-   * the Rx bench read the capture; no key parsing anywhere. */
+  /** Capture a slot's whole state at open time — the swap bench, the
+   * Rx bench, and the tags bench read the capture; no key parsing
+   * anywhere. */
   const openBench = (
-    mode: 'swap' | 'rx',
+    mode: 'swap' | 'rx' | 'tags',
     program: LiveProgram,
     edition: ProgramEdition,
     day: number,
@@ -163,10 +166,12 @@ export default function ProgramScreen() {
       currentName: nameFor(slot.exercise),
       sets: slot.sets,
       reps: slot.reps,
+      tags: slot.suggestedTags,
       defaultSlug: def?.exercise ?? '',
       defaultName: def ? nameFor(def.exercise) : '',
       defaultSets: def?.sets ?? slot.sets,
       defaultReps: def?.reps ?? slot.reps,
+      defaultTags: def?.suggestedTags ?? [],
       isEdited: key in overrides,
     });
   };
@@ -205,6 +210,14 @@ export default function ProgramScreen() {
           <SwapGlyph
             onPress={() => openBench('swap', program, edition, day, window, slot)}
             label={name}
+          />
+        ) : null}
+        {editing ? (
+          <TagsGlyph
+            onPress={() => openBench('tags', program, edition, day, window, slot)}
+            label={name}
+            active={overrides[key]?.tags != null}
+            testID={`${baseTestID}-tags-${key}`}
           />
         ) : null}
         {editing ? (
@@ -328,6 +341,29 @@ export default function ProgramScreen() {
               showToast('success', next.exerciseName);
             }}
             testID="program-swap-picker"
+          />
+        ) : b.mode === 'tags' ? (
+          <TagEditSheet
+            open
+            onOpenChange={(next) => {
+              if (!next) setBench(null);
+            }}
+            exerciseName={b.currentName}
+            tags={b.tags}
+            defaultTags={b.defaultTags}
+            isEdited={b.isEdited}
+            onSave={(tags) => {
+              setOverride(b.key, { tags });
+              showToast(
+                'success',
+                `${b.currentName} — ${tags.length > 0 ? tags.join(' · ') : 'logs bare'}`,
+              );
+            }}
+            onRestoreDefault={() => {
+              clearOverride(b.key);
+              showToast('success', `${b.defaultName || b.currentName} — back to the default`);
+            }}
+            testID="program-tag-editor"
           />
         ) : (
           <RxEditSheet

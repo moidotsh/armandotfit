@@ -46,6 +46,12 @@ export interface ProgramSlotOverride {
   sets?: [number, number];
   /** The slot's programmed rep range [min, max]. */
   reps?: [number, number];
+  /** The slot's standing realization tags (grip, attachment, SIDES…),
+   * REPLACING the authored suggestedTags wholesale — an empty array is
+   * meaningful (the slot logs bare) and an absent field leaves the
+   * authored tags standing. A swap still drops the old identity's
+   * tags unless the edit carries its own. */
+  tags?: string[];
   /** The slot is dropped from the rotation (reversible — clearing the
    * key or the page's RESTORE TO DEFAULTS brings it back). */
   removed?: boolean;

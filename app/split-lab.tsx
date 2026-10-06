@@ -50,6 +50,8 @@ import {
   RxEditSheet,
   SectionWhisper,
   SwapGlyph,
+  TagEditSheet,
+  TagsGlyph,
   type SlotBench,
 } from '../components/composed';
 import { navigateToExerciseDetail, navigateToSplitLab, safeGoBack } from '../navigation';
@@ -284,7 +286,12 @@ export default function SplitLabScreen() {
   // this board's identity (program AND seed). VS THE PROGRAM below
   // stays the generator's pure verdict; only the day list and the
   // figures read the edited board.
-  const openBench = (mode: 'swap' | 'rx', window: 'am' | 'pm', slot: ResolvedSlot, day: number) => {
+  const openBench = (
+    mode: 'swap' | 'rx' | 'tags',
+    window: 'am' | 'pm',
+    slot: ResolvedSlot,
+    day: number,
+  ) => {
     const pos = slot.position ?? 0;
     const key = liveSlotKey(boardIdentity, day, window, pos);
     const def = authoredSlotAt(boardIdentity, day, window, pos, board.edition);
@@ -295,10 +302,12 @@ export default function SplitLabScreen() {
       currentName: nameForSlug(slot.exercise),
       sets: slot.sets,
       reps: slot.reps,
+      tags: slot.suggestedTags,
       defaultSlug: def?.exercise ?? '',
       defaultName: def ? nameForSlug(def.exercise) : '',
       defaultSets: def?.sets ?? slot.sets,
       defaultReps: def?.reps ?? slot.reps,
+      defaultTags: def?.suggestedTags ?? [],
       isEdited: key in overrides,
     });
   };
@@ -328,6 +337,14 @@ export default function SplitLabScreen() {
         </Pressable>
         {editing ? (
           <SwapGlyph onPress={() => openBench('swap', window, slot, day)} label={name} />
+        ) : null}
+        {editing ? (
+          <TagsGlyph
+            onPress={() => openBench('tags', window, slot, day)}
+            label={name}
+            active={overrides[key]?.tags != null}
+            testID={`split-lab-slot-tags-${key}`}
+          />
         ) : null}
         {editing ? (
           <RemoveSlotGlyph
@@ -602,6 +619,29 @@ export default function SplitLabScreen() {
               showToast('success', next.exerciseName);
             }}
             testID="split-lab-swap-picker"
+          />
+        ) : b.mode === 'tags' ? (
+          <TagEditSheet
+            open
+            onOpenChange={(next) => {
+              if (!next) setBench(null);
+            }}
+            exerciseName={b.currentName}
+            tags={b.tags}
+            defaultTags={b.defaultTags}
+            isEdited={b.isEdited}
+            onSave={(tags) => {
+              setOverride(b.key, { tags });
+              showToast(
+                'success',
+                `${b.currentName} — ${tags.length > 0 ? tags.join(' · ') : 'logs bare'}`,
+              );
+            }}
+            onRestoreDefault={() => {
+              clearOverride(b.key);
+              showToast('success', `${b.defaultName || b.currentName} — back to the default`);
+            }}
+            testID="split-lab-tag-editor"
           />
         ) : (
           <RxEditSheet

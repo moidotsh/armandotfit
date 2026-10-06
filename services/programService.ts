@@ -49,7 +49,9 @@ export function slotKey(
  * Apply one window's slot edits — the shared post-processing under
  * every resolver: a removed slot drops; a swap takes the override's
  * identity (its suggested tags drop — they belonged to the programmed
- * exercise); a prescription edit rewrites sets and/or reps; an
+ * exercise — unless the edit carries its own); a prescription or TAGS
+ * edit rewrites sets, reps, and/or the realization tags (an absent
+ * tags field leaves the standing tags; an empty array logs bare); an
  * untouched slot passes through. Added positions append after the
  * authored ones (first key past the length not holding a live add —
  * removing an added slot frees its position again). Every output slot
@@ -68,16 +70,17 @@ function applySlotEdits(
     if (ov?.slug) {
       out.push({
         exercise: ov.slug,
-        suggestedTags: [],
+        suggestedTags: ov.tags ?? [],
         sets: ov.sets ?? slot.sets,
         reps: ov.reps ?? slot.reps,
         position: i + 1,
       });
       return;
     }
-    if (ov?.sets || ov?.reps) {
+    if (ov?.sets || ov?.reps || ov?.tags) {
       out.push({
         ...slot,
+        suggestedTags: ov.tags ?? slot.suggestedTags,
         sets: ov.sets ?? slot.sets,
         reps: ov.reps ?? slot.reps,
         position: i + 1,
@@ -92,7 +95,7 @@ function applySlotEdits(
     if (!ov.removed) {
       out.push({
         exercise: ov.slug,
-        suggestedTags: [],
+        suggestedTags: ov.tags ?? [],
         sets: ov.sets ?? ADDED_SLOT_SETS,
         reps: ov.reps ?? ADDED_SLOT_REPS,
         position: pos,

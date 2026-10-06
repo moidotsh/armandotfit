@@ -9,6 +9,9 @@
 //   AddExerciseRow    the window's + ADD EXERCISE line (edit mode only)
 //   RxEditSheet       the prescription bench: set range + rep range as
 //                     steppers, the slot's DEFAULT one tap back
+//   TagEditSheet      the realization bench: the slot's tags (grip,
+//                     attachment, SIDES…) as one TagChips editor —
+//                     the axes render themselves, the bar law holds
 //   AddExerciseSheet  the catalog picker for adds — search, zone ticks,
 //                     tap to add at the window's next free position
 //
@@ -22,28 +25,34 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Check, Pencil, Plus } from '@tamagui/lucide-icons-2';
 import { MobileSheet, MobilePrimaryButton, MobileStepper, SearchField } from '../MobilePremium';
 import { useAppTheme } from '../../context';
-import { SYSTEM_EXERCISES } from '../../shared/exercises';
+import { SYSTEM_EXERCISES, tagsWithAxisRespected } from '../../shared/exercises';
 import { theme, PRESS_DIP } from '../../constants';
 import { zoneStepFor } from './InkRail';
+import { TagChips } from './TagChips';
 
 // ── THE HEAD'S PENCIL ─────────────────────────────────────────────────
 
 /** The edit sheets' captured state — everything about a slot at open
- * time, so the swap bench and the Rx bench never re-resolve or parse
- * keys. `default*` is the AUTHORED slot (the ↺ DEFAULT row); an empty
- * defaultSlug marks an added slot (no default — removing is its
- * restore). Shared by the program page's two previews and the lab. */
+ * time, so the swap bench, the Rx bench, and the tags bench never
+ * re-resolve or parse keys. `default*` is the AUTHORED slot (the
+ * ↺ DEFAULT row); an empty defaultSlug marks an added slot (no
+ * default — removing is its restore). Shared by the program page's
+ * two previews and the lab. */
 export interface SlotBench {
-  mode: 'swap' | 'rx';
+  mode: 'swap' | 'rx' | 'tags';
   key: string;
   currentSlug: string;
   currentName: string;
   sets: [number, number];
   reps: [number, number];
+  /** The slot's current realization tags (edited or authored). */
+  tags: string[];
   defaultSlug: string;
   defaultName: string;
   defaultSets: [number, number];
   defaultReps: [number, number];
+  /** The AUTHORED tags — the tags bench's DEFAULT row restores them. */
+  defaultTags: string[];
   isEdited: boolean;
 }
 
@@ -177,6 +186,35 @@ export function AddExerciseRow({
 }
 
 // ── THE PRESCRIPTION BENCH ────────────────────────────────────────────
+
+/** The # trigger — the slot's tags bench (edit mode only). A standing
+ *  tags edit wears the brand ink (the edited rx's law). */
+export function TagsGlyph({
+  onPress,
+  label,
+  active = false,
+  testID,
+}: {
+  onPress: () => void;
+  label: string;
+  active?: boolean;
+  testID?: string;
+}) {
+  const { colors } = useAppTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Change the tags for ${label}`}
+      style={({ pressed }) => [styles.glyphBox, pressed ? { opacity: PRESS_DIP } : null]}
+      testID={testID}
+    >
+      <Text style={[styles.glyph, { color: active ? colors.brandText : colors.textMuted }]}>
+        {'#'}
+      </Text>
+    </Pressable>
+  );
+}
 
 export interface RxEditSheetProps {
   open: boolean;
@@ -330,6 +368,115 @@ export function RxEditSheet({
           testID={testID ? `${testID}-save` : undefined}
         >
           {`SAVE ${rxWord(sets, reps)}`}
+        </MobilePrimaryButton>
+      </View>
+    </MobileSheet>
+  );
+}
+
+// ── THE TAGS BENCH ────────────────────────────────────────────────────
+
+export interface TagEditSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  exerciseName: string;
+  /** The slot's current realization tags (edited or authored). */
+  tags: string[];
+  /** The AUTHORED tags — the DEFAULT row restores them whole. */
+  defaultTags: string[];
+  /** Whether a standing edit lives on this slot (the DEFAULT row shows). */
+  isEdited: boolean;
+  /** Fired once per SAVE with the WHOLE draft (an empty one logs bare). */
+  onSave: (tags: string[]) => void;
+  onRestoreDefault: () => void;
+  testID?: string;
+}
+
+/** THE TAGS BENCH — the slot's realization tags as one TagChips
+ *  editor: the axes render themselves (single choice per family, the
+ *  bar law included — a SIDES tag and a bar cannot ride together, the
+ *  eviction runs at the tap), the authored tags ride the suggestion
+ *  line, and a free word still types. The draft applies the same axis
+ *  law the log-time editor gets; SAVE writes the whole draft; the
+ *  DEFAULT row clears the slot's edit whole (the Rx bench's law). */
+export function TagEditSheet({
+  open,
+  onOpenChange,
+  exerciseName,
+  tags: tagsProp,
+  defaultTags,
+  isEdited,
+  onSave,
+  onRestoreDefault,
+  testID,
+}: TagEditSheetProps) {
+  const { colors } = useAppTheme();
+  const [draft, setDraft] = useState<string[]>(tagsProp);
+  // Re-sync the draft each time the bench opens (possibly for a
+  // different slot) — the props are the resolved truth at open time.
+  useEffect(() => {
+    if (open) setDraft(tagsProp);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, exerciseName]);
+
+  const toggle = (tag: string) => {
+    setDraft((cur) =>
+      cur.includes(tag) ? cur.filter((t) => t !== tag) : tagsWithAxisRespected(cur, tag),
+    );
+  };
+
+  return (
+    <MobileSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      showHandle={false}
+      showCloseButton={false}
+      testID={testID}
+    >
+      <View style={[styles.plate, { backgroundColor: colors.card }]}>
+        <Text style={[styles.plateEyebrow, { color: colors.textMuted }]}>THE TAGS</Text>
+        <Text numberOfLines={1} style={[styles.sheetName, { color: colors.text }]}>
+          {exerciseName}
+        </Text>
+        <View style={styles.list}>
+          <TagChips
+            tags={draft}
+            suggestions={defaultTags}
+            onToggleTag={toggle}
+            onAddTag={toggle}
+            testID={testID ? `${testID}-chips` : undefined}
+          />
+        </View>
+        {isEdited ? (
+          <Pressable
+            onPress={() => {
+              onOpenChange(false);
+              onRestoreDefault();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={
+              defaultTags.length > 0
+                ? `Back to the default — ${defaultTags.join(', ')}`
+                : 'Back to the default — no tags'
+            }
+            style={({ pressed }) => [styles.defaultRow, pressed ? { opacity: PRESS_DIP } : null]}
+            testID={testID ? `${testID}-default` : undefined}
+          >
+            <Text style={[styles.defaultGlyph, { color: colors.textMuted }]}>{'\u21BA'}</Text>
+            <Text style={[styles.defaultWord, { color: colors.textMuted }]}>DEFAULT</Text>
+            <Text style={[styles.defaultRx, { color: colors.textSecondary }]} numberOfLines={1}>
+              {defaultTags.length > 0 ? defaultTags.join(' · ') : 'no tags'}
+            </Text>
+          </Pressable>
+        ) : null}
+        <MobilePrimaryButton
+          onPress={() => {
+            onSave(draft);
+            onOpenChange(false);
+          }}
+          testID={testID ? `${testID}-save` : undefined}
+        >
+          {draft.length > 0 ? `SAVE ${draft.length} ${draft.length === 1 ? 'TAG' : 'TAGS'}` : 'SAVE — LOG BARE'}
         </MobilePrimaryButton>
       </View>
     </MobileSheet>
