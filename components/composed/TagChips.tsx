@@ -88,40 +88,48 @@ export function TagChips({
           underhand overhand neutral, STATION · 1 2 3… Picking a member
           evicts its siblings (the axis law at the store seam), so the
           single-choice nature is VISIBLE before the tap. Members
-          already active ride the chip row above. */}
-      {TAG_AXES.map((axis) => (
-        <View key={axis.id} style={styles.axisRow} testID={`${testID ?? 'tag-chips'}-axis-${axis.id}`}>
-          <Text style={[styles.axisLabel, { color: colors.textMuted }]}>{axis.label}</Text>
-          <View style={styles.axisWords}>
-            {axis.members.map((tag) => {
-              const isActive = active.has(tag);
-              return (
-                <Pressable
-                  key={tag}
-                  onPress={() => onToggleTag(tag)}
-                  accessibilityRole="button"
-                  // Distinct from the chip row's label (the active
-                  // member renders in both places by design: the chip is
-                  // the tag, the axis word is the family's visible choice).
-                  accessibilityLabel={`${isActive ? 'Clear' : 'Add'} tag ${tag}`}
-                  hitSlop={6}
-                  style={({ pressed }) => [styles.wordCta, pressed ? { opacity: PRESS_DIP } : null]}
-                  testID={`${testID ?? 'tag-chips'}-axis-${axis.id}-${tag}`}
-                >
-                  <Text
-                    style={[
-                      styles.wordText,
-                      { color: isActive ? colors.text : colors.textSecondary },
-                    ]}
+          already active ride the chip row above. An axis whose
+          CONFLICT rides the instance renders dark — the choice does
+          not exist there (a bar is a total: no SIDES run on one). */}
+      {TAG_AXES.map((axis) => {
+        const conflictAboard = (axis.conflicts ?? []).some((c) => active.has(c));
+        // Dark unless a member already runs (legacy data stays visible
+        // and clearable — the chip row above and this row both show it).
+        if (conflictAboard && !axis.members.some((m) => active.has(m))) return null;
+        return (
+          <View key={axis.id} style={styles.axisRow} testID={`${testID ?? 'tag-chips'}-axis-${axis.id}`}>
+            <Text style={[styles.axisLabel, { color: colors.textMuted }]}>{axis.label}</Text>
+            <View style={styles.axisWords}>
+              {axis.members.map((tag) => {
+                const isActive = active.has(tag);
+                return (
+                  <Pressable
+                    key={tag}
+                    onPress={() => onToggleTag(tag)}
+                    accessibilityRole="button"
+                    // Distinct from the chip row's label (the active
+                    // member renders in both places by design: the chip is
+                    // the tag, the axis word is the family's visible choice).
+                    accessibilityLabel={`${isActive ? 'Clear' : 'Add'} tag ${tag}`}
+                    hitSlop={6}
+                    style={({ pressed }) => [styles.wordCta, pressed ? { opacity: PRESS_DIP } : null]}
+                    testID={`${testID ?? 'tag-chips'}-axis-${axis.id}-${tag}`}
                   >
-                    {tag.replace(/^station-(\d)$/, '$1')}
-                  </Text>
-                </Pressable>
-              );
-            })}
+                    <Text
+                      style={[
+                        styles.wordText,
+                        { color: isActive ? colors.text : colors.textSecondary },
+                      ]}
+                    >
+                      {tag.replace(/^station-(\d)$/, '$1')}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
 
       <View style={styles.chipRow}>
         {suggestionList.map((tag) => (

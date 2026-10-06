@@ -9,7 +9,9 @@ import {
   suggestNextSplitDay,
   suggestSessionWindow,
 } from '../../constants';
-import { TAG_AXES, TAG_VOCABULARY_SEED, tagsWithAxisRespected, isPerSideInstance } from '../../shared/exercises';
+import { TAG_AXES, TAG_VOCABULARY_SEED, tagsWithAxisRespected, isPerSideInstance,
+  TWO_A_DAY_SPLITS, ONE_A_DAY_SPLITS, FEMALE_TWO_A_DAY_SPLITS, FEMALE_ONE_A_DAY_SPLITS,
+  getStarterDays } from '../../shared/exercises';
 import { nextDefaultSessionMode } from '../../constants';
 
 describe('getNextSplitDay', () => {
@@ -194,5 +196,48 @@ describe('the sides axis', () => {
     expect(isPerSideInstance(['dumbbell', 'seated'])).toBe(false);
     expect(isPerSideInstance([])).toBe(false);
     expect(isPerSideInstance(null)).toBe(false);
+  });
+
+  // THE BAR LAW — a bar is a TOTAL, a limb is a side. The number you
+  // enter for a bar work is already the whole implement's (135 bench;
+  // 75 EZ curl = 25 bar + 25+25 plates), so a sides figure on one
+  // would double-count an honest total. The axis carries the bars as
+  // conflicts and the eviction runs BOTH ways at the store seam.
+  it('the bar law — a bar and a sides tag cannot ride the same instance', () => {
+    const sides = TAG_AXES.find((a) => a.id === 'sides');
+    expect(sides?.conflicts).toEqual(['barbell', 'ez-bar']);
+    // Add the sides tag, the bar leaves.
+    expect(tagsWithAxisRespected(['barbell', 'underhand'], 'per-side')).toEqual([
+      'underhand',
+      'per-side',
+    ]);
+    expect(tagsWithAxisRespected(['ez-bar'], 'per-arm')).toEqual(['per-arm']);
+    // Add the bar, the sides tag leaves (the same seam, both ways).
+    expect(tagsWithAxisRespected(['per-side', 'rope'], 'barbell')).toEqual([
+      'rope',
+      'barbell',
+    ]);
+    expect(tagsWithAxisRespected(['per-leg'], 'ez-bar')).toEqual(['ez-bar']);
+    // Only the BARS conflict — the free implements keep their figure.
+    expect(tagsWithAxisRespected(['per-side'], 'dumbbell')).toEqual(['per-side', 'dumbbell']);
+    expect(tagsWithAxisRespected(['per-side'], 'machine')).toEqual(['per-side', 'machine']);
+  });
+
+  it('no authored slot pairs a sides tag with a bar (the boards obey the law)', () => {
+    const slots = [
+      ...TWO_A_DAY_SPLITS.flatMap((d) => [...d.am, ...d.pm]),
+      ...ONE_A_DAY_SPLITS.flatMap((d) => d.session),
+      ...FEMALE_TWO_A_DAY_SPLITS.flatMap((d) => [...d.am, ...d.pm]),
+      ...FEMALE_ONE_A_DAY_SPLITS.flatMap((d) => d.session),
+      ...(['ppl', 'upperLower', 'broSplit', 'fullyEqual'] as const).flatMap((p) =>
+        getStarterDays(p).flatMap((d) => d.session),
+      ),
+    ];
+    expect(slots.length).toBeGreaterThan(100);
+    for (const slot of slots) {
+      const hasSides = slot.suggestedTags.some((t) => isPerSideInstance([t]));
+      const hasBar = slot.suggestedTags.some((t) => t === 'barbell' || t === 'ez-bar');
+      expect(hasSides && hasBar, `${slot.exercise}: ${slot.suggestedTags.join(', ')}`).toBe(false);
+    }
   });
 });

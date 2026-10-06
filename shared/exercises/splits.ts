@@ -307,7 +307,12 @@ export const TAG_VOCABULARY_SEED: string[] = [
 // axis REPLACES the axis's other member on the draft (you cannot be
 // single-pulley and dual-pulley, underhand and overhand, seated and
 // standing). One axis per concern, one token per value; tags outside
-// every axis stay free-form and co-exist with everything.
+// every axis stay free-form and co-exist with everything. An axis may
+// also name CONFLICTS on other axes — tags that cannot ride the same
+// instance, evicted both ways at the seam. The one law this carries:
+// A BAR IS A TOTAL, A LIMB IS A SIDE — the SIDES axis conflicts with
+// barbell and ez-bar, because a bar's number is already the whole
+// implement's (135 bench; 75 EZ curl = 25 bar + 25+25 plates).
 // ──────────────────────────────────────────────────────────────────────
 
 export interface TagAxis {
@@ -321,6 +326,12 @@ export interface TagAxis {
    *  siblings): the station axis takes station-N for any N — a gym
    *  with three cable stacks tags station-3 without a vocabulary edit. */
   pattern?: RegExp;
+  /** Tags on OTHER axes that cannot ride the same instance — the
+   *  eviction runs BOTH ways in tagsWithAxisRespected. The SIDES axis
+   *  names the bars: a bar is a TOTAL, a limb is a side — there is no
+   *  per-side figure on a barbell or an EZ-bar, the number you enter
+   *  is already the whole implement's. */
+  conflicts?: readonly string[];
 }
 
 export const TAG_AXES: readonly TagAxis[] = [
@@ -328,7 +339,7 @@ export const TAG_AXES: readonly TagAxis[] = [
   { id: 'attachment', label: 'ATTACHMENT', members: ['rope', 'straight-bar', 'ez-bar', 'lat-bar', 'v-grip', 'handle'] },
   { id: 'implement', label: 'IMPLEMENT', members: ['machine', 'dumbbell', 'barbell', 'cable'] },
   { id: 'stance', label: 'STANCE', members: ['seated', 'standing', 'kneeling'] },
-  { id: 'sides', label: 'SIDES', members: ['per-side', 'per-arm', 'per-leg'] },
+  { id: 'sides', label: 'SIDES', members: ['per-side', 'per-arm', 'per-leg'], conflicts: ['barbell', 'ez-bar'] },
   { id: 'pulley', label: 'PULLEYS', members: ['single-pulley', 'dual-pulley'] },
   { id: 'station', label: 'STATION', members: ['station-1', 'station-2', 'station-3'], pattern: /^station-\d+$/ },
 ];
@@ -357,15 +368,25 @@ export function isPerSideInstance(
 
 /**
  * ADD a tag with the axes respected: if the incoming tag belongs to an
- * axis, the axis's other members leave (single choice per axis); free
- * tags append untouched. Pure — the store calls it at the toggle seam.
+ * axis, the axis's other members leave (single choice per axis), and
+ * the axis's declared cross-axis conflicts leave too — both WAYS (add
+ * a sides tag and the bar leaves; add a bar and the sides tag leaves).
+ * Free tags append untouched. Pure — the store calls it at the toggle
+ * seam.
  */
 export function tagsWithAxisRespected(current: readonly string[], incoming: string): string[] {
   const axis = tagAxisOf(incoming);
   if (!axis) return [...current, incoming];
-  const onAxis = (t: string) =>
-    axis.members.includes(t) || (axis.pattern?.test(t) ?? false);
-  return [...current.filter((t) => !onAxis(t)), incoming];
+  const evicts = (t: string): boolean => {
+    if (axis.members.includes(t) || (axis.pattern?.test(t) ?? false)) return true;
+    if (t === incoming) return false;
+    const other = tagAxisOf(t);
+    if (!other) return false;
+    // The conflict is symmetric without declaring it twice: the
+    // incoming tag's axis may name t, or t's axis may name incoming.
+    return (axis.conflicts?.includes(t) ?? false) || (other.conflicts?.includes(incoming) ?? false);
+  };
+  return [...current.filter((t) => !evicts(t)), incoming];
 }
 
 // ──────────────────────────────────────────────────────────────────────
