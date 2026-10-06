@@ -10,16 +10,18 @@
 //                           grammar — the panel tier stays dead), the
 //                           edition's stats as the fact line, its top
 //                           muscles as the whisper, LIVE in red ink on
-//                           the running edition (the live pulse).
+//                           the running program (edition, starter, or
+//                           a seeded board — the board's card taps
+//                           through to the lab at that seed).
 //                           Tap a card → the days.
 //   /program?edition=…      THE DAYS — the edition's rotation: every
 //                           day an EQUAL chapter (no elevated day 1 —
 //                           the owner's correction), THE WORK prints
 //                           the whole rotation's muscle share, slots
 //                           are ruled lines, plan-time Swap rides the
-//                           bench. Viewing an edition is not switching
-//                           programs — GO on the selector still owns
-//                           that.
+//                           bench. MAKE LIVE adopts the rotation as
+//                           the program that runs the week; viewing
+//                           alone never switches.
 
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -30,7 +32,17 @@ import { BoardShell, InkRail, SectionWhisper, SwapGlyph } from '../components/co
 import { navigateToExerciseDetail, navigateToOtherSplits, navigateToProgram, navigateToStarterProgram, navigateToSplitLab, safeGoBack } from '../navigation';
 import { useAppTheme, useToast } from '../context';
 import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
-import { resolveSlots, slotKey, derivePlanMuscleShare } from '../services';
+import {
+  resolveSlots,
+  slotKey,
+  derivePlanMuscleShare,
+  generatedBoard,
+  isSameLiveProgram,
+  liveProgramLabel,
+  liveRotationLength,
+  STARTER_PROGRAM_LABELS,
+  GENERATED_PROGRAM_LABELS,
+} from '../services';
 import {
   TWO_A_DAY_SPLITS,
   ONE_A_DAY_SPLITS,
@@ -53,11 +65,6 @@ function rxLabel(sets: [number, number], reps: [number, number]): string {
   return `${s}×${reps[0]}–${reps[1]}`;
 }
 
-const EDITION_NAME: Record<PreferredSplit, string> = {
-  twoADay: 'Two-a-day',
-  oneADay: 'One-a-day',
-};
-
 /** The overview's statement: the PAGE's answer, not one plan's —
  * the rotation is N days, offered two ways (the editions below). */
 const splitsFor = (which: PreferredSplit, ed: string) =>
@@ -70,19 +77,12 @@ const isEdition = (v: string | undefined): v is PreferredSplit =>
 
 /** The starter programs — the other authored archetypes, offered as
  *  quiet links under the editions (OTHER SPLITS). */
-const STARTER_CARDS: ReadonlyArray<{ program: StarterProgram; title: string }> = [
-  { program: 'ppl', title: 'Push/Pull/Leg' },
-  { program: 'upperLower', title: 'Upper/Lower' },
-  { program: 'broSplit', title: 'Bro Split' },
-  { program: 'fullyEqual', title: 'Fully Equal' },
+const STARTER_CARDS: ReadonlyArray<{ program: StarterProgram }> = [
+  { program: 'ppl' },
+  { program: 'upperLower' },
+  { program: 'broSplit' },
+  { program: 'fullyEqual' },
 ];
-
-const STARTER_NAME: Record<StarterProgram, string> = {
-  ppl: 'Push/Pull/Leg',
-  upperLower: 'Upper/Lower',
-  broSplit: 'Bro Split',
-  fullyEqual: 'Fully Equal',
-};
 
 const isStarterProgram = (v: string | undefined): v is StarterProgram =>
   v === 'ppl' || v === 'upperLower' || v === 'broSplit' || v === 'fullyEqual';
@@ -90,8 +90,9 @@ const isStarterProgram = (v: string | undefined): v is StarterProgram =>
 export default function ProgramScreen() {
   const { colors } = useAppTheme();
   const { showToast } = useToast();
-  const split = useSplitPreferenceStore((s) => s.splitType);
+  const liveProgram = useSplitPreferenceStore((s) => s.liveProgram);
   const programEdition = useSplitPreferenceStore((s) => s.edition);
+  const setLiveProgram = useSplitPreferenceStore((s) => s.setLiveProgram);
   const { edition, program: programParam, view } = useLocalSearchParams<{
     edition?: string;
     program?: string;
@@ -108,8 +109,15 @@ export default function ProgramScreen() {
   // (the shelf views below — view=other and program=… — must slip past
   //  this guard; only the plain /program reads the overview.)
   if (!isEdition(edition) && view !== 'other' && !isStarterProgram(programParam)) {
-    // The rotation's length — both editions share the same four days.
-    const liveDays = splitsFor(split, programEdition).length;
+    // The statement — the live program's own sentence. Editions keep
+    // the two-ways line; a starter or a seeded board states its name
+    // (the page answers "what am I running?", whatever the answer is).
+    const liveDays = liveProgram.kind === 'edition'
+      ? splitsFor(liveProgram.split, programEdition).length
+      : liveRotationLength(liveProgram);
+    const liveStatement = liveProgram.kind === 'edition'
+      ? `${liveDays} days, two ways.`
+      : `${liveProgramLabel(liveProgram)} — ${liveDays} days.`;
     const statsOf = (which: PreferredSplit) => {
       const days = splitsFor(which, programEdition);
       const windows: SessionWindow[] = which === 'twoADay' ? ['am', 'pm'] : ['single'];
@@ -135,14 +143,14 @@ export default function ProgramScreen() {
             and stands alone in its halo: the cards below carry every
             stat (the old fact line repeated the live card's). */}
         <Text style={[styles.statement, { color: colors.text }]} numberOfLines={2}>
-          {`${liveDays} days, two ways.`}
+          {liveStatement}
         </Text>
 
         {/* THE EDITION CARDS — the ground plus the screen's 2px rule
             (the home day register's grammar); tap to read the days. */}
         {(['twoADay', 'oneADay'] as const).map((which, i) => {
           const st = statsOf(which);
-          const isLive = which === split;
+          const isLive = isSameLiveProgram({ kind: 'edition', split: which }, liveProgram);
           // INK IS STATE, SPENT ON THE CARDS: the running program
           // prints in FULL INK under the screen's 2px rule; the other
           // edition demotes — muted ink, hairline rule. The split
@@ -169,7 +177,7 @@ export default function ProgramScreen() {
               key={which}
               onPress={() => navigateToProgram(which)}
               accessibilityRole="button"
-              accessibilityLabel={`${EDITION_NAME[which]} program — ${st.days} days, ${st.lifts} lifts, ${st.sessions} sessions a week. View the days`}
+              accessibilityLabel={`${liveProgramLabel({ kind: 'edition', split: which })} program — ${st.days} days, ${st.lifts} lifts, ${st.sessions} sessions a week. View the days`}
               style={({ pressed }) => [
                 styles.card,
                 {
@@ -183,7 +191,7 @@ export default function ProgramScreen() {
             >
               <View style={styles.cardHead}>
                 <Text style={[styles.cardTitle, { color: titleInk }]} numberOfLines={1}>
-                  {EDITION_NAME[which]}
+                  {liveProgramLabel({ kind: 'edition', split: which })}
                 </Text>
                 {isLive ? (
                   <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
@@ -228,6 +236,62 @@ export default function ProgramScreen() {
             </Pressable>
           );
         })}
+
+        {/* THE LIVE BOARD — when a Split Lab program runs the week,
+            its card sits beside the editions: same hierarchy (full
+            ink, LIVE in red), and the tap opens the lab AT ITS SEED —
+            the board is a function of the identity, so the lab reads
+            exactly what runs. */}
+        {liveProgram.kind === 'generated' ? (() => {
+          const board = generatedBoard(
+            liveProgram.program,
+            liveProgram.seed,
+            liveProgram.edition,
+          );
+          const slots = board.days.flatMap((d) => [...d.am, ...d.pm]);
+          const sessions =
+            board.days.length * (liveProgram.program === 'fullBodyHighFrequency' ? 2 : 1);
+          const strip = board.days
+            .map((d) => `D${d.day} ${'\u2588'.repeat(liveProgram.program === 'fullBodyHighFrequency' ? 2 : 1)}`)
+            .join(' \u2009·\u2009 ');
+          return (
+            <Pressable
+              onPress={() => navigateToSplitLab(liveProgram.program, liveProgram.seed)}
+              accessibilityRole="button"
+              accessibilityLabel={`${GENERATED_PROGRAM_LABELS[liveProgram.program]}, seed ${liveProgram.seed} — ${board.days.length} days, ${slots.length} lifts, ${sessions} sessions a week. Open it in the Split Lab`}
+              style={({ pressed }) => [
+                styles.card,
+                { borderTopWidth: 2, borderTopColor: colors.text },
+                styles.cardNotFirst,
+                pressed ? { opacity: PRESS_DIP } : null,
+              ]}
+              testID="program-card-generated-live"
+            >
+              <View style={styles.cardHead}>
+                <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>
+                  {`${GENERATED_PROGRAM_LABELS[liveProgram.program]} · seed ${liveProgram.seed}`}
+                </Text>
+                <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
+                <ChevronRight size={20} color={colors.text} />
+              </View>
+              <View style={styles.cardFigureRow}>
+                <Text
+                  style={[styles.cardBigFigure, { color: colors.text }]}
+                  accessibilityLabel={`${sessions} sessions per week`}
+                >
+                  {String(sessions)}
+                </Text>
+                <Text style={[styles.cardBigUnit, { color: colors.textSecondary }]}>SESSIONS/WK</Text>
+                <Text style={[styles.cardSideFacts, { color: colors.textSecondary }]} numberOfLines={1}>
+                  {joinFacts([`${board.days.length} days`, `${slots.length} lifts`])}
+                </Text>
+              </View>
+              <Text style={[styles.cardStrip, { color: colors.textSecondary }]} numberOfLines={1}>
+                {strip}
+              </Text>
+            </Pressable>
+          );
+        })() : null}
 
         {/* OTHER SPLITS — one quiet link under the editions. The
             starters themselves live one screen deep as cards, the
@@ -275,12 +339,16 @@ export default function ProgramScreen() {
         {/* The starter cards — the same card grammar as the editions,
             muted ink throughout (only the live program carries full
             ink). Tap to read the days. */}
-        {STARTER_CARDS.map(({ program: which, title }, i) => {
+        {STARTER_CARDS.map(({ program: which }, i) => {
           const starter = getStarterDays(which);
           const slots = starter.flatMap((d) => d.session);
           const rows = derivePlanMuscleShare(slots, 4);
           const lead = rows[0]?.share ?? 1;
           const strip = starter.map((d) => `D${d.day} \u2588`).join(' \u2009·\u2009 ');
+          // The running starter wears the hierarchy: full ink, 2px
+          // rule, LIVE in red — the editions' own card grammar.
+          const isLive = isSameLiveProgram({ kind: 'starter', program: which }, liveProgram);
+          const title = STARTER_PROGRAM_LABELS[which];
           return (
             <Pressable
               key={which}
@@ -289,17 +357,26 @@ export default function ProgramScreen() {
               accessibilityLabel={`${title} starter program — ${starter.length} days, ${slots.length} lifts. View the days`}
               style={({ pressed }) => [
                 styles.card,
-                { borderTopWidth: 1, borderTopColor: colors.mobilePremium.hairlineBorder },
+                {
+                  borderTopWidth: isLive ? 2 : 1,
+                  borderTopColor: isLive ? colors.text : colors.mobilePremium.hairlineBorder,
+                },
                 i === 0 ? styles.cardFirst : styles.cardNotFirst,
                 pressed ? { opacity: PRESS_DIP } : null,
               ]}
               testID={`program-starter-card-${which}`}
             >
               <View style={styles.cardHead}>
-                <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>
+                <Text
+                  style={[styles.cardTitle, { color: isLive ? colors.text : colors.textSecondary }]}
+                  numberOfLines={1}
+                >
                   {title}
                 </Text>
-                <ChevronRight size={20} color={colors.text} />
+                {isLive ? (
+                  <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
+                ) : null}
+                <ChevronRight size={20} color={isLive ? colors.text : colors.textSecondary} />
               </View>
               <View style={styles.cardFigureRow}>
                 <Text
@@ -364,6 +441,14 @@ export default function ProgramScreen() {
     const starterSlots = starter.flatMap((d) => d.session);
     const starterShare = derivePlanMuscleShare(starterSlots, 99);
     const starterLead = starterShare[0]?.share ?? 1;
+    const isStarterLive = isSameLiveProgram(
+      { kind: 'starter', program: programParam },
+      liveProgram,
+    );
+    const makeStarterLive = () => {
+      setLiveProgram({ kind: 'starter', program: programParam });
+      showToast('success', `${STARTER_PROGRAM_LABELS[programParam]} is live`);
+    };
     return (
       <BoardShell
         surface="analytics"
@@ -375,9 +460,14 @@ export default function ProgramScreen() {
           <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
             {joinFacts(['THE ROTATION', `${starter.length} DAYS`, CURRENT_ERA])}
           </Text>
-          <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
-            {STARTER_NAME[programParam]}
-          </Text>
+          <View style={styles.statementRow}>
+            <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
+              {STARTER_PROGRAM_LABELS[programParam]}
+            </Text>
+            {isStarterLive ? (
+              <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
+            ) : null}
+          </View>
           <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
             {joinFacts([
               `${starter.length} days`,
@@ -386,6 +476,11 @@ export default function ProgramScreen() {
               'starter',
             ])}
           </Text>
+          {!isStarterLive ? (
+            <MobilePrimaryButton onPress={makeStarterLive} testID="program-starter-make-live">
+              MAKE LIVE
+            </MobilePrimaryButton>
+          ) : null}
         </View>
 
         {/* Equal chapters of ruled lines; the names tap through to the
@@ -463,6 +558,13 @@ export default function ProgramScreen() {
   const days = splitsFor(viewedSplit, programEdition);
   const isTwoADay = viewedSplit === 'twoADay';
   const windows: SessionWindow[] = isTwoADay ? ['am', 'pm'] : ['single'];
+  // THE PAGE'S VERB — viewing is not switching; MAKE LIVE is. The
+  // running edition wears the red word instead.
+  const isEditionLive = isSameLiveProgram({ kind: 'edition', split: viewedSplit }, liveProgram);
+  const makeEditionLive = () => {
+    setLiveProgram({ kind: 'edition', split: viewedSplit });
+    showToast('success', `${liveProgramLabel({ kind: 'edition', split: viewedSplit })} is live`);
+  };
 
   const dayLifts = (day: number) =>
     windows.reduce((n, w) => n + resolveSlots(viewedSplit, day, w, overrides, programEdition).length, 0);
@@ -523,9 +625,14 @@ export default function ProgramScreen() {
         <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
           {joinFacts(['THE ROTATION', `${days.length} DAYS`, CURRENT_ERA])}
         </Text>
-        <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
-          {EDITION_NAME[viewedSplit]}
-        </Text>
+        <View style={styles.statementRow}>
+          <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
+            {liveProgramLabel({ kind: 'edition', split: viewedSplit })}
+          </Text>
+          {isEditionLive ? (
+            <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
+          ) : null}
+        </View>
         <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
           {joinFacts([
             `${days.length} days`,
@@ -533,6 +640,11 @@ export default function ProgramScreen() {
             `${days.length * windows.length} sessions/week`,
           ])}
         </Text>
+        {!isEditionLive ? (
+          <MobilePrimaryButton onPress={makeEditionLive} testID="program-edition-make-live">
+            MAKE LIVE
+          </MobilePrimaryButton>
+        ) : null}
       </View>
 
       {/* EVERY DAY AN EQUAL CHAPTER — no elevated day 1 (the owner's
@@ -674,6 +786,13 @@ const styles = StyleSheet.create({
   },
   statement: {
     ...INTERVAL.statement,
+  },
+  // The statement + its LIVE word (red is record/link/live — the
+  // badge rides the head's baseline, never a chip).
+  statementRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 10,
   },
   dayTitle: {
     ...theme.typography.mobileTitle,

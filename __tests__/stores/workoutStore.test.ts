@@ -14,7 +14,7 @@ describe('workoutStore', () => {
 
   it('hydrates from split slots: names, suggested tags, Rx (armed-set model)', () => {
     const store = useWorkoutStore.getState();
-    store.startSession({ splitType: 'twoADay', day: 2, sessionMode: 'pm' });
+    store.startSession({ program: { kind: 'edition', split: 'twoADay' }, day: 2, sessionMode: 'pm' });
     const draft = useWorkoutStore.getState().draft;
     expect(draft).not.toBeNull();
 
@@ -39,7 +39,7 @@ describe('workoutStore', () => {
   });
 
   it('toggles tags on a draft exercise', () => {
-    useWorkoutStore.getState().startSession({ splitType: 'oneADay', day: 1 });
+    useWorkoutStore.getState().startSession({ program: { kind: 'edition', split: 'oneADay' }, day: 1 });
     const localId = useWorkoutStore.getState().addExerciseToDraft({
       exerciseName: 'Leg Press',
     });
@@ -52,7 +52,7 @@ describe('workoutStore', () => {
   });
 
   it('respects the tag axes on add — a qualifier sibling leaves when its rival arrives', () => {
-    useWorkoutStore.getState().startSession({ splitType: 'oneADay', day: 1 });
+    useWorkoutStore.getState().startSession({ program: { kind: 'edition', split: 'oneADay' }, day: 1 });
     const localId = useWorkoutStore.getState().addExerciseToDraft({
       exerciseName: 'Lat Pulldown',
     });
@@ -78,7 +78,7 @@ describe('workoutStore', () => {
   });
 
   it('appendDraftSlots appends the other window without disturbing the current station', () => {
-    useWorkoutStore.getState().startSession({ splitType: 'twoADay', day: 1, sessionMode: 'am' });
+    useWorkoutStore.getState().startSession({ program: { kind: 'edition', split: 'twoADay' }, day: 1, sessionMode: 'am' });
     useWorkoutStore.getState().hydrateFromSplit([
       { exercise: 'leg-press', suggestedTags: [], sets: [3, 3], reps: [8, 10] },
       { exercise: 'leg-press-calf-raise', suggestedTags: [], sets: [3, 3], reps: [15, 20] },
@@ -101,7 +101,7 @@ describe('workoutStore', () => {
   });
 
   it('the rating is single-choice on the draft and threads into the DTO', () => {
-    useWorkoutStore.getState().startSession({ splitType: 'oneADay', day: 1 });
+    useWorkoutStore.getState().startSession({ program: { kind: 'edition', split: 'oneADay' }, day: 1 });
     const localId = useWorkoutStore.getState().addExerciseToDraft({ exerciseName: 'Leg Press' });
     useWorkoutStore.getState().setDraftExerciseRating(localId, 'light');
     expect(useWorkoutStore.getState().draft!.exercises[0].rating).toBe('light');
@@ -115,7 +115,7 @@ describe('workoutStore', () => {
   });
 
   it('toLogSessionDTO drops half-filled sets and threads tags', () => {
-    useWorkoutStore.getState().startSession({ splitType: 'oneADay', day: 1 });
+    useWorkoutStore.getState().startSession({ program: { kind: 'edition', split: 'oneADay' }, day: 1 });
     const localId = useWorkoutStore.getState().addExerciseToDraft({
       exerciseName: 'Leg Press',
     });
@@ -136,7 +136,7 @@ describe('workoutStore', () => {
     // NEW block with fresh stations (never split-hydrated) and no
     // day-of-split asserted.
     useWorkoutStore.getState().startSession({
-      splitType: 'twoADay',
+      program: { kind: 'edition', split: 'twoADay' },
       day: null,
       sessionMode: 'pm',
       adHoc: true,
@@ -162,7 +162,7 @@ describe('workoutStore', () => {
     // stations, with ZERO set rows — the old block's history stays on
     // its receipt.
     useWorkoutStore.getState().continueSession({
-      splitType: 'twoADay',
+      program: { kind: 'edition', split: 'twoADay' },
       day: 3,
       sessionMode: 'am',
       exercises: [
@@ -188,7 +188,7 @@ describe('workoutStore', () => {
   });
 
   it('cardio stations: commit carries values, laps derive meters, DTO flattens', () => {
-    useWorkoutStore.getState().startSession({ splitType: 'twoADay', day: 2, sessionMode: 'am' });
+    useWorkoutStore.getState().startSession({ program: { kind: 'edition', split: 'twoADay' }, day: 2, sessionMode: 'am' });
 
     // A treadmill sitting: arm time + speed + incline + outcomes, commit.
     const treadmill = useWorkoutStore.getState().addCardioToDraft('treadmill');
@@ -235,7 +235,7 @@ describe('workoutStore', () => {
   });
 
   it('swapDraftExercise swaps identity in place — position, Rx, and set rows survive; tags reset', () => {
-    useWorkoutStore.getState().startSession({ splitType: 'twoADay', day: 2, sessionMode: 'pm' });
+    useWorkoutStore.getState().startSession({ program: { kind: 'edition', split: 'twoADay' }, day: 2, sessionMode: 'pm' });
     useWorkoutStore.getState().hydrateFromSplit(
       getSlotsForDay('twoADay', 2, 'pm'),
     );
@@ -258,7 +258,7 @@ describe('workoutStore', () => {
   });
 
   it('resetSession clears the draft', () => {
-    useWorkoutStore.getState().startSession({ splitType: 'oneADay', day: 1 });
+    useWorkoutStore.getState().startSession({ program: { kind: 'edition', split: 'oneADay' }, day: 1 });
     useWorkoutStore.getState().resetSession();
     expect(useWorkoutStore.getState().draft).toBeNull();
     expect(useWorkoutStore.getState().isSessionActive).toBe(false);

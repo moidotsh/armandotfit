@@ -31,7 +31,7 @@ import { useWorkoutDetail, useDeleteSession, useWeightUnit, useLastUsedTags, use
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/react-query';
 import { navigateToRegister, navigateToWorkoutDetail, safeGoBack } from '../../navigation';
-import { resolveSlots, sumVolume, WorkoutService, derivePriorTopSets } from '../../services';
+import { resolveLiveSlots, sumVolume, WorkoutService, derivePriorTopSets } from '../../services';
 import { bodyweightAsOf } from '../../utils/bodyweight';
 import { getWeightHistory } from '../../utils/supabase/repositories';
 import {
@@ -230,7 +230,11 @@ export function Receipt({ id }: ReceiptProps) {
   // case still works — add from the library on top.
   const continueSession = useWorkoutStore((s) => s.continueSession);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
-  const splitType = useSplitPreferenceStore((s) => s.splitType);
+  // THE LIVE PROGRAM — the day continues under whatever program is
+  // live NOW (the preference store's identity; the DB row carries no
+  // program — it lives in TypeScript, invariant 8).
+  const liveProgram = useSplitPreferenceStore((s) => s.liveProgram);
+  const prefEdition = useSplitPreferenceStore((s) => s.edition);
   const handleContinue = () => {
     // THE GUEST GATE — continuing starts a session; sessions belong to
     // lifters. Guests land on the gate.
@@ -241,14 +245,16 @@ export function Receipt({ id }: ReceiptProps) {
     if (!session) return;
     const window = windowLabel === 'AM' ? 'am' : 'pm';
     // Rx recovery: match each logged name back to its programmed slot
-    // (the override-aware resolution — a standing substitution carries).
+    // (the override-aware resolution — a standing substitution carries;
+    // single-window programs collapse the window to 'single' inside).
     const slots =
       session.splitDay != null
-        ? resolveSlots(
-            splitType,
+        ? resolveLiveSlots(
+            liveProgram,
             session.splitDay,
             window,
             useProgramOverrideStore.getState().overrides,
+            prefEdition,
           )
         : [];
     const exercises = session.exercises.map((ex) => {
@@ -266,7 +272,7 @@ export function Receipt({ id }: ReceiptProps) {
     });
     const cardio = [...new Set(session.cardio.map((c) => c.station))];
     continueSession({
-      splitType,
+      program: liveProgram,
       day: session.splitDay ?? null,
       sessionMode: window,
       exercises,

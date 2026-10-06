@@ -53,7 +53,8 @@ import { toDisplayWeight, fromDisplayWeight, roundDisplayWeight, weightUnitLabel
 import { useWorkoutStore, useIsOnline, useDeloadStore, useSplitPreferenceStore, useProgramOverrideStore } from '../../stores';
 import {
   sessionSaveQueue,
-  resolveSlots,
+  resolveLiveSlots,
+  programWindows,
   deriveProgression,
   rangeLabel,
   sameProgression,
@@ -188,12 +189,13 @@ export function Floor() {
   const programEdition = useSplitPreferenceStore((s) => s.edition);
   const setSplitPreference = useSplitPreferenceStore((s) => s.setPreference);
   const programOverrides = useProgramOverrideStore((s) => s.overrides);
-  // THE OTHER WINDOW — the Floor's one big session: on a two-a-day,
-  // the window you did NOT start is one quiet link away (an 8pm AM
-  // offers PM — rotation, not clock). Hidden once its stations ride
-  // the draft.
+  // THE OTHER WINDOW — the Floor's one big session: on a two-window
+  // shape (the two-a-day edition, the HF generated board), the window
+  // you did NOT start is one quiet link away (an 8pm AM offers PM —
+  // rotation, not clock). Hidden once its stations ride the draft.
   const otherWindow =
-    draftSession?.splitType === 'twoADay' &&
+    draftSession != null &&
+    programWindows(draftSession.program).length === 2 &&
     draftSession.day != null &&
     !draftSession.adHoc
       ? draftSession.sessionMode === 'am'
@@ -202,7 +204,7 @@ export function Floor() {
       : null;
   const otherSlots =
     otherWindow && draftSession?.day != null
-      ? resolveSlots('twoADay', draftSession.day, otherWindow, programOverrides, programEdition)
+      ? resolveLiveSlots(draftSession.program, draftSession.day, otherWindow, programOverrides, programEdition)
       : [];
   const toggleDraftExerciseTag = useWorkoutStore(
     (s) => s.toggleDraftExerciseTag,
@@ -312,7 +314,10 @@ export function Floor() {
       const savedDraft = useWorkoutStore.getState().draft;
       if (savedDraft) {
         setSplitPreference({
-          sessionMode: nextDefaultSessionMode(savedDraft.splitType, savedDraft.sessionMode),
+          sessionMode: nextDefaultSessionMode(
+            programWindows(savedDraft.program).length === 2,
+            savedDraft.sessionMode,
+          ),
         });
       }
       const savedId = logMutation.data?.id;

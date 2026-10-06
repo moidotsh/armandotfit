@@ -7,8 +7,10 @@
 //   1. Split metadata (oneADay / twoADay) — static.
 //   2. Cycle helpers that determine which split-day the user is on, based
 //      on their last completed workout. The cycle is per-user history-
-//      driven: next day = (last day mod 4) + 1. The DB has no cycle
-//      anchor — it only stores the day (1..4) per session.
+//      driven and ROTATION-AWARE: next day = (last day mod N) + 1, where
+//      N is the live program's rotation length (4 for the authored
+//      editions; a starter/generated program walks its own length). The
+//      DB has no cycle anchor — it only stores the day per session.
 //
 // The day-of-week pattern (Mon/Thu = rest) is a UI concept for the picker;
 // it isn't enforced by the DB and isn't part of the cycle counter.
@@ -70,30 +72,47 @@ export const SESSION_MODE_LIST: Array<{ id: SessionMode; label: string }> = [
 // ──────────────────────────────────────────────────────────────────────
 
 /**
- * The split-day range. workout_sessions.day CHECK is 1..7 (permissive);
- * armandotfit only ever writes 1..4 (the four split-days). The DB
- * constraint isn't tightened so historical rows / external inserts that
- * happen to land 5..7 don't break reads.
+ * The split-day range. workout_sessions.split_day CHECK is 1..7 (the
+ * widen-split-day migration restored the permissive bound — PPL runs
+ * six days, Bro Split five, Anything Goes three to six); armandotfit
+ * never writes past a program's rotation length. The cycle itself is
+ * rotation-aware: the authored editions walk mod 4 (EDITION_ROTATION),
+ * a starter/generated program walks its own length.
  */
 export const MIN_SPLIT_DAY = 1;
-export const MAX_SPLIT_DAY = 4;
+export const MAX_SPLIT_DAY = 7;
+/** The authored editions' cycle (the historical 4-day walk). */
+const EDITION_ROTATION = 4;
 
 /**
  * Computes the next split-day given the user's last completed day.
- * Wraps 4 → 1. New users (no history, lastDay null/0) start at Day 1.
+ * Wraps at the rotation's length. New users (no history, lastDay
+ * null/0) start at Day 1; a lastDay outside the CURRENT program's
+ * rotation (a program switch — the old rotation was longer) also
+ * restarts at Day 1.
  *
- *   getNextSplitDay(1) → 2
+ *   getNextSplitDay(1) → 2            (edition rotation, 4 days)
  *   getNextSplitDay(4) → 1
  *   getNextSplitDay(null) → 1
+ *   getNextSplitDay(4, 6) → 5         (a 6-day rotation keeps walking)
+ *   getNextSplitDay(6, 4) → 1         (switched to a shorter rotation)
  */
-export function getNextSplitDay(lastDay: number | null | undefined): number {
-  if (!lastDay || lastDay < MIN_SPLIT_DAY || lastDay > MAX_SPLIT_DAY) {
+export function getNextSplitDay(
+  lastDay: number | null | undefined,
+  rotation: number = EDITION_ROTATION,
+): number {
+  if (
+    !lastDay ||
+    lastDay < MIN_SPLIT_DAY ||
+    lastDay > rotation ||
+    rotation < MIN_SPLIT_DAY
+  ) {
     return MIN_SPLIT_DAY;
   }
-  // 4 → 1: modulo over the cycle, NOT (last - min) % max + min + 1 —
+  // Wrap by modulo over the cycle, NOT (last - min) % max + min + 1 —
   // that form returns 5 for day 4, which has no programmed slots and
   // renders an empty picker + empty active session.
-  return (lastDay % MAX_SPLIT_DAY) + MIN_SPLIT_DAY;
+  return (lastDay % rotation) + MIN_SPLIT_DAY;
 }
 
 /**
@@ -101,18 +120,26 @@ export function getNextSplitDay(lastDay: number | null | undefined): number {
  * logged today (local time), THAT day is still the day — the AM/PM
  * pair belongs to one split-day, so the PM launch after the morning
  * session must not advance the cycle. Otherwise the classic
- * next-after-last-completed walk applies. Sessions newest-first.
+ * next-after-last-completed walk applies (mod the live program's
+ * rotation length). Sessions newest-first.
  */
 export function suggestNextSplitDay(
   sessions: ReadonlyArray<{ startedAt: string; splitDay: number | null }>,
+  rotation: number = EDITION_ROTATION,
   now: Date = new Date(),
 ): number {
   const today = toLocalDayKey(now);
   const todays = sessions.find(
-    (s) => toLocalDayKey(new Date(s.startedAt)) === today && s.splitDay != null,
+    (s) =>
+      toLocalDayKey(new Date(s.startedAt)) === today &&
+      s.splitDay != null &&
+      s.splitDay <= rotation,
   );
   if (todays?.splitDay != null) return todays.splitDay;
-  return getNextSplitDay(sessions.find((s) => s.splitDay != null)?.splitDay ?? null);
+  return getNextSplitDay(
+    sessions.find((s) => s.splitDay != null)?.splitDay ?? null,
+    rotation,
+  );
 }
 
 /** Local calendar key ('YYYY-MM-DD') — a session counts for its day. */
@@ -130,25 +157,25 @@ export function suggestSessionWindow(now: Date = new Date()): SessionMode {
 }
 
 /**
- * The picker's next default window after a start: two-a-day ROTATES —
- * an 8pm AM still flips the next default to PM (rotation, not clock;
- * the show-up-late-and-do-both night never toggles twice). One-a-day
- * keeps whatever was picked.
+ * The picker's next default window after a start: two-window programs
+ * ROTATE — an 8pm AM still flips the next default to PM (rotation, not
+ * clock; the show-up-late-and-do-both night never toggles twice).
+ * Single-window programs keep whatever was picked.
  */
 export function nextDefaultSessionMode(
-  split: PreferredSplit,
+  twoWindows: boolean,
   started: SessionMode,
 ): SessionMode {
-  return split === 'twoADay' ? (started === 'am' ? 'pm' : 'am') : started;
+  return twoWindows ? (started === 'am' ? 'pm' : 'am') : started;
 }
 
 /**
- * Parses a split-day id back to its 1..4 integer. Throws on bad input —
+ * Parses a split-day id back to its integer. Throws on bad input —
  * signals a programmer error (selectedId out of range), not user input.
  */
-export function parseDayId(id: string): number {
+export function parseDayId(id: string, max: number = MAX_SPLIT_DAY): number {
   const n = parseInt(id, 10);
-  if (!Number.isInteger(n) || n < MIN_SPLIT_DAY || n > MAX_SPLIT_DAY) {
+  if (!Number.isInteger(n) || n < MIN_SPLIT_DAY || n > max) {
     // s10-exempt: programmer-error guard, not a boundary throw
     throw new Error(`Invalid split-day id: ${id}`);
   }
@@ -290,8 +317,8 @@ export interface UpcomingWorkoutSlot extends UpcomingDay {
 /**
  * Returns the next `count` calendar days as workout slots, each annotated
  * with its suggested day-of-split (or null for rest days). The cycle
- * starts at `getNextSplitDay(lastCompletedDay)` and walks forward through
- * non-rest days only.
+ * starts at `getNextSplitDay(lastCompletedDay, rotation)` and walks
+ * forward through non-rest days only, wrapping at the rotation's length.
  *
  *   lastCompletedDay = 1 → first non-rest slot is Day 2, next is Day 3, ...
  *   lastCompletedDay = null → first non-rest slot is Day 1 (new-user default)
@@ -300,15 +327,16 @@ export function getUpcomingWorkoutSlots(
   count: number,
   restDaysOfWeek: ReadonlySet<number> | number[],
   lastCompletedDay: number | null | undefined,
+  rotation: number = EDITION_ROTATION,
   fromDate: Date = new Date(),
 ): UpcomingWorkoutSlot[] {
   const upcoming = getUpcomingDays(count, restDaysOfWeek, fromDate);
-  let cursor = getNextSplitDay(lastCompletedDay);
+  let cursor = getNextSplitDay(lastCompletedDay, rotation);
   return upcoming.map((day) => {
     const slot: UpcomingWorkoutSlot = { ...day, splitDay: null };
     if (!day.isRestDay) {
       slot.splitDay = cursor;
-      cursor = (cursor % MAX_SPLIT_DAY) + MIN_SPLIT_DAY; // 4 → 1
+      cursor = (cursor % rotation) + MIN_SPLIT_DAY; // wrap at the rotation
     }
     return slot;
   });

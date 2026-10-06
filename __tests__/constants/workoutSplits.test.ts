@@ -24,6 +24,15 @@ describe('getNextSplitDay', () => {
     expect(getNextSplitDay(2)).toBe(3);
     expect(getNextSplitDay(3)).toBe(4);
   });
+  it('walks longer rotations when told (PPL runs six days)', () => {
+    expect(getNextSplitDay(4, 6)).toBe(5);
+    expect(getNextSplitDay(5, 6)).toBe(6);
+    expect(getNextSplitDay(6, 6)).toBe(1);
+  });
+  it('a lastDay outside the CURRENT rotation restarts at day 1 (a program switch)', () => {
+    expect(getNextSplitDay(6, 4)).toBe(1);
+    expect(getNextSplitDay(5, 4)).toBe(1);
+  });
 });
 
 describe('suggestNextSplitDay', () => {
@@ -53,6 +62,18 @@ describe('suggestNextSplitDay', () => {
   });
   it('cold start → day 1', () => {
     expect(suggestNextSplitDay([])).toBe(1);
+  });
+  it('a longer rotation keeps walking past the editions\' day 4', () => {
+    const y = new Date();
+    y.setDate(y.getDate() - 1);
+    expect(suggestNextSplitDay([day(y.toISOString(), 4)], 6)).toBe(5);
+    expect(suggestNextSplitDay([day(y.toISOString(), 6)], 6)).toBe(1);
+  });
+  it('a stale today beyond the current rotation falls through to the walk', () => {
+    const today = new Date();
+    const iso = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 8).toISOString();
+    // Logged day 6 under PPL, but the live program is now an edition.
+    expect(suggestNextSplitDay([day(iso, 6)], 4)).toBe(1);
   });
 });
 
@@ -115,17 +136,19 @@ describe('TAG_AXES — the qualifier axes', () => {
 
 
 // ── The rotation default — the picker hands you the session you
-// haven't just done (8pm AM still flips to PM; never the clock). ────
+// haven't just done (8pm AM still flips to PM; never the clock). The
+// verb takes the WINDOW COUNT now — any two-window program rotates,
+// not just the authored two-a-day. ────
 
 describe('nextDefaultSessionMode', () => {
-  it('two-a-day rotates: AM begets PM, PM begets AM', () => {
-    expect(nextDefaultSessionMode('twoADay', 'am')).toBe('pm');
-    expect(nextDefaultSessionMode('twoADay', 'pm')).toBe('am');
+  it('two-window programs rotate: AM begets PM, PM begets AM', () => {
+    expect(nextDefaultSessionMode(true, 'am')).toBe('pm');
+    expect(nextDefaultSessionMode(true, 'pm')).toBe('am');
   });
 
-  it('one-a-day keeps the picked mode', () => {
-    expect(nextDefaultSessionMode('oneADay', 'am')).toBe('am');
-    expect(nextDefaultSessionMode('oneADay', 'pm')).toBe('pm');
+  it('single-window programs keep the picked mode', () => {
+    expect(nextDefaultSessionMode(false, 'am')).toBe('am');
+    expect(nextDefaultSessionMode(false, 'pm')).toBe('pm');
   });
 });
 

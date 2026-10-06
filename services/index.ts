@@ -31,7 +31,22 @@ export {
   derivePlanMuscleShare,
   type PlanMuscleShareRow,
 } from './chartData';
-export { slotKey, resolveSlots } from './programService';
+export {
+  slotKey,
+  resolveSlots,
+  resolveLiveSlots,
+  liveSlotKey,
+  liveDayTitle,
+  liveRotationLength,
+  liveProgramKey,
+  liveProgramLabel,
+  programWindows,
+  isSameLiveProgram,
+  generatedBoard,
+  EDITION_ROTATION_DAYS,
+  STARTER_PROGRAM_LABELS,
+  GENERATED_PROGRAM_LABELS,
+} from './programService';
 export {
   REP_LADDER,
   deriveProgression,

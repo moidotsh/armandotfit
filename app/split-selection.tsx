@@ -1,26 +1,30 @@
 // app/split-selection.tsx
-// THE SELECTOR (docs/architecture/interval-thesis.md §8): "Which
-// edition?" Three picks in order and GO — the page's one verb. The
-// PICKED day's title is the statement (restating with every pick);
+// THE SELECTOR (docs/architecture/interval-thesis.md §8): "What am I
+// running today?" Three picks in order and GO — the page's one verb.
+// The PICKED day's title is the statement (restating with every pick);
 // one fact line carries the targets and counts outside the halo. The
 // seven-day measure is the second voice: weekday caps + the
-// day-of-split figure in Martian, the picked tile INVERTING to the ink
-// plate — inversion is selection; borders do not survive glare. The
-// plan previews as RULED ROWS: name · air · the prefill
+// day-of-program figure in Martian, the picked tile INVERTING to the
+// ink plate — inversion is selection; borders do not survive glare.
+// The plan previews as RULED ROWS: name · air · the prefill
 // weight (the same composition as home's day register — one
 // language).
-//   1. Workout day — a rolling 7-day measure. Each non-rest day
-//      carries its day-of-split (1..4), derived from the user's last
-//      logged session via getNextSplitDay. Rest days render muted but
-//      stay tappable for override.
-//   2. Split archetype (oneADay / twoADay) — segmented control.
-//   3. AM / PM — only for twoADay; AM and PM are separate session rows
-//      in the DB, so sessionMode lives on the draft as planning-time
-//      context, not as a column.
+//   1. Workout day — a rolling 7-day measure over the live program's
+//      own rotation. Each non-rest day carries its day-of-program
+//      (1..rotation), derived from the user's last logged session via
+//      suggestNextSplitDay. Rest days render muted but stay tappable
+//      for override.
+//   2. Program — edition-live users pick the archetype here (the pick
+//      adopts it as live); a starter or Split Lab board runs as-is: a
+//      read-only RUNNING row points at THE PROGRAM to change it.
+//   3. AM / PM — only for two-window shapes (two-a-day edition, HF
+//      generated board); AM and PM are separate session rows in the
+//      DB, so sessionMode lives on the draft as planning-time context,
+//      not as a column.
 //
-// On confirm, seeds workoutStore with a fresh draft (date, splitType,
+// On confirm, seeds workoutStore with a fresh draft (date, program,
 // day, sessionMode) and navigates to the active session — which
-// auto-hydrates from the program slots (getSlotsForDay) locally.
+// auto-hydrates from the program's slots (resolveLiveSlots) locally.
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -35,14 +39,19 @@ import { navigateToWorkoutDetail, replaceWithRegister, replaceWithWorkoutDetail,
 import { useProfile, useRecentWorkouts, useTopSetsByName, useWeightUnit } from '../hooks';
 import { toDisplayWeight, roundDisplayWeight, joinFacts } from '../utils';
 import { useWorkoutStore, useSplitPreferenceStore, useProgramOverrideStore, useAuthStore } from '../stores';
-import { resolveSlots } from '../services';
+import {
+  liveDayTitle,
+  liveProgramLabel,
+  liveRotationLength,
+  programWindows,
+  resolveLiveSlots,
+} from '../services';
 import {
   WORKOUT_SPLIT_LIST,
   DAY_OF_WEEK_LABELS,
   getUpcomingWorkoutSlots,
   suggestNextSplitDay,
   MIN_SPLIT_DAY,
-  MAX_SPLIT_DAY,
   INTERVAL,
   theme,
   PAGE_GUTTER,
@@ -53,10 +62,9 @@ import {
 import {
   SYSTEM_EXERCISES_BY_SLUG,
   MUSCLE_DISPLAY_NAMES,
-  getDayTitle,
   type MuscleSlug,
 } from '../shared/exercises';
-import type { PreferredSplit } from '../shared/types';
+import type { LiveProgram, PreferredSplit } from '../shared/types';
 
 const SPLIT_SEGMENTS = WORKOUT_SPLIT_LIST.map((s) => ({ value: s.id, label: s.label }));
 
@@ -89,33 +97,49 @@ export default function SplitSelectionScreen() {
   // Open pre-configured: the remembered split (persisted) + the
   // time-of-day window. Every session start re-writes the preference —
   // the last choice is the next default.
-  const preferredSplit = useSplitPreferenceStore((s) => s.splitType)
-  const edition = useSplitPreferenceStore((s) => s.edition);;
+  const liveProgram = useSplitPreferenceStore((s) => s.liveProgram);
+  const edition = useSplitPreferenceStore((s) => s.edition);
   const preferredMode = useSplitPreferenceStore((s) => s.sessionMode);
   const setPreference = useSplitPreferenceStore((s) => s.setPreference);
   const programOverrides = useProgramOverrideStore((s) => s.overrides);
 
-  const [splitChoice, setSplitChoice] = useState<string>(preferredSplit);
+  const [splitChoice, setSplitChoice] = useState<string>(
+    liveProgram.kind === 'edition' ? liveProgram.split : 'twoADay',
+  );
   const [sessionChoice, setSessionChoice] = useState<string>(preferredMode);
   const [selectedIsoDate, setSelectedIsoDate] = useState<string | null>(null);
 
-  const split = splitChoice as PreferredSplit;
   const session = sessionChoice as SessionMode;
-  const isTwoADay = split === 'twoADay';
+  // THE PROGRAM UNDER PICK — an edition-live user still chooses the
+  // archetype here (the pick adopts it as live at GO); a starter or a
+  // seeded Split Lab board runs as-is (the RUNNING row below points at
+  // THE PROGRAM to change it).
+  const isEditionLive = liveProgram.kind === 'edition';
+  const pickProgram: LiveProgram = isEditionLive
+    ? { kind: 'edition', split: splitChoice as PreferredSplit }
+    : liveProgram;
+  const isTwoWindow = programWindows(pickProgram).length === 2;
 
   // The suggested day: today's logged day sticks (AM then PM share it);
   // otherwise the classic next-after-last walk. getUpcomingWorkoutSlots
   // derives its walk start from getNextSplitDay(lastCompletedDay), so we
   // feed it the day BEFORE the suggestion to land on it exactly.
   const recent = recentQuery.data ?? [];
-  const suggestedDay = useMemo(() => suggestNextSplitDay(recent), [recent]);
+  // THE PROGRAM'S OWN ROTATION — the rail walks the live program's
+  // cycle (editions 4; PPL 6; bro split 5; a board whatever it built),
+  // never the hardcoded four.
+  const rotation = liveRotationLength(pickProgram);
+  const suggestedDay = useMemo(
+    () => suggestNextSplitDay(recent, rotation),
+    [recent, rotation],
+  );
   const walkStartDay = suggestedDay === MIN_SPLIT_DAY
-    ? MAX_SPLIT_DAY
+    ? rotation
     : suggestedDay - 1;
 
   const slots = useMemo(
-    () => getUpcomingWorkoutSlots(7, restDays, walkStartDay),
-    [restDays, walkStartDay],
+    () => getUpcomingWorkoutSlots(7, restDays, walkStartDay, rotation),
+    [restDays, walkStartDay, rotation],
   );
   // Today's ISO date — the rail's living position.
   const todayIso = new Date().toISOString().slice(0, 10);
@@ -134,13 +158,14 @@ export default function SplitSelectionScreen() {
     return slots.find((s) => !s.isRestDay) ?? slots[0];
   }, [slots, selectedIsoDate]);
 
-  // The split-day to seed. Rest-day picks fall back to getNextSplitDay
-  // so the draft always has a valid 1..4 value even if the user tapped a
-  // muted rest slot.
+  // The split-day to seed. Rest-day picks fall back to the suggestion
+  // so the draft always has a valid 1..rotation value even if the user
+  // tapped a muted rest slot.
   const draftDay = selectedSlot?.splitDay ?? suggestedDay;
 
-  // Preview the day's slots with standing substitutions applied.
-  const previewSlots = resolveSlots(split, draftDay, session, programOverrides, edition);
+  // Preview the day's slots with standing substitutions applied — the
+  // live resolver, one truth for editions, starters, and boards.
+  const previewSlots = resolveLiveSlots(pickProgram, draftDay, session, programOverrides, edition);
   // The preview register's figures — the shared top-set derivation
   // joined to the programmed rep range, in display units (the same
   // prescription grammar as home's day register: one language,
@@ -167,18 +192,24 @@ export default function SplitSelectionScreen() {
   const targets = [...new Set(targetGroups)];
 
   const handleStart = () => {
-    // Remember the choices — the next launch opens pre-configured. The
-    // window's ROTATION is owned by the SAVE path (the Floor's
-    // save-success effect): a discarded session never flips the
-    // default — only work under the belt does.
-    setPreference({ splitType: split, sessionMode: session });
+    // Remember the choices — the next launch opens pre-configured. An
+    // archetype pick adopts the edition as live; a starter/board is
+    // already live, so only the window's default rewrites. The window's
+    // ROTATION is owned by the SAVE path (the Floor's save-success
+    // effect): a discarded session never flips the default — only work
+    // under the belt does.
+    if (isEditionLive) {
+      setPreference({ splitType: splitChoice as PreferredSplit, sessionMode: session });
+    } else {
+      setPreference({ sessionMode: session });
+    }
     // The session starts NOW: draft.date defaults to the current instant
     // (startSession), which is what the elapsed timer + started_at save.
     // The picked day rides on `day` (split_day), not on the timestamp —
     // passing the slot's midnight would log a pre-midnight start and
     // read as hours of elapsed training.
     startSession({
-      splitType: split,
+      program: pickProgram,
       day: draftDay,
       sessionMode: session,
     });
@@ -188,7 +219,7 @@ export default function SplitSelectionScreen() {
   // THE STATEMENT — restating with every pick: the picked day's title.
   const statement = selectedSlot?.isRestDay
     ? 'Rest day'
-    : getDayTitle(split, draftDay) || `Day ${draftDay}`;
+    : liveDayTitle(pickProgram, draftDay, edition) || `Day ${draftDay}`;
   // One fact line — what the edition trains. The lift count is NOT
   // in the line: the plan register below IS the count (four rows say
   // four), and the dropped segment keeps one wide-mono line inside
@@ -265,15 +296,34 @@ export default function SplitSelectionScreen() {
           outside the SE fold (the 490px law pays by deletion, not by
           squeeze — the sight amendment's precedent). */}
       <View style={styles.block}>
-        <SegmentedControl<string>
-          variant="selection"
-          segments={SPLIT_SEGMENTS}
-          value={splitChoice}
-          onChange={setSplitChoice}
-          accessibilityLabel="Split archetype"
-          testID="split-archetype"
-        />
-        {isTwoADay ? (
+        {isEditionLive ? (
+          <SegmentedControl<string>
+            variant="selection"
+            segments={SPLIT_SEGMENTS}
+            value={splitChoice}
+            onChange={setSplitChoice}
+            accessibilityLabel="Split archetype"
+            testID="split-archetype"
+          />
+        ) : (
+          // THE RUNNING ROW — read-only: this program was made live in
+          // THE PROGRAM (or the Lab); the selector states it and points
+          // there. Furniture caps + ledger line, never a tappable.
+          <View
+            style={styles.runningRow}
+            testID="split-selection-running"
+            accessibilityLabel={`Running ${liveProgramLabel(liveProgram)} — change it in THE PROGRAM`}
+          >
+            <Text style={styles.runningWord}>RUNNING</Text>
+            <Text
+              style={[styles.runningLabel, { color: colors.textMuted }]}
+              numberOfLines={1}
+            >
+              {`${liveProgramLabel(liveProgram)} — change in THE PROGRAM`}
+            </Text>
+          </View>
+        )}
+        {isTwoWindow ? (
           <View style={styles.sessionRow}>
             <SegmentedControl<string>
               variant="selection"
@@ -378,6 +428,21 @@ const styles = StyleSheet.create({
   },
   sessionRow: {
     marginTop: 8,
+  },
+  // The RUNNING row — the non-edition program states itself; no
+  // affordance, one hairline of air before the AM/PM row would sit.
+  runningRow: {
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  runningWord: {
+    ...theme.typography.mobileEyebrow,
+  },
+  runningLabel: {
+    ...theme.typography.mobileLedger,
+    flex: 1,
   },
   emptyText: { ...theme.typography.mobileMeta, marginTop: 4 },
 });

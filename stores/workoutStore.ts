@@ -37,7 +37,13 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from '../utils/storage';
 import type { SessionMode } from '../constants';
-import type { EffortRating, LoggedExerciseInputDTO, LogSessionDTO, PreferredSplit } from '../shared/types';
+import type {
+  EffortRating,
+  LiveProgram,
+  LoggedExerciseInputDTO,
+  LogSessionDTO,
+  PreferredSplit,
+} from '../shared/types';
 import { tagsWithAxisRespected } from '../shared/exercises';
 import type { ExerciseKey, ResolvedSlot } from '../shared/exercises/splits';
 import { SYSTEM_EXERCISES_BY_SLUG } from '../shared/exercises/data';
@@ -75,12 +81,17 @@ export interface DraftExercise {
 /** Client-only draft session (no server id yet). */
 export interface DraftSession {
   date: string;
-  /** Client-side picker context — not persisted. */
-  splitType: PreferredSplit;
   /**
-   * Day-of-split 1..4 — persisted as sessions.split_day. Null = the
-   * ad-hoc continuation of an ad-hoc day (the receipt's CONTINUE verb:
-   * the day continues as a NEW block; a settled session never reopens).
+   * THE LIVE PROGRAM the session runs under — the editions, an authored
+   * starter, or a generated board (by seed). Client-side picker
+   * context — not persisted to the DB; only `day` survives a save.
+   */
+  program: LiveProgram;
+  /**
+   * Day-of-split 1..rotation — persisted as sessions.split_day. Null =
+   * the ad-hoc continuation of an ad-hoc day (the receipt's CONTINUE
+   * verb: the day continues as a NEW block; a settled session never
+   * reopens).
    */
   day: number | null;
   /**
@@ -145,7 +156,7 @@ interface WorkoutState {
   isSessionActive: boolean;
   startSession: (init: {
     date?: string;
-    splitType: PreferredSplit;
+    program: LiveProgram;
     day: number | null;
     sessionMode?: SessionMode;
     /** Open with fresh stations — no split hydration (continuations). */
@@ -158,7 +169,7 @@ interface WorkoutState {
    * history stays on its receipt). Cardio stations seed as machines.
    */
   continueSession: (init: {
-    splitType: PreferredSplit;
+    program: LiveProgram;
     day: number | null;
     sessionMode: SessionMode;
     exercises: Array<{
@@ -257,11 +268,11 @@ export const useWorkoutStore = create<WorkoutState>()(
       sessionStartedAt: null,
       isSessionActive: false,
 
-      startSession: ({ date, splitType, day, sessionMode = 'am', adHoc = false }) => {
+      startSession: ({ date, program, day, sessionMode = 'am', adHoc = false }) => {
         const startedAt = new Date().toISOString();
         const draft: DraftSession = {
           date: date ?? startedAt,
-          splitType,
+          program,
           day,
           adHoc,
           sessionMode,
@@ -278,11 +289,11 @@ export const useWorkoutStore = create<WorkoutState>()(
         });
       },
 
-      continueSession: ({ splitType, day, sessionMode, exercises, cardio }) => {
+      continueSession: ({ program, day, sessionMode, exercises, cardio }) => {
         const startedAt = new Date().toISOString();
         const draft: DraftSession = {
           date: startedAt,
-          splitType,
+          program,
           day,
           // Seeded, not hydrated: even with every station removed the
           // split never auto-fills a continuation.
@@ -712,6 +723,23 @@ export const useWorkoutStore = create<WorkoutState>()(
     }),
     {
       name: 'armandotfit:session-draft',
+      // v1: the draft's splitType: PreferredSplit became program:
+      // LiveProgram — old drafts lift into the edition kind, so a
+      // reload mid-session never drops a live workout.
+      version: 1,
+      migrate: (persisted) => {
+        const legacy = persisted as
+          | { draft?: { splitType?: PreferredSplit } & Record<string, unknown> }
+          | undefined;
+        if (legacy?.draft?.splitType) {
+          const { splitType, ...rest } = legacy.draft;
+          return {
+            ...legacy,
+            draft: { ...rest, program: { kind: 'edition', split: splitType } },
+          };
+        }
+        return persisted;
+      },
       storage: createJSONStorage(() => zustandStorage),
       // The session itself survives; loading/error/selection-pending
       // state does not. selectedExerciseLocalId rides along so a

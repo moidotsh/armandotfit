@@ -51,13 +51,17 @@ import {
   navigateToAnalytics,
 } from '../navigation';
 import {
-  getSlotsForDay,
-  getDayTitle,
   SYSTEM_EXERCISES,
   SYSTEM_EXERCISES_BY_SLUG,
   MUSCLE_TO_REGION,
 } from '../shared/exercises';
-import { useSplitPreferenceStore, useWorkoutStore, useDeloadStore } from '../stores';
+import {
+  liveDayTitle,
+  liveProgramLabel,
+  liveRotationLength,
+  resolveLiveSlots,
+} from '../services';
+import { useSplitPreferenceStore, useWorkoutStore, useDeloadStore, useProgramOverrideStore } from '../stores';
 import {
   useDashboardSummary,
   useRecentSessionDetails,
@@ -75,8 +79,9 @@ export default function HomeScreen() {
   const recentQuery = useRecentSessionDetails(5);
   const topSets = useTopSetsByName();
   const activityQuery = useActivityLog();
-  const preferredSplit = useSplitPreferenceStore((s) => s.splitType);
+  const liveProgram = useSplitPreferenceStore((s) => s.liveProgram);
   const edition = useSplitPreferenceStore((s) => s.edition);
+  const programOverrides = useProgramOverrideStore((s) => s.overrides);
   const isSessionActive = useWorkoutStore((s) => s.isSessionActive);
   const unit = useWeightUnit();
 
@@ -93,15 +98,18 @@ export default function HomeScreen() {
   }, [recent]);
   const longGap = daysSinceLast != null && daysSinceLast >= 10;
   // THE FUNNEL ENTRY: day suggestion sticks to today's logged day (AM
-  // then PM share it), the window follows the clock, the split is the
-  // remembered program.
-  const suggestedDay = recent.length > 0 ? suggestNextSplitDay(recent) : 1;
+  // then PM share it) within the live program's own rotation, the
+  // window follows the clock, the program is the live one (edition,
+  // starter, or a seeded Split Lab board).
+  const suggestedDay = recent.length > 0
+    ? suggestNextSplitDay(recent, liveRotationLength(liveProgram))
+    : 1;
   const suggestedWindow = suggestSessionWindow();
   const suggestedSlots = useMemo(
-    () => getSlotsForDay(preferredSplit, suggestedDay, suggestedWindow, edition),
-    [preferredSplit, suggestedDay, suggestedWindow],
+    () => resolveLiveSlots(liveProgram, suggestedDay, suggestedWindow, programOverrides, edition),
+    [liveProgram, suggestedDay, suggestedWindow, programOverrides, edition],
   );
-  const dayTitle = getDayTitle(preferredSplit, suggestedDay) || `Day ${suggestedDay}`;
+  const dayTitle = liveDayTitle(liveProgram, suggestedDay, edition) || `Day ${suggestedDay}`;
 
   // THE DAY'S TARGETS, CONSOLIDATED TO REGIONS (the owner's
   // correction): 'Upper Chest, Chest' is CHEST; 'Side Delts, Rear
@@ -300,7 +308,7 @@ export default function HomeScreen() {
       <View style={[styles.block, styles.jumpStack]}>
         {jumpLine(
           'Program',
-          preferredSplit === 'oneADay' ? '4 days · full body' : '4 days · AM/PM',
+          `${liveRotationLength(liveProgram)} days · ${liveProgramLabel(liveProgram)}`,
           navigateToProgram,
           'home-index-program',
         )}

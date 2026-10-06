@@ -1,6 +1,6 @@
 // app/split-lab.tsx
 //
-// THE SPLIT LAB — the constraint suite surfaced as a read-only dial
+// THE SPLIT LAB — the constraint suite surfaced as a dial
 // (services/splitGenerator.ts + shared/exercises/splitRules.ts), in
 // THE PROGRAM PAGE'S OWN GRAMMAR:
 //
@@ -22,9 +22,11 @@
 //                             shape; the other types against the
 //                             shape you run) and the laws' verdict.
 //
-// Reroll picks a new seed; the same seed rebuilds the same boards.
-// Nothing applies — no override is written, no preference flips, the
-// live program is untouched.
+// Reroll picks a new seed; the same seed rebuilds the same boards
+// (deterministic — the live program persists BY SEED, never as stored
+// rows). RUN THIS PROGRAM adopts the board you're reading as the live
+// program — the preference store holds {program, seed, edition} and
+// every surface rebuilds it from that identity.
 
 import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -33,36 +35,39 @@ import { useLocalSearchParams } from 'expo-router';
 import { MobilePrimaryButton } from '../components/MobilePremium';
 import { BoardShell, SectionWhisper } from '../components/composed';
 import { navigateToExerciseDetail, navigateToSplitLab, safeGoBack } from '../navigation';
-import { useAppTheme } from '../context';
+import { useAppTheme, useToast } from '../context';
 import { useSplitPreferenceStore } from '../stores';
 import {
   generateProgram,
+  isSameLiveProgram,
   nameForSlug,
   authoredBaselineFor,
   muscleShareDeltas,
+  GENERATED_PROGRAM_LABELS,
 } from '../services';
+import type { LiveProgram } from '../shared/types';
 import { derivePlanMuscleShare } from '../services';
 import { INTERVAL, ROW_GAP, PAGE_GUTTER, PRESS_DIP, theme } from '../constants';
 import { joinFacts } from '../utils';
 import { MUSCLE_DISPLAY_NAMES, type ProgramType } from '../shared/exercises';
 import type { ResolvedSlot } from '../shared/exercises';
 
-/** The card list — the generator program types, in the owner's order. */
+/** The card list — the generator program types, in the owner's order.
+ *  Titles are GENERATED_PROGRAM_LABELS (services — one truth). */
 const PROGRAM_CARDS: ReadonlyArray<{
   program: ProgramType;
-  title: string;
   /** The days view's statement (short — it prints at 36). */
   short: string;
   /** Sessions per day (only HF Full Body trains twice). */
   sessionsPerDay: 1 | 2;
 }> = [
-  { program: 'fullBodyOneADay', title: 'Full Body — one-a-day', short: 'Full Body', sessionsPerDay: 1 },
-  { program: 'fullBodyHighFrequency', title: 'HF Full Body — AM/PM', short: 'HF Full Body', sessionsPerDay: 2 },
-  { program: 'pushPullLegs', title: 'Push / Pull / Leg', short: 'Push/Pull/Leg', sessionsPerDay: 1 },
-  { program: 'upperLower', title: 'Upper / Lower', short: 'Upper/Lower', sessionsPerDay: 1 },
-  { program: 'broSplit', title: 'Bro Split', short: 'Bro Split', sessionsPerDay: 1 },
-  { program: 'fullyEqual', title: 'Fully Equal', short: 'Fully Equal', sessionsPerDay: 1 },
-  { program: 'anythingGoes', title: 'Anything Goes', short: 'Anything Goes', sessionsPerDay: 1 },
+  { program: 'fullBodyOneADay', short: 'Full Body', sessionsPerDay: 1 },
+  { program: 'fullBodyHighFrequency', short: 'HF Full Body', sessionsPerDay: 2 },
+  { program: 'pushPullLegs', short: 'Push/Pull/Leg', sessionsPerDay: 1 },
+  { program: 'upperLower', short: 'Upper/Lower', sessionsPerDay: 1 },
+  { program: 'broSplit', short: 'Bro Split', sessionsPerDay: 1 },
+  { program: 'fullyEqual', short: 'Fully Equal', sessionsPerDay: 1 },
+  { program: 'anythingGoes', short: 'Anything Goes', sessionsPerDay: 1 },
 ];
 
 const CARD_BY_PROGRAM = new Map(PROGRAM_CARDS.map((c) => [c.program, c]));
@@ -82,9 +87,24 @@ const isProgram = (v: string | undefined): v is ProgramType =>
 
 export default function SplitLabScreen() {
   const { colors } = useAppTheme();
+  const { showToast } = useToast();
   const [seed, setSeed] = useState<number>(4271);
-  const { program } = useLocalSearchParams<{ program?: string }>();
+  const { program, seed: seedParam } = useLocalSearchParams<{
+    program?: string;
+    seed?: string;
+  }>();
   const preferredShape = useSplitPreferenceStore((s) => s.splitType);
+  const liveProgram = useSplitPreferenceStore((s) => s.liveProgram);
+  const setLiveProgram = useSplitPreferenceStore((s) => s.setLiveProgram);
+
+  // A seed ARRIVING ON THE ROUTE (the program page's generated-live
+  // card taps through) takes over the dial — the URL is the lab's
+  // state, the reroll rewrites it.
+  React.useEffect(() => {
+    const n = Number(seedParam);
+    if (Number.isFinite(n) && n > 0 && n !== seed) setSeed(n);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seedParam]);
 
   // All six boards are pure functions of the seed — the overview
   // previews them; the days view reads one.
@@ -116,11 +136,17 @@ export default function SplitLabScreen() {
           Alternatives, by construction.
         </Text>
         <Text style={[styles.fact, { color: colors.textMuted }]} numberOfLines={1}>
-          {joinFacts([`seed ${seed}`, 'preview only — nothing applies'])}
+          {joinFacts([`seed ${seed}`, 'reroll until it fits — then make it live'])}
         </Text>
 
-        {PROGRAM_CARDS.map(({ program: which, title, sessionsPerDay }, i) => {
+        {PROGRAM_CARDS.map(({ program: which, sessionsPerDay }, i) => {
           const board = boards[which];
+          // The board that IS the live program wears the red word and
+          // the full-ink rule (the program page's card hierarchy).
+          const isLive =
+            liveProgram.kind === 'generated' &&
+            liveProgram.program === which &&
+            liveProgram.seed === seed;
           const slots = board.days.flatMap((d) => [...d.am, ...d.pm]);
           const sessions = board.days.length * sessionsPerDay;
           const rows = derivePlanMuscleShare(slots, 4);
@@ -133,20 +159,29 @@ export default function SplitLabScreen() {
               key={which}
               onPress={() => navigateToSplitLab(which)}
               accessibilityRole="button"
-              accessibilityLabel={`${title} generated program — ${slots.length} lifts, ${sessions} sessions a week. View the days`}
+              accessibilityLabel={`${GENERATED_PROGRAM_LABELS[which]} generated program — ${slots.length} lifts, ${sessions} sessions a week. View the days`}
               style={({ pressed }) => [
                 styles.card,
+                {
+                  borderTopWidth: isLive ? 2 : 1,
+                  borderTopColor: isLive ? colors.text : colors.mobilePremium.hairlineBorder,
+                },
                 i > 0 ? styles.cardNotFirst : null,
-                { borderTopColor: colors.mobilePremium.hairlineBorder },
                 pressed ? { opacity: PRESS_DIP } : null,
               ]}
               testID={`split-lab-card-${which}`}
             >
               <View style={styles.cardHead}>
-                <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>
-                  {title}
+                <Text
+                  style={[styles.cardTitle, { color: isLive ? colors.text : colors.textSecondary }]}
+                  numberOfLines={1}
+                >
+                  {GENERATED_PROGRAM_LABELS[which]}
                 </Text>
-                <ChevronRight size={20} color={colors.text} />
+                {isLive ? (
+                  <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
+                ) : null}
+                <ChevronRight size={20} color={isLive ? colors.text : colors.textSecondary} />
               </View>
               <View style={styles.cardFigureRow}>
                 <Text
@@ -193,6 +228,15 @@ export default function SplitLabScreen() {
   const card = CARD_BY_PROGRAM.get(program)!;
   const board = boards[program];
   const isTwoADay = program === 'fullBodyHighFrequency';
+  // THE BOARD'S IDENTITY — {program, seed, edition} is everything the
+  // resolver needs to rebuild this exact rotation anywhere.
+  const boardIdentity: LiveProgram = {
+    kind: 'generated',
+    program,
+    seed,
+    edition: board.edition,
+  };
+  const isLive = isSameLiveProgram(boardIdentity, liveProgram);
   const genSlots = board.days.flatMap((d) => [...d.am, ...d.pm]);
   // The comparison baseline: the archetype's own authored starter when
   // one exists (PPL / Upper-Lower / Bro), the same-shape full-body
@@ -238,9 +282,14 @@ export default function SplitLabScreen() {
         <Text style={[styles.pageWhisper, { color: colors.textMuted }]}>
           {joinFacts(['THE ROTATION', `SEED ${seed}`])}
         </Text>
-        <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
-          {card.short}
-        </Text>
+        <View style={styles.statementRow}>
+          <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
+            {card.short}
+          </Text>
+          {isLive ? (
+            <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
+          ) : null}
+        </View>
         <Text style={[styles.fact, { color: colors.textMuted }]} numberOfLines={1}>
           {joinFacts([
             `${board.days.length} days`,
@@ -249,6 +298,17 @@ export default function SplitLabScreen() {
             'generated',
           ])}
         </Text>
+        {!isLive ? (
+          <MobilePrimaryButton
+            onPress={() => {
+              setLiveProgram(boardIdentity);
+              showToast('success', `${card.short} is live`);
+            }}
+            testID="split-lab-make-live"
+          >
+            RUN THIS PROGRAM
+          </MobilePrimaryButton>
+        ) : null}
       </View>
 
       {/* THE DAYS — equal chapters of ruled lines; every slot taps
@@ -356,6 +416,14 @@ const styles = StyleSheet.create({
   },
   headBlock: {
     ...INTERVAL.blockFirst,
+  },
+  statementRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 10,
+  },
+  liveWord: {
+    ...theme.typography.mobileEyebrow,
   },
   // ── THE CARDS (the program overview's card grammar — equal
   // previews, hairline rules; the live/non-live hierarchy belongs to

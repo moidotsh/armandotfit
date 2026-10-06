@@ -22,7 +22,7 @@ import { useEffect, useRef } from 'react';
 import { useWorkoutStore, useProgramOverrideStore } from '../stores';
 import { useLastUsedTags, useTopSetsByName } from './queries';
 import { useNowTick } from './useNowTick';
-import { resolveSlots } from '../services';
+import { resolveLiveSlots } from '../services';
 import { useSplitPreferenceStore } from '../stores';
 import { sumVolume, formatElapsed } from '../services';
 
@@ -53,8 +53,8 @@ export function useFloorSession() {
       return;
     }
     hydratedRef.current = true;
-    const slots = resolveSlots(
-      draft.splitType,
+    const slots = resolveLiveSlots(
+      draft.program,
       draft.day,
       draft.sessionMode,
       programOverrides,
@@ -63,7 +63,7 @@ export function useFloorSession() {
     if (slots.length > 0) {
       hydrateFromSplit(slots);
     }
-  }, [draft, hydrateFromSplit, programOverrides]);
+  }, [draft, hydrateFromSplit, programOverrides, edition]);
 
   // "What did I use last time" — the caller's most recent tags per
   // exercise replace the program's suggested prefill exactly once per

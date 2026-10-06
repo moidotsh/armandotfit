@@ -200,11 +200,19 @@ export function navigateToAnalytics() {
   push('/analytics');
 }
 
-/** Open the Split Lab — read-only alternative programs generated from
- *  the split-constraint laws. Preview-only: nothing applies. With a
- *  program type, opens straight to that board's days. */
-export function navigateToSplitLab(program?: string) {
-  push(program ? `/split-lab?program=${program}` : '/split-lab');
+/** Open the Split Lab — alternative programs generated from the
+ *  split-constraint laws. Preview until RUN THIS PROGRAM makes one
+ *  live. With a program type, opens straight to that board's days;
+ *  with a seed too, opens THE live seed (the program page's
+ *  generated-live card taps through here). */
+export function navigateToSplitLab(program?: string, seed?: number) {
+  if (program && seed != null) {
+    push(`/split-lab?program=${program}&seed=${seed}`);
+  } else if (program) {
+    push(`/split-lab?program=${program}`);
+  } else {
+    push('/split-lab');
+  }
 }
 
 

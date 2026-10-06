@@ -17,7 +17,7 @@ const readStored = (): Record<string, unknown> => {
 
 const startAndLog = () => {
   useWorkoutStore.getState().startSession({
-    splitType: 'oneADay',
+    program: { kind: 'edition', split: 'oneADay' },
     day: 1,
     sessionMode: 'am',
   });
@@ -82,6 +82,41 @@ describe('workoutStore draft persistence', () => {
     expect(s.isSessionActive).toBe(true);
     expect(s.draft?.exercises[0]?.exerciseName).toBe('Incline Barbell Press');
     expect(s.draft?.exercises[0]?.sets[0]).toMatchObject({ reps: 8, weight: 60 });
+  });
+
+  it('a v0 blob (splitType) migrates into the program identity mid-session', async () => {
+    // The pre-live-program draft: splitType rode bare on the draft. A
+    // reload mid-session must lift it into {kind:'edition', split} —
+    // the workout survives the upgrade, hydrated from the same edition.
+    const legacy = {
+      state: {
+        draft: {
+          date: '2026-10-06T08:00:00.000Z',
+          splitType: 'twoADay',
+          day: 2,
+          adHoc: false,
+          sessionMode: 'am',
+          notes: null,
+          exercises: [],
+          cardio: [],
+        },
+        sessionStartedAt: '2026-10-06T08:00:00.000Z',
+        isSessionActive: true,
+        selectedExerciseLocalId: null,
+      },
+      version: 0,
+    };
+    window.localStorage.setItem(KEY, JSON.stringify(legacy));
+    vi.resetModules();
+    const { useWorkoutStore: freshStore } = await import(
+      '../../stores/workoutStore'
+    );
+    await Promise.resolve();
+    const s = freshStore.getState();
+    expect(s.isSessionActive).toBe(true);
+    expect(s.draft?.program).toEqual({ kind: 'edition', split: 'twoADay' });
+    expect(s.draft?.day).toBe(2);
+    expect(s.draft).not.toHaveProperty('splitType');
   });
 
   it('resetSession clears the persisted session', async () => {

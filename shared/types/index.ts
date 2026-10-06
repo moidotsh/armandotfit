@@ -7,6 +7,7 @@
 export * from './api';
 export * from './env';
 export * from './profile';
+export * from './program';
 export * from './exercise';
 export * from './workout';
 export * from './analytics';
