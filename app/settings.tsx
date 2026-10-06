@@ -25,7 +25,7 @@ import { DAY_OF_WEEK_LABELS, BLOCK_GAP, INTERVAL, theme,
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../lib/react-query';
 import { useToast } from '../context';
-import { useRestStore, useDeloadStore, useSplitPreferenceStore } from '../stores';
+import { useDeloadStore, useSplitPreferenceStore } from '../stores';
 import {
   getMyPartnerCode,
   getPartner,
@@ -190,9 +190,6 @@ export default function SettingsScreen() {
     }
   };
 
-  // THE REST INSTRUMENT's remembered default (interval-thesis §7):
-  // the interval a fresh rest starts with. ±15s steppers, mono
-  // readout — the panel row that tunes the Floor's clock.
   // THE PROMOTION AUDIT (invariant 7's numeric half, computed at
   // read): tags with ≥10 consistent uses have earned their half of
   // the promotion rule — the row names them so the second half (the
@@ -207,14 +204,6 @@ export default function SettingsScreen() {
     }
     return [...counts.entries()].filter(([, n]) => n >= 10).map(([t]) => t).sort();
   })();
-
-  const restDefaultSec = useRestStore((s) => s.defaultSec);
-  const setRestDefault = useCallback((next: number) => {
-    useRestStore.setState({
-      defaultSec: Math.max(30, Math.min(300, Math.round(next / 15) * 15)),
-    });
-  }, []);
-  const restReadout = `${Math.floor(restDefaultSec / 60)}:${String(restDefaultSec % 60).padStart(2, '0')}`;
 
   return (
     <BoardShell
@@ -263,55 +252,6 @@ export default function SettingsScreen() {
               </Pressable>
             );
           })}
-        </View>
-      </View>
-
-      {/* THE REST INSTRUMENT's default — the interval the Floor's
-          clock counts after every log. One inline row: the printed
-          label, the mono figure, the ± steppers. */}
-      <View style={styles.block}>
-        <View style={styles.restIntervalRow}>
-          <Text style={[styles.restIntervalLabel, { color: colors.textMuted }]}>
-            REST INTERVAL
-          </Text>
-          <Pressable
-            onPress={() => setRestDefault(restDefaultSec - 15)}
-            accessibilityRole="button"
-            accessibilityLabel="Decrease rest interval by 15 seconds"
-            style={({ pressed }) => [
-              styles.restStep,
-              {
-                backgroundColor: colors.backgroundAlt,
-                borderColor: colors.mobilePremium.hairlineBorderStrong,
-              },
-              pressed ? { opacity: PRESS_DIP } : null,
-            ]}
-            testID="rest-default-dec"
-          >
-            <Text style={[styles.restStepGlyph, { color: colors.text }]}>−</Text>
-          </Pressable>
-          <Text
-            style={[styles.restIntervalFigure, { color: colors.text }]}
-            testID="rest-default-readout"
-          >
-            {restReadout}
-          </Text>
-          <Pressable
-            onPress={() => setRestDefault(restDefaultSec + 15)}
-            accessibilityRole="button"
-            accessibilityLabel="Increase rest interval by 15 seconds"
-            style={({ pressed }) => [
-              styles.restStep,
-              {
-                backgroundColor: colors.backgroundAlt,
-                borderColor: colors.mobilePremium.hairlineBorderStrong,
-              },
-              pressed ? { opacity: PRESS_DIP } : null,
-            ]}
-            testID="rest-default-inc"
-          >
-            <Text style={[styles.restStepGlyph, { color: colors.text }]}>+</Text>
-          </Pressable>
         </View>
       </View>
 
@@ -774,38 +714,6 @@ const styles = StyleSheet.create({
   whisper: {
     ...INTERVAL.whisper,
     marginBottom: 8,
-  },
-  // THE REST INSTRUMENT's panel row: the printed label, the ±
-  // steppers, and the mono figure on one line.
-  restIntervalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    minHeight: 44,
-  },
-  restIntervalLabel: {
-    ...theme.typography.mobileEyebrow,
-    flex: 1,
-  },
-  restStep: {
-    width: 44,
-    height: 44,
-    borderRadius: theme.shapes.control,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  restStepGlyph: {
-    ...theme.typography.mobileFigure,
-    fontWeight: '600',
-    fontSize: 18,
-  },
-  restIntervalFigure: {
-    ...theme.typography.mobileFigure,
-    fontWeight: '600',
-    fontVariant: ['tabular-nums'],
-    minWidth: 64,
-    textAlign: 'center',
   },
   // The tile MEASURE (theme, weight unit) — inversion is selection.
   unitRow: {

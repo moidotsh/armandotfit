@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useRestStore, REST_MAX_SEC } from '../../stores';
 
-// THE REST INSTRUMENT's behavior tests (carried over verbatim from
-// the retired GaugeFigures suite — the instrument's behavior is
-// precious and survives every redesign; scoreboard-thesis §7).
+// THE REST CLOCK's behavior tests (carried over from the retired
+// GaugeFigures suite; scoreboard-thesis §7) — the clock starts at
+// the one default interval, dismisses, and never overshoots the
+// ceiling. No adjust tests: the clock answers to nobody.
 
-describe('the rest instrument store', () => {
+describe('the rest clock store', () => {
   beforeEach(() => {
     useRestStore.setState({ endsAt: null });
   });
@@ -15,15 +16,6 @@ describe('the rest instrument store', () => {
     const endsAt = useRestStore.getState().endsAt;
     expect(endsAt).toBeGreaterThan(Date.now());
     expect(endsAt! - Date.now()).toBeLessThanOrEqual(REST_MAX_SEC * 1000);
-  });
-
-  it('adjusts a running rest by the delta', () => {
-    useRestStore.getState().startRest(90);
-    const before = useRestStore.getState().endsAt!;
-    useRestStore.getState().adjustRest(15);
-    const after = useRestStore.getState().endsAt!;
-    expect(after - before).toBeGreaterThanOrEqual(14_000);
-    expect(after - before).toBeLessThanOrEqual(16_000);
   });
 
   it('dismisses', () => {

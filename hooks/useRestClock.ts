@@ -1,6 +1,6 @@
 // hooks/useRestClock.ts
 //
-// THE REST INSTRUMENT's read side (docs/architecture/gauge-thesis.md
+// THE REST CLOCK's read side (docs/architecture/gauge-thesis.md
 // §7): derives the countdown from the store's endsAt against a
 // re-ticking now. `remainingSec` floors to whole seconds (mono
 // figures never show sub-second jitter); `settled` is the derived
@@ -16,7 +16,6 @@ export function useRestClock() {
   const now = useNowTick();
   const endsAt = useRestStore((s) => s.endsAt);
   const startRest = useRestStore((s) => s.startRest);
-  const adjustRest = useRestStore((s) => s.adjustRest);
   const dismissRest = useRestStore((s) => s.dismissRest);
 
   const active = endsAt != null;
@@ -33,5 +32,5 @@ export function useRestClock() {
     return `${m}:${String(s).padStart(2, '0')}`;
   }, [remainingSec]);
 
-  return { active, remainingSec, settled, readout, startRest, adjustRest, dismissRest };
+  return { active, remainingSec, settled, readout, startRest, dismissRest };
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { INTERVAL, PAGE_GUTTER, BLOCK_GAP, REST_DEFAULT_SEC, REST_STEP_SEC } from '../../constants';
+import { INTERVAL, PAGE_GUTTER, BLOCK_GAP, REST_DEFAULT_SEC } from '../../constants';
 
 // THE INTERVAL's presentation-law arithmetic (docs/architecture/
 // interval-thesis.md §3, §5, §7). Rewritten for the tenth upending:
@@ -53,9 +53,8 @@ describe('the rank carriers (interval-thesis §3.2)', () => {
   });
 });
 
-describe('the rest instrument constants', () => {
-  it('defaults to 90s with ±15 steppers', () => {
+describe('the rest clock constants', () => {
+  it('defaults to the one 90s interval — untuned', () => {
     expect(REST_DEFAULT_SEC).toBe(90);
-    expect(REST_STEP_SEC).toBe(15);
   });
 });

@@ -119,8 +119,8 @@ export const paperToothStyle = (colorScheme: 'light' | 'dark'): ViewStyle =>
       colorScheme === 'dark' ? BOARD_TOOTH_BACKGROUND : PAPER_TOOTH_BACKGROUND,
   }) as unknown as ViewStyle;
 
-// ── THE REST INSTRUMENT ─────────────────────────────────────────────────
-// The rest countdown's constants (thesis §7): default 90 s, steppers
-// ±15 s. Session UI-state only — nothing joins the data spine.
+// ── THE REST CLOCK ──────────────────────────────────────────────────────
+// The rest countdown's constant (thesis §7): the ONE default interval,
+// 90 s — untuned by design (no steppers, no settings row). Session
+// UI-state only — nothing joins the data spine.
 export const REST_DEFAULT_SEC = 90;
-export const REST_STEP_SEC = 15;

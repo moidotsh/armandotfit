@@ -83,7 +83,6 @@ export {
   PRESS_DIP,
   PRESS_DIP_PLATE,
   REST_DEFAULT_SEC,
-  REST_STEP_SEC,
 } from './interval';
 
 // The meter ramp's step keys — the zone ramp's keys (structure is

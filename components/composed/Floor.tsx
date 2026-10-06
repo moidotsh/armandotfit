@@ -10,10 +10,10 @@
 // + THE COUNT figure, SWAP / REMOVE furniture), the ledger audits
 // in ruled rows (ordinal left · air · weight × reps right), and THE
 // LOGGER — THE ONE-FIELD INSTRUMENT — docks below it all under the
-// screen's one 2px rule. THE LIVE FIGURE alternates by the current
-// question: the rest clock while rest runs, the armed expression
-// otherwise — exchanged by REPAINT (THE STILL SYSTEM holds: no
-// pinned strip, no crossfade, the logger never scrolls away).
+// screen's one 2px rule. THE LIVE FIGURE is always the armed
+// expression — the rest never borrows it; recovery rides a quiet
+// muted row under the kicker at the one default interval (the
+// logger never scrolls away).
 //
 // Self-sufficient: reads the workout store directly (no prop drilling
 // of store actions) and composes useFloorSession for the draft
@@ -141,10 +141,10 @@ export function Floor() {
     topSets: armedPrefill,
   } = useFloorSession();
 
-  // THE REST INSTRUMENT — recovery counts after every log (thesis
-  // §7); the readout rides the logger's rest line. The rest remembers
-  // per exercise: a ±15 tune during a station's rest becomes that
-  // station's next default (restStore.perExercise).
+  // THE REST CLOCK — recovery counts after every log (thesis §7);
+  // the readout rides the logger's quiet rest row at the one default
+  // interval (1:30). No tuning, no per-station memory — it starts,
+  // it runs, it ends.
   const restClock = useRestClock();
 
   // THE DELOAD WEEK — while set, the TARGET rests at the Rx low end
@@ -566,13 +566,12 @@ export function Floor() {
     ? rangeLabel(beforeRx.range)
     : targetRx?.split('×')[1]?.trim() ?? null;
 
-  // The rest line rides the CURRENT station (per-exercise memory).
-  const stationName = exercise?.exerciseName ?? null;
+  // The rest line — one quiet row under the kicker; the clock runs
+  // the one default interval and answers to nobody.
   const restLine: RestLine | null = restClock.active
     ? {
         readout: restClock.readout,
         settled: restClock.settled,
-        onAdjust: (deltaSec: number) => restClock.adjustRest(deltaSec, stationName ?? undefined),
         onDismiss: restClock.dismissRest,
       }
     : null;
@@ -595,10 +594,10 @@ export function Floor() {
       ...prev,
       [exercise.localId]: { weight: armed.weight ?? 0, reps: armed.reps },
     }));
-    // THE REST INSTRUMENT starts with the log (thesis §7), at this
-    // station's remembered interval when one exists.
+    // THE REST CLOCK starts with the log (thesis §7), at the one
+    // default interval.
     hapticImpactLight();
-    restClock.startRest(undefined, exercise.exerciseName);
+    restClock.startRest();
     // The screen reader's record of the log (the live region below —
     // no toast mid-set, no visual change). The log announcement
     // carries the rest start: restPrevRef is pre-advanced so the
@@ -1363,7 +1362,7 @@ export function Floor() {
                 [exercise.localId]: { weight: armed.weight ?? 0, reps },
               }));
               hapticImpactLight();
-              restClock.startRest(undefined, exercise.exerciseName);
+              restClock.startRest();
               restPrevRef.current = { active: true, settled: false };
               setAnnouncement(
                 `${sets} sets logged — ${armed.weight ?? 0} ${unit} × ${reps} average · rest started`,
