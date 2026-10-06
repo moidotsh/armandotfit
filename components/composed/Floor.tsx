@@ -10,10 +10,9 @@
 // + THE COUNT figure, SWAP / REMOVE furniture), the ledger audits
 // in ruled rows (ordinal left · air · weight × reps right), and THE
 // LOGGER — THE ONE-FIELD INSTRUMENT — docks below it all under the
-// screen's one 2px rule. THE LIVE FIGURE is always the armed
-// expression — the rest never borrows it; recovery rides a quiet
-// muted row under the kicker at the one default interval (the
-// logger never scrolls away).
+// screen's one 2px rule. THE LIVE FIGURE alternates by the current
+// question: the rest clock while rest runs, the armed expression
+// otherwise (the logger never scrolls away).
 //
 // Self-sufficient: reads the workout store directly (no prop drilling
 // of store actions) and composes useFloorSession for the draft
@@ -58,6 +57,7 @@ import {
   deriveProgression,
   rangeLabel,
   sameProgression,
+  currentStationIndex,
   RATING_GLYPH,
   type RatedInstance,
 } from '../../services';
@@ -142,9 +142,9 @@ export function Floor() {
   } = useFloorSession();
 
   // THE REST CLOCK — recovery counts after every log (thesis §7);
-  // the readout rides the logger's quiet rest row at the one default
-  // interval (1:30). No tuning, no per-station memory — it starts,
-  // it runs, it ends.
+  // while it runs the clock takes the logger's counter at the one
+  // default interval (1:30). No tuning, no per-station memory — it
+  // starts, it runs, it ends.
   const restClock = useRestClock();
 
   // THE DELOAD WEEK — while set, the TARGET rests at the Rx low end
@@ -238,7 +238,13 @@ export function Floor() {
     0,
   );
 
-  const [stationIndex, setStationIndex] = useState(0);
+  // WHERE YOU LEFT OFF — a mount opens at the session's living edge
+  // (the first station still owed sets, else the last): minimizing
+  // and returning lands on the working station, never station one.
+  // A fresh session's empty draft reads 0, which is right anyway.
+  const [stationIndex, setStationIndex] = useState(() =>
+    currentStationIndex(useWorkoutStore.getState().draft?.exercises ?? []),
+  );
   // THE BOARD IS ASKED FOR, NEVER AMBIENT (the owner's correction):
   // collapsed by default — MAP reveals it, a row pick (or scrolling
   // away) folds it. Scrolling up shows nothing the user didn't ask
@@ -566,8 +572,8 @@ export function Floor() {
     ? rangeLabel(beforeRx.range)
     : targetRx?.split('×')[1]?.trim() ?? null;
 
-  // The rest line — one quiet row under the kicker; the clock runs
-  // the one default interval and answers to nobody.
+  // The rest line — the clock's read side; it runs the one default
+  // interval and answers to nobody.
   const restLine: RestLine | null = restClock.active
     ? {
         readout: restClock.readout,

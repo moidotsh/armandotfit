@@ -50,3 +50,23 @@ export function formatElapsed(startedAtIso: string, now: number = Date.now()): s
   const s = secs % 60;
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
+
+/** The session's living edge — the first station still OWED sets
+ * (a target of "3×8–10" owes 3; an unread target owes only while
+ * unstarted), else the last station when the house is full. The
+ * Floor opens here and the SessionStrip names it: where you left
+ * off, never the beginning. */
+export function currentStationIndex(
+  exercises: ReadonlyArray<{
+    sets: ReadonlyArray<{ reps: number | null; weight: number | null }>;
+    targetRx?: string | null;
+  }>,
+): number {
+  if (exercises.length === 0) return 0;
+  const owed = exercises.findIndex((e) => {
+    const t = parseInt(e.targetRx?.split('×')[0] ?? '', 10);
+    const target = Number.isFinite(t) && t > 0 ? t : 0;
+    return target > 0 ? e.sets.length < target : e.sets.length === 0;
+  });
+  return owed === -1 ? exercises.length - 1 : owed;
+}

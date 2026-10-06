@@ -87,6 +87,7 @@ export {
   sumVolume,
   formatVolume,
   formatElapsed,
+  currentStationIndex,
 } from './sessionMath';
 export { rankAlternatives, type RankedAlternative } from './substitutionService';
 export {

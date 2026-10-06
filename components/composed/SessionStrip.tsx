@@ -23,7 +23,7 @@ import { theme,
   PRESS_DIP,
   PRESS_DIP_PLATE
 } from '../../constants';
-import { formatElapsed } from '../../services';
+import { formatElapsed, currentStationIndex } from '../../services';
 
 export function SessionStrip() {
   const { colors } = useAppTheme();
@@ -35,12 +35,12 @@ export function SessionStrip() {
   const now = useNowTick();
 
   const elapsed = startedAt ? formatElapsed(startedAt, now) : '00:00';
-  // The current station — the first exercise without a full house of
-  // logged sets, else the last.
+  // The current station — the session's living edge (the first
+  // station still owed sets, else the last): the same station the
+  // Floor opens on when RETURN is pressed.
   const station =
     draft && draft.exercises.length > 0
-      ? (draft.exercises.find((e) => e.sets.length === 0) ?? draft.exercises[draft.exercises.length - 1])
-          .exerciseName
+      ? draft.exercises[currentStationIndex(draft.exercises)].exerciseName
       : null;
 
   return (
