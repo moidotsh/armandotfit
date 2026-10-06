@@ -21,20 +21,44 @@
 //                           are ruled lines, plan-time Swap rides the
 //                           bench. MAKE LIVE adopts the rotation as
 //                           the program that runs the week; viewing
-//                           alone never switches.
+//                           alone never switches. The PENCIL opens
+//                           Edit Mode — add, remove, swap, or re-rx
+//                           any slot; every edit lands as a standing
+//                           override and the authored slot stays the
+//                           DEFAULT (one ↺ tap back, per slot or for
+//                           the whole program).
+//   /program?program=…      THE STARTER DAYS — an authored archetype's
+//                           rotation, the same chapters and the same
+//                           Edit Mode; MAKE LIVE when it fits.
 
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight } from '@tamagui/lucide-icons-2';
 import { useLocalSearchParams } from 'expo-router';
 import { MobilePrimaryButton } from '../components/MobilePremium';
-import { BoardShell, InkRail, SectionWhisper, SwapGlyph } from '../components/composed';
+import {
+  AddExerciseRow,
+  AddExerciseSheet,
+  BoardShell,
+  EditToggleGlyph,
+  InkRail,
+  RemoveSlotGlyph,
+  RestoreSlotGlyph,
+  RxEditSheet,
+  SectionWhisper,
+  SwapGlyph,
+  type SlotBench,
+} from '../components/composed';
 import { navigateToExerciseDetail, navigateToOtherSplits, navigateToProgram, navigateToStarterProgram, navigateToSplitLab, safeGoBack } from '../navigation';
 import { useAppTheme, useToast } from '../context';
 import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import {
-  resolveSlots,
-  slotKey,
+  resolveLiveSlots,
+  liveSlotKey,
+  authoredSlotAt,
+  authoredSlotCount,
+  nextAddedPosition,
+  programOverridePrefix,
   derivePlanMuscleShare,
   generatedBoard,
   isSameLiveProgram,
@@ -50,7 +74,6 @@ import {
   FEMALE_ONE_A_DAY_SPLITS,
   SYSTEM_EXERCISES_BY_SLUG,
   MUSCLE_DISPLAY_NAMES,
-  getSlotsForDay,
   getStarterDays,
   type SessionWindow,
   type StarterProgram,
@@ -58,7 +81,8 @@ import {
 import { INTERVAL, ROW_GAP, theme, PAGE_GUTTER, PRESS_DIP } from '../constants';
 import { joinFacts } from '../utils';
 import { CURRENT_ERA } from '../shared/exercises';
-import type { PreferredSplit } from '../shared/types';
+import type { LiveProgram, PreferredSplit } from '../shared/types';
+import type { ProgramEdition, ResolvedSlot } from '../shared/exercises';
 
 function rxLabel(sets: [number, number], reps: [number, number]): string {
   const s = sets[1] > 0 ? sets[1] : sets[0];
@@ -100,10 +124,296 @@ export default function ProgramScreen() {
   }>();
 
   const overrides = useProgramOverrideStore((s) => s.overrides);
-  const [pickerFor, setPickerFor] = useState<string | null>(null);
   const setOverride = useProgramOverrideStore((s) => s.setOverride);
   const clearOverride = useProgramOverrideStore((s) => s.clearOverride);
-  const overriddenCount = Object.keys(overrides).length;
+
+  // ── EDIT MODE — the pencil in a days view's head opens the bench:
+  // rows gain ⇄ / ✕ / a tappable Rx and each window gains an
+  // + ADD EXERCISE line; the sheets capture their slot's whole state
+  // at open time (identity, resolved current, authored default), so
+  // no key parsing anywhere.
+  const [editing, setEditing] = useState(false);
+  const [bench, setBench] = useState<SlotBench | null>(null);
+  const [addFor, setAddFor] = useState<{
+    program: LiveProgram;
+    edition: ProgramEdition;
+    day: number;
+    window: SessionWindow;
+  } | null>(null);
+
+  const nameFor = (slug: string) => SYSTEM_EXERCISES_BY_SLUG[slug]?.name ?? slug;
+
+  /** Capture a slot's whole state at open time — the swap bench and
+   * the Rx bench read the capture; no key parsing anywhere. */
+  const openBench = (
+    mode: 'swap' | 'rx',
+    program: LiveProgram,
+    edition: ProgramEdition,
+    day: number,
+    window: SessionWindow,
+    slot: ResolvedSlot,
+  ) => {
+    const pos = slot.position ?? 0;
+    const key = liveSlotKey(program, day, window, pos);
+    const def = authoredSlotAt(program, day, window, pos, edition);
+    setBench({
+      mode,
+      key,
+      currentSlug: slot.exercise,
+      currentName: nameFor(slot.exercise),
+      sets: slot.sets,
+      reps: slot.reps,
+      defaultSlug: def?.exercise ?? '',
+      defaultName: def ? nameFor(def.exercise) : '',
+      defaultSets: def?.sets ?? slot.sets,
+      defaultReps: def?.reps ?? slot.reps,
+      isEdited: key in overrides,
+    });
+  };
+
+  // ── THE SLOT ROW — one grammar for every preview: reading shows
+  // name + rx (an edit's rx prints in red ink); editing adds the swap
+  // glyph, the two-tap ✕, and turns the rx itself into the button.
+  const slotRow = (
+    program: LiveProgram,
+    edition: ProgramEdition,
+    day: number,
+    window: SessionWindow,
+    slot: ResolvedSlot,
+    baseTestID: string,
+    showSwap: boolean,
+  ) => {
+    const key = liveSlotKey(program, day, window, slot.position ?? 0);
+    const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
+    const name = nameFor(slot.exercise);
+    const isEdited = key in overrides;
+    const rx = rxLabel(slot.sets, slot.reps);
+    return (
+      <View key={key} style={styles.slotRow}>
+        <Pressable
+          onPress={entry ? () => navigateToExerciseDetail(entry.slug) : undefined}
+          accessibilityRole={entry ? 'button' : undefined}
+          accessibilityLabel={entry ? `${name} — view details` : name}
+          style={({ pressed }) => [styles.slotNameHold, pressed ? { opacity: PRESS_DIP } : null]}
+          testID={`${baseTestID}-${entry?.slug ?? key}`}
+        >
+          <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
+            {name}
+          </Text>
+        </Pressable>
+        {showSwap ? (
+          <SwapGlyph
+            onPress={() => openBench('swap', program, edition, day, window, slot)}
+            label={name}
+          />
+        ) : null}
+        {editing ? (
+          <RemoveSlotGlyph
+            name={name}
+            onRemove={() => {
+              setOverride(key, { removed: true });
+              showToast('success', `${name} removed`);
+            }}
+            testID={`${baseTestID}-remove-${key}`}
+          />
+        ) : null}
+        {editing ? (
+          <Pressable
+            onPress={() => openBench('rx', program, edition, day, window, slot)}
+            accessibilityRole="button"
+            accessibilityLabel={`Change the prescription for ${name}, currently ${rx}`}
+            style={({ pressed }) => [styles.slotRxHold, pressed ? { opacity: PRESS_DIP } : null]}
+            testID={`${baseTestID}-rx-${key}`}
+          >
+            <Text style={[styles.slotRx, { color: isEdited ? colors.brandText : colors.text }]}>
+              {rx}
+            </Text>
+          </Pressable>
+        ) : (
+          <Text style={[styles.slotRx, { color: isEdited ? colors.brandText : colors.text }]}>
+            {rx}
+          </Text>
+        )}
+      </View>
+    );
+  };
+
+  /** A removed slot's struck ghost — edit mode only; the ↺ clears the
+   * edit and the programmed lift walks back in. */
+  const ghostRow = (key: string, name: string, baseTestID: string) => (
+    <View key={`ghost:${key}`} style={styles.slotRow}>
+      <View style={styles.slotNameHold}>
+        <Text
+          style={[styles.slotName, styles.slotGhost, { color: colors.textMuted }]}
+          numberOfLines={1}
+        >
+          {name}
+        </Text>
+      </View>
+      <RestoreSlotGlyph
+        name={name}
+        onRestore={() => {
+          clearOverride(key);
+          showToast('success', `${name} — back in`);
+        }}
+        testID={`${baseTestID}-restore-${key}`}
+      />
+      <Text style={[styles.slotRx, { color: colors.textMuted }]}>{'\u2014'}</Text>
+    </View>
+  );
+
+  /** One window's rows: the removed ghosts (edit mode only), the
+   * resolved slots, and — in edit mode — the + ADD EXERCISE line. */
+  const windowRows = (
+    program: LiveProgram,
+    edition: ProgramEdition,
+    day: number,
+    window: SessionWindow,
+    baseTestID: string,
+    showSwap: boolean,
+  ): React.ReactNode[] => {
+    const rows: React.ReactNode[] = [];
+    if (editing) {
+      const count = authoredSlotCount(program, day, window, edition);
+      for (let pos = 1; pos <= count; pos++) {
+        const key = liveSlotKey(program, day, window, pos);
+        if (overrides[key]?.removed) {
+          const def = authoredSlotAt(program, day, window, pos, edition);
+          rows.push(ghostRow(key, def ? nameFor(def.exercise) : key, baseTestID));
+        }
+      }
+    }
+    for (const slot of resolveLiveSlots(program, day, window, overrides, edition)) {
+      rows.push(slotRow(program, edition, day, window, slot, baseTestID, showSwap));
+    }
+    if (editing) {
+      rows.push(
+        <AddExerciseRow
+          key={`add:${day}:${window}`}
+          onPress={() => setAddFor({ program, edition, day, window })}
+          testID={`${baseTestID}-add`}
+        />,
+      );
+    }
+    return rows;
+  };
+
+  // ── THE EDIT SHEETS — one cluster, opened from any preview. The
+  // DEFAULT row shows whenever the slot has strayed (a swap, or any
+  // standing edit — picking it clears the slot's edit whole).
+  const benchCluster = (
+    <>
+      {bench ? (() => {
+        const b = bench;
+        const defaultRow =
+          b.defaultSlug && (b.defaultSlug !== b.currentSlug || b.isEdited)
+            ? { slug: b.defaultSlug, name: b.defaultName }
+            : null;
+        return b.mode === 'swap' ? (
+          <InkRail
+            currentSlug={b.currentSlug}
+            programmed={defaultRow}
+            open
+            onOpenChange={(next) => {
+              if (!next) setBench(null);
+            }}
+            onRestore={() => {
+              clearOverride(b.key);
+              setBench(null);
+              showToast('success', `${b.defaultName} — back to the default`);
+            }}
+            onSwap={(next) => {
+              setOverride(b.key, { slug: next.exerciseSlug, name: next.exerciseName });
+              setBench(null);
+              showToast('success', next.exerciseName);
+            }}
+            testID="program-swap-picker"
+          />
+        ) : (
+          <RxEditSheet
+            open
+            onOpenChange={(next) => {
+              if (!next) setBench(null);
+            }}
+            exerciseName={b.currentName}
+            sets={b.sets}
+            reps={b.reps}
+            defaultSets={b.defaultSets}
+            defaultReps={b.defaultReps}
+            isEdited={b.isEdited}
+            onSave={(sets, reps) => {
+              setOverride(b.key, { sets, reps });
+              showToast('success', `${b.currentName} — now ${rxLabel(sets, reps)}`);
+            }}
+            onRestoreDefault={() => {
+              clearOverride(b.key);
+              showToast('success', `${b.defaultName} — back to the default`);
+            }}
+            testID="program-rx-editor"
+          />
+        );
+      })() : null}
+      {addFor ? (() => {
+        const resolved = resolveLiveSlots(
+          addFor.program,
+          addFor.day,
+          addFor.window,
+          overrides,
+          addFor.edition,
+        );
+        return (
+          <AddExerciseSheet
+            open
+            onOpenChange={(next) => {
+              if (!next) setAddFor(null);
+            }}
+            excludeSlugs={new Set(resolved.map((s) => s.exercise))}
+            onPick={(slug, name) => {
+              const pos = nextAddedPosition(
+                addFor.program,
+                addFor.day,
+                addFor.window,
+                overrides,
+                addFor.edition,
+              );
+              setOverride(
+                liveSlotKey(addFor.program, addFor.day, addFor.window, pos),
+                { slug, name, removed: false, sets: undefined, reps: undefined },
+              );
+              showToast('success', `${name} added`);
+            }}
+            testID="program-add-picker"
+          />
+        );
+      })() : null}
+    </>
+  );
+
+  /** The program-scoped RESTORE TO DEFAULTS verb — sweeps every
+   * standing edit this program owns (the trailing separator keeps
+   * seed 4271 from sweeping seed 42710). */
+  const restoreDefaults = (
+    program: LiveProgram,
+    successLine: string,
+    testID: string,
+  ): React.ReactNode => {
+    const prefix = programOverridePrefix(program);
+    const keys = Object.keys(overrides).filter((k) => k.startsWith(prefix));
+    if (keys.length === 0) return null;
+    return (
+      <MobilePrimaryButton
+        variant="ghost"
+        onPress={() => {
+          keys.forEach(clearOverride);
+          setEditing(false);
+          showToast('success', successLine);
+        }}
+        testID={testID}
+      >
+        {`Restore to defaults (${keys.length})`}
+      </MobilePrimaryButton>
+    );
+  };
 
   // ── THE OVERVIEW ────────────────────────────────────────────────────
   // (the shelf views below — view=other and program=… — must slip past
@@ -122,7 +432,9 @@ export default function ProgramScreen() {
       const days = splitsFor(which, programEdition);
       const windows: SessionWindow[] = which === 'twoADay' ? ['am', 'pm'] : ['single'];
       const slots = days.flatMap((day) =>
-        windows.flatMap((w) => resolveSlots(which, day.day, w, overrides, programEdition)),
+        windows.flatMap((w) =>
+          resolveLiveSlots({ kind: 'edition', split: which }, day.day, w, overrides, programEdition),
+        ),
       );
       const sessions = days.length * windows.length;
       return { days: days.length, lifts: slots.length, sessions };
@@ -159,7 +471,9 @@ export default function ProgramScreen() {
           const edDays = splitsFor(which, programEdition);
           const edWindows: SessionWindow[] = which === 'twoADay' ? ['am', 'pm'] : ['single'];
           const edSlots = edDays.flatMap((d) =>
-            edWindows.flatMap((w) => resolveSlots(which, d.day, w, overrides, programEdition)),
+            edWindows.flatMap((w) =>
+              resolveLiveSlots({ kind: 'edition', split: which }, d.day, w, overrides, programEdition),
+            ),
           );
           const rows = derivePlanMuscleShare(edSlots, 4);
           const edLead = rows[0]?.share ?? 1;
@@ -248,7 +562,13 @@ export default function ProgramScreen() {
             liveProgram.seed,
             liveProgram.edition,
           );
-          const slots = board.days.flatMap((d) => [...d.am, ...d.pm]);
+          // The card's facts read the EDITED board (the live resolver)
+          // — the lifts figure says what actually runs.
+          const genWindows: SessionWindow[] =
+            liveProgram.program === 'fullBodyHighFrequency' ? ['am', 'pm'] : ['single'];
+          const slots = board.days.flatMap((d) =>
+            genWindows.flatMap((w) => resolveLiveSlots(liveProgram, d.day, w, overrides)),
+          );
           const sessions =
             board.days.length * (liveProgram.program === 'fullBodyHighFrequency' ? 2 : 1);
           const strip = board.days
@@ -341,7 +661,9 @@ export default function ProgramScreen() {
             ink). Tap to read the days. */}
         {STARTER_CARDS.map(({ program: which }, i) => {
           const starter = getStarterDays(which);
-          const slots = starter.flatMap((d) => d.session);
+          const slots = starter.flatMap((d) =>
+            resolveLiveSlots({ kind: 'starter', program: which }, d.day, 'single', overrides),
+          );
           const rows = derivePlanMuscleShare(slots, 4);
           const lead = rows[0]?.share ?? 1;
           const strip = starter.map((d) => `D${d.day} \u2588`).join(' \u2009·\u2009 ');
@@ -438,15 +760,15 @@ export default function ProgramScreen() {
   // ── THE STARTER DAYS (an authored archetype's rotation) ────────────
   if (isStarterProgram(programParam)) {
     const starter = getStarterDays(programParam);
-    const starterSlots = starter.flatMap((d) => d.session);
+    const starterIdentity: LiveProgram = { kind: 'starter', program: programParam };
+    const starterSlots = starter.flatMap((d) =>
+      resolveLiveSlots(starterIdentity, d.day, 'single', overrides),
+    );
     const starterShare = derivePlanMuscleShare(starterSlots, 99);
     const starterLead = starterShare[0]?.share ?? 1;
-    const isStarterLive = isSameLiveProgram(
-      { kind: 'starter', program: programParam },
-      liveProgram,
-    );
+    const isStarterLive = isSameLiveProgram(starterIdentity, liveProgram);
     const makeStarterLive = () => {
-      setLiveProgram({ kind: 'starter', program: programParam });
+      setLiveProgram(starterIdentity);
       showToast('success', `${STARTER_PROGRAM_LABELS[programParam]} is live`);
     };
     return (
@@ -467,6 +789,13 @@ export default function ProgramScreen() {
             {isStarterLive ? (
               <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
             ) : null}
+            <View style={styles.headTools}>
+              <EditToggleGlyph
+                editing={editing}
+                onPress={() => setEditing(!editing)}
+                testID="program-starter-edit-toggle"
+              />
+            </View>
           </View>
           <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
             {joinFacts([
@@ -484,8 +813,10 @@ export default function ProgramScreen() {
         </View>
 
         {/* Equal chapters of ruled lines; the names tap through to the
-            spec sheets. Starters carry no override mechanism — the
-            authored slots read as authored (the lab generates). */}
+            spec sheets. The pencil opens Edit Mode — the authored slots
+            become editable (swap, remove, re-rx, add) and every edit
+            lands as a standing override keyed to this starter, the
+            authored slot staying the DEFAULT. */}
         {starter.map((day, di) => (
           <View
             key={day.day}
@@ -499,34 +830,10 @@ export default function ProgramScreen() {
                 {day.title}
               </Text>
               <Text style={[styles.dayHeadFigure, { color: colors.textMuted }]}>
-                {`${day.session.length} lifts`}
+                {`${resolveLiveSlots(starterIdentity, day.day, 'single', overrides).length} lifts`}
               </Text>
             </View>
-            {day.session.map((slot, i) => {
-              const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
-              const name = entry?.name ?? slot.exercise;
-              return (
-                <View key={`${day.day}:${i}`} style={styles.slotRow}>
-                  <Pressable
-                    onPress={entry ? () => navigateToExerciseDetail(entry.slug) : undefined}
-                    accessibilityRole={entry ? 'button' : undefined}
-                    accessibilityLabel={entry ? `${name} — view details` : name}
-                    style={({ pressed }) => [
-                      styles.slotNameHold,
-                      pressed ? { opacity: PRESS_DIP } : null,
-                    ]}
-                    testID={`program-starter-slot-${entry?.slug ?? `${day.day}-${i}`}`}
-                  >
-                    <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
-                      {name}
-                    </Text>
-                  </Pressable>
-                  <Text style={[styles.slotRx, { color: colors.text }]}>
-                    {rxLabel(slot.sets, slot.reps)}
-                  </Text>
-                </View>
-              );
-            })}
+            {windowRows(starterIdentity, programEdition, day.day, 'single', 'program-starter-slot', editing)}
           </View>
         ))}
 
@@ -548,6 +855,13 @@ export default function ProgramScreen() {
             ))}
           </View>
         ) : null}
+
+        {restoreDefaults(
+          starterIdentity,
+          `${STARTER_PROGRAM_LABELS[programParam]} — back to the authored program`,
+          'program-starter-restore-defaults',
+        )}
+        {benchCluster}
       </BoardShell>
     );
   }
@@ -555,59 +869,28 @@ export default function ProgramScreen() {
   // ── THE DAYS (the edition detail) ───────────────────────────────────
   if (!isEdition(edition)) return null; // unreachable past the shelf guards
   const viewedSplit: PreferredSplit = edition;
+  const editionIdentity: LiveProgram = { kind: 'edition', split: viewedSplit };
   const days = splitsFor(viewedSplit, programEdition);
   const isTwoADay = viewedSplit === 'twoADay';
   const windows: SessionWindow[] = isTwoADay ? ['am', 'pm'] : ['single'];
   // THE PAGE'S VERB — viewing is not switching; MAKE LIVE is. The
   // running edition wears the red word instead.
-  const isEditionLive = isSameLiveProgram({ kind: 'edition', split: viewedSplit }, liveProgram);
+  const isEditionLive = isSameLiveProgram(editionIdentity, liveProgram);
   const makeEditionLive = () => {
-    setLiveProgram({ kind: 'edition', split: viewedSplit });
-    showToast('success', `${liveProgramLabel({ kind: 'edition', split: viewedSplit })} is live`);
+    setLiveProgram(editionIdentity);
+    showToast('success', `${liveProgramLabel(editionIdentity)} is live`);
   };
 
   const dayLifts = (day: number) =>
-    windows.reduce((n, w) => n + resolveSlots(viewedSplit, day, w, overrides, programEdition).length, 0);
-
-  const renderSlot = (day: number, window: SessionWindow, position: number) => {
-    const slots = resolveSlots(viewedSplit, day, window, overrides, programEdition);
-    const slot = slots[position - 1];
-    if (!slot) return null;
-    const key = slotKey(viewedSplit, day, window, position);
-    const entry = SYSTEM_EXERCISES_BY_SLUG[slot.exercise];
-    const name = entry?.name ?? slot.exercise;
-    const isOverridden = key in overrides;
-
-    // A standing substitution reads in the RED RX only (thesis §8 — the
-    // live edit): one red node per override; the name stays ink.
-    // TAP THE NAME to see the lift's spec sheet (the plate, the cues,
-    // the number to beat); the swap glyph stays the swap.
-    return (
-      <View key={key} style={styles.slotRow}>
-        <Pressable
-          onPress={entry ? () => navigateToExerciseDetail(entry.slug) : undefined}
-          accessibilityRole={entry ? 'button' : undefined}
-          accessibilityLabel={entry ? `${name} — view details` : name}
-          style={({ pressed }) => [
-            styles.slotNameHold,
-            pressed ? { opacity: PRESS_DIP } : null,
-          ]}
-          testID={`program-slot-${entry?.slug ?? key}`}
-        >
-          <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
-            {name}
-          </Text>
-        </Pressable>
-        <SwapGlyph onPress={() => setPickerFor(key)} label={name} />
-        <Text style={[styles.slotRx, { color: isOverridden ? colors.brandText : colors.text }]}>
-          {rxLabel(slot.sets, slot.reps)}
-        </Text>
-      </View>
+    windows.reduce(
+      (n, w) => n + resolveLiveSlots(editionIdentity, day, w, overrides, programEdition).length,
+      0,
     );
-  };
 
   const planSlots = days.flatMap((day) =>
-    windows.flatMap((w) => resolveSlots(viewedSplit, day.day, w, overrides, programEdition)),
+    windows.flatMap((w) =>
+      resolveLiveSlots(editionIdentity, day.day, w, overrides, programEdition),
+    ),
   );
   // EVERY muscle the rotation works — no cap; bars scale to the LEADER
   // (shares cluster at 5-15%, so a 100% ruler collapses everything).
@@ -627,11 +910,18 @@ export default function ProgramScreen() {
         </Text>
         <View style={styles.statementRow}>
           <Text style={[styles.statement, { color: colors.text }]} numberOfLines={1}>
-            {liveProgramLabel({ kind: 'edition', split: viewedSplit })}
+            {liveProgramLabel(editionIdentity)}
           </Text>
           {isEditionLive ? (
             <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
           ) : null}
+          <View style={styles.headTools}>
+            <EditToggleGlyph
+              editing={editing}
+              onPress={() => setEditing(!editing)}
+              testID="program-edit-toggle"
+            />
+          </View>
         </View>
         <Text style={[styles.dayFact, { color: colors.textMuted }]} numberOfLines={1}>
           {joinFacts([
@@ -649,7 +939,8 @@ export default function ProgramScreen() {
 
       {/* EVERY DAY AN EQUAL CHAPTER — no elevated day 1 (the owner's
           correction): the statement above is the EDITION's name, and
-          the days read as its table of contents. */}
+          the days read as its table of contents. The pencil opens
+          Edit Mode; the edition keeps its plan-time ⇄ outside it. */}
       {days.map((day, di) => (
         <View
           key={day.day}
@@ -673,9 +964,7 @@ export default function ProgramScreen() {
                   {window.toUpperCase()}
                 </Text>
               ) : null}
-              {resolveSlots(viewedSplit, day.day, window, overrides, programEdition).map((_, i) =>
-                renderSlot(day.day, window, i + 1),
-              )}
+              {windowRows(editionIdentity, programEdition, day.day, window, 'program-slot', true)}
             </View>
           ))}
         </View>
@@ -707,54 +996,12 @@ export default function ProgramScreen() {
           </View>
         ) : null}
 
-      {overriddenCount > 0 ? (
-        <MobilePrimaryButton
-          variant="ghost"
-          onPress={() => {
-            Object.keys(overrides).forEach(clearOverride);
-            showToast('success', 'All substitutions cleared');
-          }}
-          testID="program-reset-all"
-        >
-          {`Clear substitutions (${overriddenCount})`}
-        </MobilePrimaryButton>
-      ) : null}
-
-      {pickerFor ? (() => {
-      const [sp, d, w, pos] = pickerFor.split(':');
-      const slots = resolveSlots(sp as PreferredSplit, Number(d), w as never, overrides);
-      const pickerSlot = slots[Number(pos) - 1] ?? null;
-      const progSlot = getSlotsForDay(sp as PreferredSplit, Number(d), w as never);
-      const prog = progSlot?.[Number(pos) - 1];
-      return pickerSlot ? (
-        <InkRail
-          currentSlug={pickerSlot.exercise}
-          programmed={
-            prog && prog.exercise !== pickerSlot.exercise
-              ? {
-                  slug: prog.exercise,
-                  name: SYSTEM_EXERCISES_BY_SLUG[prog.exercise]?.name ?? '',
-                }
-              : null
-          }
-          open={pickerFor !== null}
-          onOpenChange={(next) => {
-            if (!next) setPickerFor(null);
-          }}
-          onRestore={() => {
-            clearOverride(pickerFor);
-            setPickerFor(null);
-            showToast('success', 'Back to the programmed exercise');
-          }}
-          onSwap={(next) => {
-            setOverride(pickerFor, { slug: next.exerciseSlug, name: next.exerciseName });
-            setPickerFor(null);
-            showToast('success', next.exerciseName);
-          }}
-          testID="program-swap-picker"
-        />
-      ) : null;
-    })() : null}
+      {restoreDefaults(
+        editionIdentity,
+        `${liveProgramLabel(editionIdentity)} — back to the authored program`,
+        'program-restore-defaults',
+      )}
+      {benchCluster}
     </BoardShell>
   );
 }
@@ -956,6 +1203,21 @@ const styles = StyleSheet.create({
   slotName: {
     ...theme.typography.mobileItemTitle,
     flex: 1,
+  },
+  // The pencil's berth in the statement row (the head's tools sit
+  // right, clear of the LIVE word).
+  headTools: {
+    marginLeft: 'auto',
+  },
+  // A removed slot's ghost — struck through, muted (edit mode only).
+  slotGhost: {
+    textDecorationLine: 'line-through',
+  },
+  // The rx figure as a button (edit mode) — the plain rx's metrics so
+  // the row doesn't shift when the pencil turns.
+  slotRxHold: {
+    minWidth: 88,
+    alignItems: 'flex-end',
   },
   slotRx: {
     ...theme.typography.mobileFigure,

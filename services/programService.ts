@@ -1,9 +1,10 @@
 // services/programService.ts
 // Plan-time program resolution: the programmed slots with the user's
-// per-slot overrides applied. Pure — no DB, no React; the overrides
+// standing slot edits applied. Pure — no DB, no React; the edits
 // themselves live in the client-side programOverrideStore (persisted).
-// The program in splits.ts stays the authored asset; an override is a
-// standing substitution ("this gym has no leg press"), never an edit.
+// The program in splits.ts stays the authored asset and the DEFAULT —
+// an edit (swap, sets/reps, removal, addition) always names the slot
+// it diverges from, so clearing it restores the original in full.
 //
 // THE LIVE PROGRAM LAYER: one resolver for all three program kinds
 // (shared/types/program.ts) — the authored editions, the authored
@@ -22,8 +23,16 @@ import {
   type ProgramType,
   type StarterProgram,
 } from '../shared/exercises';
-import type { LiveProgram } from '../shared/types';
+import type { LiveProgram, ProgramSlotOverride } from '../shared/types';
 import { generateProgram, type GeneratedSplit } from './splitGenerator';
+
+/** An override map — slot key → the slot's standing edit. */
+type OverrideMap = Readonly<Record<string, ProgramSlotOverride>>;
+
+/** The prescription an ADDED slot starts with (the starter dose) —
+ * editable like any other slot once it exists. */
+export const ADDED_SLOT_SETS: [number, number] = [3, 3];
+export const ADDED_SLOT_REPS: [number, number] = [8, 10];
 
 /** Stable per-slot key: split × day × window × position. */
 export function slotKey(
@@ -37,30 +46,77 @@ export function slotKey(
 }
 
 /**
- * Resolve a day's slots against the override map. An overridden slot
- * keeps its programmed Rx (sets/reps) and position but takes the
- * override's identity; its suggested tags drop (they belonged to the
- * programmed exercise — last-used tags refill from history instead).
+ * Apply one window's slot edits — the shared post-processing under
+ * every resolver: a removed slot drops; a swap takes the override's
+ * identity (its suggested tags drop — they belonged to the programmed
+ * exercise); a prescription edit rewrites sets and/or reps; an
+ * untouched slot passes through. Added positions append after the
+ * authored ones (first key past the length not holding a live add —
+ * removing an added slot frees its position again). Every output slot
+ * carries its AUTHORED `position` so override keys stay stable no
+ * matter how removals shift the output order.
+ */
+function applySlotEdits(
+  raw: ResolvedSlot[],
+  overrides: OverrideMap,
+  keyAt: (position: number) => string,
+): ResolvedSlot[] {
+  const out: ResolvedSlot[] = [];
+  raw.forEach((slot, i) => {
+    const ov = overrides[keyAt(i + 1)];
+    if (ov?.removed) return;
+    if (ov?.slug) {
+      out.push({
+        exercise: ov.slug,
+        suggestedTags: [],
+        sets: ov.sets ?? slot.sets,
+        reps: ov.reps ?? slot.reps,
+        position: i + 1,
+      });
+      return;
+    }
+    if (ov?.sets || ov?.reps) {
+      out.push({
+        ...slot,
+        sets: ov.sets ?? slot.sets,
+        reps: ov.reps ?? slot.reps,
+        position: i + 1,
+      });
+      return;
+    }
+    out.push({ ...slot, position: i + 1 });
+  });
+  for (let pos = raw.length + 1; ; pos++) {
+    const ov = overrides[keyAt(pos)];
+    if (!ov?.slug) break; // the added run ended (adds are contiguous)
+    if (!ov.removed) {
+      out.push({
+        exercise: ov.slug,
+        suggestedTags: [],
+        sets: ov.sets ?? ADDED_SLOT_SETS,
+        reps: ov.reps ?? ADDED_SLOT_REPS,
+        position: pos,
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Resolve an edition day's slots against the override map — swaps,
+ * prescription edits, removals, and added positions all land here.
+ * The authored program stays the default: clearing a key restores the
+ * original exercise AND its Rx.
  */
 export function resolveSlots(
   split: 'oneADay' | 'twoADay',
   day: number,
   window: SessionWindow,
-  overrides: Readonly<Record<string, { slug: string; name: string }>>,
+  overrides: OverrideMap,
   edition: 'upper' | 'lower' = 'upper',
 ): ResolvedSlot[] {
-  return getSlotsForDay(split, day, window, edition).map((slot, i) => {
-    const ov = overrides[slotKey(split, day, window, i + 1)];
-    if (ov) {
-      return {
-        exercise: ov.slug,
-        suggestedTags: [],
-        sets: slot.sets,
-        reps: slot.reps,
-      };
-    }
-    return { ...slot, exercise: slot.exercise };
-  });
+  const raw = getSlotsForDay(split, day, window, edition);
+  return applySlotEdits(raw, overrides, (pos) => slotKey(split, day, window, pos));
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -187,29 +243,85 @@ function generatedDaySlots(
  * resolver the funnel, the Floor, and the receipt ask. Editions
  * delegate to resolveSlots (legacy override keys); starters and
  * generated boards resolve from their authored/generated data with
- * `starter:*` / `generated:*` override keys. Out-of-range days
- * resolve empty (the picker falls back; the Floor renders bare).
+ * `starter:*` / `generated:*` override keys — swaps, prescription
+ * edits, removals, and added positions all land here, for every kind.
+ * Out-of-range days resolve empty (the picker falls back; the Floor
+ * renders bare).
  */
 export function resolveLiveSlots(
   program: LiveProgram,
   day: number,
   window: SessionWindow,
-  overrides: Readonly<Record<string, { slug: string; name: string }>>,
+  overrides: OverrideMap,
   edition: ProgramEdition = 'upper',
 ): ResolvedSlot[] {
-  const raw = program.kind === 'edition'
-    ? resolveSlots(program.split, day, window, overrides, edition)
-    : (program.kind === 'starter'
-        ? starterSlots(program.program, day)
-        : generatedDaySlots(program.program, program.seed, program.edition, day, window)
-      ).map((slot, i) => {
-        const ov = overrides[liveSlotKey(program, day, window, i + 1)];
-        if (ov) {
-          return { exercise: ov.slug, suggestedTags: [], sets: slot.sets, reps: slot.reps };
-        }
-        return { ...slot };
-      });
-  return raw;
+  if (program.kind === 'edition') {
+    return resolveSlots(program.split, day, window, overrides, edition);
+  }
+  const raw = program.kind === 'starter'
+    ? starterSlots(program.program, day)
+    : generatedDaySlots(program.program, program.seed, program.edition, day, window);
+  return applySlotEdits(raw, overrides, (pos) => liveSlotKey(program, day, window, pos));
+}
+
+/** The authored (pre-edit) slot count for a day's window — where the
+ * added positions begin. */
+export function authoredSlotCount(
+  program: LiveProgram,
+  day: number,
+  window: SessionWindow,
+  edition: ProgramEdition = 'upper',
+): number {
+  if (program.kind === 'edition') {
+    return getSlotsForDay(program.split, day, window, edition).length;
+  }
+  if (program.kind === 'starter') return starterSlots(program.program, day).length;
+  return generatedDaySlots(program.program, program.seed, program.edition, day, window).length;
+}
+
+/** The position the next ADD lands on: the first key past the authored
+ * length not holding a live (unremoved) add — removing an added slot
+ * frees its position for the next one. */
+export function nextAddedPosition(
+  program: LiveProgram,
+  day: number,
+  window: SessionWindow,
+  overrides: OverrideMap,
+  edition: ProgramEdition = 'upper',
+): number {
+  let pos = authoredSlotCount(program, day, window, edition) + 1;
+  while (overrides[liveSlotKey(program, day, window, pos)]?.slug) pos += 1;
+  return pos;
+}
+
+/** The AUTHORED slot at an authored position — the DEFAULT every edit
+ * diverges from (the swap bench's DEFAULT row, the Rx bench's default
+ * figure). Added positions have no authored slot. */
+export function authoredSlotAt(
+  program: LiveProgram,
+  day: number,
+  window: SessionWindow,
+  position: number,
+  edition: ProgramEdition = 'upper',
+): ResolvedSlot | undefined {
+  if (program.kind === 'edition') {
+    return getSlotsForDay(program.split, day, window, edition)[position - 1];
+  }
+  if (program.kind === 'starter') return starterSlots(program.program, day)[position - 1];
+  const found = generatedBoard(program.program, program.seed, program.edition).days.find(
+    (d) => d.day === day,
+  );
+  if (!found) return undefined;
+  const list = window === 'pm' && found.pm.length > 0 ? found.pm : found.am;
+  return list[position - 1];
+}
+
+/** The override-map prefix owning a program's slot keys — the scope of
+ * the page's RESTORE TO DEFAULTS verb. The trailing separator is part
+ * of the prefix (seed 4271 never sweeps seed 42710). */
+export function programOverridePrefix(program: LiveProgram): string {
+  if (program.kind === 'edition') return `${program.split}:`;
+  return `${liveProgramKey(program)}:`;
 }
 
 /** The day's title for any live program ("Workout Day 1" / "Push A" /

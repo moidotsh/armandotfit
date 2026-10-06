@@ -21,6 +21,12 @@
 //                             full-body types compare against their own
 //                             shape; the other types against the
 //                             shape you run) and the laws' verdict.
+//                             The PENCIL opens Edit Mode — the board's
+//                             slots become editable exactly like the
+//                             authored previews (swap, remove, re-rx,
+//                             add), keyed to this program AND seed; VS
+//                             THE PROGRAM stays the generator's pure
+//                             verdict.
 //
 // Reroll picks a new seed; the same seed rebuilds the same boards
 // (deterministic — the live program persists BY SEED, never as stored
@@ -33,16 +39,34 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight } from '@tamagui/lucide-icons-2';
 import { useLocalSearchParams } from 'expo-router';
 import { MobilePrimaryButton } from '../components/MobilePremium';
-import { BoardShell, SectionWhisper } from '../components/composed';
+import {
+  AddExerciseRow,
+  AddExerciseSheet,
+  BoardShell,
+  EditToggleGlyph,
+  InkRail,
+  RemoveSlotGlyph,
+  RestoreSlotGlyph,
+  RxEditSheet,
+  SectionWhisper,
+  SwapGlyph,
+  type SlotBench,
+} from '../components/composed';
 import { navigateToExerciseDetail, navigateToSplitLab, safeGoBack } from '../navigation';
 import { useAppTheme, useToast } from '../context';
-import { useSplitPreferenceStore } from '../stores';
+import { useSplitPreferenceStore, useProgramOverrideStore } from '../stores';
 import {
   generateProgram,
   isSameLiveProgram,
   nameForSlug,
   authoredBaselineFor,
   muscleShareDeltas,
+  resolveLiveSlots,
+  liveSlotKey,
+  authoredSlotAt,
+  authoredSlotCount,
+  nextAddedPosition,
+  programOverridePrefix,
   GENERATED_PROGRAM_LABELS,
 } from '../services';
 import type { LiveProgram } from '../shared/types';
@@ -96,6 +120,15 @@ export default function SplitLabScreen() {
   const preferredShape = useSplitPreferenceStore((s) => s.splitType);
   const liveProgram = useSplitPreferenceStore((s) => s.liveProgram);
   const setLiveProgram = useSplitPreferenceStore((s) => s.setLiveProgram);
+  const overrides = useProgramOverrideStore((s) => s.overrides);
+  const setOverride = useProgramOverrideStore((s) => s.setOverride);
+  const clearOverride = useProgramOverrideStore((s) => s.clearOverride);
+
+  // ── EDIT MODE — the pencil opens the board's bench (the program
+  // days' own grammar); the sheets capture their slot at open time.
+  const [editing, setEditing] = useState(false);
+  const [bench, setBench] = useState<SlotBench | null>(null);
+  const [addFor, setAddFor] = useState<{ day: number; window: 'am' | 'pm' } | null>(null);
 
   // A seed ARRIVING ON THE ROUTE (the program page's generated-live
   // card taps through) takes over the dial — the URL is the lab's
@@ -247,28 +280,148 @@ export default function SplitLabScreen() {
   );
   const passing = board.rules.filter((r) => r.ok).length;
 
-  const renderSlot = (slot: ResolvedSlot, key: string) => (
-    <View key={key} style={styles.slotRow}>
-      <Pressable
-        onPress={() => navigateToExerciseDetail(slot.exercise)}
-        accessibilityRole="button"
-        accessibilityLabel={`${nameForSlug(slot.exercise)} — view details`}
-        style={({ pressed }) => [styles.slotNameHold, pressed ? { opacity: PRESS_DIP } : null]}
-        testID={`split-lab-slot-${slot.exercise}`}
-      >
-        <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
-          {nameForSlug(slot.exercise)}
-        </Text>
-        {slot.suggestedTags.length > 0 ? (
-          <Text style={[styles.slotTags, { color: colors.textMuted }]} numberOfLines={1}>
-            {slot.suggestedTags.join(' · ')}
+  // ── THE EDIT HELPERS — the program days' own slot grammar, keyed to
+  // this board's identity (program AND seed). VS THE PROGRAM below
+  // stays the generator's pure verdict; only the day list and the
+  // figures read the edited board.
+  const openBench = (mode: 'swap' | 'rx', window: 'am' | 'pm', slot: ResolvedSlot, day: number) => {
+    const pos = slot.position ?? 0;
+    const key = liveSlotKey(boardIdentity, day, window, pos);
+    const def = authoredSlotAt(boardIdentity, day, window, pos, board.edition);
+    setBench({
+      mode,
+      key,
+      currentSlug: slot.exercise,
+      currentName: nameForSlug(slot.exercise),
+      sets: slot.sets,
+      reps: slot.reps,
+      defaultSlug: def?.exercise ?? '',
+      defaultName: def ? nameForSlug(def.exercise) : '',
+      defaultSets: def?.sets ?? slot.sets,
+      defaultReps: def?.reps ?? slot.reps,
+      isEdited: key in overrides,
+    });
+  };
+
+  const slotRow = (window: 'am' | 'pm', slot: ResolvedSlot, day: number) => {
+    const key = liveSlotKey(boardIdentity, day, window, slot.position ?? 0);
+    const name = nameForSlug(slot.exercise);
+    const isEdited = key in overrides;
+    const rx = rxLabel(slot.sets, slot.reps);
+    return (
+      <View key={key} style={styles.slotRow}>
+        <Pressable
+          onPress={() => navigateToExerciseDetail(slot.exercise)}
+          accessibilityRole="button"
+          accessibilityLabel={`${name} — view details`}
+          style={({ pressed }) => [styles.slotNameHold, pressed ? { opacity: PRESS_DIP } : null]}
+          testID={`split-lab-slot-${slot.exercise}`}
+        >
+          <Text style={[styles.slotName, { color: colors.text }]} numberOfLines={1}>
+            {name}
           </Text>
+          {slot.suggestedTags.length > 0 ? (
+            <Text style={[styles.slotTags, { color: colors.textMuted }]} numberOfLines={1}>
+              {slot.suggestedTags.join(' · ')}
+            </Text>
+          ) : null}
+        </Pressable>
+        {editing ? (
+          <SwapGlyph onPress={() => openBench('swap', window, slot, day)} label={name} />
         ) : null}
-      </Pressable>
-      <Text style={[styles.slotRx, { color: colors.text }]}>
-        {rxLabel(slot.sets, slot.reps)}
-      </Text>
+        {editing ? (
+          <RemoveSlotGlyph
+            name={name}
+            onRemove={() => {
+              setOverride(key, { removed: true });
+              showToast('success', `${name} removed`);
+            }}
+            testID={`split-lab-slot-remove-${key}`}
+          />
+        ) : null}
+        {editing ? (
+          <Pressable
+            onPress={() => openBench('rx', window, slot, day)}
+            accessibilityRole="button"
+            accessibilityLabel={`Change the prescription for ${name}, currently ${rx}`}
+            style={({ pressed }) => [styles.slotRxHold, pressed ? { opacity: PRESS_DIP } : null]}
+            testID={`split-lab-slot-rx-${key}`}
+          >
+            <Text style={[styles.slotRx, { color: isEdited ? colors.brandText : colors.text }]}>
+              {rx}
+            </Text>
+          </Pressable>
+        ) : (
+          <Text style={[styles.slotRx, { color: isEdited ? colors.brandText : colors.text }]}>
+            {rx}
+          </Text>
+        )}
+      </View>
+    );
+  };
+
+  const ghostRow = (key: string, name: string) => (
+    <View key={`ghost:${key}`} style={styles.slotRow}>
+      <View style={styles.slotNameHold}>
+        <Text style={[styles.slotName, styles.slotGhost, { color: colors.textMuted }]} numberOfLines={1}>
+          {name}
+        </Text>
+      </View>
+      <RestoreSlotGlyph
+        name={name}
+        onRestore={() => {
+          clearOverride(key);
+          showToast('success', `${name} — back in`);
+        }}
+        testID={`split-lab-slot-restore-${key}`}
+      />
+      <Text style={[styles.slotRx, { color: colors.textMuted }]}>{'\u2014'}</Text>
     </View>
+  );
+
+  /** One window's rows: ghosts (edit mode only), the resolved slots,
+   * and — in edit mode — the + ADD EXERCISE line. */
+  const windowRows = (day: number, window: 'am' | 'pm') => {
+    const rows: React.ReactNode[] = [];
+    if (editing) {
+      const count = authoredSlotCount(boardIdentity, day, window, board.edition);
+      for (let pos = 1; pos <= count; pos++) {
+        const key = liveSlotKey(boardIdentity, day, window, pos);
+        if (overrides[key]?.removed) {
+          const def = authoredSlotAt(boardIdentity, day, window, pos, board.edition);
+          rows.push(ghostRow(key, def ? nameForSlug(def.exercise) : key));
+        }
+      }
+    }
+    for (const slot of resolveLiveSlots(boardIdentity, day, window, overrides, board.edition)) {
+      rows.push(slotRow(window, slot, day));
+    }
+    if (editing) {
+      rows.push(
+        <AddExerciseRow
+          key={`add:${day}:${window}`}
+          onPress={() => setAddFor({ day, window })}
+          testID={`split-lab-slot-add`}
+        />,
+      );
+    }
+    return rows;
+  };
+
+  // The resolved day list — the figures say what actually runs.
+  const labWindows = (isTwoADay ? ['am', 'pm'] : ['am']) as ('am' | 'pm')[];
+  const resolvedLifts = board.days.reduce(
+    (n, d) =>
+      n +
+      labWindows.reduce(
+        (m, w) => m + resolveLiveSlots(boardIdentity, d.day, w, overrides, board.edition).length,
+        0,
+      ),
+    0,
+  );
+  // The program-scoped RESTORE TO DEFAULTS verb (seed-distinct prefix).
+  const restoreKeys = Object.keys(overrides).filter((k) =>
+    k.startsWith(programOverridePrefix(boardIdentity)),
   );
 
   return (
@@ -289,11 +442,18 @@ export default function SplitLabScreen() {
           {isLive ? (
             <Text style={[styles.liveWord, { color: colors.brandText }]}>LIVE</Text>
           ) : null}
+          <View style={styles.headTools}>
+            <EditToggleGlyph
+              editing={editing}
+              onPress={() => setEditing(!editing)}
+              testID="split-lab-edit-toggle"
+            />
+          </View>
         </View>
         <Text style={[styles.fact, { color: colors.textMuted }]} numberOfLines={1}>
           {joinFacts([
             `${board.days.length} days`,
-            `${genSlots.length} lifts`,
+            `${resolvedLifts} lifts`,
             `${board.days.length * card.sessionsPerDay} sessions/week`,
             'generated',
           ])}
@@ -312,7 +472,8 @@ export default function SplitLabScreen() {
       </View>
 
       {/* THE DAYS — equal chapters of ruled lines; every slot taps
-          through to its spec sheet. */}
+          through to its spec sheet. The pencil opens Edit Mode; the
+          edits key to this program AND seed. */}
       {board.days.map((day, di) => (
         <View
           key={day.day}
@@ -326,17 +487,21 @@ export default function SplitLabScreen() {
               {day.title}
             </Text>
             <Text style={[styles.dayHeadFigure, { color: colors.textMuted }]}>
-              {`${day.am.length + day.pm.length} lifts`}
+              {`${labWindows.reduce(
+                (m, w) =>
+                  m + resolveLiveSlots(boardIdentity, day.day, w, overrides, board.edition).length,
+                0,
+              )} lifts`}
             </Text>
           </View>
-          {(isTwoADay ? (['am', 'pm'] as const) : (['am'] as const)).map((window) => (
+          {labWindows.map((window) => (
             <View key={window} style={styles.windowBlock}>
               {isTwoADay ? (
                 <Text style={[styles.windowLabel, { color: colors.textMuted }]}>
                   {window.toUpperCase()}
                 </Text>
               ) : null}
-              {day[window].map((slot, i) => renderSlot(slot, `${day.day}:${window}:${i}`))}
+              {windowRows(day.day, window)}
             </View>
           ))}
         </View>
@@ -395,6 +560,106 @@ export default function SplitLabScreen() {
           );
         })}
       </View>
+
+      {restoreKeys.length > 0 ? (
+        <MobilePrimaryButton
+          variant="ghost"
+          onPress={() => {
+            restoreKeys.forEach(clearOverride);
+            setEditing(false);
+            showToast('success', `${card.short} · seed ${seed} — back to the generated board`);
+          }}
+          testID="split-lab-restore-defaults"
+        >
+          {`Restore to defaults (${restoreKeys.length})`}
+        </MobilePrimaryButton>
+      ) : null}
+
+      {/* The edit sheets — the same bench the program days open; the
+          capture carries this board's identity. */}
+      {bench ? (() => {
+        const b = bench;
+        const defaultRow =
+          b.defaultSlug && (b.defaultSlug !== b.currentSlug || b.isEdited)
+            ? { slug: b.defaultSlug, name: b.defaultName }
+            : null;
+        return b.mode === 'swap' ? (
+          <InkRail
+            currentSlug={b.currentSlug}
+            programmed={defaultRow}
+            open
+            onOpenChange={(next) => {
+              if (!next) setBench(null);
+            }}
+            onRestore={() => {
+              clearOverride(b.key);
+              setBench(null);
+              showToast('success', `${b.defaultName} — back to the default`);
+            }}
+            onSwap={(next) => {
+              setOverride(b.key, { slug: next.exerciseSlug, name: next.exerciseName });
+              setBench(null);
+              showToast('success', next.exerciseName);
+            }}
+            testID="split-lab-swap-picker"
+          />
+        ) : (
+          <RxEditSheet
+            open
+            onOpenChange={(next) => {
+              if (!next) setBench(null);
+            }}
+            exerciseName={b.currentName}
+            sets={b.sets}
+            reps={b.reps}
+            defaultSets={b.defaultSets}
+            defaultReps={b.defaultReps}
+            isEdited={b.isEdited}
+            onSave={(sets, reps) => {
+              setOverride(b.key, { sets, reps });
+              showToast('success', `${b.currentName} — now ${rxLabel(sets, reps)}`);
+            }}
+            onRestoreDefault={() => {
+              clearOverride(b.key);
+              showToast('success', `${b.defaultName} — back to the default`);
+            }}
+            testID="split-lab-rx-editor"
+          />
+        );
+      })() : null}
+      {addFor ? (() => {
+        const resolved = resolveLiveSlots(
+          boardIdentity,
+          addFor.day,
+          addFor.window,
+          overrides,
+          board.edition,
+        );
+        return (
+          <AddExerciseSheet
+            open
+            onOpenChange={(next) => {
+              if (!next) setAddFor(null);
+            }}
+            excludeSlugs={new Set(resolved.map((s) => s.exercise))}
+            onPick={(slug, name) => {
+              const pos = nextAddedPosition(
+                boardIdentity,
+                addFor.day,
+                addFor.window,
+                overrides,
+                board.edition,
+              );
+              setOverride(
+                liveSlotKey(boardIdentity, addFor.day, addFor.window, pos),
+                { slug, name, removed: false, sets: undefined, reps: undefined },
+              );
+              showToast('success', `${name} added`);
+            }}
+            testID="split-lab-add-picker"
+          />
+        );
+      })() : null}
 
       <View style={styles.verbBlock}>{rerollVerb}</View>
     </BoardShell>
@@ -538,6 +803,21 @@ const styles = StyleSheet.create({
   },
   slotName: {
     ...theme.typography.mobileItemTitle,
+  },
+  // The pencil's berth in the statement row (the head's tools sit
+  // right, clear of the LIVE word).
+  headTools: {
+    marginLeft: 'auto',
+  },
+  // A removed slot's ghost — struck through, muted (edit mode only).
+  slotGhost: {
+    textDecorationLine: 'line-through',
+  },
+  // The rx figure as a button (edit mode) — the plain rx's metrics so
+  // the row doesn't shift when the pencil turns.
+  slotRxHold: {
+    minWidth: 88,
+    alignItems: 'flex-end',
   },
   slotTags: {
     ...theme.typography.mobileLedger,

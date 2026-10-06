@@ -16,9 +16,12 @@ import {
   programWindows,
   isSameLiveProgram,
   generatedBoard,
+  nextAddedPosition,
+  authoredSlotAt,
+  programOverridePrefix,
 } from '../../services/programService';
 import { generateProgram } from '../../services/splitGenerator';
-import { getStarterDays } from '../../shared/exercises';
+import { getStarterDays, getSlotsForDay } from '../../shared/exercises';
 import type { LiveProgram } from '../../shared/types';
 
 const NO_OVERRIDES: Record<string, { slug: string; name: string }> = {};
@@ -92,7 +95,10 @@ describe('resolveLiveSlots — generated (rebuilt from the seed)', () => {
   it('rebuilds the exact board the seed names (deterministic)', () => {
     const board = generateProgram({ seed: 4271, program: 'pushPullLegs', edition: 'upper' });
     const slots = resolveLiveSlots(GEN_PPL, 1, 'am', NO_OVERRIDES);
-    expect(slots).toEqual(board.days[0].am);
+    // The resolver annotates each slot with its authored position (the
+    // override keys survive removals); the lifts themselves are the
+    // seed's exact board.
+    expect(slots).toEqual(board.days[0].am.map((s, i) => ({ ...s, position: i + 1 })));
   });
 
   it('generatedBoard memoizes to the same board object', () => {
@@ -113,8 +119,12 @@ describe('resolveLiveSlots — generated (rebuilt from the seed)', () => {
       edition: 'upper',
     };
     const board = generatedBoard('fullBodyHighFrequency', 4271, 'upper');
-    expect(resolveLiveSlots(program, 1, 'am', NO_OVERRIDES)).toEqual(board.days[0].am);
-    expect(resolveLiveSlots(program, 1, 'pm', NO_OVERRIDES)).toEqual(board.days[0].pm);
+    expect(resolveLiveSlots(program, 1, 'am', NO_OVERRIDES)).toEqual(
+      board.days[0].am.map((s, i) => ({ ...s, position: i + 1 })),
+    );
+    expect(resolveLiveSlots(program, 1, 'pm', NO_OVERRIDES)).toEqual(
+      board.days[0].pm.map((s, i) => ({ ...s, position: i + 1 })),
+    );
   });
 });
 
@@ -168,5 +178,99 @@ describe('liveProgramKey / label / equality — the LIVE badge machinery', () =>
     expect(isSameLiveProgram(GEN_PPL, { ...GEN_PPL })).toBe(true);
     expect(isSameLiveProgram(GEN_PPL, { ...GEN_PPL, seed: 99 })).toBe(false);
     expect(isSameLiveProgram(TWO_A_DAY, ONE_A_DAY)).toBe(false);
+  });
+});
+
+describe('resolveLiveSlots — EDIT MODE (prescription, removal, adds)', () => {
+  it('a prescription edit rewrites sets/reps and keeps the exercise (edition)', () => {
+    const slots = resolveLiveSlots(TWO_A_DAY, 1, 'am', {
+      'twoADay:1:am:1': { sets: [4, 5], reps: [6, 8] },
+    });
+    expect(slots[0].exercise).toBe('leg-press');
+    expect(slots[0].sets).toEqual([4, 5]);
+    expect(slots[0].reps).toEqual([6, 8]);
+  });
+
+  it('a prescription edit in the starter namespace keeps the authored reps it does not name', () => {
+    const key = liveSlotKey(PPL, 1, 'am', 1);
+    const slots = resolveLiveSlots(PPL, 1, 'am', { [key]: { sets: [5, 5] } });
+    expect(slots[0].sets).toEqual([5, 5]);
+    expect(slots[0].reps).toEqual(getStarterDays('ppl')[0].session[0].reps);
+  });
+
+  it('a removed slot drops and the survivors keep their AUTHORED positions', () => {
+    const slots = resolveLiveSlots(TWO_A_DAY, 1, 'am', {
+      'twoADay:1:am:2': { removed: true },
+    });
+    expect(slots).toHaveLength(3);
+    expect(slots.map((s) => s.position)).toEqual([1, 3, 4]);
+    expect(slots[1].exercise).toBe(getSlotsForDay('twoADay', 1, 'am')[2].exercise);
+  });
+
+  it('removal wins over a swap on the same slot', () => {
+    const slots = resolveLiveSlots(TWO_A_DAY, 1, 'am', {
+      'twoADay:1:am:2': { slug: 'machine-chest-press', name: 'Machine Chest Press', removed: true },
+    });
+    expect(slots).toHaveLength(3);
+  });
+
+  it('an added slot appends at its position with the starter dose (edition)', () => {
+    const slots = resolveLiveSlots(ONE_A_DAY, 1, 'am', {
+      'oneADay:1:single:8': { slug: 'machine-shrug', name: 'Machine Shrug' },
+    });
+    expect(slots).toHaveLength(8);
+    expect(slots[7].exercise).toBe('machine-shrug');
+    expect(slots[7].position).toBe(8);
+    expect(slots[7].sets).toEqual([3, 3]); // ADDED_SLOT_SETS
+    expect(slots[7].reps).toEqual([8, 10]); // ADDED_SLOT_REPS
+  });
+
+  it('an added slot in the starter namespace appends past the authored length', () => {
+    const len = getStarterDays('ppl')[0].session.length;
+    const key = `starter:ppl:1:single:${len + 1}`;
+    const slots = resolveLiveSlots(PPL, 1, 'am', { [key]: { slug: 'machine-shrug', name: 'Machine Shrug' } });
+    expect(slots).toHaveLength(len + 1);
+    expect(slots[len].exercise).toBe('machine-shrug');
+    // A prescription edit ON the added slot applies.
+    const slots2 = resolveLiveSlots(PPL, 1, 'am', {
+      [key]: { slug: 'machine-shrug', name: 'Machine Shrug', sets: [2, 2] },
+    });
+    expect(slots2[len].sets).toEqual([2, 2]);
+  });
+
+  it('a removed add is skipped but does not hide adds behind it; nextAddedPosition reuses freed tails', () => {
+    const overrides = {
+      'twoADay:1:am:5': { slug: 'a', name: 'A', removed: true },
+      'twoADay:1:am:6': { slug: 'b', name: 'B' },
+    };
+    const slots = resolveLiveSlots(TWO_A_DAY, 1, 'am', overrides);
+    expect(slots).toHaveLength(5); // 4 authored + the live add at 6
+    expect(slots[4].exercise).toBe('b');
+    // The next add skips live adds — and removed entries (they hold a
+    // slug) — landing past the whole run.
+    expect(nextAddedPosition(TWO_A_DAY, 1, 'am', overrides)).toBe(7);
+  });
+
+  it('swap keeps a prior prescription edit (independent axes merge)', () => {
+    const slots = resolveLiveSlots(TWO_A_DAY, 1, 'am', {
+      'twoADay:1:am:1': { slug: 'barbell-back-squat', name: 'Barbell Back Squat', sets: [4, 4] },
+    });
+    expect(slots[0].exercise).toBe('barbell-back-squat');
+    expect(slots[0].sets).toEqual([4, 4]);
+    expect(slots[0].reps).toEqual([8, 10]); // authored reps carry
+  });
+
+  it('authoredSlotAt reads the DEFAULT (the ↺ row) and undefined past the length', () => {
+    expect(authoredSlotAt(TWO_A_DAY, 1, 'am', 1)?.exercise).toBe('leg-press');
+    expect(authoredSlotAt(PPL, 1, 'single', 2)).toBeDefined();
+    expect(authoredSlotAt(TWO_A_DAY, 1, 'am', 5)).toBeUndefined();
+  });
+
+  it('programOverridePrefix scopes the restore verb (seeds never sweep seeds)', () => {
+    expect(programOverridePrefix(TWO_A_DAY)).toBe('twoADay:');
+    expect(programOverridePrefix(PPL)).toBe('starter:ppl:');
+    expect(programOverridePrefix(GEN_PPL)).toBe('generated:pushPullLegs:4271:');
+    // The trailing separator: seed 4271's prefix must not match 42710's keys.
+    expect(`generated:pushPullLegs:42710:1:single:1`.startsWith(programOverridePrefix(GEN_PPL))).toBe(false);
   });
 });

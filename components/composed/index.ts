@@ -8,7 +8,18 @@ export { RegisterLine, type RegisterLineProps } from './RegisterLine';
 export { TheLogger, type TheLoggerProps } from './TheLogger';
 export { TheCardioDock, type TheCardioDockProps } from './TheCardioDock';
 export { TagChips, type TagChipsProps } from './TagChips';
-export { InkRail, SwapGlyph, type InkRailProps } from './InkRail';
+export { InkRail, SwapGlyph, zoneStepFor, type InkRailProps } from './InkRail';
+export {
+  EditToggleGlyph,
+  RemoveSlotGlyph,
+  RestoreSlotGlyph,
+  AddExerciseRow,
+  RxEditSheet,
+  AddExerciseSheet,
+  type RxEditSheetProps,
+  type AddExerciseSheetProps,
+  type SlotBench,
+} from './ProgramEdit';
 export { ExerciseListItem, type ExerciseListItemProps } from './ExerciseListItem';
 export { EditionLine, type EditionLineProps } from './EditionLine';
 export { SearchStatement, type SearchStatementProps } from './SearchStatement';

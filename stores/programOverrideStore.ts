@@ -30,17 +30,22 @@
 
 // =============================================================================
 // SECTION: UI
-// overrides — slotKey → the standing substitution (catalog slug + name).
+// overrides — slotKey → the slot's standing edit (swap, prescription,
+// or removal — shared/types ProgramSlotOverride). Merged on write, so
+// a swap keeps a prior sets/reps edit and vice versa; clearOverride
+// deletes the whole entry, restoring the authored slot (the default).
 // =============================================================================
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from './storage';
+import type { ProgramSlotOverride } from '../shared/types';
 
-export interface ProgramOverride {
-  slug: string;
-  name: string;
-}
+/** The store's override value — the shared vocabulary (swap, sets,
+ * reps, removed). Persisted blobs written before the edit-mode fields
+ * existed ({slug, name} only) remain valid: the new fields are
+ * optional. */
+export type ProgramOverride = ProgramSlotOverride;
 
 interface ProgramOverrideState {
   // SECTION: Loading
@@ -58,6 +63,10 @@ interface ProgramOverrideState {
 
   // SECTION: UI
   overrides: Record<string, ProgramOverride>;
+  /** Merge `next` into the slot's standing edit — independent axes
+   * (which exercise / how much) evolve without clobbering each other.
+   * Explicit `undefined` fields do overwrite (a full replace passes
+   * them deliberately). */
   setOverride: (key: string, next: ProgramOverride) => void;
   clearOverride: (key: string) => void;
 }
@@ -81,7 +90,9 @@ export const useProgramOverrideStore = create<ProgramOverrideState>()(
       // SECTION: UI
       overrides: {},
       setOverride: (key, next) =>
-        set((state) => ({ overrides: { ...state.overrides, [key]: next } })),
+        set((state) => ({
+          overrides: { ...state.overrides, [key]: { ...state.overrides[key], ...next } },
+        })),
       clearOverride: (key) =>
         set((state) => {
           if (!(key in state.overrides)) return state;

@@ -3,10 +3,13 @@
 // exercise row stays perfectly clean; one small ⇄ glyph sits in the
 // station meta. Tap it and the bench slides up as a ruled sheet on the
 // field (mode-following — chalk or iron per the user's preference):
-// the current exercise marked in the strike tone, ranked alternatives
-// as ruled bench rows, and — the metadata play — a WHY line per row:
-// the shared muscles and equipment that earned the rank. The
-// programmed lift is one tap back. Tap a name, done.
+// the current exercise marked in the strike tone, the slot's DEFAULT —
+// what the program authored there, present whenever the slot has
+// strayed (a swap, or a prescription edit) — and ranked alternatives
+// as ruled bench rows with a WHY line per row: the shared muscles and
+// equipment that earned the rank. Picking the default clears the
+// slot's standing edit whole (exercise AND Rx — the original is a
+// function of the program, never stored). Tap a name, done.
 
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -30,6 +33,9 @@ import { theme, type MeterStep,
 export interface InkRailProps {
   currentSlug: string;
   onSwap: (next: { exerciseName: string; exerciseSlug: string }) => void;
+  /** The slot's DEFAULT — the authored exercise, passed by the parent
+   * whenever the slot has strayed (a swap, or a prescription-only
+   * edit that the default row also clears whole). */
   programmed?: { slug: string; name: string } | null;
   onRestore?: () => void;
   /** Controlled open state — the parent owns the single sheet. */
@@ -87,10 +93,13 @@ const ZONE_STEP: Record<string, MeterStep> = {
   machine: 'step4',
   bodyweight: 'step5',
 };
-const stepFor = (slug: string): MeterStep => {
+/** A slug's equipment zone — the tick's hue. Shared with the edit
+ * bench's add picker (one geography, one ramp). */
+export const zoneStepFor = (slug: string): MeterStep => {
   const m = SYSTEM_EXERCISES_BY_SLUG[slug]?.modality ?? 'machine';
   return ZONE_STEP[m] ?? 'step6';
 };
+const stepFor = zoneStepFor;
 
 export function InkRail({
   currentSlug,
@@ -166,7 +175,7 @@ export function InkRail({
                 item.isCurrent
                   ? `${item.name}, current`
                   : item.isProgrammed
-                    ? `Restore ${item.name}`
+                    ? `Back to the default — ${item.name}`
                     : `Swap to ${item.name}`
               }
               style={({ pressed }) => [
@@ -204,7 +213,7 @@ export function InkRail({
                   { color: item.isCurrent ? colors.textSecondary : colors.textMuted },
                 ]}
               >
-                {item.isCurrent ? 'CURRENT' : item.isProgrammed ? 'RESTORE' : ''}
+                {item.isCurrent ? 'CURRENT' : item.isProgrammed ? 'DEFAULT' : ''}
               </Text>
             </Pressable>
           ))}

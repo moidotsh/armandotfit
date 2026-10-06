@@ -99,6 +99,11 @@ export interface ResolvedSlot {
   suggestedTags: string[];
   sets: [number, number];
   reps: [number, number];
+  /** The slot's authored position within its window (1-based), set by
+   * the live resolvers so override keys survive removals shifting the
+   * output order. Added slots count past the authored length. Absent
+   * on plainly constructed slots. */
+  position?: number;
 }
 
 /** One programmed slot: coarse identity + suggested realization tags + Rx. */

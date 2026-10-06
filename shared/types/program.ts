@@ -28,3 +28,25 @@ export type LiveProgram =
       seed: number;
       edition: ProgramEdition;
     };
+
+/**
+ * One slot's standing edit — the user's divergence from the authored
+ * program. Fields are optional and independent: a swap carries
+ * {slug, name}; a prescription edit carries {sets} and/or {reps}; a
+ * removal carries {removed}. The authored slot is the default, and it
+ * is never stored — it is a pure function of (program, day, window,
+ * position), so clearing the key always restores the original
+ * exercise AND prescription (the "↺ DEFAULT" row in the swap bench).
+ */
+export interface ProgramSlotOverride {
+  /** The replacement exercise (catalog slug) + its display name. */
+  slug?: string;
+  name?: string;
+  /** The slot's programmed set range [min, max]. */
+  sets?: [number, number];
+  /** The slot's programmed rep range [min, max]. */
+  reps?: [number, number];
+  /** The slot is dropped from the rotation (reversible — clearing the
+   * key or the page's RESTORE TO DEFAULTS brings it back). */
+  removed?: boolean;
+}
